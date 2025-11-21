@@ -1,182 +1,458 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-
-  <li class="active">
-    Basic System Configuration
-  </li>
-</ol>
-
-<div class="page">
-  <div class='page__body'>
-    <h1> Basic System Configuration </h1>
-    This page describes how to adjust general system behavior via configuration properties. 
-
-    <h2> Configuration Properties</h2>
-
-    Configuration properties are divided into three so called "configuration groups": 
+[[#if includedTemplate]]
+  <h2 id="rs-doc_systemConfigs">System Configuration</h2>
+[[else]]
+  <div class="page__grid-container help-page-container">
+    <div class='page__content-container'>
+      <h1 id="rs-doc_systemConfigs">System Configuration</h1>
+[[/if]]
+    <p>The system configuration is divided into four configuration groups:</p> 
 
     <ul>
-      <li>  Environment Configuration Group </li> 
-      <li>  Global Configuration Group </li> 
-      <li>  UI Configuration Group </li> 
+      <li><a href="#rs-doc_UIConfigs">UI configuration</a></li>
+      <li><a href="#rs-doc_environmentConfigs">Environment configuration</a></li> 
+      <li><a href="#rs-doc_globalConfigs">Global configuration</a></li>
+      <li><a href="#rs-doc_dataQualityConfigs">Data quality configuration</a></li>
     </ul>
+
     <p>
       Properties in these groups might be shadowed via JVM runtime parameters, for example, depending on the deployment mode one may particular supply environment specific groups via JVM runtime parameters. 
-      This can by done by supplying <span class="inline-code">"-Dconfig.{configGroup}.{propertyName}={propertyValue}"</span>, 
+      This can by done by supplying <code>-Dconfig.{configGroup}.{propertyName}={propertyValue}</code>, 
       where "configGroup"" is the identifier of the configuration (either "environment", "global", or "ui" for the three groups, respectively) and "propertyName" is the name of the property in the given group.
       Shadowed parameters can not be overwritten or changed during runtime.
     </p>
 
-    <h3>Environment Configuration Group </h3>
-
-    The environment group (file "config/environment.prop") contains all deployment-specific configuration options such as server URLs, keys, etc. 
-    These parameters may influence how the platform is initialized and as such they can not be change during runtime, for example, through the &nbsp;<semantic-link uri="http://www.researchspace.org/resource/admin/Configuration" title="Configuration">configuration UI</semantic-link>.
-    <br><br>
+    <hr class="divider">
+    [[#if includedTemplate]]<h3 id="rs-doc_UIConfigs">UI configuration</h3>[[else]]<h2 id="rs-doc_UIConfigs">UI configuration</h2>[[/if]]
+    <div>Configuration properties for options that affect how data is displayed in the UI.</div>
 
     <table class="table table-striped">
       <thead>
         <tr>
           <th>Property</th>
           <th>Type</th>
+          <th style="padding-top: 7px;">Restart required</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>sparqlEndpoint</td>
-          <td>URL</td>
-          <td>URL to the remote SPARQL endpoint. <b> If the repository is running on a different machine and only accessible through HTTPS</b>, then it might be required to import certificates into your JVM's keystore.</td>
+          <td>deploymentTitle</td>
+          <td>string</td>
+          <td>false</td>
+          <td>
+            The title of this deployment which is for instance used as title for the currently rendered page.
+          </td>
         </tr>
         <tr>
-          <td>shiroAuthenticationFilter</td>
-          <td>List of Strings (comma separated)</td>
-          <td>Authentication filter to apply. Any combination of "anon" (Anonymous User),"authc" (FormBasedAuthentication) ,"authcBasic" (HTTP Basic Authentication). Default: "authcBasic, authc" </td>
-        </tr>
-        <tr>
-          <td>shiroSessionTimeoutSecs</td>
-          <td>Integer</td>
-          <td>The time after which sessions will be closed in case of inactivity Default: 1800. </td>
-        </tr>
-        <tr>
-        	<td>allowedCrossOrigin</td>
-          <td>String</td>
-          <td>Specifies the <code>Access-Control-Allow-Origin</code>. <code>*</code> can be used as a wildcard, thereby allowing any origin to access the resource. Please note that by default this property is set to <code>null</code> and thereby does set any CORS headers at all. Default: null. </td>
-        </tr>
-        <tr>
-        	<td>sparqlHttpConnectionTimeout</td>
-          <td>Integer</td>
-          <td>SPARQL HTTP connection timeout (in seconds). This value is used to set both <code>http.connection.timeout</code> (timeout for establishing the connection) and <code>http.socket.timeout</code> (timeout for waiting for the data) parameters of the Apache HttpClient. Default: null (infinite) </td>
-        </tr> 
-      </tbody>
-    </table>
-
-    <h3>Global Configuration Group </h3>
-    Global system configuration, affecting system functionality like global redirects etc.
-    <br><br>
-
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>homePage</td>
-          <td>URI</td>
-          <td>Prefixed or full URI ( surround by &lt;&gt;) to specify the page the user should be redirect to after login or if she clicks on the home button. Default: "Start"</td>
-        </tr>
-        <tr>
-          <td>repositoriesLDPSave</td>
-          <td>Comma separated list of repository IDs</td>
-          <td>List of repository IDs, for which LDP assets will be saved in the runtime storage (see <semantic-link iri='[[resolvePrefix "Help:LDPAssetsManagement"]]'>LDP assets management</semantic-link>). Default: <code>assets</code>. To disable this functionality for all repositories, use <code>repositoriesLDPSave=,</code>.</td>
-        </tr>
-        <tr>
-          <td>repositoriesLDPLoad</td>
-          <td>Comma separated list of repository IDs</td>
-          <td>List of repository IDs, for which LDP assets will be loaded from the storage at startup (see <semantic-link iri='[[resolvePrefix "Help:LDPAssetsManagement"]]'>LDP assets management</semantic-link>). Default: <code>assets</code>. To disable this functionality for all repositories, use <code>repositoriesLDPLoad=,</code>.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>UI Configuration Group </h3>
-    Configuration properties for options that affect how data is displayed in the UI.
-
-    <br><br>
-
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>templateIncludeQuery</td>
-          <td>SPARQL SELECT Query</td>
-          <td>Specifies the SPARQL SELECT query according to which the template engine selects templates depending on the request resource / context (i.e. ??).								<br/> Query must have at least a "?type" projection variable. Default: "SELECT ?type WHERE{?? a ?type}" </td>
+          <td>enableUiComponentBasedSecurity</td>
+          <td>boolean</td>
+          <td>false</td>
+          <td>If this is set to true one can check the ACL permission ui:component:view:* to determine if a particular component can be shown.</td>
         </tr>
         <tr>
           <td>preferredLabels</td>
-          <td>Comma separated list of strings.</td>
+          <td>list of strings (comma separated)</td>
+          <td>false</td>
           <td>
-            Ordered list of predicates, property paths and/or graph patterns, which are used to generate human readable labels for IRIs within the application:<br><ul style="list-style-type:none">
-              <li>(a) full ( surround by &lt;&gt;) or prefixed IRIs or/and </li> 
+            Ordered list of predicates, property paths and/or graph patterns, 
+            which are used to generate human readable labels for IRIs within 
+            the application:<br>
+            <ul style="list-style-type:none">
+              <li>(a) full (surround by &lt;&gt;) or prefixed IRIs or/and </li> 
               <li>(b) a SPARQL property path with full or prefixed IRIs or/and </li>
-              <li>(c) a full SPARQL pattern, which must have a <code>?subject</code> (will be used to inject the entity for which a label should be generated) and a <code>?value</code> (denoting the label value) variable. The entire pattern must be enclosed by curly braces (<code>{ ?subject ?predicate ?value }</code>) and <u>commas must be escaped</u> with a backslash (<code>\</code>).</li>
+              <li>(c) a full SPARQL pattern, which must have a <code>?subject</code> (will 
+                be used to inject the entity for which a label should be generated) 
+                and a <code>?value</code> (denoting the label value) variable. 
+                The entire pattern must be enclosed by curly braces 
+                (<code>{ ?subject ?predicate ?value }</code>) and commas must be 
+                  escaped with a backslash (<code>\</code>).
+              </li>
             </ul>
             <b>Example:</b><br>
-            <code>rdfs:label,&lt;http://www.w3.org/2004/02/skos/core#prefLabel&gt;,a/rdfs:subClassOf/rdfs:label, {OPTIONAL{?subject skos:altLabel ?altLabel.} BIND(COALESCE(?altLabel\,"No Label") as ?value)}</code><br>
+            <code>rdfs:label,</code><br>
+            <code>&lt;http://www.w3.org/2004/02/skos/core#prefLabel&gt;,</code><br>
+            <code>a/rdfs:subClassOf/rdfs:label,</code><br>
+            <code>{OPTIONAL{?subject skos:altLabel ?altLabel.}</code><br>
+            <code>BIND(COALESCE(?altLabel\,"No Label") as ?value)}</code>
             <br>
-            <p>If multiple labels exists for an entity, order of preference is denoted through the order of predicates/patterns in the list. If no label is returned by any of the predicates or patterns, the label service will return the local name of the entity IRI as label. Labels may additionally be ranked by the <code>preferredLanguages</code> setting.</p>
+            <p>If multiple labels exists for an entity, order of preference is
+               denoted through the order of predicates/patterns in the list. 
+               If no label is returned by any of the predicates or patterns, 
+               the label service will return the local name of the entity IRI as label. 
+               Labels may additionally be ranked by the <code>preferredLanguages</code> setting.</p>
             <p>
-              Please note that the number and complexity of patterns may heavily influences the performance and load of the application/underlying database. 
+              Please note that the number and complexity of patterns may heavily 
+              influences the performance and load of the application/underlying database. 
             </p>
-            Default: rdfs:label
+            <p>Default: <code>rdfs:label</code></p>
           </td>
         </tr>
         <tr>
           <td>preferredLanguages</td>
-          <td>Comma separated list of language tags</td>
+          <td>list of language tags (comma separated)</td>
+          <td>false</td>
           <td>
-            Language tag filter over potential <code>preferredLabels</code> candidates. Order of preference is denoted through the order of language tags in the list.
-            Default: null
+            Language tag filter over potential <code>preferredLabels</code> candidates. 
+            Order of preference is denoted through the order of language tags in the list.
+            Default: <code>en</code>
           </td>
         </tr>
         <tr>
           <td>preferredThumbnails</td>
-          <td>Comma separated list of strings.</td>
+          <td>list of strings (comma separated)</td>
+          <td>false</td>
           <td>
-             Ordered list of predicates, property paths and/or graph patterns, which are used to generate thumbnails for IRIs within the application:<br><ul style="list-style-type:none">
+             Ordered list of predicates, property paths and/or graph patterns, 
+             which are used to generate thumbnails for IRIs within the 
+             application:<br>
+             <ul style="list-style-type:none">
               <li>(a) full ( surround by ) or prefixed IRIs or/and </li> 
               <li>(b) a SPARQL property path with full or prefixed IRIs or/and </li>
-              <li>(c) a full SPARQL pattern, which must have a <code>?subject</code> (will be used to inject the entity for which a thumbnail should be generated) and a <code>?value</code> (denoting the thumbnail value i.e. URL to the image) variable. The entire pattern must be enclosed by curly braces (<code>{ ?subject ?predicate ?value }</code>) and <u>commas must be escaped</u> with a backslash (<code>\</code>).</li>
+              <li>(c) a full SPARQL pattern, which must have a <code>?subject</code> 
+                (will be used to inject the entity for which a thumbnail should be generated) 
+                and a <code>?value</code> (denoting the thumbnail value i.e. URL to the image) 
+                variable. The entire pattern must be enclosed by curly braces 
+                (<code>{ ?subject ?predicate ?value }</code>) and commas must be escaped
+                with a backslash (<code>\</code>).</li>
             </ul>
             <b>Example:</b><br>
-            <i>Please refer to the example from the <code>preferredLabels</code> configuration.</i>
-           	<br><br>
-            <p>If multiple thumbnails exists for an entity, order of preference is denoted through order of predicates/patterns in the list.</p>
+            <code>&lt;https://schema.org/thumbnail&gt;,</code><br>
+            <code>{OPTIONAL{?subject &lt;https://schema.org/thumbnail&gt; ?thumbnail.}</code><br>
+            <code>BIND(COALESCE(?thumbnail,"No Thumbnail") as ?value)}</code><br>
+            <br><br>
+            <p>If multiple thumbnails exists for an entity, order of preference is 
+              denoted through order of predicates/patterns in the list.</p>
              <p>
-              Please note that the number and complexity of patterns may heavily influences the performance and load of the application/underlying database.  
+              Please note that the number and complexity of patterns may 
+              heavily influences the performance and load of the application/underlying database.  
             </p>
-            Default: &lt;http://schema.org/thumbnail&gt;
+            Default: [[> Help:CodeHighlightPartial codeContent="<http://schema.org/thumbnail>"]]
+          </td>
+        </tr>
+        <tr>
+          <td>supportedBrowsers</td>
+          <td></td>
+          <td>false</td>
+          <td>The platform's browser compatibility is Google Chrome (minimum version 53) and Mozilla Firefox (minimum version 58).</td>
+        </tr>
+        <tr>
+          <td>templateIncludeQuery</td>
+          <td>SPARQL SELECT query</td>
+          <td>false</td>
+          <td>Specifies the SPARQL SELECT query according to which the 
+            template engine selects templates depending on the request resource / context (i.e. ??).								
+            <br/> Query must have at least a "?type" projection variable. 
+            Default: <code>SELECT ?type WHERE{?? a ?type}</code> </td>
+        </tr>
+        <tr>
+          <td>unsupportedBrowserMessage</td>
+          <td>string</td>
+          <td>false</td>
+          <td></td>
+        </tr>
+        
+      </tbody>
+    </table>
+
+    <hr class="divider">
+    [[#if includedTemplate]]<h3 id="rs-doc_environmentConfigs">Environment configuration</h3>[[else]]<h2 id="rs-doc_environmentConfigs">Environment configuration</h2>[[/if]]
+    
+    <div>The environment group (file "config/environment.prop") contains all deployment-specific configuration options such as server URLs, keys, etc. 
+    These parameters may influence how the platform is initialized and as such they can not be change during runtime, 
+    for example, through the configuration UI.</div>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th style="padding-top: 7px;">Restart required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+        	<td>allowedCrossOrigin</td>
+          <td>String</td>
+          <td>true</td>
+          <td>Specifies the <code>Access-Control-Allow-Origin</code>. <code>*</code> can be 
+            used as a wildcard, thereby allowing any origin to access the resource. 
+            Please note that by default this property is set to null and 
+            thereby does set any CORS headers at all. Default: <code>null</code>. </td>
+        </tr>
+        <tr>
+          <td>enableLocalLogin</td>
+          <td>boolean</td>
+          <td></td>
+          <td>Default: <code>null</code>.</td>
+        </tr>
+        <tr>
+          <td>enableLocalUsers</td>
+          <td>boolean</td>
+          <td>false</td>
+          <td>Set it to <code>true</code> and the file specified by the <code>shiroConfig</code> will be used.</td>
+        </tr>
+        <tr>
+          <td>maxSparqlHttpConnections</td>
+          <td>integer</td>
+          <td>true</td>
+          <td>
+            The maximum number of HTTP connections for SPARQL repositories. 
+            The HTTP connections are globally managed by the repository manager. Default: <code>10</code>
+          </td>
+        </tr>
+        <tr>
+          <td>pagesUrlMapping</td>
+          <td></td>
+          <td>true</td>
+          <td>Default: <code>/page/</code></td>
+        </tr>
+        <tr>
+          <td>pathsToRewrite</td>
+          <td>stringList</td>
+          <td>true</td>
+          <td>
+            List of request path prefixes which are rewritten 
+            to allow canonical access to resources (i.e. resolvable IRIs). 
+            Assuming the resource <code>https://example.com/person/foo</code> should 
+            resolve to the resource's page: by configuring <code>/person/</code> as 
+            pathsToRewrite, requests are redirected to the canonicalized 
+            URL, i.e. <code>https://example.com/resource/?uri=http://example.com/person/foo</code>. 
+             Note that pathsToRewrite is evaluated relative to the configured <code>platformBaseIri</code>.
+          </td>
+        </tr>
+        <tr>
+          <td>platformBaseIri</td>
+          <td>string</td>
+          <td>false</td>
+          <td>
+            Defines the base IRI for the platform. 
+            The value is expected to not have a trailing SLASH. 
+            If not specified explicitly, for LDP containers it is 
+            inferred from the client's request URL. 
+            Examples: <code>https://example.com</code>, <code>https://example.com/myproject</code>
+          </td>
+        </tr>
+        <tr>
+          <td>resourceUrlMapping</td>
+          <td>string</td>
+          <td></td>
+          <td>Default value is <code>/resource/</code></td>
+        </tr>
+        <tr>
+          <td>securityConfigStorageId</td>
+          <td>string</td>
+          <td>true</td>
+          <td>
+            Specifies the ID of an existing storage from which 
+            security related configuration files (e.g., <code>shiro.ini</code>) are loaded.
+         </td>
+        </tr>
+        <tr>
+          <td>shiroAuthenticationFilter</td>
+          <td>list of strings (comma separated)</td>
+          <td>true</td>
+          <td>Authentication filter to apply. 
+            Any combination of "anon" (Anonymous User),"authc" (FormBasedAuthentication),
+            "authcBasic" (HTTP Basic Authentication). Default: <code>authcBasic, authc</code>
+            <span>
+            Form based authentication with local users or LDAP 
+            can be configured with <code>authc</code>, while SSO can be 
+            activated by one of <code>oidc</code>, <code>oauth2</code>, 
+            <code>jwt</code> or <code>saml2</code>. 
+            Optional HTTP Basic Authentication can be activated 
+            by adding <code>authcBasic</code> prior to the main authentication 
+            provider. Note that in case of SSO local users need 
+            to be explicitly enabled (see <code>enableLocalUsers</code> setting). 
+            If additionally anonymous access is required the <code>anon</code> 
+            filter needs to be added as filter before the actual authentication
+             (e.g. <code>authcBasic,anon,authc</code>). Furthermore, 
+            note that anonymous access requires an existing <code>anonymous</code> user with respective role-mapping.
+          </span>
+        </td>
+        </tr>
+        <tr>
+          <td>shiroConfig</td>
+          <td>string</td>
+          <td>true</td>
+          <td>Default: shiro.ini from the codebase at <code>src/main/resources/org/researchspace/apps/default/config</code>.              
+            To generate hashes for new passwords from the command line use:<br/>
+1. Download the <code>shiro-tools-hasher</code> locally:
+<code>mvn dependency:get -DgroupId=org.apache.shiro.tools -DartifactId=shiro-tools-hasher -Dclassifier=cli -Dversion=2.0.2</code>
+<br/>
+2. Run and generate the hash with:
+<code>java -jar ~/.m2/repository/org/apache/shiro/tools/shiro-tools-hasher/2.0.2/shiro-tools-hasher-2.0.2-cli.jar  -f shiro2 -a argon2id --iterations 500000 -gs your_password > password_file </code>
+<br/>
+3. Add the hash to the shiro.ini enclosed in double quotes, e.g:
+<code>admin="$shiro2$argon2id$v=19$t=1,m=65536,p=4$sG7Wotaz/aLfc/QMoM4NMw$caz/CheZI5xAeiH2EmYkapiYCUCagNO0lbDJz2THGc0",admin,root,query-catalog,repository-admin </code>
+          </td>
+        </tr>
+        <tr>
+          <td>shiroLDAPConfig</td>
+          <td>string</td>
+          <td>true</td>
+          <td>Default: shiro-ldap.ini</td>
+        </tr>
+        <tr>
+          <td>shiroSessionTimeoutSecs</td>
+          <td>integer</td>
+          <td>true</td>
+          <td>The time after which sessions will be closed in case of inactivity Default: 1800. </td>
+        </tr>
+        <tr>
+          <td>sparqlEndpoint</td>
+          <td>URL</td>
+          <td>true</td>
+          <td>URL to the remote SPARQL endpoint. Can be used to bootstrap 
+            the system without the need to define a default repository configuration.
+            <b> If the repository is running on a different 
+              machine and only accessible through HTTPS</b>, 
+              then it might be required to import certificates 
+              into your JVM's keystore.</td>
+        </tr>
+        <tr>
+        	<td>sparqlHttpConnectionTimeout</td>
+          <td>integer</td>
+          <td>true</td>
+          <td>SPARQL HTTP timeout for establishing network connections (in seconds). This value 
+            is used to set both <code>http.connection.timeout</code> (timeout for 
+            establishing the connection) and <code>http.socket.timeout</code> (timeout 
+            for waiting for the data) parameters of the Apache HttpClient. 
+            Default: <code>null</code> (infinite)</td>
+        </tr> 
+        <tr>
+          <td>sso</td>
+          <td></td>
+          <td></td>
+          <td>SSO variant, currently we only support "keycloak" and "oidc"</td>
+        </tr>
+        <tr>
+          <td>labelsBatchSize</td>
+          <td>Integer</td>
+          <td>false</td>
+          <td>When requesting many labels at once, SPARQL queries will be split into batches of this size. For some databases like QLever, a very large value may be more efficient to prevent batching. Default: 1000</td>
+        </tr>
+        <tr>
+          <td>labelsCacheSize</td>
+          <td>Integer</td>
+          <td>false</td>
+          <td>Maximum number of entries to store in the Labels Service cache. Default: 1000</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+    [[#if includedTemplate]]<h3 id="rs-doc_globalConfigs">Global configuration</h3>[[else]]<h2 id="rs-doc_globalConfigs">Global configuration</h2>[[/if]]
+    
+    <div>Global system configuration, affecting system functionality like global 
+    redirects etc.</div>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th style="padding-top: 7px;">Restart required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>dashbord</td>
+          <td>URI</td>
+          <td>false</td>
+          <td>Prefixed or full URI (surround by &lt;&gt;) to 
+            specify the page including the main dashbord component of the system. Default: <code>rsp:ThinkingFrames</code></td>
+        </tr>
+        <tr>
+          <td>homePage</td>
+          <td>URI</td>
+          <td>false</td>
+          <td>Prefixed or full URI (surround by &lt;&gt;) to 
+            specify the page the user should be redirect to after 
+            login or if she clicks on the home button. Default: <code>rsp:ThinkingFrames</code></td>
+        </tr>
+        <tr>
+          <td>repositoriesLDPLoad</td>
+          <td>list of repository IDs (comma separated)</td>
+          <td>true</td>
+          <td>List of repository IDs, for which LDP assets will be 
+            loaded from the storage at startup 
+            (see <semantic-link iri='[[resolvePrefix "Help:LDPAssetsManagement"]]' 
+            class="text-link-action" target="_blank">LDP assets management</semantic-link>). 
+            To disable this functionality for all repositories, 
+            use <code>repositoriesLDPLoad=,</code>. Default: <code>assets</code>.</td>
+        </tr>
+        <tr>
+          <td>repositoriesLDPSave</td>
+          <td>list of repository IDs (comma separated)</td>
+          <td>true</td>
+          <td>List of repository IDs, for which LDP assets will be saved in 
+            the runtime storage 
+            (see <semantic-link iri='[[resolvePrefix "Help:LDPAssetsManagement"]]' 
+            class="text-link-action" target="_blank">LDP assets management</semantic-link>). To disable this functionality for all repositories, 
+              use <code>repositoriesLDPSave=,</code>. Default: <code>assets</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+    [[#if includedTemplate]]<h3 id="rs-doc_dataQualityConfigs">Data quality configuration</h3>[[else]]<h2 id="rs-doc_dataQualityConfigs">Data quality configuration</h2>[[/if]]
+    
+    <div>Configuration options that affect execution of data quality checks.</div>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th style="padding-top: 7px;">Restart required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>pagination</td>
+          <td>integer</td>
+          <td>true</td>
+          <td>
+            Size of pages in case violation result are requested page by page.
+          </td>
+        </tr>
+        <tr>
+          <td>queryDelay</td>
+          <td>integer</td>
+          <td>true</td>
+          <td>
+            Query delay in ms between SPARQL requests sent by data quality engine. 
+            Default: <code>0</code>
+          </td>
+        </tr>
+        <tr>
+          <td>queryLimit</td>
+          <td>integer</td>
+          <td>true</td>
+          <td>
+            The query limit in seconds applied to all SPARQL 
+            queries sent/generated by the data quality engine. Default: <code>100</code>
+          </td>
+        </tr>
+        <tr>
+          <td>shaclEngine</td>
+          <td>string</td>
+          <td>true</td>
+          <td>
+            Type of SHACL engine to be used. 
+            Supported engines: rdfunit, stardog, graphdb. Default: <code>rdfunit</code>
           </td>
         </tr>
       </tbody>
     </table>
+
+[[#if includedTemplate]]
+[[else]]
   </div>
 </div>
+[[/if]]
 
 

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -45,9 +46,10 @@ import { ViewState, ViewModel, emptySet } from './ViewModel';
 
 import { SearchAndFilters } from './views/SearchAndFilters';
 import { ItemsView, EditableLabel } from './views/SetsAndItems';
-import { ReorderingProps, ReorderItemsButton, ReorderConfirmation, ItemViewModeSwitch } from './views/Footer';
+import { ReorderingProps, ReorderItemsButton, ReorderConfirmation, ItemViewModeSwitch } from './views/Toolbar';
 
 import { CLASS_NAME } from './SetManagement';
+import Icon from '../ui/icon/Icon';
 
 export interface SingleSetProps extends SetManagementProps {
   /**
@@ -70,6 +72,7 @@ export class SingleSet extends Component<Props, ViewState> {
     const childContext: SetManagementContext & SetViewContext = {
       'mp-set-management': {
         removeSet: this.model.removeSet,
+        removeSetFromView: this.model.removeSetFromView,
         removeSetItem: this.model.removeSetItem,
         startRenamingSet: this.model.startRenamingSet,
         fetchSetItems: this.model.fetchSetItems,
@@ -153,9 +156,9 @@ export class SingleSet extends Component<Props, ViewState> {
         query={this.props.acceptResourceQuery}
         onDrop={(iri) => {
           const targetSet = ViewState.displayedSetIri(this.state);
-          this.model.onDropItemToSet(iri, targetSet);
+          this.model.onDropItemToSet(iri, targetSet,this.props.id);
         }}
-        dropMessage={<span>Drop items here to add to set "{<ResourceLabel iri={this.props.openedSet} />}"</span>}
+        dropMessage={<span>Drop resource here to add to set "{<ResourceLabel iri={this.props.openedSet} />}"</span>}
       >
         {this.renderHeader()}
         {this.renderItems()}
@@ -223,7 +226,7 @@ export class SingleSet extends Component<Props, ViewState> {
     return (
       <div className={`${CLASS_NAME}__single-set-caption`}>
         <div className={`${CLASS_NAME}__single-set-icon`}>
-          <span className="fa fa-folder-open" />
+          <Icon iconType='rounded' iconName='folder_open' symbol/>
         </div>
         {isEditing ? (
           <EditableLabel
@@ -241,7 +244,7 @@ export class SingleSet extends Component<Props, ViewState> {
             className={`${CLASS_NAME}__single-set-rename-button`}
             onClick={() => this.model.startRenamingSet(set.iri)}
           >
-            <span className="fa fa-pencil" />
+            <Icon iconType='rounded' iconName='edit' symbol />
           </button>
         ) : null}
       </div>

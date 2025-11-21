@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -52,7 +53,7 @@ public class OverlayImageFileProcessor {
      * format to open it. First found file will be used with respect to order of
      * extensions.
      */
-    private static String[] extensions = new String[] { "jpg", "JPG", "tiff", "TIFF", "tif", "TIF", "png", "PNG" };
+    private static String[] extensions = new String[] { "jpg", "JPG","jpeg", "tiff", "TIFF", "tif", "TIF", "png", "PNG" };
     private final java.net.URI iiifFolder;
 
     public OverlayImageFileProcessor(java.net.URI iiifFolder) {

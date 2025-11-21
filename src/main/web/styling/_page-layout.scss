@@ -1,6 +1,7 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +24,23 @@
    min-height: 100vh;
 }
 
+.page-container {
+
+  display: flex;
+  height: calc(100vh - #{$nav-height});
+}
+
+.pageSidebar-container {
+
+  width: min-content;
+  overflow: hidden;
+}
+
+.page-holder-container {
+
+  flex: 1;
+}
+
 .page-holder {
   position: relative;
   // sets search dropdowns to overlap footer
@@ -30,11 +48,14 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+
+  min-height: calc(100vh - #{$nav-height});
 }
 
 #template-content {
 
-  min-height: calc(100vh - #{$nav-height});
+  min-height: 100%;
+  height: inherit;
 }
 
 //to be cleaned
@@ -109,7 +130,7 @@
       img {
         max-width: 100px;
         max-height: 100px;
-        padding: $padding-base-vertical / 2 $padding-base-horizontal / 2;
+        padding: calc($padding-base-vertical / 2) calc($padding-base-horizontal / 2);
       }
 
       .no-image-available .add-image-button {
@@ -169,10 +190,10 @@
 
     &-field-title,
     .field-type-title {
-      margin: 0 $padding-base-horizontal / 3;
+      margin: 0 calc($padding-base-horizontal / 3);
       background-color: #8fbc8f;
       color: #fff;
-      padding: 2px $padding-base-horizontal / 2;
+      padding: 2px calc($padding-base-horizontal / 2);
     }
   }
 
@@ -194,14 +215,14 @@
     padding: 0 0 30px 0;
   }
 
-  &__body-navtabs {
+/*   &__body-navtabs {
 
     & > .tab-content > .tab-pane {
       @include make-md-column-offset(1);
       @include make-md-column(10);
       padding-top: $padding-base-vertical * 2;
     }
-  }
+  } */
 
   &__body-navtabs--borderless {
     & > .tab-content > .tab-pane {
@@ -231,94 +252,172 @@
   height: 100%;
 
   display: grid;
-  grid-template-columns: minmax(10px, 3em) 1fr minmax(10px, 3em);
-  grid-template-rows: 30px auto 30px;
+  grid-template-columns: minmax(10px, 30px) 1fr minmax(10px, 30px);
+  grid-template-rows: 25px auto 25px;
 
   grid-template-areas: '. . .'
                         '. content .'
                         '. . .';
 
+  &.help-page-container {
+    grid-template-columns: minmax(5vw, 15vw) 1fr minmax(5vw, 15vw);
+    grid-template-rows: 40px auto 40px;
+  }
+
   .page__content-container {
 
     grid-area: content;
-  }
-}
-
-.frame-container {
-
-  width: 100%;
-  height: 100%;
-  padding-bottom: 20px;
-
-  display: grid;
-  grid-template-columns: minmax(10px, 3em) 1fr minmax(10px, 3em);
-  grid-template-rows: minmax(80px, max-content) 1px auto;
-
-  grid-template-areas: '. header .'
-                        'hr hr hr'
-                        '. content .';
-
-  .frame-header {
-
-    grid-area: header;
-    padding: 10px 0;
-    align-self: center;
-  }
-
-  .frame-separator {
-
-    grid-area: hr;
-    border-top: 1px solid lightgray;
-  }
-
-  .frame-content {
-
-    grid-area: content;
 
   }
 }
 
-/* .frame-grid-container {
+.metadata-container {
 
-  width: 100%;
-  height: 100%;
+  .metadata-field {
 
-  display: grid;
-  grid-template-columns: minmax(10px, 0.15fr) auto minmax(10px, 0.15fr);
-  grid-template-rows: 100%;
+    display: flex;
+    gap: 60px;
 
-  grid-template-areas: '. content .';
+    .metadata-label {
 
-  .frame-content-container {
-
-    grid-area: content;
+      color: $color-secondary;
+    }
   }
-} */
+}
 
-.page__whiteSection-container {
+.single-set-management-container {
+
+  .set-management__search-and-filters,
+  .set-management__toolbar,
+  .set-management__opened-set {
+
+    padding: 0 0 8px 0;
+  }
+}
+
+.page__section-container-whiteBg {
 
   background-color: $color-white;
-  border-radius: 2px;
-  border: 1px solid #80808036;
-  box-shadow: 3px 2px 10px #0000001a;
-
-  margin-top: 10px;
-  padding: 25px 30px;
+  border: 1px solid $color-border;
+  border-radius: $border-radius;
+ // box-shadow: 3px 2px 10px #0000001a;
+  position: relative;
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
-//used for ex. in user page
 .page__section-container {
 
   background-color: $pageSection-bg;
-  border: 1px solid #ededed;
-  border-radius: 3px;
-  box-shadow: 3px 2px 10px #0000001a;
+  border: 1px solid $color-border;
+  border-radius: $border-radius;
+  padding: 20px;
+  margin-bottom: 20px;
   position: relative;
+
+  .btn-icon {
+
+    background-color: $color-light;
+    border-color: $color-border;
+
+    &:hover,
+    &:focus,
+    &:focus-within,
+    &.focus,
+    .open > &.dropdown-toggle,
+    .open > &.dropdown-toggle:hover, 
+    .open > &.dropdown-toggle:focus, 
+    .open > &.dropdown-toggle.focus {
+
+        background-color: $color-light;
+    }
+
+    &:active,
+    &:active:hover, 
+    &:active:focus, 
+    &:active.focus, 
+    &.active,
+    &.active:hover, 
+    &.active:focus, 
+    &.active.focus {
+        background-color: $color-light;
+    }
+  }
+
+  .cardinality-support__group-instance,
+  .cardinality-support__add-value-btn {
+    background-color: $color-lighter-hover;
+    border-color: $color-border-darker;
+
+    .cardinality-support__add-value-btn {
+
+   //   background-color: $color-light;
+      border-color: $color-border-darker;
+    }
+  }
+
+  &.formHierarchyView-container {
+    padding-top: 10px; 
+    margin-bottom: 0; 
+    margin-top: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    min-width: 350px;
+  }
+
+  &.formHierarchyInputs-container {
+    padding-top: 7px; 
+    margin-bottom: 0; 
+    margin-top: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    min-width: 350px;
+  }
+
+  &.formWholePageSection {
+
+    height: 100%;
+    margin: 0;
+    padding: 10px 20px;
+  }
 }
 
-.page__darkerSection-container {
-  background-color: $pageDarkerSection-bg;
-  box-shadow: inset -3px 0px 7px 0px $pageDarkerSection-shadow;
+.page__section-container__label-tab {
+
+  margin: 0px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  padding: 0px 20px;
+  background: $pageSection-bg;
+  border-width: 1px;
+  border-style: solid;
+  border-color: $color-border;
+  border-radius: $border-radius;
+  //position: absolute;
+//  top: 62px;
+  border-bottom: none;
+  width: fit-content;
+  position: relative;
+
+  font-size: $font-size-base;
+  font-weight: normal;
+}
+
+.image-container,
+.form-chart-container {
+
+  background-color: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $border-radius;
+  padding: 15px;
+  width: 100%;
+}
+
+.form-timeline-container {
+
+  background-color: $color-white;
+  border-radius: $border-radius;
 }
 
 .page__main-title-row {
@@ -327,7 +426,7 @@
   align-items: center;
   justify-content: space-between;
 
-  margin-bottom: 2em;
+  margin-bottom: 20px;
 
 }
 
@@ -335,7 +434,6 @@
 
   display: flex; 
   align-items: center;
-  flex-wrap: wrap;
 
   button,
   a {
@@ -355,7 +453,7 @@
     height: 0;
     top: 1.5px;
     left: 1.5px;
-    border-top: 115px solid $pageSection-backArea-bg;
+    border-top: 115px solid $color-border;
     border-right: 62px solid transparent;
  
     -o-transition: color .3s ease-out, border-top .3s ease-in;
@@ -368,10 +466,10 @@
       position: absolute;
       margin-top: -103px;
       margin-left: 10px;
-      color: $btn-grey-color;
+      color: $color-secondary;
       font-size: 14px;
       padding: 4px;
-      border: 1px solid $btn-grey-color;
+      border: 1px solid $color-border;
       border-radius: 50%;
       -o-transition: color .3s ease-out, transform .3s ease-in;
       -ms-transition: color .3s ease-out, transform .3s ease-in;
@@ -382,6 +480,7 @@
       &:hover {
         -ms-transform: scale(1.15);
         -webkit-transform: scale(1.15);
+        -moz-transform: scale(1.15);
         transform: scale(1.15);
       }
     }
@@ -390,66 +489,6 @@
 
       cursor: pointer;
   }
-}
-
-.page__withToC {
-
-  display: grid;
-  grid-template-columns: 1fr 3fr;
-  grid-template-rows: 100%;
-
-  grid-template-areas: 'toc content';
-
-  .page__ToC-container {
-
-    grid-area: toc;
-    padding: 2em 3em;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-
-  .page__content {
-
-    grid-area: content;
-    padding: 1em 5em;
-
-    overflow: auto;
-  }
-
-  .page__ToC-item {
-
-    display: flex;
-    align-items: center;
-
-    font-size: 15px;
-    font-weight: bold;
-    letter-spacing: .2px;
-    margin: 15px 10px;
-  }
-
-  .page__ToC-item-number {
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    height: 36px;
-    width: 36px;
-    border: 1px solid $input-border-color;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-}
-
-.page__ToC-title {
-
-  text-transform: uppercase;
-  letter-spacing: .3px;
-  text-align: center;
-  font-size: 22px;
-  white-space: nowrap;
-  margin: 20px 0;
 }
 
 

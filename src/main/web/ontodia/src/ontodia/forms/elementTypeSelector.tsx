@@ -12,6 +12,7 @@ import { ListElementView } from '../widgets/listElementView';
 
 import { Cancellation, CancellationToken } from '../viewUtils/async';
 import { HtmlSpinner } from '../viewUtils/spinner';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const CLASS_NAME = 'ontodia-edit-form';
 
@@ -149,11 +150,11 @@ export class ElementTypeSelector extends React.Component<Props, State> {
     }
     return (
       <div className={`${CLASS_NAME}__control-row`}>
-        <label>Entity Type</label>
+        <label>Resource Type</label>
         {elementTypes ? (
           <select className="ontodia-form-control" value={value} onChange={this.onElementTypeChange}>
             <option value={PLACEHOLDER_ELEMENT_TYPE} disabled={true}>
-              Select entity type
+              Select resource type
             </option>
             {elementTypes.map(this.renderPossibleElementType)}
           </select>
@@ -216,12 +217,12 @@ export class ElementTypeSelector extends React.Component<Props, State> {
     return (
       <div className={`${CLASS_NAME}__form-row ${CLASS_NAME}__element-selector`}>
         <div className={`${CLASS_NAME}__search`}>
-          <i className={`fa fa-search ${CLASS_NAME}__search-icon`} />
+          <Icon iconType='rounded' iconName='search' symbol className={`${CLASS_NAME}__search-icon`}/>
           <input
             value={searchString}
             onChange={(e) => this.setState({ searchString: (e.target as HTMLInputElement).value })}
             className={`ontodia-form-control ${CLASS_NAME}__search-input`}
-            placeholder="Search for..."
+            placeholder="Search existing resource to connect"
             autoFocus
           />
         </div>
@@ -230,7 +231,7 @@ export class ElementTypeSelector extends React.Component<Props, State> {
         ) : (
           <div>
             <div className={`${CLASS_NAME}__separator`}>
-              <span className={`${CLASS_NAME}__separator-text`}>or create new entity</span>
+              <span className={`${CLASS_NAME}__separator-text`}>or create new resource</span>
             </div>
             {this.renderElementTypeSelector()}
           </div>

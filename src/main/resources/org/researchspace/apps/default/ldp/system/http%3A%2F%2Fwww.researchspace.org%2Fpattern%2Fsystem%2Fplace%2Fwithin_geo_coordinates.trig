@@ -1,0 +1,40 @@
+<http://www.researchspace.org/pattern/system/place/within_geo_coordinates/context> {
+  <http://www.researchspace.org/pattern/system/place/within_geo_coordinates> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-5a497111df7e4e5ab63ae4ff0c28332b-y7qs3p;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/place>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Within geographic coordinates"@en;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-5a497111df7e4e5ab63ae4ff0c28332b-9zj11;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-5a497111df7e4e5ab63ae4ff0c28332b-geegv;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-15T15:44:06.867+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-5a497111df7e4e5ab63ae4ff0c28332b-geegv a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT 
+    (IF(
+      STRLEN( STR(?geotext) ) > 100000,
+      "Geographic coordinates cannot be viewed/edited as geo text is larger than 100000 characters",
+      STR(?geotext)
+    ) AS ?value ) WHERE {
+   $subject crm:P171_at_some_place_within ?geotext .
+}""" .
+  
+  _:genid-5a497111df7e4e5ab63ae4ff0c28332b-y7qs3p a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P171_at_some_place_within $value .    
+} WHERE {}""" .
+  
+  _:genid-5a497111df7e4e5ab63ae4ff0c28332b-9zj11 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P171_at_some_place_within $value .
+} WHERE { 
+  $subject crm:P171_at_some_place_within $value .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/place/within_geo_coordinates> .
+}

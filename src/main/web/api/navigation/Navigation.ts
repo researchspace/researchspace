@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const h = require('history');
+import * as h from 'history';
 import * as React from 'react';
 import * as _ from 'lodash';
 import * as Kefir from 'kefir';
@@ -190,27 +190,74 @@ export function constructUrlForResource(
   repository = 'default',
   fragment = ''
 ): Kefir.Property<uri.URI> {
-  return getPrefixedUri(iri).map((mUri) => {
-    const baseQuery = repository === 'default' ? {} : { repository: repository };
-    const resourceUrl = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
-    if (mUri.isJust) {
-      const url = uri(`${resourceUrl}${mUri.get()}`);
-      url.setQuery({ ...baseQuery, ...props });
-      url.fragment(fragment);
-      return url;
-    } else {
-      return construcUrlForResourceSync(iri, props, repository, fragment);
-    }
-  });
+  const simpleUrl = constructSimpleUrl(iri, props, repository, fragment);
+  if (simpleUrl) {
+    return Kefir.constant(simpleUrl);
+  } else {
+    return getPrefixedUri(iri).map((mUri) => {
+      if (mUri.isJust) { 
+        const resourcePath = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
+        return constructUrl(`${resourcePath}${mUri.get()}`, props, repository, fragment);
+      } else {
+        return construcUrlForResourceSync(iri, props, repository, fragment);
+      }
+    });
+  }
 }
 
 export function construcUrlForResourceSync(iri: Rdf.Iri, props: {} = {}, repository = 'default', fragment = '') {
+  const simpleUrl = constructSimpleUrl(iri, props, repository, fragment);
+  if (simpleUrl) {
+    return simpleUrl;
+  } else {
+    const resourceUrl = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
+    props = { ...props, uri: iri.value };
+    return constructUrl(`${resourceUrl}`, props, repository, fragment);
+  }
+}
+
+/**
+ * If IRI is a resolvalbe one, which means it starts with platformBaseIri, then we can construct
+ * a simple URL. E.g
+ * http://example.com/resource/123 and platform is actually runnnig on http://example.com/resource.
+ * In this case there is no need to resolve IRI to prefixed IRI or use ?uri query parameter.
+ */
+function constructSimpleUrl(
+  iri: Rdf.Iri,
+  props: {} = {},
+  repository?: string,
+  fragment?: string
+): uri.URI | null {
+  const platformBaseIri = ConfigHolder.getEnvironmentConfig().platformBaseIri;
+  const resourcePath = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
+
+  if (platformBaseIri) {
+    const urlPrefix = platformBaseIri.value + resourcePath;
+    
+    if (iri.value)
+      if (iri.value.startsWith(urlPrefix)) {
+        return constructUrl(iri.value.split(platformBaseIri.value)[1], props, repository, fragment);
+      }
+  }
+
+  return null;
+}
+
+/**
+ * Construct URL with optional additional query parameters and fragment.
+ * Default repository is omitted in the URL.
+ */
+function constructUrl(
+  url: string,
+  props: {} = {},
+  repository?: string,
+  fragment?: string
+) {
   const baseQuery = repository === 'default' ? {} : { repository: repository };
-  const resourceUrl = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
-  const url = uri(`${resourceUrl}`);
-  url.setQuery({ ...baseQuery, ...props, uri: iri.value });
-  url.fragment(fragment);
-  return url;
+  const url_ = uri(url);
+  url_.setQuery({ ...baseQuery, ...props });
+  url_.fragment(fragment);
+  return url_;
 }
 
 /**

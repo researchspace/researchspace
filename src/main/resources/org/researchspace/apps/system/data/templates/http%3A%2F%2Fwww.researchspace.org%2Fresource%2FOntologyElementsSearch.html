@@ -1,0 +1,149 @@
+<style>
+  body {
+    font-size: 13px;
+  }
+</style>
+
+<div style="padding: 30px;">
+
+  <h2 style="margin: 0 0 15px 0;">Ontology Elements descriptions</h2>
+
+  <div>
+    <semantic-search selector-mode="dropdown" categories='{
+          "<http://www.w3.org/2001/XMLSchema#Decimal>": [{
+            "kind": "numeric-range",
+            "queryPattern": "{
+              $subject ?__relation__ ?literal .
+              FILTER(?literal >= ?__numericRangeBeginValue__) .
+              FILTER(?literal <= ?__numericRangeEndValue__) .
+            }"
+          }],
+          "<http://www.w3.org/2000/01/rdf-schema#Literal>": [{
+            "kind": "literal",
+            "queryPattern": "{
+              $subject ?__relation__ ?__literal__ .
+            }"
+          }]
+        }'>
+      <semantic-search-query-keyword domain='<http://www.w3.org/2000/01/rdf-schema#Resource>'
+        placeholder='Search ontology class or property (minimum 3 characters)'
+        query='
+              SELECT ?subject WHERE { 
+                GRAPH ?g {
+                  ?ontologyIri a owl:Ontology .
+                  ?subject a ?class . 
+                  ?subject rdfs:label ?label .
+                  FILTER REGEX(STR(?label), ?__token__, "i")
+                  }
+              }
+            ' tokenize-lucene-query=false></semantic-search-query-keyword>
+      <div data-flex-layout="row stretch-stretch">
+        <!-- 
+          <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
+            <semantic-search-facet value-categories='{
+              "<http://www.w3.org/2001/XMLSchema#Decimal>": {
+                "kind": "numeric-range",
+                "valuesQuery": "
+                  SELECT ?literal (COUNT(DISTINCT $subject) AS ?count) WHERE {
+                    $subject ?__relation__ ?literal .
+                  }
+                  GROUP BY ?literal
+                  ORDER BY ?literal
+                "
+              },
+              "<http://www.w3.org/2000/01/rdf-schema#Literal>": {
+                "kind": "literal",
+                "valuesQuery": "
+                  SELECT ?literal (COUNT(DISTINCT $subject) AS ?count) WHERE {
+                    $subject ?__relation__ ?literal .
+                  } 
+                  GROUP BY ?literal
+                  ORDER BY ?literal
+                "
+              }
+            }'></semantic-search-facet>
+          </div>
+          -->
+        <semantic-search-result-holder>
+          <div data-flex-self="md-full">
+            <semantic-search-result>
+              <mp-sparql-result-counts id='result-count' 
+                                        query="SELECT DISTINCT ?subject {}" 
+                                        template='{{#if hasLimit}} 
+                                        <bs-alert bs-style="warning">Showing {{numberOfResults}} of {{totalNumberOfResults}} matches. <strong>Refine your search.</strong> </bs-alert>
+                                        {{else}} <div class="color-action" style="font-weight: 600; margin: 10px 0;"> Found {{numberOfResults}} matches. </div>{{/if}}'>
+              </mp-sparql-result-counts>
+            </semantic-search-result>
+            <semantic-search-result>
+              <semantic-table id='grid-result' query='SELECT DISTINCT ?subject ?description WHERE {
+                                        OPTIONAL { ?subject rdfs:comment ?description  }}'
+                              number-of-displayed-rows="10" 
+                              tuple-template='{{> tuple-template}}'
+                              options='{"showTableHeading": false, "showFilter":false}'>
+
+                <template id="tuple-template">
+                  <div style="width:100%;">
+                    <mp-panel>
+
+                      <mp-panel-header>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between;">
+                          <div>
+                            <h4 style="margin-top: 0;">
+                              <mp-label iri='{{subject.value}}'></mp-label>
+                            </h4>
+                            <div style="font-size: 11px;">{{subject.value}}</div>
+                          </div>
+
+                          <semantic-query  query='SELECT DISTINCT ?ontologyIri WHERE { 
+                                                    GRAPH ?g {
+                                                      ?ontologyIri a owl:Ontology .
+                                                      <{{subject.value}}> a ?class . 
+                                                    }
+                                                  }'
+                                            template='{{> template}}'>
+                          
+                            <template id='template'>
+                              <mp-label iri="{{bindings.0.ontologyIri.value}}" class="badge"></mp-label>
+                            </template>
+                          
+                          </semantic-query>
+                        </div>
+                      </mp-panel-header>
+
+                      <mp-panel-body>
+                        <div class="text-font-size__base text-lineHeight-1-3">
+                          <p><b>Types:</b></p>
+                          <semantic-query query='SELECT ?type WHERE { <{{subject.value}}> a ?type}'
+                                          no-result-template='<span>-</span>'
+                                          template='{{> template}}'
+                                          >
+                            <template id='template'>
+                              <div>
+                                {{#each bindings}}<div>{{type.value}}</div>{{/each}}
+                              </div>
+                            </template>
+                          </semantic-query>
+                          <hr>
+                          <p style="text-align: justify;">
+                            {{#if description.value}}
+                              {{description.value}}
+                            {{else}}
+                              No description
+                            {{/if}}
+                          </p>
+                        </div>
+                      </mp-panel-body>
+                    </mp-panel>
+                  </div>
+                </template>
+              </semantic-table>
+
+            </semantic-search-result>
+
+          </div>
+        </semantic-search-result-holder>
+      </div>
+    </semantic-search>
+  </div>
+
+</div>

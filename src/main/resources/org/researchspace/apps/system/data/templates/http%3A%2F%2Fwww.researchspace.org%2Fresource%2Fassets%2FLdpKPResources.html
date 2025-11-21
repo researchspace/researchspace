@@ -1,0 +1,155 @@
+<div class="kp-table">
+  <semantic-table id='kp-list-table'
+                  number-of-displayed-rows=10
+                  query='[[query]]'
+                  column-configuration='[
+                                {"variableName":"subject","displayName":"Knowledge pattern", "cellTemplate": "{{> field}}"},
+                                {"displayName":"Ontology", "cellTemplate": "{{> ontology}}"},
+                                {"displayName":"Category", "cellTemplate": "{{> category}}"},
+                                {"displayName":"Type", "cellTemplate": "{{> type}}"},
+                                {"variableName":"ModificationDate","displayName":"Modified", "cellTemplate": "{{dateTimeFormat ModificationDate.value \"DD/MM/YYYY, h:mm a\"}}" },
+                                {"displayName":"Actions", "cellTemplate": "{{> actions}}"}
+                            ]'
+  >
+    <template id='field'>
+      <div>
+        <span style="display: flex; align-items: baseline; gap: 5px;">
+          <mp-selection-toggle selection="resource-selection" tag="{{subject.value}}"></mp-selection-toggle>
+          <semantic-context repository='assets'>
+            {{#if label}}
+              <semantic-link iri='{{subject.value}}' title='{{label.value}}' style="text-transform: lowercase;">{{label.value}}</semantic-link>
+            {{else}}
+              <semantic-link iri='{{subject.value}}' style="text-transform: lowercase;"></semantic-link>
+            {{/if}}
+          </semantic-context>
+        </span> 
+      </div>
+    </template>
+
+    <template id='ontology'>
+      <semantic-query query='SELECT distinct ?ontology ?ontologyLabel WHERE {
+                              <{{subject.value}}> a <http://www.researchspace.org/resource/system/fields/Field> .
+                                graph ?g {
+                                           <{{subject.value}}> a ?type .
+                                            VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                }         
+                                BIND(IF(CONTAINS(STR(?g), "skos"), IRI("http://www.w3.org/2004/02/skos/core"), IRI(REPLACE(STR(?g),"/context","/"))) AS ?ontology)                               
+                                ?ontology a owl:Ontology .
+                                ?ontology rdfs:label ?ontologyLabel .
+ 
+                                FILTER(langMatches(LANG(?ontologyLabel), "en") || lang(?ontologyLabel) = "") .
+
+                            } ORDER BY ASC(?ontologyLabel)'
+                      template='{{> ontology}}'
+      >
+        <template id='ontology'>
+          <div>
+              {{#each bindings}}
+                <span class="badge badge--secondary">{{ontologyLabel.value}}</span>
+              {{/each}}
+          </div>
+        </template>
+    </semantic-query>
+    </template>
+
+    <template id='type'>
+      <semantic-query query='SELECT ?type WHERE {
+                              <{{subject.value}}> <http://www.researchspace.org/resource/system/fields/type> ?type .
+                            }'
+                      template='{{> type}}'
+        >
+          <template id='type'>
+            <div>
+              <div style="display: flex; gap:3px; flex-wrap: wrap;">
+                {{#each bindings}}
+                <span class="badge badge--secondary"><mp-label iri='{{type.value}}'></mp-label></span>
+                {{/each}}
+              </div>
+            </div>
+          </template>
+      </semantic-query>
+    </template>
+
+    <template id='category'>
+      <semantic-query query='SELECT ?category ?categoryLabel WHERE {
+                              <{{subject.value}}> <http://www.researchspace.org/resource/system/fields/category> ?category .
+                              ?category skos:inScheme <http://www.researchspace.org/resource/system/FieldCategories> .
+                              ?category skos:prefLabel ?categoryLabel .
+                            } ORDER BY ASC(?categoryLabel)'
+                      template='{{> categoryLabel}}'
+        >
+          <template id='categoryLabel'>
+            <div>
+              <mp-text-truncate lines=2 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                <div>
+                  {{#each bindings}}
+                    <span>{{categoryLabel.value}}</span>
+                    <span>{{#if @last}}{{else}}, {{/if}}</span>
+                  {{/each}}
+                </div>
+              </mp-text-truncate>
+
+              
+            </div>
+          </template>
+      </semantic-query>
+    </template>
+
+    <template id='actions'>
+      <div style="display: flex; gap:8px; flex-wrap: wrap;">
+
+        <mp-copy-to-clipboard text='{{subject.value}}' message='IRI has been copied'>
+          <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
+            <rs-icon icon-type="rounded" icon-name="content_copy" symbol="true"></rs-icon>
+              Copy IRI
+          </button>
+        </mp-copy-to-clipboard>
+
+        <mp-ldp-duplicate-resource-action iri="{{subject.value}}" container="[[container]]">
+          <button class="btn btn-default btn-textAndIcon">
+            <rs-icon icon-type="rounded" icon-name="file_copy" symbol="true"></rs-icon>
+            Duplicate</button>
+        </mp-ldp-duplicate-resource-action>
+
+        <mp-ldp-export-resource iri="{{subject.value}}">
+          <button class="btn btn-default btn-textAndIcon">
+            <rs-icon icon-type="rounded" icon-name="file_download" symbol="true"></rs-icon> Download
+          </button>
+        </mp-ldp-export-resource>
+
+        <semantic-if query='ASK {
+                              { <{{subject.value}}> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . }
+                              UNION 
+                              {<{{subject.value}}> a <http://www.researchspace.org/resource/system/fields/Field> .
+                                graph ?g {
+                                           <{{subject.value}}> a ?type .
+                                            VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                }         
+                                #BIND(IRI(REPLACE(STR(?g),"/context","/")) as ?ontology)
+                                BIND(IF(CONTAINS(STR(?g), "skos"), IRI("http://www.w3.org/2004/02/skos/core"), IRI(REPLACE(STR(?g),"/context","/"))) AS ?ontology)
+                                ?ontology a owl:Ontology .
+                                ?ontology rdfs:label ?label .
+ 
+                              }
+                            }'
+                      then='{{> disableDelete}}'
+                      else='{{> delete}}'>
+
+              <template id='disableDelete'>
+                <div style="display: none;"></div>
+              </template>
+
+              <template id='delete'>             
+                	<mp-ldp-remove-from-container-action iri="{{subject.value}}" container="[[container]]">
+                    <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;">
+                       <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>Delete
+                    </button>
+                  </mp-ldp-remove-from-container-action>
+              
+              </template>
+        </semantic-if>
+
+      </div>
+    </template>
+  </semantic-table>
+</div>

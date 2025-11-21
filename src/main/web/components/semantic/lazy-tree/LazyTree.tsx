@@ -48,10 +48,11 @@ import {
   queryMoreChildren
 } from 'platform/components/semantic/lazy-tree';
 
-import { ItemSelected, Focus } from './LazyTreeEvents';
+import { ItemToggleSelected, Focus, ItemSelected } from './LazyTreeEvents';
 
 import * as styles from './LazyTree.scss';
 import { Rdf } from 'platform/api/rdf';
+import { node } from 'platform-tests/common/ts/components/tree-selector/Forests';
 
 interface BaseLazyTreeProps {
   /**
@@ -75,6 +76,18 @@ interface BaseLazyTreeProps {
    * IRI of the element that should be focused by default.
    */
   focused?: string;
+
+  /**
+   * Placeholder string used in the input search
+   */
+  inputPlaceholder?: string
+
+  /**
+   * Render the item draggable
+   *
+   * @default true
+   */
+  draggable?: boolean
 }
 
 export type LazyTreeProps =
@@ -92,7 +105,7 @@ interface State {
 }
 
 /**
- *   <semantic-lazy-tree id='scheme-tree' info-template='{{> template}}' type='simple' config='{"scheme": "[[this]]"}'>
+ *   <semantic-lazy-tree id='scheme-tree' input-placeholder='Select' info-template='{{> template}}' type='simple' config='{"scheme": "[[this]]"}'>
  *     <template id='template'>
  *      Some additional info or actions to show together with the node
  *    </template>
@@ -105,7 +118,8 @@ export class LazyTree extends Component<LazyTreeProps, State> {
   private treeSelectionRef: SemanticTreeInput;
 
   static defaultProps = {
-    pageSize: 50
+    pageSize: 50,
+    draggable: true
   }
 
   constructor(props: LazyTreeProps, context: any) {
@@ -160,8 +174,8 @@ export class LazyTree extends Component<LazyTreeProps, State> {
 
   renderTree() {
     const { patterns, forest, expandingToScroll, highlightedPath } = this.state;
-    const { focused } = this.props;
-
+    const { focused, config, draggable } = this.props;
+    
     let highlightedNodes: ReadonlyArray<Node> = [];
     if (highlightedPath) {
       const highlightTarget = forest.fromKeyPath(highlightedPath);
@@ -173,24 +187,32 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       forest,
       isLeaf: this.isLeaf,
       childrenOf: this.childrenOf,
-      renderItem: (node) => this.renderTreeNodeRow(node, highlightedNodes),
+      renderItem: (node) => this.renderTreeNodeRow(node, highlightedNodes, draggable),
       requestMore: this.requestMore,
       hideCheckboxes: true,
       onExpandedOrCollapsed: this.onExpandedOrCollapsed,
       isExpanded: (node) => node.expanded,
       selectionMode: SingleFullSubtree<Node>(),
+      onItemToggleClick: this.onItemToggleClick,
       onItemClick: this.onItemClick,
     };
 
+    let queryItemLabelConfig = null
+    if (config && config['labelPattern']) {
+      queryItemLabelConfig = `SELECT ?label WHERE {${config['labelPattern']}}`
+    }
+    
     return (
       <div className={styles.component}>
         <SemanticTreeInput
           {...patterns}
+          placeholder={this.props.inputPlaceholder}
           ref={this.onSelectionReady}
-          multipleSelection={true}
+          multipleSelection={false}
           onSelectionClick={this.onSearchBadgeClick}
           onSelectionChanged={this.onSearchSelectionChanged}
           initialSelection={focused && focused.length > 0 ? [Rdf.iri(focused)] : []}
+          queryItemLabel={queryItemLabelConfig}
         />
         <div className={styles.alignmentTreeContainer}>
           {expandingToScroll ? this.renderExpandToScrollMessage() : null}
@@ -200,13 +222,15 @@ export class LazyTree extends Component<LazyTreeProps, State> {
     );
   }
 
-  private renderTreeNodeRow(node: Node, highlightedNodes: ReadonlyArray<Node>) {
+  private renderTreeNodeRow(node: Node, highlightedNodes: ReadonlyArray<Node>, isDraggable) {
     const decoratorsClass = this.computeDecoratorsClass(node, highlightedNodes);
+    const treeNode = this.renderTreeNode(node, decoratorsClass)
     return (
       <span className={styles.alignmentNodeRow}>
-        <Draggable iri={node.iri.value}>
-          {this.renderTreeNode(node, decoratorsClass)}
-        </Draggable>
+        {
+          isDraggable ? <Draggable iri={node.iri.value}>{treeNode}</Draggable> : <span>{treeNode}</span>
+        }
+        
         {this.renderNodeInfoTemplate(node)}
       </span>
     );
@@ -250,7 +274,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
 
   private computeDecoratorsClass(item: Node, highlightedNodes: ReadonlyArray<Node>): string {
     const classes: string[] = [styles.decoratedNodeBody];
-
+    
     const pathIndex = highlightedNodes.indexOf(item);
     if (pathIndex >= 0) {
       const isTarget = pathIndex === highlightedNodes.length - 1;
@@ -282,8 +306,12 @@ export class LazyTree extends Component<LazyTreeProps, State> {
     }
   };
 
+  private onItemToggleClick = (item: Node) => {
+    trigger({ eventType: ItemToggleSelected, source: this.props.id, data: { iri: item.iri.value}});
+  }
+
   private onItemClick = (item: Node) => {
-    trigger({ eventType: ItemSelected, source: this.props.id, data: { iri: item.iri.value}});
+    trigger({ eventType: ItemSelected, source: this.props.id, data: { iri: item.iri.value, label: item.label.value}});
   }
 
   private isLeaf = (item: Node) => {

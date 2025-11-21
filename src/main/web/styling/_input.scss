@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,27 +37,208 @@
 input,
 input:focus {
   -webkit-box-shadow: none;
+  -moz--box-shadow: none;
   box-shadow: none;
 }
 
-input[type='checkbox'] {
-  margin: 1px 0 0;
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+
+  -webkit-text-fill-color: $color-dark;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input[type="checkbox"] {
+  margin: 0;
+}
+
+input[type="checkbox"] {
+
+  position: relative;
+
+  width: 16px;
+  height: 16px;
+  color: $color-dark;
+  border: 1px solid $color-medium;
+  background: $color-white;
+  border-radius: 3px;
+  appearance: none;
+  -webkit-appearance: none; 
+  -moz-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+
+  transition: background 175ms cubic-bezier(0.1, 0.1, 0.25, 1);
+
+  &:focus {
+
+      outline: none;
+  }
+
+  &:hover {
+      border: 1px solid $color-medium;
+  }
+
+  &::before {
+      position: absolute;
+      content: '';
+      display: block;
+
+      top: 1px;
+      left: 4px;
+      width: 5px;
+      height: 10px;
+      border-style: solid;
+
+      border-color: $color-white;
+      border-width: 0 2px 2px 0;
+      -webkit-transform: rotate(45deg);
+      -moz-transform: rotate(45deg);
+      transform: rotate(45deg);
+      opacity: 0;
+  }
+
+  &:checked {
+
+      color: $color-white;
+      border-color: $color-checkbox-select;
+      background: $color-checkbox-select;
+      
+      &::before {
+        opacity: 1;
+      }
+  }
+}
+
+fieldset[disabled] input[type="checkbox"], 
+fieldset[disabled] input[type="radio"], 
+input[type="checkbox"].disabled, 
+input[type="checkbox"][disabled], 
+input[type="radio"].disabled, 
+input[type="radio"][disabled] {
+
+  color: $color-white;
+  border-color: $color-medium;
+  background: $color-medium;
+  cursor: not-allowed;
+  
+  &::before {
+    opacity: 0.6;
+  }
 }
 
 input[type="radio"] {
   margin: 2px 0 0;
 }
 
-table input[type='checkbox'] {
+table input[type="checkbox"] {
   margin: 2px 8px 0 0;
 }
 
 .radio input[type='radio'],
 .radio-inline input[type='radio'],
-.checkbox input[type='checkbox'],
-.checkbox-inline input[type='checkbox'] {
+.checkbox input[type="checkbox"],
+.checkbox-inline input[type="checkbox"] {
   top: 0;
 }
+
+.toggle {
+
+  label {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+    margin-bottom: 0;
+  }
+  
+  label input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  span {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: $color-medium;
+    -webkit-transition: .4s;
+    -moz-transition: .4s;
+    transition: .4s;
+
+    margin: 0;
+    height: auto;
+    width: auto;
+    border-radius: 34px;
+  }
+  
+  span:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 3px;
+    background-color: $color-white;
+    -webkit-transition: .4s;
+    -moz-transition: .4s;
+    transition: .4s;
+    border-radius: 50%;
+  }
+
+  span:after {
+    content: none !important;
+  }
+  
+  input:checked + span {
+    background-color: $color-action;
+  }
+  
+  input:focus + span {
+    box-shadow: 0 0 1px $color-action;
+  }
+  
+  input:checked + span:before {
+    -webkit-transform: translateX(26px);
+    -moz-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+
+}
+
+.mp-selection-toggle-text {
+  font-size: $font-size-body;
+  font-weight: 600;
+}
+
+/* Example
+<div class="menu-toggle toggle-flex">
+<div class="toggle semantic-form-checkbox-input">
+  <label class="semantic-form-checkbox-input__label">
+    <mp-selection-toggle class-name="toggle mp-selection-toggle"
+                  selection="use-as-vocabulary-selection" 
+                  tag="use-as-vocabulary"
+    >
+    </mp-selection-toggle>
+    <span class="semantic-form-checkbox-input__checkbox"></span>
+  </label>
+</div>
+<div class="mp-selection-toggle-text">Use as Vocabulary type</div>
+</div> */
 
 input.rs-textInput--white {
   @include text-input(25px, 4px, 8px, $color-white);
@@ -83,7 +265,7 @@ input.rs-textInput--white {
 input.rs-searchInput {
   width: 100%;
   color: $color-dark;
-  background-color: $color-primary-50;
+  background-color: $color-light;
   border-radius: 20px;
   padding: 4px 8px 4px 15px;
   border-color: transparent;
@@ -109,3 +291,132 @@ input.rs-searchInput {
   }
 }
 
+.focused-input-container {
+
+  input.form-control,
+  .plain-text-field textarea.plain-text-field__text,
+  .cardinality-support__remove-value.btn-default, 
+  .cardinality-support__remove-value.btn-default:hover, 
+  .cardinality-support__remove-value.btn-default:focus, 
+  .cardinality-support__remove-value.btn-default:focus-within,
+  .Select.plain-text-field__language .Select-control,
+  
+  .select-text-field .Select-control, 
+  .select-text-field .select-text-field__create-button,
+  .select-text-field .select-text-field__open-in-new-tab {
+
+    color: $input-focused-color !important;
+    background-color: $input-focused-color-bg !important;
+    border-color: $input-focused-border-color !important;
+  }
+
+  .Select-arrow-zone,
+  .Select-arrow-zone::after,
+  .Select-clear-zone,
+  .select-text-fieldoption,
+  .btn-default .material-icons-round,
+  .btn-default .material-symbols-rounded {
+
+    color: $input-focused-color !important;
+    background-color: $input-focused-color-bg !important;
+  }
+
+  .focused-input-message {
+    color: $input-focused-color;
+    background-color: $input-focused-color-bg;
+    border: 1px solid $input-focused-border-color;
+    border-radius: $input-border-radius;
+
+    height: $input-height;
+    font-size: $input-font-size;
+    padding: 0px 12px;
+
+    display: flex;
+    align-items: center;
+  }
+}
+
+.header-tree-input {
+
+  z-index: 100;
+
+  .SemanticTreeInput--inputAndButtons {
+
+    background-color: transparent;
+    border: none;
+
+    .clearable-input {
+
+      background-color: transparent;
+
+      &.selection-empty {
+
+        .clearable-input__input-with-clear {
+    
+          .clearable-input__input.form-control {
+    
+            padding: 0 10px;
+            width: auto;
+          }
+        }
+      }
+
+      &.selection-full {
+
+        position: relative;
+
+        .clearable-input__input-with-clear {
+
+     //     position: absolute;
+          left: 0;
+    
+          .clearable-input__input.form-control {
+    
+      //      padding: 0 0 0 4px;
+            //width: min-content;
+          }
+        }
+      }
+    }
+
+    .SemanticTreeInput--browseButton.btn-default {
+
+      background-color: transparent;
+      padding: 0 6px 0 0;
+
+      &:focus,
+      &:hover {
+        background-color: transparent;
+      }
+    }
+
+    .SemanticTreeInput--textInput .RemovableBadge {
+
+      margin: 0;
+      background-color: transparent;
+
+      .RemovableBadge__content {
+
+        color: $color-dark;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-transform: none;
+        cursor: default;
+      }
+
+      .RemovableBadge__remove {
+        display: none;
+      }
+    }
+  }
+
+  .SemanticTreeInput--dropdown {
+
+    min-width: 300px;
+
+    .SemanticTreeInput--tree {
+      height: 350px;
+    }
+  }
+}

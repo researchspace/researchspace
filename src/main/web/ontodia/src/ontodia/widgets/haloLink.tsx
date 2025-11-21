@@ -1,5 +1,23 @@
-import * as React from 'react';
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+import * as React from 'react';
 import { MetadataApi } from '../data/metadataApi';
 
 import { Element, Link } from '../diagram/elements';
@@ -13,6 +31,7 @@ import { AuthoringState } from '../editor/authoringState';
 import { EventObserver } from '../viewUtils/events';
 import { Cancellation, CancellationToken, Debouncer } from '../viewUtils/async';
 import { HtmlSpinner } from '../viewUtils/spinner';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const CLASS_NAME = 'ontodia-halo-link';
 const BUTTON_SIZE = 20;
@@ -204,7 +223,7 @@ export class HaloLink extends React.Component<Props, State> {
       >
         <svg width={BUTTON_SIZE} height={BUTTON_SIZE}>
           <g transform={`scale(${BUTTON_SIZE})`}>
-            <circle r={0.5} cx={0.5} cy={0.5} fill="#198AD3" />
+            <circle r={0.5} cx={0.5} cy={0.5} fill="#396EFE" />
           </g>
         </svg>
       </button>
@@ -240,7 +259,7 @@ export class HaloLink extends React.Component<Props, State> {
       >
         <svg width={BUTTON_SIZE} height={BUTTON_SIZE} style={{ transform: `rotate(${degree}deg)` }}>
           <g transform={`scale(${BUTTON_SIZE})`}>
-            <polygon points={'0,0.5 1,1 1,0'} fill="#198AD3" />
+            <polygon points={'0,0.5 1,1 1,0'} fill="#396EFE" />
           </g>
         </svg>
       </button>
@@ -249,15 +268,15 @@ export class HaloLink extends React.Component<Props, State> {
 
   private renderEditButton(polyline: ReadonlyArray<Vector>) {
     const { canEdit } = this.state;
-    const style = this.getButtonPosition(polyline, 1);
+    const style = this.getButtonPosition(polyline, 1.5);
     if (canEdit === undefined) {
       return (
         <div className={`${CLASS_NAME}__spinner`} style={style}>
-          <HtmlSpinner width={20} height={20} />
+          <HtmlSpinner width={32} height={32} />
         </div>
       );
     }
-    const title = canEdit ? 'Edit link' : 'Editing is unavailable for the selected link';
+    const title = canEdit ? 'Edit connection type' : 'Editing is unavailable for the selected connection';
     return (
       <button
         className={`${CLASS_NAME}__button ${CLASS_NAME}__edit`}
@@ -265,21 +284,23 @@ export class HaloLink extends React.Component<Props, State> {
         title={title}
         onClick={this.props.onEdit}
         disabled={!canEdit}
-      />
+      >
+        <Icon iconType="rounded" iconName="rebase_edit" symbol />
+      </button>
     );
   }
 
   private renderDeleteButton(polyline: ReadonlyArray<Vector>) {
     const { canDelete } = this.state;
-    const style = this.getButtonPosition(polyline, 2);
+    const style = this.getButtonPosition(polyline, 3);
     if (canDelete === undefined) {
       return (
         <div className={`${CLASS_NAME}__spinner`} style={style}>
-          <HtmlSpinner width={20} height={20} />
+          <HtmlSpinner width={32} height={32} />
         </div>
       );
     }
-    const title = canDelete ? 'Delete link' : 'Deletion is unavailable for the selected link';
+    const title = canDelete ? 'Delete connection' : 'Deletion is unavailable for the selected connection';
     return (
       <button
         className={`${CLASS_NAME}__button ${CLASS_NAME}__delete`}
@@ -287,7 +308,9 @@ export class HaloLink extends React.Component<Props, State> {
         title={title}
         onClick={this.props.onDelete}
         disabled={!canDelete}
-      />
+      >
+         <Icon iconType="rounded" iconName="delete" symbol />
+      </button>
     );
   }
 
@@ -304,15 +327,17 @@ export class HaloLink extends React.Component<Props, State> {
 
     const { x, y, width, height } = target.labelBounds;
     const { x: left, y: top } = paperArea.paperToScrollablePaneCoords(x + width, y + height / 2);
-    const size = { width: 15, height: 17 };
+    const size = { width: 32, height: 32 };
     const style = { width: size.width, height: size.height, top: top - size.height / 2, left };
     return (
       <button
         className={`${CLASS_NAME}__edit-label-button`}
         style={style}
         onClick={() => onEditLabel()}
-        title={'Edit Link Label'}
-      />
+        title={'Edit connection label'}
+      >
+        <Icon iconType="rounded" iconName="border_color" symbol />
+      </button>
     );
   }
 

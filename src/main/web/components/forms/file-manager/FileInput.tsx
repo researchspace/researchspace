@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -39,6 +40,7 @@ import { EmptyValue, CompositeValue, AtomicValue, FieldValue, ErrorKind } from '
 import FileVisualizer from './FileVisualizer';
 
 import * as styles from './FileManager.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface FileInputConfig {
   /** Target storage ID. */
@@ -49,7 +51,9 @@ interface FileInputConfig {
 
   /**
    * Media type pattern to allow only specific types of files.
-   * See https://github.com/okonet/attr-accept for more information.
+   * See 
+   * <a href='https://github.com/okonet/attr-accept' class='text-link-action' target='_blank' draggable='false'>https://github.com/okonet/attr-accept</a>
+   *  for more information.
    */
   acceptPattern?: string;
 
@@ -195,39 +199,50 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
     const temporaryIri = resourceIri && FileManager.isTemporaryResource(resourceIri);
 
     return (
-      <div className={styles.FileManager}>
+      <div className={styles.FileManagerContainer}>
         <div className={styles.header}>
           {this.state.progress ? (
             <ProgressBar
+              style={{ marginBottom: '10px' }}
               active={true}
               min={0}
               max={100}
               now={this.state.progress}
               label={this.state.progressText}
             ></ProgressBar>
-          ) : resourceIri && !temporaryIri ? (
-            <a className={styles.uploadedImageIri} title={resourceIri.value} href={resourceIri.value}>
-              {resourceIri.value}
-            </a>
-          ) : resourceIri ? (
-            <div className={styles.uploadedImageIri} title="File is loaded">
-              File is loaded
+          ) /*: resourceIri && !temporaryIri ? (
+            <div className={`${styles.uploadedImageIri}`} 
+             title={resourceIri.value} href={resourceIri.value} 
+            >
+              <div>Filename: </div>
+              <div>{resourceIri.value}</div>
             </div>
-          ) : null}
+          ) : resourceIri ? (
+            <div className={`${styles.uploadedImageIri} alert-component alert-component__success`} title="File loaded">
+              <Icon iconType='rounded' iconName='done' symbol className='icon-left'/>
+              File <span>{resourceIri.value}</span> loaded.
+            </div>
+          ) */ : null}
         </div>
-        {resourceIri ? (
-          <div className={styles.fileContainer}>
-            <FileVisualizer
-              iri={resourceIri.value}
-              storage={temporaryIri ? this.props.tempStorage : this.props.storage}
-              namePredicateIri={this.props.namePredicateIri}
-              mediaTypePredicateIri={this.props.mediaTypePredicateIri}
-            ></FileVisualizer>
-            <span className={`${styles.caRemoveFile} fa fa-times`} onClick={this.removeFile}></span>
-          </div>
-        ) : (
-          this.renderBody()
-        )}
+        
+        <div className={resourceIri ? styles.FileManagerUploaded : styles.FileManager}>
+          {resourceIri ? (
+            <div className={styles.fileContainer}>
+              <FileVisualizer
+                iri={resourceIri.value}
+                storage={temporaryIri ? this.props.tempStorage : this.props.storage}
+                namePredicateIri={this.props.namePredicateIri}
+                mediaTypePredicateIri={this.props.mediaTypePredicateIri}
+              ></FileVisualizer>
+              <button className={`btn btn-default btn-textAndIcon`} style={{ minHeight: '38px' }}>
+                  <Icon iconType='rounded' iconName='delete' symbol={true} onClick={this.removeFile} />
+                </button>
+            </div>
+          ) : (
+            this.renderBody()
+          )}
+        </div>
+        
       </div>
     );
   }
@@ -261,7 +276,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
   renderDropZone() {
     const alert = this.state.alertState ? <Alert {...this.state.alertState}></Alert> : null;
-    const placeholder = this.props.placeholder || 'Please drag&drop your file here';
+    const placeholder = this.props.placeholder || 'Drag file or click to upload';
     return (
       <div className={styles.FileUploader}>
         <Dropzone
@@ -271,7 +286,10 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
           noClick={Boolean(this.state.progress)}
         >
           {(this.props.children as JSX.Element | JSX.Element[]) || (
-            <div className={styles.mpDropZonePlaceHolder}>{placeholder}</div>
+            <div className='placeholder-item'>
+              <Icon iconType='rounded' iconName='upload' symbol className='upload_icon'/>
+              <div>{placeholder}</div>
+            </div>
           )}
         </Dropzone>
         {alert ? <div className={styles.alertComponent}>{alert}</div> : null}
@@ -288,9 +306,11 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
         <div className={styles.urlInputHolder}>
           <FormControl inputRef={ref => { this.urlInputRef = ref; }}
-            type='text' placeholder='Please type file URL here' />
-          <Button bsStyle='primary' type='submit'
-            onClick={this.fetchFileFromUrl}
+            type='text' placeholder='Enter file URL' />
+          <Button bsStyle='default' 
+                  className='btn-action'
+                  type='submit'
+                  onClick={this.fetchFileFromUrl}
           >Fetch</Button>
         </div>
       </React.Fragment>
@@ -299,26 +319,77 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
   renderInputSelector = () => {
     return (
-      <FormGroup>
-        <Radio name='inputSelector' inline
+      <div className={styles.selectorContainer}>
+        <Radio inline
           checked={!this.state.selectUrl}
           onClick={ () => this.setState({selectUrl: false}) }
         >
-          File Upload
+          File upload
         </Radio>{' '}
-        <Radio name='inputSelector' inline
+        <Radio inline
           checked={this.state.selectUrl}
           onClick={ () => this.setState({selectUrl: true}) }
         >
           URL
         </Radio>{' '}
-      </FormGroup>
+      </div>
     );
   }
 
+  /**
+    * Checks if the given file name ends with a file extension.
+    * Returns true if a dot is followed by one or more alphanumeric characters at the end.
+    */
+  endsWithFileExtension(fileName: string): boolean {
+    return /\.[a-zA-Z0-9]+$/.test(fileName);
+  }
+
+  /**
+  * Given a file name and a blob MIME type, this function returns a new file name.
+  * If the file name already has an extension, it is returned unchanged.
+  * Otherwise, an extension (determined from the blob type) is appended.
+  *
+  * @param fileName - The original file name, possibly without an extension.
+  * @param mediaType - The MIME type (e.g., "image/jpeg", "application/pdf").
+  * @returns The file name with an extension appended if it was missing.
+  */
+  addExtensionIfMissing(fileName: string, mediaType: string): string {
+    // If the file name already ends with an extension, return it unchanged.
+    if (this.endsWithFileExtension(fileName)) {
+      return fileName;
+    }
+
+    // Define a mapping from MIME types to preferred file extensions.
+    const mapping: { [key: string]: string } = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/gif": "gif",
+      "text/plain": "txt",
+      "application/pdf": "pdf",
+      // Add additional mappings as needed.
+    };
+    // Try to get the extension from our mapping.
+    let ext = mapping[mediaType];
+
+    // If no mapping exists but the MIME type has a slash, use the part after the slash.
+    if (!ext && mediaType.includes('/')) {
+      ext = mediaType.split('/')[1];
+    }
+
+    // Append the extension if determined; otherwise, return the original file name.
+    return ext ? `${fileName}.${ext}` : fileName;
+  }            
+
   fetchFileFromUrl = () => {
+    /** 
+     * Using AllOrigins Raw Endpoint:
+     *  This solution uses AllOrigins’ raw endpoint (/raw) which is designed to return the fetched content directly. 
+     *  By appending the encoded target URL to the proxy URL, the request is routed through AllOrigins
+     */
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+
     if (!_.isEmpty(this.urlInputRef?.value)) {
-      fetch(this.urlInputRef.value)
+      fetch(proxyUrl + encodeURIComponent(this.urlInputRef.value))
         .then((response) => {
           if (!response.ok) {
             this.setState({
@@ -331,14 +402,17 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
           return response.blob();
         })
         .then(
-          blob => {
-            this.onDropAccepted([new File([blob], this.urlInputRef.value, {type: blob.type})]);
+          blob => { 
+            const tmpFileName = this.endsWithFileExtension(this.urlInputRef.value)?
+                                this.urlInputRef.value:this.addExtensionIfMissing(this.urlInputRef.value,blob.type);
+ 
+            this.onDropAccepted([new File([blob], tmpFileName, {type: blob.type})]);
           }
         ).catch((e: Error) => {
           this.setState({
             alertState: {
               alert: AlertType.WARNING,
-              message: e.message + ' Please, try to upload the file manually.',
+              message: e.message + ' Try to upload the file manually.',
             }
           });
         });
@@ -399,6 +473,8 @@ class FileHandler extends AtomicValueHandler {
     this.fileManager = fileManager;
   }
 
+ 
+
   finalize(value: EmptyValue | AtomicValue, owner: EmptyValue | CompositeValue): Kefir.Property<FieldValue> {
     if (value.type === EmptyValue.type) {
       return Kefir.constant(value);
@@ -410,7 +486,7 @@ class FileHandler extends AtomicValueHandler {
       return this.fileManager
         .getFileResource(resourceIri)
         .flatMap((resource) => {
-          return this.fileManager
+            return this.fileManager
             .createResourceFromTemporaryFile({
               fileName: resource.fileName,
               storage: this.baseInputProps.storage,

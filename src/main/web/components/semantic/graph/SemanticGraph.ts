@@ -35,7 +35,7 @@ import { Alert, AlertType } from 'platform/components/ui/alert';
 import { Graph } from './Graph';
 import * as GraphInternals from './GraphInternals';
 import { SemanticGraphConfig } from './Config';
-export { SemanticGraphConfig } from './Config';
+export type { SemanticGraphConfig } from './Config';
 
 import './SemanticGraph.scss';
 
@@ -211,7 +211,7 @@ export class SemanticGraph extends Component<SemanticGraphProps, State> {
         new Promise((resolve, reject) => {
           const img = new Image();
           img.onload = () => {
-            resolve();
+            resolve(null);
           };
           img.onerror = () => {
             reject(

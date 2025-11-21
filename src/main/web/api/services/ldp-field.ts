@@ -129,3 +129,17 @@ export function getGeneratedFieldDefinitions(iris: ReadonlyArray<Rdf.Iri>): Kefi
     })
     .toProperty();
 }
+
+const FIELDS_GENERATE_SEARCH_CONFIG_PATH = '/rest/fields/generateSearchConfigForFields'
+export function generateSearchConfigForFields(iris: ReadonlyArray<Rdf.Iri>): Kefir.Property<string> {
+  const req = request
+    .post(FIELDS_GENERATE_SEARCH_CONFIG_PATH)
+    .send(iris.map((iri) => iri.value))
+    .type('application/json')
+    .accept('text/plain');
+
+  return requestAsProperty(req)
+    .map((res) => res.text)
+}
+
+

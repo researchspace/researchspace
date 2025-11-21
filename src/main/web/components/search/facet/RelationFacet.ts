@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -147,7 +148,7 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
         createElement(ClearableInput, {
           type: 'text',
           className: 'facet__relation__values__filter',
-          placeholder: `Search ${nlp.noun(rangeLabel).pluralize()}...`,
+          placeholder: `Search ${nlp.noun(rangeLabel).pluralize()}`,
           value: filterString,
           onClear: () => this.setState({ filterString: undefined }),
           onChange: (event) => {
@@ -158,7 +159,8 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
         Infinite(
           {
             elementHeight: 20,
-            containerHeight: 250,
+            containerHeight: 200,
+            className: 'facet__relation__values_list_container', 
           },
           facetValues
             .filter((facetValue) => {

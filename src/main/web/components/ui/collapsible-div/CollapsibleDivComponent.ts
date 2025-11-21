@@ -38,6 +38,7 @@ export interface Props {
    * @default false
    */
   renderHidden?: boolean;
+  className?: string;
 }
 
 interface State {
@@ -46,9 +47,9 @@ interface State {
 
 /**
  * @example
-   <mp-collapsible-div expanded='true'>
+   <mp-collapsible-div expanded='true' class-name='custom-class'>
       <mp-collapsible-div-trigger expanded-class="x" collapsed-class="y">
-          <i class="fa fa-question-circle" aria-hidden="true"></i>
+          <rs-icon icon-type="rounded" icon-name="help" symbol="true"></rs-icon>
       </mp-collapsible-div-trigger>
       <mp-collapsible-div-content>Content</mp-collapsible-div-content>
   </mp-collapsible-div>
@@ -57,6 +58,7 @@ export class CollapsibleDivComponent extends Component<Props, State> {
   public static defaultProps: Props = {
     expanded: true,
     renderHidden: false,
+    className: ''
   };
 
   constructor(props: Props, context: any) {
@@ -67,7 +69,7 @@ export class CollapsibleDivComponent extends Component<Props, State> {
   }
 
   render() {
-    const { renderHidden } = this.props;
+    const { renderHidden, className } = this.props;
     const { expanded } = this.state;
 
     const children = Children.toArray(this.props.children);
@@ -79,7 +81,7 @@ export class CollapsibleDivComponent extends Component<Props, State> {
 
     const { expandedClass, collapsedClass } = (Children.only(triggerComponent) as React.ReactElement<any>).props;
     return D.div(
-      {},
+      {className},
       createElement(
         CollapsibleDivTriggerComponent,
         {

@@ -1,0 +1,43 @@
+
+<http://www.researchspace.org/pattern/system/title/has_title_range/context> {
+  <http://www.researchspace.org/pattern/system/title/has_title_range> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/title>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-ffc96eecca6143118ab5456d0a239366-v6833m;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Title range"@en;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E35_Title>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-ffc96eecca6143118ab5456d0a239366-z4001d;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/PC102_has_title>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-ffc96eecca6143118ab5456d0a239366-1csf7d;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-05-01T14:41:44.037+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-ffc96eecca6143118ab5456d0a239366-1csf7d a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P02i_is_range_of $value .
+  $value crm:P02_has_range $subject .
+} WHERE {
+  $subject crm:P02i_is_range_of $value .
+  $value crm:P02_has_range $subject .
+  $value a crm:PC102_has_title .
+}""" .
+  
+  _:genid-ffc96eecca6143118ab5456d0a239366-v6833m a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+  $subject crm:P02i_is_range_of $value .
+  $value crm:P02_has_range $subject .
+  $value a crm:PC102_has_title .
+}""" .
+  
+  _:genid-ffc96eecca6143118ab5456d0a239366-z4001d a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P02i_is_range_of $value .
+  $value crm:P02_has_range $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/title/has_title_range> .
+}

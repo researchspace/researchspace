@@ -1,0 +1,74 @@
+
+<http://www.researchspace.org/pattern/system/activity/carried_out_by_user/context> {
+  <http://www.researchspace.org/pattern/system/activity/carried_out_by_user> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-bf78183bf04f4111bbe90be69ebe9831-j168x;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-bf78183bf04f4111bbe90be69ebe9831-3s6o1q;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Carried out by user"@en;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-bf78183bf04f4111bbe90be69ebe9831-xsrups;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-bf78183bf04f4111bbe90be69ebe9831-bswif;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-11-29T17:45:25.793Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-bf78183bf04f4111bbe90be69ebe9831-j168x a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P14_carried_out_by $value .
+} WHERE {
+}""" .
+  
+  _:genid-bf78183bf04f4111bbe90be69ebe9831-xsrups a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+	$subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+  {   
+    $subject crm:P14_carried_out_by $value . 
+    FILTER(NOT EXISTS{ $value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .})
+  	BIND(<http://www.researchspace.org/resource/user/admin> as ?value)
+} UNION
+  { 
+    $subject  crm:P14_carried_out_by $value .
+    ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> . 
+   }
+}""" .
+  
+  _:genid-bf78183bf04f4111bbe90be69ebe9831-3s6o1q a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  {
+    FILTER(NOT EXISTS{ <http://www.researchspace.org/resource/user/admin> crm:P2_has_type 				<http://www.researchspace.org/resource/system/vocab/resource_type/user> .})
+  	BIND(<http://www.researchspace.org/resource/user/admin> as ?value)
+    BIND(\"admin\" as ?label)
+  } UNION
+  {
+    ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+    ?value crm:P1_is_identified_by ?appellation . 
+    ?appellation a crm:E41_Appellation . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-bf78183bf04f4111bbe90be69ebe9831-bswif a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P14_carried_out_by $value .
+} WHERE {
+	$subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+  {
+    $subject  crm:P14_carried_out_by $value .
+    FILTER(?value in (<http://www.researchspace.org/resource/user/admin>))
+    FILTER(NOT EXISTS{ ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user>   .})
+  } UNION
+  {
+    $subject  crm:P14_carried_out_by $value .
+    ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+  }  
+}  """ .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/activity/carried_out_by_user> .
+}

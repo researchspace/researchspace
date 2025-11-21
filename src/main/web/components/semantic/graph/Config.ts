@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -24,7 +25,7 @@ export interface Stylesheet {
    * The selector concept is similar to the CSS selector, but it provides mechanism to match on Rdf Graphs.
    * The most significant difference to the CSS selector is that, the specificity rules are completely ignored in stylesheets. For a given style property for a given element, the last matching selector wins.
    *
-   * The selector semantics is based on <a target='_blank' href='http://js.cytoscape.org/#selectors'>Cytoscape's Selectors</a> with additional RDF specific matchers like:
+   * The selector semantics is based on <a target='_blank' href='http://js.cytoscape.org/#selectors' draggable='false'>Cytoscape's Selectors</a> with additional RDF specific matchers like:
    *
    * 1) Matching on nodes/edges:
    *   * **node** - `node` selector is used to match on all nodes
@@ -96,7 +97,7 @@ export interface BaseSemanticGraphConfig {
   query: string;
 
   /**
-   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied when query returns no results
    */
   noResultTemplate?: string;
 

@@ -1,0 +1,158 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/service/wikidataentity/>
+
+:WikidataEntity a ephedra:Service;
+	sail:sailType "researchspace:RESTSail" ;
+	rdfs:label "A wrapper for the wikidata entity service.";
+	ephedra:hasSPARQLPattern (
+
+    [
+      sp:subject :_results ;
+      sp:predicate :search ;
+      sp:object :_search
+    ]
+
+	[
+      sp:subject :_results ;
+      sp:predicate :language ;
+      sp:object :_language
+    ]
+
+	[
+      sp:subject :_results ;
+      sp:predicate :action ;
+      sp:object :_action
+    ]
+
+	[
+      sp:subject :_results ;
+      sp:predicate :type ;
+      sp:object :_type
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :language ;
+      sp:object :_language
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :id ;
+      sp:object :_id
+    ]
+
+	[
+      sp:subject :_results ;
+      sp:predicate :concepturi ;
+      sp:object :_concepturi
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :description ;
+      sp:object :_description
+    ]
+
+	[
+      sp:subject :_results ;
+      sp:predicate :label ;
+      sp:object :_label
+    ]
+
+	[
+      sp:subject :_results ;
+      sp:predicate :match_type ;
+      sp:object :_match_type
+    ]
+
+  );
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "Search entity name" ;
+		spl:predicate :_search ;
+		spl:valueType xsd:string
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "Language" ;
+		spl:predicate :_language ;
+		spl:valueType xsd:string
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "Type" ;
+		spl:predicate :_type ;
+		spl:valueType xsd:string
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "Action" ;
+		spl:predicate :_action ;
+		spl:valueType xsd:string
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "results" ;
+		spl:predicate :_results ;
+		spl:valueType rdfs:Resource;
+		ephedra:jsonPath "$.search[*]"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "URI of the Wikidata resource" ;
+		spl:predicate :_concepturi ;
+		spl:valueType rdf:Resource ;
+		ephedra:jsonPath "$.concepturi"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "URI of the Wikidata resource" ;
+		spl:predicate :_url ;
+		spl:valueType rdf:Resource ;
+		ephedra:jsonPath "$.url"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Label of the Wikidata resource" ;
+		spl:predicate :_label ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.label"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Math type of the Wikidata resource (alias or label or other)" ;
+		spl:predicate :_match_type ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.match.type"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Description of the Wikidata resource" ;
+		spl:predicate :_description ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.description"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Id of the Wikidata resource" ;
+		spl:predicate :_id ;
+		spl:valueType xsd:string;
+		ephedra:jsonPath "$.id"
+	] .

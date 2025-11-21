@@ -1,9 +1,41 @@
-<mp-ldp-export-resource iri='[[container]]'>
-  <button class="btn btn-primary" style='margin-left: 10px' title='Should be used for backup purpose only. Exported container can be imported into the root container on the new installation!'>
-    <i class='fa fa-upload' aria-hidden='true'></i> Export Container
-  </button>
-</mp-ldp-export-resource>
-
+[[#if isQueryTemplateContainer]]
 <mp-ldp-import-resource container="[[container]]">
-  <button class="btn btn-primary" style='margin-left: 10px'><i class="fa fa-download" aria-hidden="true"></i> Import Item</button>
+  <button class="btn btn-default btn-textAndIcon">
+    <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+    Import Query Template
+  </button>
 </mp-ldp-import-resource>
+[[/if]]
+[[#if isFieldDefinitionContainer]]
+<mp-ldp-import-resource container="[[container]]">
+  <button class="btn btn-default btn-textAndIcon">
+    <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+    Import pattern
+  </button>
+</mp-ldp-import-resource>
+[[else]]
+
+<div style='position: relative;'>
+  <mp-ldp-export-resource iri='[[container]]'>
+    <button class="btn btn-default btn-textAndIcon" title='Download container'>
+      <rs-icon icon-type="rounded" icon-name="file_download" symbol="true"></rs-icon>
+      Download container
+    </button>
+  </mp-ldp-export-resource>
+
+  <mp-popover>
+    <mp-popover-trigger placement="top" trigger='["click","hover","focus"]'> 
+      <rs-icon icon-type="rounded" icon-name="help" symbol="true" style="position:absolute; top: -5px; right: -6px; font-size: 20px;"></rs-icon>
+    </mp-popover-trigger>
+    <mp-popover-content>
+      <div>
+        Should be used for backup purpose only. 
+        Downloaded container can be imported into the root container on a new installation.
+      </div>
+    </mp-popover-content>
+  </mp-popover>
+</div>
+[[/if]]
+
+
+

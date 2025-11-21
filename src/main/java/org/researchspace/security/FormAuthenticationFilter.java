@@ -35,6 +35,7 @@ import org.researchspace.servlet.filter.CorsFilter;
 import org.researchspace.servlet.filter.MDCFilter;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 /**
@@ -44,6 +45,7 @@ import com.google.inject.name.Named;
  *
  * @author Johannes Trame <jt@metaphacts.com>
  */
+@Singleton
 public class FormAuthenticationFilter extends org.apache.shiro.web.filter.authc.FormAuthenticationFilter {
     private final static Logger logger = LogManager.getLogger(FormAuthenticationFilter.class);
 

@@ -1,0 +1,184 @@
+<semantic-query query='SELECT DISTINCT  ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass
+                                        ?actor ?actorEmail ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate (MAX(?recordDate) AS ?latestRecordDate)
+                                 WHERE {
+
+                        BIND(<{{iri}}> as ?subject)
+
+                        ?subject a ?resourceOntologyClass .
+                        ?resourceOntologyClass a ?resourceOntologyClassType .
+                        FILTER(?resourceOntologyClassType in (rdfs:Class, owl:Class))
+                        
+                        OPTIONAL {                            
+                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                          ?resourceConfigWithP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
+                          ?subject crm:P2_has_type ?resourceType . 
+                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .
+                          ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithP2Label .
+                          OPTIONAL {?resourceConfigWithP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithP2Icon .}
+                        }
+                        OPTIONAL {                         
+                          ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+                          ?resourceConfigWithoutP2 a <http://www.researchspace.org/resource/system/resource_configuration> .
+                          ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithoutP2Label .
+                          FILTER NOT EXISTS {?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType .}
+                          OPTIONAL{ ?resourceConfigWithoutP2  <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithoutP2Icon .}
+                        }
+                        BIND((IF(BOUND(?resourceConfigWithP2), 
+                                ?resourceConfigWithP2, IF(BOUND(?resourceConfigWithoutP2),?resourceConfigWithoutP2,""))) AS ?resourceConfig)
+                        BIND((IF(BOUND(?resourceConfigWithP2Label), 
+                                ?resourceConfigWithP2Label, IF(BOUND(?resourceConfigWithoutP2Label),?resourceConfigWithoutP2Label,""))) AS ?resourceLabel)
+                        BIND((IF(BOUND(?resourceConfigWithP2Icon), 
+                              ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
+                        
+                        OPTIONAL {
+                          ?subject prov:wasAttributedTo ?actor .
+                          ?subject prov:generatedAtTime ?viewModificationDate .
+                          BIND("true" as ?viewModification) 
+                        }
+
+                        OPTIONAL {
+                          ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                          ?entityFormRecord a crmdig:D1_Digital_Object .
+                          ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                          ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                          ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+
+                          ?entityFormRecordCreation crm:P4_has_time-span ?entityFormRecordCreationTimespan .
+                          ?entityFormRecordCreationTimespan crm:P82_at_some_time_within ?dateCreation .
+                          ?entityFormRecordCreation crm:P14_carried_out_by ?actor .
+                          BIND("true" as ?recordCreation)
+                        }
+
+                        OPTIONAL {
+                          ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                          ?entityFormRecord a crmdig:D1_Digital_Object .
+                          ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                          ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
+                          ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+
+                          ?entityFormRecordModification crm:P4_has_time-span ?entityFormRecordModificationTimespan .
+                          ?entityFormRecordModificationTimespan crm:P82_at_some_time_within ?dateModification .
+                          ?entityFormRecordModification crm:P14_carried_out_by ?actor .
+                          BIND("true" as ?recordModification)
+                        }
+
+                        BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                        BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
+                                        
+
+                        OPTIONAL {
+                          ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                          ?actorUser crm:P1_is_identified_by ?actorName .
+                          ?actorName a crm:E41_Appellation .
+                          ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                          ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                        }
+
+                        BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?recordDate)
+
+                      } GROUP BY ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass ?actor ?actorEmail ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate
+                      LIMIT 1'
+      
+                template='{{> template}}'>
+
+    <template id='template'>
+      <div class="activity-card-content">
+        <mp-draggable iri='{{bindings.0.subject.value}}'>
+          <mp-overlay-dialog  id="{{bindings.0.subject.value}}-resource-preview-dialog"  
+                              type="modal" 
+                              class="modal-xlSize preview_modal"
+                              title="Preview">
+            <mp-overlay-dialog-trigger>
+              <div class="resource-thumbnail-small-container">
+                <mp-resource-thumbnail iri='{{bindings.0.subject.value}}' class="resource-thumbnail-small">
+                  <mp-resource-thumbnail-fallback>
+                    {{#if bindings.0.resourceIcon.value}}
+                      <rs-icon icon-type="rounded" icon-name="{{bindings.0.resourceIcon.value}}" symbol="true" class="resource-thumbnail-small-fallback-icon"></rs-icon>
+                    {{else}}
+                      <rs-icon icon-type="rounded" icon-name="bubble_chart" symbol="true"></rs-icon>
+                    {{/if}}
+                  </mp-resource-thumbnail-fallback>
+                </mp-resource-thumbnail>
+              </div>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                options='{"resource": "{{bindings.0.subject.value}}", 
+                                            "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
+                                            "resourceConfigLabel": "{{bindings.0.resourceLabel.value}}",
+                                            {{#if resourceOntologyClass}}"resourceOntologyClass": "{{resourceOntologyClass}}",{{/if}}
+                                            "resourceDetailSection": true
+                                          }' >
+              </inline-template> 
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+        </mp-draggable>
+
+        <div class="activity-card-data">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+         
+              {{#if bindings.0.actorFullName.value}}
+                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.actorFullName.value}}</div>
+              {{else}}
+                <div class="activity-card-actor-value text-truncate-line1">{{bindings.0.actorEmail.value}}</div>
+              {{/if}}
+            
+              <div class="activity-card-date-value text-truncate-line1">
+                {{#if bindings.0.viewModificationDate.value}}{{dateTimeFormat bindings.0.viewModificationDate.value "LLL"}}{{/if}}
+                {{#if bindings.0.latestRecordDate.value}}{{dateTimeFormat bindings.0.latestRecordDate.value "LLL"}}{{/if}}
+              </div>
+              
+          </div>
+
+          {{#if (or (eq bindings.0.viewModification.value "true") (eq bindings.0.recordModification.value "true"))}}
+            <div class="text-font-size__small text-truncate-line1">modified {{bindings.0.resourceLabel.value}}</div>
+          {{else if (eq bindings.0.recordCreation.value "true")}}
+            <div class="text-font-size__small text-truncate-line1">created {{bindings.0.resourceLabel.value}}</div>
+          {{/if}}
+          <mp-draggable iri='{{iri}}'>
+            <div style="flex: 1; align-content: center;">
+              {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+                <mp-event-trigger id='{{iri}}-homepageActivity-open-km-title-trigger' 
+                                type='Dashboard.AddFrame'
+                                data='{"viewId":"knowledge-map", 
+                                        "resourceIri": "{{iri}}"}' 
+                                targets='["thinking-frames"]'>
+                
+                  <div><mp-label iri='{{iri}}' class="text-link text-truncate-line1"></mp-label></div>
+                </mp-event-trigger>
+              {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                <mp-event-trigger id='{{iri}}-homepageActivity-open-chart-title-trigger' 
+                                  type='Dashboard.AddFrame'
+                                  data='{"viewId":"chart", 
+                                          "resourceIri": "{{iri}}"}' 
+                                  targets='["thinking-frames"]'>
+                  <div><mp-label iri='{{iri}}' class="text-link text-truncate-line1"></mp-label></div>
+                </mp-event-trigger>
+              {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+                <mp-event-trigger id='{{iri}}-homepageActivity-open-timeline-title-trigger' 
+                                  type='Dashboard.AddFrame'
+                                  data='{"viewId":"timeline", 
+                                          "resourceIri": "{{iri}}"}' 
+                                  targets='["thinking-frames"]'>
+                  <div><mp-label iri='{{iri}}' class="text-link text-truncate-line1"></mp-label></div>
+                </mp-event-trigger>
+              {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                urlqueryparam-view='single-set-management'
+                                urlqueryparam-resource='{{iri}}'>
+                  <mp-label iri='{{iri}}' class="text-link text-truncate-line1"></mp-label>
+                </semantic-link>
+              {{else}}
+                <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                urlqueryparam-view='{{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                urlqueryparam-resource='{{iri}}'>
+                    <mp-label iri='{{iri}}' class="text-link text-truncate-line1" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label>
+                </semantic-link>
+              {{/if}}
+            </div>
+          </mp-draggable>
+        </div>
+      </div>
+    </template>
+
+</semantic-query>

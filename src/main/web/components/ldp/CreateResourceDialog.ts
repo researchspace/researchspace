@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -83,18 +84,18 @@ export class CreateResourceDialog extends Component<CreateResourceDialogProps, C
         this.showMessage(),
         D.form(
           {
-            className: b('form'),
+            className: classNames('form-inline', b('form')),
           },
           D.input({
             className: classNames('form-control', b('form__collection-name')),
-            placeholder: this.props.placeholder ? this.props.placeholder : 'Name',
+            placeholder: this.props.placeholder ? this.props.placeholder : 'Name/Identifier',
             type: 'text',
             ref: REF_LDP_RESOURCE_NAME,
             onKeyDown: this.onKeyPress,
           }),
           D.button(
             {
-              className: classNames('btn btn-primary', b('form__save-button')),
+              className: classNames('btn btn-action btn-input-height', b('form__save-button')),
               disabled: this.isLoading() || this.isSuccess(),
               onClick: this.onSaveBtn,
             },
@@ -171,13 +172,13 @@ export class CreateResourceDialog extends Component<CreateResourceDialogProps, C
         return null;
       case States.LOADING:
         return createElement(Spinner);
-      case States.SUCCESS:
+/*       case States.SUCCESS:
         return D.div(
           {
             className: 'alert alert-success text-center',
           },
-          'New LDP resource has been created successfully!'
-        );
+          'Resource created'
+        ); */
       case States.ERROR:
         return D.div(
           {

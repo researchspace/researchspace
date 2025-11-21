@@ -1,0 +1,40 @@
+<http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class/context> {
+  <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration> ;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Resource ontology class"@en;
+
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "Select the resource ontology class (e.g. E22_Human-Made_Object, E53_Place, etc.)";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-fc0a9f7be86247ef8511ce35a9a39db0-ajz8q;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-fc0a9f7be86247ef8511ce35a9a39db0-lyk9b19;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-fc0a9f7be86247ef8511ce35a9a39db0-2b53mu;
+    <http://www.researchspace.org/resource/system/fields/treePatterns> """{
+  \"type\": \"full\",
+  \"rootsQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdfs:Class, owl:Class)).   \\n  FILTER(NOT EXISTS { ?item rdfs:subClassOf ?parent. })\\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.\\n  FILTER (lang(?label) = \\\"en\\\")\\n  OPTIONAL { ?child rdfs:subClassOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY (?order) (?label)\",
+  \"childrenQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdfs:Class, owl:Class)).  \\n      \\n  ?item rdfs:subClassOf ?parent.\\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.\\n  FILTER (lang(?label) = \\\"en\\\")\\n      \\n  OPTIONAL { ?child rdfs:subClassOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY (?order) (?label)\",
+  \"parentsQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?parent ?parentLabel WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdfs:Class, owl:Class)).  \\n      \\n  ?item rdfs:subClassOf ?parent.\\n  ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?parentLabel.\\n  FILTER (lang(?parentLabel) = \\\"en\\\")\\n}\",
+  \"searchQuery\": \"PREFIX bds: <http://www.bigdata.com/rdf/search#>\\nPREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rs: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdfs:Class, owl:Class)).  \\n      \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label) ?label.\\n    FILTER (lang(?label) = \\\"en\\\")\\n      \\n  ?label bds:search ?__token__;\\n    bds:minRelevance \\\"0.3\\\";\\n    bds:relevance ?score;\\n    bds:matchAllTerms \\\"true\\\".\\n  OPTIONAL { ?child rdfs:subClassOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY DESC (?score) (?order) (?label)\\nLIMIT 200\"
+}"""^^<http://www.researchspace.org/resource/system/syntheticJson>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.w3.org/2000/01/rdf-schema#Class>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-12T16:59:27.607+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-fc0a9f7be86247ef8511ce35a9a39db0-ajz8q a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE { graph $subject {
+  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?value. }
+  }""" .
+  
+  _:genid-fc0a9f7be86247ef8511ce35a9a39db0-2b53mu a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> "DELETE { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> $value } WHERE { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> $value }" .
+  
+  _:genid-fc0a9f7be86247ef8511ce35a9a39db0-lyk9b19 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> "INSERT { $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> $value} WHERE {}" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> .
+}

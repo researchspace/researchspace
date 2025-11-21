@@ -542,9 +542,11 @@ export class SparqlDataProvider implements DataProvider {
       elementTypePart = this.settings.filterTypePattern.replace(/[?$]class\b/g, elementTypeIri);
     }
 
-    const { defaultPrefix, fullTextSearch, dataLabelProperty } = this.settings;
+    const { defaultPrefix, fullTextSearch, dataLabelProperty, queryPlanOptimiser } = this.settings;
 
     let textSearchPart = '';
+    let queryPlanOptimiserLocal = queryPlanOptimiser?queryPlanOptimiser:"";
+
     if (params.text) {
       innerProjection += ' ?score';
       if (this.settings.fullTextSearch.extractLabel) {
@@ -564,6 +566,8 @@ export class SparqlDataProvider implements DataProvider {
 
         SELECT DISTINCT ${outerProjection}
         WHERE {
+            ${queryPlanOptimiserLocal}
+             
             {
                 SELECT DISTINCT ${innerProjection} WHERE {
                     ${elementTypePart}

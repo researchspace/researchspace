@@ -1,0 +1,1389 @@
+[[#if includedTemplate]]
+[[else]]
+  <div class="page__grid-container help-page-container">
+    <div class='page__content-container'>
+[[/if]]
+  <section id="rs-doc_start">
+    <h1>Templating system</h1>
+    <h2>Dynamic pages to customise your system</h2>
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_whatis">
+    <h2>What is a template</h2>
+    <p>A template is a combination of standard HTML 5 combined with ResearchSpace 
+      specific components like semantic-tables, search, and other, as well as templating support using handlebars.
+    </p>
+    <p>To create a <b>new blank page</b> just define a new page in the address bar. 
+      If you append to the base URL 
+      (<a href="http://localhost:10214/resource/" class="text-link-action" target="_blank">http://localhost:10214/resource/</a>) 
+      with rsp://mynewpage, 
+      then a blank page is created. You can then add some content.
+    </p>
+    <p>To <b>edit or modify</b> an existing template, just click on the link 'Edit Page' at the top right of the page to display the <b>template editor</b>.
+        When switching to the edit mode applicable and embedded templates are listed at the top of the editor.
+        Embedding templates provides flexibility, and templates can talk to each other and pass parameters.</p>
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_types">
+    <h2>Type of templates</h2>
+    <p>In ResearchSpace there are 3 main types of template:</p>
+    <ul>
+      <li><a href="#rs-doc_systemTemplate">Application or System Template</a></li>
+      <li><a href="#rs-doc_resourceTemplate">Specific Resource Template</a></li>
+      <li><a href="#rs-doc_kindofTemplate">“Kind of” Template</a></li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_systemTemplate">
+    <h3>Application or System Template</h3>
+    <p>This is a template type that contains application logic or perhaps just some HTML. 
+      It does not directly correspond to any particular instance of RDF data. 
+      The system does not apply any default transformations to it and the template is authored independently. 
+      So, when this template is created the message indicates that you will be editing it from scratch.
+    </p>
+      <img src="/assets/images/help/emptyTemplate.png" class="img-fluid"><br><br>
+      <div>Application pages make up your application. Let's say, for example, an dashboard page may provide 
+      an aggregated view and actions over some data in the domain, 
+      but will not be rendered according to some automatically inherited templates 
+      but rather using static markup (which still might be parameterized dynamically).</div>
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_resourceTemplate">
+    <h3>Resource Template</h3>
+    <p>This is a template designed to be used with a <b>specific data URI</b>. For example, I want to create 
+      a specific template for a specific object. If a template has been assigned in this way no other checks are made.</p>
+
+    <p>In theory, it is possible to provide a unique template for every individual entity from the dataset displayed in 
+      ResearchSpace, but this is not practical. This is why there is a “kind of” template system (see below).</p>
+
+    <h4>How does it work?</h4>
+    <p>For example, you can create from scratch the template 
+      <a href="http://localhost:10214/resource/?uri=https://www.britishmuseum.org/collection/object/Y_EA24" class="text-link-action" target="_blank">
+        http://localhost:10214/resource/?uri=https://www.britishmuseum.org/collection/object/Y_EA24</a>
+      in the address bar and then click on Edit page.</p>
+    <p>This creates a prompt to start editing a new template page which is 
+      associated with the resource 
+      <a href="https://www.britishmuseum.org/collection/object/Y_EA24" class="text-link-action" 
+      target="_blank">https://www.britishmuseum.org/collection/object/Y_EA24</a>
+    </p>
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_kindofTemplate">
+    <h2>“Kind of” Template</h2>
+    <p>This is a template that is automatically <b>applied to all entities of a given kind</b>
+      and can be used to define thei generic views.
+        The most common example of this is a template that is used for statements associated with a particular class. 
+        For example, all instances of type 
+        <mp-code-highlight mode='application/sparql-query' code-text='crm:E22_Human_Made_Object'></mp-code-highlight>. 
+        However, other predicates can be used such as 
+        <mp-code-highlight mode='application/sparql-query' code-text='crm:P2_has_type'></mp-code-highlight>
+        or 
+        <mp-code-highlight mode='application/sparql-query' code-text='crm:P1_is_identified_by'></mp-code-highlight>, or something else.</p>
+
+    <div class="alert alert-info">
+      <b>Note: </b>
+      <span>In a “Kind of” template the handlebar <code>[[{{documentation}}]][[this]][[{{/documentation}}]]</code>
+          will return the instance URI.</span>
+    </div>
+
+    <h4>How does it work?</h4>
+    
+    <p>In the <a href="http://localhost:10214/resource/Admin:Configuration" class="text-link-action" target="_blank">System settings -> UI configuration</a>
+        there is a property called <b>templateIncludeQuery</b>.
+        This is a configurable declarative SPARQL statement used to refine the logic according to which candidate templates 
+        are being computed when browsing instances in the knowledge graph. The query can be changed in the file <b>ui.prop </b>
+        according to the needs of a particular system. However, the default setting covers most needs. 
+    </p>
+
+    <mp-code-block mode='application/sparql-query' show-run-query-button="false">
+<![CDATA[
+PREFIX rso: <http://www.researchspace.org/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+SELECT ?type WHERE {
+  {
+    # This first statement is a special case because a user is a system concept. 
+    # Although a user has a URI scheme it has not assigned an entity.    
+    FILTER(STRSTARTS(STR(??), "http://www.researchspace.org/resource/user/")).
+    BIND(rso:User as ?type).
+    BIND(-1 as ?index)
+  } UNION {
+    ?? <http://www.researchspace.org/ontology/PX_object_type> ?type .
+    BIND(0 AS ?index)
+  } UNION {
+    ?? <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?type .
+    BIND(1 AS ?index)
+  } UNION {
+    ?? a ?type .
+    BIND(2 AS ?index)
+  } UNION {
+    ?? a ?t .
+    ?t rdfs:subClassOf* ?type .
+    FILTER (?type in (crm:E28_Conceptual_Object, crm:E24_Physical_Man-Made_Thing, crm:E39_Actor, crm:E53_Place, crm:E5_Event)).
+    BIND(3 AS ?index)
+  } UNION {
+    ?? a ?t .
+    ?t rdfs:subClassOf+ ?type .
+    BIND(4 AS ?index)
+  }
+} ORDER BY ?index
+]]>
+    </mp-code-block>
+
+    <p>The query checks for a user pattern first, and if this is not found then it checks for an object type 
+      using rso:PX_object_type, then it checks for crm:P2_has_type and so on. Because more than one pattern 
+      might potentially be found, the results are ordered by an assigned index so that we know the first 
+      pattern detected. This is because SPARQL does not return results in any particular order. <br>
+      If none of the candidate templates exist, the system-wide default <b>Template:rdfs:Resource</b> will be used.</p>
+
+    <p>For example, take this resource:</p>
+      <mp-code-block mode='application/sparql-query' show-run-query-button="false">
+        <![CDATA[
+<http://www.example.com/resource/1> rdf:type crm:E14_Condition_Assessment .
+<http://www.example.com/resource/1> crm:P2_has_type <http://www.example.com/condition/damaged> .
+        ]]>
+      </mp-code-block>
+    <p>When this is tested by the SPARQL templateIncludeQuery, the result is the following list of matches:</p> 
+      <pre style="display: flex; flex-direction: column; gap: 8px; padding: 20px;">
+        <code>http://www.example.com/condition/damaged</code>
+        <code>http://www.cidoc-crm.org/cidoc-crm/E14_Condition_Assessment</code>
+        <code>http://www.cidoc-crm.org/cidoc-crm/E5_Event</code>
+        <code>http://www.cidoc-crm.org/cidoc-crm/E13_Attribute_Assignment</code>
+        <code>http://www.cidoc-crm.org/cidoc-crm/E7_Activity</code>
+        <code>http://www.cidoc-crm.org/cidoc-crm/E5_Event</code>
+        <code>http://www.cidoc-crm.org/cidoc-crm/E4_Period</code>
+        <code>http://www.cidoc-crm.org/extensions/crmgeo/SP1_Phenomenal_Spacetime_Volume</code>
+        <code>http://www.cidoc-crm.org/cidoc-crm/E2_Temporal_Entity</code>
+        <code>http://www.cidoc-crm.org/cidoc-crm/E92_Spacetime_Volume</code>
+        <code>http://www.opengis.net/ont/geosparql#Feature</code>
+        <code>http://www.cidoc-crm.org/extensions/crmsci/S15_Observable_Entity</code>
+        <code>http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity</code>
+      </pre>
+    
+
+    <b>What has happened?</b>
+    <p>Starting from the top it will match the pattern. Is there a template for type <code>damaged</code>? 
+      Then is there a template for <code>crm:E14_Condition_Assessment</code>, and so on. It will then apply 
+      the first template that corresponds with the first match. In this case 
+      <code>crm:P2_has_type http://www.example.com/condition/damaged</code>. If there was no corresponding template for “damaged”,
+        then it would use the entity type, in this case crm:E14_Condition_Assessment, but, if there was no 
+        template assigned to crm:E14_Condition_Assessment then it would look higher in the hierarchy to the 
+        next general template (a super-class) all the way up the ontology to its root.
+    </p>
+
+    <p>You can of course change the pattern query to prioritise the patterns you want for your system.</p>
+
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_defaultTemplate">
+    <h2>Default Instance Template</h2>
+    <p>Where there is a URI that corresponds to data but which has no specific template or no “kind of” template, 
+      then a system default template is applied, called <b>Template:rdfs:Resource</b>. It is a generic template 
+      designed to provide common information about a resource.</p>
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_handlebars">
+    <h2>Handlebars</h2>
+  </section>
+
+  <section id="rs-doc_handlebarsWhat">
+    <h3>What are handlebars?</h3>
+    <p>As already mentioned before, the entire front-end is based on application and 
+      template pages that can be made by assembling built-in or custom HTML5 components using standard HTML syntax.</p>
+    
+    <p>In addition to that ResearchSpace incorporates <a href="https://handlebarsjs.com/" class="text-link-action" target="_blank">Handlebars.js</a>,
+        a third party open source templating framework, with custom helper functions to provide a "mostly logic-less" templating backend. 
+      Handlebars provides the parametrization of templates, that means the ability to substitute data into specific variables positioned 
+      in the template, as well as conditional logic and loops, and reusable template snippets.
+    </p>
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_parameterisation">
+    <h3>Parameterisation</h3>
+    <p>Handlebars are currently used in two ways: server-side <code>[&#8203[&#8203 ]&#8203]</code>
+        and client-side <code>{{ }}</code>.
+    </p>
+    <p>Initially templates were evaluated only on the server-side and <code>[&#8203[&#8203 ]&#8203]</code> were used. 
+      However, in the development of RS, <code>[&#8203[&#8203 ]&#8203]</code> were reserved for Java based implementation 
+      of handlebars while <code>{{ }}</code> were reserved for Javascript implementation.
+    </p>
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_serverHb">
+    <h3>Server-side handlebars <code>[&#8203[&#8203 ]&#8203]</code></h3>
+    <p>Server-side handlebars should only be used for:</p>
+    <ul>
+      <li>Back-end parameterization of component inputs (simplified component inputs, 
+        restricted access to certain parameters).
+      </li>
+      <li>Partial rendering of page or template sub-parts (i.e. according to security 
+        restrictions or availability of data). 
+      </li>
+      <li>Includes to avoid duplication and facilitate reuse of pages or sub-parts.
+      </li>
+    </ul>
+    <p>For different reasons (performance, complexity) it is not recommended to use the backend 
+      templating syntax to query and format any query results in arbitrary ways. All formatting 
+      should be done using purely client-side components.
+    </p>
+
+    <hr class="divider">
+
+    <h4 style="margin-top: 25px;">Server-side handlebars helper</h4>
+    <div class="alert alert-warning">
+      <div><b>Warning!</b></div>
+      Server-side handlebars [&#8203[&#8203 ]&#8203] should be used only for the following described helpers! 
+      These usages, however, will be deprecated in the future (except security related use cases).
+    </div>
+    <ul>
+      <li><a href="#helper_this">\[[this]]</a></li>
+      <li><a href="#helper_permission">hasPermission Helper</a></li>
+      <li><a href="#helper_prefix">resolvePrefix Helper</a></li>
+      <li><a href="#helper_urlParam">urlParam Helper</a></li>
+      <li><a href="#helper_jsonValue">jsonValueFromSelect Helper</a></li>
+      <li><a href="#helper_jsonArray">jsonArrayFromSelect Helper</a></li>
+      <li><a href="#helper_singleValue">singleValueFromSelect Helper</a></li>
+      <li><a href="#helper_getQuery">getQueryString Helper</a></li>
+      <li><a href="#helper_ifelse">if-else Helper</a></li>
+      <li><a href="#helper_ask">ask Helper</a></li>
+      <li><a href="#helper_include">Includes</a></li>
+      <li><a href="#helper_encode">encodeUriComponent Helper</a></li>
+      <li><a href="#helper_decode">decodeUriComponent Helper</a></li>
+      <li><a href="#helper_dateTime">currentDateTime Helper</a></li>
+      <li><a href="#helper_field">FieldDefinitions Helper</a></li>
+    </ul>
+
+    <p>The list of server-side handlebars helpers can be found on github here:
+      <a href="https://github.com/researchspace/researchspace/tree/master/src/main/java/org/researchspace/templates/helper"
+      class="text-link-action" target="_blank">list of Helper</a>.
+    </p>
+
+    <hr class="divider">
+
+    <section id='helper_this' style="margin-top: 25px;">
+      <h5>\[[this]]</code> to set the IRI of a current RDF resource</h5>
+      <p>You are using a “kind of” template but want to refer to a specific instance of the entity 
+        that the template refers to. For example, a E22_Human-Made_Object template is applied to a 
+        specific E22 instance to expose its properties. How is this achieved?
+      </p>
+      <p>An instance URI is passed to the template which refers to the entity subject using 
+        <code>[[{{documentation}}]][[this]][[{{/documentation}}]]</code>.</p>
+    </section>
+
+    <hr class="divider">
+
+    <section id='helper_permission'>
+      <h5>hasPermission Helper</h5>
+      <p>
+        This helper allows to make the logic included visible only to <b>users with specific permissions</b>,
+          excluding all other users. 
+        The helper asks the backend whether the currently logged-in user has the specified shiro permission and 
+        can be particularly useful when combined with if (else) helper.
+      </p>
+
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+\[[#if (hasPermission "sparql:update")]]
+<!-- This will be rendered if the currently logged-in user has the permission "sparql:update" -->
+\[[/if]]
+        ]]>
+      </mp-code-block>
+
+      <p>For security reasons the logic will not be accessible by the client and therefore much more controlled.</p>
+
+      <p>The helper expects as first argument an shiro permission string and should only be 
+        processed on the server-side to avoid security breaches.</p>
+
+    </section>
+
+    <hr class="divider">
+      
+    <section id='helper_prefix'>
+
+      <h5>resolvePrefix Helper</h5>
+      <p>This helper resolves namespace prefixed IRIs to full IRI string.</p>
+
+      <code>\[[resolvePrefix "Help:SemanticLink"]]</code> 
+      <br>
+      will render to: <br>
+      <code>[[resolvePrefix "Help:SemanticLink"]]</code>
+
+      <p>Help and other prefixes can be defined in the file <b>namespaces.prop</b>.</p>
+
+      <p>resolvePrefix is required in components that will only take full IRIs as parameters, for example 
+        <mp-code-highlight mode='text/html' code-text='<semantic-link>'></mp-code-highlight>
+          component.</p>
+
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+<semantic-link iri='\[[resolvePrefix "Help:SemanticLink"]]'></semantic-link>
+        ]]>
+      </mp-code-block>
+
+    </section>
+
+    <hr class="divider">
+
+    <section id='helper_urlParam'>
+      <h5>urlParam Helper</h5>
+      <p>There is a helper used to retrieve parameter(s) from the current URL.</p>
+
+      <p><code>\[[urlParam "tab"]]</code>, for instance, extracts the value for the "tab" param 
+        <mp-code-highlight mode='text/html' code-text='&tab="value"'></mp-code-highlight>
+        from the URL and can be used to declare which tab should be opened in tabs-component. 
+        May also be useful when combined with if helper.
+      </p>
+      
+      <p>For example, in the search page we have results displayed in multiple tabs, like Objects and Actors. 
+        Using bootstrap properties we set an event-key for each bs-tab and a default-active-key where the 
+        urlParam passes a parameter called activeTab.</p>
+
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+<bs-tabs id='search' default-active-key='\[[urlParam "activeTab"]]'>
+  <bs-tab event-key='Objects' title='Objects'>
+    Search for objects here
+  </bs-tab>
+  <bs-tab event-key='Actors' title='Actors'>
+    Search for Actors here
+  </bs-tab>
+</bs-tabs>
+        ]]>
+      </mp-code-block>
+
+      <p>Semantic Link can be used to link between pages or resources which can 
+        carry multiple parameters.</p>
+      <p>For the 
+        <mp-code-highlight mode='text/html' code-text='bs-tabs'></mp-code-highlight>
+          example above, the parameter can be passed from a semantic link which looks like this:
+      </p>
+        
+      <mp-code-block mode='text/html'>
+      <![CDATA[
+<semantic-link iri="http://www.researchspace.org/resource/Search" urlqueryparam-active-tab='Objects'>
+  Search Objects
+</semantic-link>
+      ]]>
+      </mp-code-block>
+
+      <p>The parameter must be passed first using urlqueryparam as a prefix. You can use a verbose parameter but 
+      each word must be hyphenated. However, when the parameter is then used in the target template with square 
+      brackets, the parameter is identified using “urlParam” and the parameter itself must be one string without 
+      hyphens again using ‘camel case’.</p>
+
+      <p style="margin-top: 20px;"><b>Note on the Interaction between urlParam helper and client-side handlebars {{ }}</b></p>
+      <p>To propagate the value of urlParam to a client-side template, we use a special component 
+        called <b>inline-template</b>. This component can be used to render any client-side handlebar by reference. 
+      </p>
+      <p>Let’s take as an example a system template called
+        <a href="http://localhost:10214/resource/Tabs" class="text-link-action" target="_blank">http://localhost:10214/resource/Tabs</a> 
+        including the code below, that uses a client-side handlebar <code>{{ }}</code> to identify the correct default tab.
+      </p>
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+<bs-tabs id='search' default-active-key='{{activeTab}}'>
+  <bs-tab event-key='Objects' title='Objects'>
+    Search for objects here
+  </bs-tab>
+  <bs-tab event-key='Actors' title='Actors'>
+    Search for Actors here
+  </bs-tab>
+</bs-tabs>                    
+        ]]>
+      </mp-code-block>
+        
+      <p>Another template called
+      <a href="http://localhost:10214/resource/Calltabs" class="text-link-action" target="_blank">http://localhost:10214/resource/Calltabs</a> 
+      (code below) contains the inline-template 
+      component with server-side urlParam helper. In this way the rsp:Tabs template 
+      uses a client-side handlebar but it is serviced by a server-side helper.</p> 
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+<inline-template  template-iri='http://localhost:10214/resource/Tabs' 
+                  options='{"activeTab": "\[[urlParam "activeTab"]]"}' >
+</inline-template>                 
+        ]]>
+      </mp-code-block>
+        
+      <p>Opening
+      <a href="http://localhost:10214/resource/Calltabs?activeTab=Objects" class="text-link-action" target="_blank">
+        http://localhost:10214/resource/Calltabs?activeTab=Objects</a>
+      in a browser window (possibly through a semantic link which specifies 
+      Objects as the URL query parameter), on the server-side the relevant 
+      template is retrieved and all parts of the template denoted by the 
+      <code>[&#8203[&#8203 ]&#8203]</code> are evaluated. As result of the evaluation we get:</p> 
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+<inline-template  template-iri='http://localhost:10214/resource/Tabs' 
+                  options='{"activeTab": "Objects"}'>
+</inline-template>                
+        ]]>
+      </mp-code-block>
+        
+        <p>When the inline template component is initialised it will fetch the Tabs 
+          template and evaluate it with the provided set of values.</p>
+
+        <p>The result of the evaluation is sent back to the browser where it is 
+          rendered by ReactJS (for more details see 
+          <semantic-link iri="[[resolvePrefix 'Help:PageAnatomy']]" target="_blank" class="text-link-action">anatomy of a 
+            ResearchSpace page</semantic-link>.
+        </p>
+
+    </section>
+
+    <hr class="divider">
+
+    <section id='helper_jsonValue'>
+      <h5>jsonValueFromSelect Helper</h5>
+      <p>Useful for parameterization of client-side components where the configuration needs 
+        to be parameterized with a single value depending on the context.</p>
+
+      <ul>
+        <li>The helper expects as first argument a SPARQL SELECT query string.</li>
+        <li>Result will be a JSON escaped, double quoted value: <code>"http://www.researchspace.org/resource/result1"</code></li>
+        <li>If no explicit parameter <code>binding="bindingVariable"</code> is provided, the first projection variable 
+          from the result of the specified SPARQL SELECT result will be extracted.</li>
+        <li>If the result of the SPARQL SELECT contains multiple tuples, only the first matching binding will be returned.</li>
+        <li>Returns <code>null</code> if result is empty.</li>
+      </ul>
+  
+        <mp-code-block mode='text/html'>
+          <![CDATA[
+data-config='{
+              "depiction": \[[jsonValueFromSelect "SELECT ?depiction WHERE 
+                            { ?p foaf:depiction ?depiction}" ]],
+              }'
+<!-- will return the same result as: -->
+data-config='{
+              "depiction": \[[jsonValueFromSelect "SELECT ?p ?depiction WHERE { 
+                            ?p foaf:depiction ?depiction}" binding="depiction" ]],
+              }'
+          ]]>
+        </mp-code-block>
+    
+    </section>
+
+    <hr class="divider">
+
+    <section id='helper_jsonArray'>
+      <h5>jsonArrayFromSelect Helper</h5>
+      <p>Helper used for parameterization of client-side components such as the semantic-graph or 
+      semantic-tree component which receive an optional argument, for example, 
+      "roots" being an array of IRIs defining the root nodes in the graph or tree.</p>
+      <ul>
+        <li>Expects as first argument an SPARQL SELECT query string.</li>
+        <li>Result will be an JSON array: <code> \["http://www.researchspace.org/resource/result1", "http://www.researchspace.org/resource/result2"]]</code> </li>
+        <li>If no explicit parameter <code>binding="bindingVariable"</code> is provided, the first projection 
+          variable from the result of the specified SPARQL Select result will be extracted.</li>
+        <li>Returns an empty array if no result are present.</li>
+      </ul>
+
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+data-config='{
+"roots": \[[jsonArrayFromSelect "SELECT ?person ?someone WHERE { 
+                              ?p a foaf:Person. FILTER EXISTS{?person foaf:knows ?someone} 
+                              }"
+        ]],
+}'
+<!-- will return the same result as: -->
+data-config='{
+"roots": \[[jsonArrayFromSelect "SELECT ?someone ?person WHERE { 
+                                ?p a foaf:Person. FILTER EXISTS{?person foaf:knows ?someone} 
+                              }" 
+        binding="person" ]]
+}'
+        ]]>
+      </mp-code-block>
+    </section>
+
+    <hr class="divider">
+
+    <section id='helper_singleValue'>
+      <h5>singleValueFromSelect Helper</h5>
+      <p>Does basically the same as <code>jsonValueFromSelect</code> 
+        helper. However, value is not quoted and neither JSON nor HTML escaped. 
+        Should only be used in exceptional cases, if you need to have access to the result value as plain string.</p>
+      
+      <ul>
+        <li>Expects as first argument an SPARQL SELECT query string.</li>
+        <li>Result will be a plain, single (not escaped) value : <code>http://www.researchspace.org/resource/result1</code></li>
+        <li>If no explicit parameter <code>binding="bindingVariable"</code> is provided, the first projection variable from the result 
+          of the specified SPARQL SELECT result will be extracted.</li>
+        <li>If the result of the SPARQL SELECT contains multiple tuples, only the first matching binding will be returned.</li>
+        <li>Returns an empty string if the result is empty.</li>
+      </ul>
+
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+Single value \[[singleValueFromSelect "SELECT ?test WHERE { 
+                                      BIND('Hello World' as ?test)}" 
+            ]] in the middle of the text.
+        ]]>
+      </mp-code-block>
+      <i>will render to:</i> Single value 
+      <code>[[singleValueFromSelect "SELECT ?test WHERE { BIND('Hello World' as ?test)}" ]]</code> in the middle of the text.
+    </section>
+
+    <hr class="divider">
+
+    <section id='helper_getQuery'>
+      <h5>getQueryString Helper</h5>
+      <p>Helper to render the query template stored in the query catalog including the assigned parameters where necessary. 
+          The following example takes from the catalog a query template with a URI <code>http://example.org/testTemplate</code>, 
+          assigns a literal value "SomeString" to the parameter <code>label</code> and a URI <code>foaf:Person</code> 
+          to the parameter <code>type</code>. Can be used, for example, to use saved queries from the catalog as parameters in web components.</p>
+
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+\[[ getQueryString "http://example.org/testTemplate" 
+    type='<http://xmlns.com/foaf/0.1/Person>' 
+    label='"SomeString"'
+  ]]
+        ]]>
+      </mp-code-block>
+          
+      <p>If the template body is <code>SELECT ?x WHERE { ?x a ?type . ?x rdfs:label ?label . }</code> and <code>type</code> and 
+        <code>label</code> are declared as arguments, then it will render to
+        <mp-code-highlight mode='text/html' code-text='SELECT ?x WHERE { 
+          ?x a <http://xmlns.com/foaf/0.1/Person> . ?x rdfs:label "SomeString" . }'></mp-code-highlight>.
+      </p>
+    </section>
+
+    <hr class="divider">
+    <section id='helper_ifelse'>
+      <h5>if-else Helper</h5>
+      <p>This helper will be most valuable when being combined with boolean helper such as the <b>ask</b> or <b>hasPermission</b> helper.
+      It expects as first argument an boolean string. Everything non-equal to an empty string will be interpreted as <code>false</code>.</p>
+      <mp-code-block mode='text/html'>
+      <![CDATA[
+\[[#if "true"]] 
+  This will be rendered.
+\[[else]]
+  This will not be rendered.
+\[[/if]]
+        ]]>
+      </mp-code-block>
+    </section>
+
+    <hr class="divider">
+    <section id='helper_ask'>
+      <h5>ask Helper</h5>
+      <p>Helper to query the RDF database using ASK queries. Particularly useful with if (else) helper.
+        It expects as first argument an SPARQL Ask query string.</p>
+        <mp-code-block mode='text/html'>
+          <![CDATA[
+\[[#if (ask "ASK {?? a foaf:Person}")]]
+  This will be rendered if the current entity is of type foaf:Person
+\[[/if]]
+          ]]>
+        </mp-code-block>
+      
+    </section>
+
+    <hr class="divider">
+    <section id='helper_include'>
+      <h5>Includes</h5>
+      <p><code>\[[> "fullIRI"]]</code> includes other pages or templates identifier by their prefixed or full IRI. Full IRIs need to be quoted. </p>
+      <p>Prefixed include: <code>\[[> :PageToInclude]]</code></p>
+      <p>Full IRI include: <code>\[[> "http://www.researchspace.org/resource/PageToInclude"]]</code></p>
+    </section>
+
+    <hr class="divider">
+    <section id='helper_encode'>
+      <h5>encodeUriComponent Helper</h5>
+      <p>Encodes a URI component.</p>
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+\[[encodeUriComponent "?uri=http://example.com"]]
+        ]]>
+      </mp-code-block>
+    </section>
+
+    <hr class="divider">
+    <section id='helper_decode'>
+      <h5>decodeUriComponent Helper</h5>
+      <p>Decodes a URI component.</p>
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+\[[decodeUriComponent "%3Furi%3Dhttp%3A%2F%2Fexample.com"]]
+        ]]>
+      </mp-code-block>
+    </section>
+
+    <hr class="divider">
+    <section id='helper_dateTime'>
+      <h5>currentDateTime Helper</h5>
+      <p>Returns the current system time. Default format is "dd.MM.yyyy HH:mm:ss.SSS".</p>
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+\[[currentDateTime]]
+\[[currentDateTime format="MM-dd-yyyy"]]
+        ]]>
+      </mp-code-block>
+    </section>
+
+    <hr class="divider">
+    <section id='helper_field'>
+      <h5>FieldDefinitions Helper</h5>
+      <p>The fieldDefinitions helper can be used in semantic-form component to create variables for knowledge pattern URIs. 
+        The helper allows URIs of existing patterns to be specified and a variable can be assigned.
+      </p>
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+<semantic-form  new-subject-template='{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+    subject=\[[this]]
+    fields='\[[fieldDefinitions
+              rdfsLabel="http://www.researchspace.org/pattern/general/rdfs:label"
+              appellation="http://www.researchspace.org/pattern/vocabulary_manager/crm:P1_is_identified_by"
+              gender="http://www.researchspace.org/ontology/PX_gender"
+              profession="http://www.researchspace.org/ontology/PX_profession"
+              nationality="http://www.researchspace.org/ontology/PX_nationality"
+              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+              scopeNote="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+              born="http://www.cidoc-crm.org/cidoc-crm/P98i_was_born"
+              death="http://www.cidoc-crm.org/cidoc-crm/P100i_died_in"
+              image_representation="http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation"
+              P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+              member="http://www.cidoc-crm.org/cidoc-crm/P107_has_current_or_former_member"
+            ]]'
+> 
+        ]]>
+      </mp-code-block>
+    </section>
+
+    <div class="alert alert-info">
+      <b>Notes on handlebars.js syntax:</b>
+      <ul>
+        <li>We are using <code>[&#8203[&#8203</code> as start delimiter and <code>]&#8203]</code> as end delimiter 
+          in order to distinguish from client-side handlebars.js template expressions (<code>{{ .. }}</code> ) as being used in some components to format the result.</li>
+        <li>The hash <code>\[[#helpername "arguments"]]</code> indicates a block helper and needs to be 
+          closed <code>\[[/helpername]]</code>.<br> 
+          Inline-helper start directly after the start delimiter:  <code>\[[helpername]]</code>. </li>
+        <li>
+          Comments <code>\[[!-- this is a comment --]]</code> will never leave the backend.
+        </li>
+        <li>
+          When nesting helper functions (i.e. on helper is used as input argument for another helper), 
+          the inner helper functions need to be surrounded with simple parentheses only <code>\[[#helpername (innerHelper "innerArgument1")]]</code>.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_clientHb">
+    <h3>Client-side handlebars <code>{{ }}</code></h3>
+    <p>
+      Most of custom HTML components provided by ResearchSpace, 
+      support some way to customize the visualization of the 
+      component using client-side handlebars <code>{{ }}</code>.
+    </p>
+    <p class="alert alert-info">
+      <b>Note:</b> Depending on the context in which a template is used it can 
+      have access to different helper functions and variables. 
+      For example in <semantic-link iri='http://help.researchspace.org/resource/SemanticQuery' class="text-link-action" target="_blank"></semantic-link>'s <code>template</code> 
+      has access to the full SPARQL Select query result set, in comparison to 
+      <semantic-link iri='http://help.researchspace.org/resource/SemanticTable' class="text-link-action" target="_blank"></semantic-link>'s <code>tuple-template</code>, which has access only to single result set tuple.
+    </p>
+    
+    <ul>
+      <li>
+        Typically if template has access to SPARQL SELECT result bindings, binding value is accessible under 
+        <code>bindingName.value</code>. When the binding is a literal one can also access the literal's datatype as <code>bindingName.dataType.value</code>.
+      </li>
+    </ul>
+  </section>
+
+  <section id="rs-doc_buildin">
+    <h4 style="margin-top: 25px;">Build-in helpers</h4>
+    <p>Handlebars offers a variety of <a href='https://handlebarsjs.com/guide/builtin-helpers.html' class="text-link-action" target="_blank">built-in helpers</a>
+      that can all be used in ResearchSpace templates.</p>
+
+    <hr class="divider">
+
+    <h5>Helper <code>{{#if}} {{else if}} {{else}}</code></h5>
+    <p>You can use the if helper to conditionally render a block. If its argument returns <code>false</code>, <code>undefined</code>, <code>null</code>, 
+      <code>""</code>, <code>0</code>, or <code>\[]</code>, Handlebars will not render the block.</p>
+    <mp-code-block mode='text/html'>
+      <![CDATA[
+<div class="container">
+  {{#if author}}
+    <h1>{{firstName}} {{lastName}}</h1>
+  {{else}}
+    <div>No author available</div>
+  {{/if}}
+</div>
+      ]]>
+    </mp-code-block>
+
+    <hr class="divider">
+    <h5>Helper <code>{{#each}}</code></h5>
+    <p>You can iterate over a list using the built-in <code>{{#each}}</code> helper, for example to iterate over the results of a 
+      SPARQL query in components like <code>semantic-query</code>
+    </p>
+    <mp-code-block mode='text/html'>
+      <![CDATA[
+<semantic-query query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                SELECT ?person ?birthPlace {
+                  ?person rso:PX_has_profession <http://www.researchspace.org/resource/architect> .
+                  ?person crm:P98i_was_born/crm:P7_took_place_at ?birthPlace .
+                }'
+        template='{{> architectsTemplate}}'>
+
+  <template id='architectsTemplate'>
+    List of female architects:
+    <ul>
+      {{#each bindings}}
+        <li>
+          <semantic-link iri='{{person.value}}'></semantic-link>
+          {{#if (eq birthPlace.value "http://www.researchspace.org/id/place/Cetinje")}}
+            <p>was born at <semantic-link iri='{{birthPlace.value}}'></semantic-link></p>
+          {{else}}
+            <p>was born elsewhere</p>
+          {{/if}}
+        </li>
+      {{/each}}
+    </ul>
+  </template>
+</semantic-query>
+      ]]>
+    </mp-code-block>
+
+    <bs-panel header='Note on use of semantic-query' collapsible=true default-expanded=false>
+      <p>The <code>semantic-query</code> in the example above takes as input a SPARQL query that asks for a person and a birthplace. 
+      Running the query in the <a href="http://localhost:10214/sparql" class="text-link-action" target="_blank">SPARQL console</a> and displaying results as Response,
+        you can see the raw JSON results (as below) and the bindings as they are produced.</p>
+        <mp-code-block mode='JSON'>
+        <![CDATA[
+{
+  "head" : {
+    "vars" : [ "person", "birthPlace" ]
+  },
+  "results" : {
+    "bindings" : [ {
+                    "person" : {
+                                  "type" : "uri",
+                                  "value" : "http://www.wikidata.org/entity/Q19602731"
+                                },
+                    "birthPlace" : {
+                                    "type" : "uri",
+                                    "value" : "http://www.researchspace.org/id/place/Cetinje"
+                                    }
+                  }, 
+                  {
+                    "person" : {
+                                "type" : "uri",
+                                "value" : "http://www.wikidata.org/entity/Q313828"
+                                },
+                    "birthPlace" : {
+                                    "type" : "uri",
+                                    "value" : "http://www.researchspace.org/id/place/Vrpolje"
+                                    }
+                  }, 
+                  {
+                    "person" : {
+                                "type" : "uri",
+                                "value" : "http://www.wikidata.org/entity/Q314886"
+                                },
+                    "birthPlace" : {
+                                    "type" : "uri",
+                                    "value" : "http://www.researchspace.org/id/place/Ljubljana"
+                                  }
+                  } ]
+  }
+} 
+        ]]>
+      </mp-code-block>
+      <p>The template <code>{{> architectsTemplate}}</code> is applied to this set of results. 
+      To display each result for person and birthplace there's a <code>{{#each bindings}}</code> loop. 
+      </p>
+      <p>Note that in the <code>semantic-link</code> tag, the ResearchSpace label service will retrieve the label 
+          for the person and birthPlace URI’s. The label service isn’t available within normal 
+          HTML and therefore if you wanted to use the label there, you would need to either 
+          explicitly select the person label in the query or use the component
+        <code><mp-label iri='{{person.value}}'></mp-label></code>
+          fetching the label through the label service.</p>
+        
+      <p>
+        In this case we want the values of person and birthPlace if the birthPlace.value 
+        equals <code>http://www.researchspace.org/id/place/Cetinje</http:></code>. If this is correct then 
+        we output the text that the person was born in Cetinje, or else the person was born elsewhere. 
+        To achive this we used the <code>{{#if}} {{else}}</code> helper.
+      </p>  
+
+      <p>To know more look at the dedicated 
+        <semantic-link iri="[[resolvePrefix 'Help:SemanticQuery']]" target="_blank" class="text-link-action">semantic query documentation</semantic-link>.</p>
+        
+    </bs-panel>
+
+    <hr class="divider">
+    <h5>Helper <code>{{log}}</code> for debugging</h5>
+    <p>The <code>{{log}}</code> helper allows for logging of context state while executing a template.</p>
+    <p>You can use the helper <code>{{log "a_label" this}}</code>
+      to debug your query or template. Just add this helper into different scopes to see what 
+      variables are available in the template.</p>
+    <p>For example we can debug the previous <code>semantic-query</code> example like this:</p>
+    <mp-code-block mode='text/html'>
+      <![CDATA[
+<semantic-query query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                SELECT ?person ?birthPlace {
+                  ?person rso:PX_has_profession <http://www.researchspace.org/resource/architect> .
+                  ?person crm:P98i_was_born/crm:P7_took_place_at ?birthPlace .
+                }'
+        template='{{> architectsTemplate}}'>
+
+  <template id='architectsTemplate'>
+    List of female architects:
+    <ul>
+      {{log "outside loop" this}}
+      {{#each bindings}}
+        {{log "inside loop" this}}
+        <li>
+          <semantic-link iri='{{person.value}}'></semantic-link>
+          {{#if (eq birthPlace.value "http://www.researchspace.org/id/place/Cetinje")}}
+            <p>was born at <semantic-link iri='{{birthPlace.value}}'></semantic-link></p>
+          {{else}}
+            <p>was born elsewhere</p>
+          {{/if}}
+        </li>
+      {{/each}}
+    </ul>
+  </template>
+</semantic-query>
+      ]]>
+    </mp-code-block>
+
+    <p>Open the <b>console</b> in your browser to see loop results or more in general to debug your templates.</p>
+
+    <img class="img-fluid" src="/assets/images/help/log_debag.png">
+
+    <p>The full list of available built-in helpers is
+      <a href='https://handlebarsjs.com/guide/builtin-helpers.html' class="text-link-action" target="_blank">here</a>.
+      The Build-in helpers can be combined with the use of handlebar
+      <a href='https://handlebarsjs.com/api-reference/data-variables.html' class="text-link-action" target="_blank">@data variables</a>.
+    </p>
+    
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_partials">
+    <h4 style="margin-top: 25px;">Partials</h4>
+    <p>The <a href='https://handlebarsjs.com/guide/partials.html' class="text-link-action" target="_blank">handlebar partial syntax</a>
+        allows for code reuse by <b>incorporating templates</b> in other templates.
+        This can be done <b>inline</b> (within the same template and component scope) or <b>globally</b> 
+        (a template that can be referenced and incorporated in any other template in the system).
+      </p>
+
+      <h5 style="margin-top: 30px;">Reference a template inline </h5>
+      <p>It is possible to define a named template by adding <code><template id='template-name'>...</template></code> 
+        as a child to a markup element.
+        This happens within a declarative component, so <b>the template can be called only within this scope</b>.
+      </p>
+
+      <div class="alert alert-warning">
+        <div><b>Warning!</b></div>
+        The template MUST have a <b>single HTML root element</b>, the same rule also applies to includes.
+      </div>
+    
+      <mp-code-example show-code-by-default=true>
+        <![CDATA[
+<semantic-table query='SELECT * WHERE { VALUES(?object ?diameter) { ("Sun" 1391400) ("Moon" 3474) } }'
+                column-configuration='[{"variableName": "object", "displayName": "Planet"},
+                                        {"displayName": "Diameter", "cellTemplate": "{{> planet-diameter}}"}
+                                      ]'>
+
+  <template id='planet-diameter'><span>{{diameter.value}}&nbsp;<i>km</i></span></template>
+</semantic-table>
+        ]]>
+      </mp-code-example> 
+      
+      <p>It is also possible to nest named templates; the parent bindings are automatically accessible 
+        in nested templates if not explicitly overridden.</p>
+
+      <p>In the example below the architectsTemplate incorporates the birthPlaceTemplate using the id as reference. This happens within 
+        the semantic-query component and therefore, the birthplace template is only available within the semantic-query. 
+        You couldn’t call this template from outside this scope.</p>    
+
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+<semantic-query query=' PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                      SELECT ?person ?birthPlace {
+                        ?person rso:PX_has_profession  <http://www.researchspace.org/resource/architect> .
+                        ?person crm:P98i_was_born/crm:P7_took_place_at ?birthPlace .
+                      }'
+    
+  template='{{> architectsTemplate}}'>
+
+  <template id='architectsTemplate'>
+    List of female architects:
+    <ul>
+      {{#each bindings}}
+        <li>
+          <semantic-link iri='{{person.value}}'></semantic-link>
+          {{> birthPlaceTemplate place=birthPlace.value}}  
+        </li>
+      {{/each}}
+    </ul>
+  </template>
+
+  <template id="birthPlaceTemplate">
+    {{log "inside partial" this}}
+    <p>Place: <semantic-link iri='{{place}}'></semantic-link></p>
+  </template>
+
+</semantic-query>
+        ]]>
+      </mp-code-block> 
+
+
+    <h5 style="margin-top: 30px;">Reference a template globally</h5>
+    <p>A separate template page, with a <b>specific URI</b>, can be referenced and included into any other page in the system,
+      using the <a href='https://handlebarsjs.com/guide/partials.html#basic-partials' class="text-link-action" target="_blank">basic partial</a>
+        syntax <code>{{> prefix:templateName}}</code>.
+      The included template reference is automatically resolved by 
+      fetching the template source from the corresponding resource page.
+    </p>
+
+    <p>In the example below the architectsTemplate incorporates the separate template page called birthPlaceTemplatePage
+        using the basic partial 
+      <code>{{> rsp:birthPlaceTemplatePage place=birthPlace.value}}</code>.</p>
+
+    <mp-code-block mode='text/html'>
+      <![CDATA[
+<!-- rsp:birthPlaceTemplatePage template (http://www.researchspace.org/resource/rsp:birthPlaceTemplatePage) -->
+<p>Place: <semantic-link iri='{{place}}'></semantic-link></p>
+
+<!-- Main markup -->
+
+<!-- using remote rsp:birthPlaceTemplatePage template -->
+<semantic-query query=' PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                        SELECT ?person ?birthPlace {
+                          ?person rso:PX_has_profession <http://www.researchspace.org/resource/architect> .
+                          ?person crm:P98i_was_born/crm:P7_took_place_at ?birthPlace .
+                        }'
+    
+      template='{{> architectsTemplate}}'>
+
+  <template id='architectsTemplate'>
+    List of female architects:
+    <ul>
+      {{#each bindings}}
+        <li>
+          <semantic-link iri='{{person.value}}'></semantic-link>
+          {{> rsp:birthPlaceTemplatePage place=birthPlace.value}}
+        </li>
+      {{/each}}
+    </ul>
+  </template>  
+</semantic-query>
+      ]]>
+    </mp-code-block>
+
+    <p>The <code> > </code> symbol means that a new template page is being referenced with a full template URI. 
+      This template could also be incorporated into other templates in the system.</p>
+
+    <p class="alert alert-info">
+      <b>Note:</b> if no partial is registered under the name rsp:birthPlaceTemplatePage, an error occurs.
+    </p>
+
+    <p>Custom data can be passed to partials through 
+      <a href='https://handlebarsjs.com/guide/partials.html#partial-parameters' class="text-link-action" target="_blank">partial parameter</a> syntax. 
+      In the previous example, the source template passes the parameter <code>{{place}}</code> 
+      using <code>{{> rsp:birthPlaceTemplatePage place=birthPlace.value}}</code>, 
+      so that data can be passed from one template to another. 
+    </p>
+
+    <p>It is also possible to override a referenced template by defining a named template with the same IRI.</p>
+
+    <mp-code-block mode='text/html'>
+      <![CDATA[
+<!-- rsp:planet template (http://www.researchspace.org/resource/rsp:planet) -->
+<li><i class="fa fa-globe"></i>{{name.value}}</li>
+
+<!-- Main markup -->
+<!-- using remote rsp:planet template -->
+<semantic-query query='SELECT * WHERE { VALUES(?name) { ("Venus") ("Earth") ("Mars") } }'
+                template='<div>{{#each bindings}} {{> rsp:planet}} {{/each}}</div>'>
+</semantic-query>
+
+<!-- overriding remote template -->
+<semantic-query query='SELECT * WHERE { VALUES(?name) { ("Venus") ("Earth") ("Mars") } }'
+                template='<div>{{#each bindings}} {{> rsp:planet}} {{/each}}</div>'>
+<template id='http://www.researchspace.org/resource/rsp:planet'>
+  <li><b>{{name.value}};</b></li>
+</template>
+</semantic-query>
+      ]]>
+      </mp-code-block>
+
+      <h5 style="margin-top: 30px;">​​Partial blocks and inline partials</h5>
+      <p>The syntax for a 
+        <a href='https://handlebarsjs.com/guide/partials.html#partial-blocks' class="text-link-action" target="_blank">partial block</a>
+          looks like this:</p>
+      <pre>
+        <div><code>{{#> prefix:templateName}}</code></div>
+        <div>&nbsp;  &nbsp;<code>Default content</code></div>
+        <div><code>{{/prefix:templateName}}</code></div>
+      </pre>
+
+      <p>When using a partial block, instead of a basic partial, there’s the advantage that 
+        <b>if prefix:templateName is not available</b>, the content within the partial block will 
+        be rendered anyway (in the case above “Default content”).
+      </p>
+
+      <p>Adding in prefix:templateName template the special partial called 
+        <code>@partial-block</code>, it’s possible to pass inside the partial block 
+        <code>{{#> prefix:templateName}} {{/prefix:templateName}}</code> custom content that will be executed 
+        under the context of the partial at the time of the call.</p>
+
+      <mp-code-block mode='text/html'>
+          <![CDATA[
+<!-- prefix:templateName template (http://www.researchspace.org/resource/prefix:templateName) -->
+Site Content: {{> @partial-block}}
+
+<!-- Main markup using remote prefix:templateName template-->
+<div>
+  {{#> prefix:templateName }}
+    My new content
+  {{/prefix:templateName}}
+</div>
+
+<!-- Final render -->
+Site Content: My new content
+      ]]>
+      </mp-code-block>
+
+      <mp-code-block mode='text/html'>
+        <![CDATA[
+<!-- rsp:birthPlaceTemplatePage template (http://www.researchspace.org/resource/rsp:birthPlaceTemplatePage) -->
+<p>Place: <semantic-link iri='{{place}}'></semantic-link></p>
+{{> @partial-block }}
+
+<!-- Main markup using remote rsp:birthPlaceTemplatePage template -->
+<semantic-query query=' PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                        SELECT ?person ?birthPlace {
+                          ?person rso:PX_has_profession <http://www.researchspace.org/resource/architect> .
+                          ?person crm:P98i_was_born/crm:P7_took_place_at ?birthPlace .
+                        }'
+    
+                template='{{> architectsTemplate}}'>
+
+    <template id='architectsTemplate'>
+      List of female architects:
+        <ul>
+          {{#each bindings}}
+          <li>
+            <semantic-link iri='{{person.value}}'></semantic-link>
+            {{#> rsp:birthPlaceTemplatePage place=birthPlace.value}}
+                <div>We can pass here any HTML content or refer 
+                      to variables available inside the template, like iri='{{place}}'
+                </div>
+            {{/rsp:birthPlaceTemplatePage}}
+          </li>
+          {{/each}}
+        </ul>
+    </template>  
+</semantic-query>
+      ]]>
+      </mp-code-block>
+
+      <p>An 
+        <a href='https://handlebarsjs.com/guide/partials.html#inline-partials' class="text-link-action" target="_blank">inline partial</a>
+          looks like this:
+      </p>
+      <pre>
+        <div><code>{{#*inline "content"}}</code></div>
+        <div>&nbsp;  &nbsp;<code>My new content</code></div>
+        <div><code>{{/inline}}</code></div>
+      </pre>
+      
+
+      <p>With inline partials we can create <b>partials on-the-fly</b>. If we create a “content” inline partial and it exists on the 
+        same page as the partial block {{#> prefix:templateName}} {{/prefix:templateName}}, then the content within the 
+        inline partial (“My new content”) would be rendered in place of the partial block. The inline partial can also 
+        be used with the basic partial, with the only difference being that basic partials don’t have default content.</p>
+
+      <mp-code-block mode='text/html'>
+          <![CDATA[
+<!-- rsp:PersonCard template (http://www.researchspace.org/resource/rsp:PersonCard) -->
+<div>
+  <p>Person: <semantic-link iri='{{person}}'></semantic-link></p>
+  {{> content}}
+  <div>
+    {{> footer}}
+  </div>
+</div>
+
+<!-- Main markup using remote rsp:PersonCard template -->
+<semantic-query query=' PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                        SELECT ?person ?birthPlace {
+                          ?person crm:P2_has_type <http://www.researchspace.org/resource/architect> .
+                          ?person crm:P98i_was_born/crm:P7_took_place_at ?birthPlace .
+                        }'
+
+                template='{{> architectsTemplate}}'>
+
+  <template id='architectsTemplate'>
+    List of female architects:
+    <ul>
+      {{#each bindings}}
+        <li>
+          {{#> rsp:PersonCard person=person.value place=birthPlace.value}}
+          
+            {{#*inline "content"}}
+              <p>Here we can put, for example, an image or something else depending on context.</p>
+            {{/inline}}
+          
+            {{#*inline "footer"}}
+              <div>Birth Place: <semantic-link iri='{{place}}'></semantic-link></div>
+            {{/inline}}
+          
+          {{/rsp:PersonCard}}
+        </li>
+      {{/each}}
+    </ul>
+  </template>  
+</semantic-query>                    
+        ]]>
+      </mp-code-block>
+
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_helperFunctions">
+    <h4 style="margin-top: 25px;">Additional helper functions</h4>
+
+    <h5>Helper <code>{{#ifCond}} {{else}}</code></h5>
+    <p>Handlebars.js doesn't have any means to use comparison operators in templates, so
+        this function provides <b>conditional if</b> function for templates.</p>
+    <p>
+      Function signature is <code>ifCond value1 operator value2</code>, where operator can be 
+      one of <code>"==", "===", "!==", "&lsaquo;", "&lsaquo;=", "&rsaquo;", "&rsaquo;=", "&amp;&amp;", "||"</code>
+    </p>
+    <mp-code-block mode='text/html'>
+      <![CDATA[
+{{#ifCond value ">=" 0}}
+  <div>some content</div>
+{{else}}
+  <div>some other content</div>
+{{/ifCond}}
+      ]]>
+    </mp-code-block>
+
+    <hr class="divider">
+
+    <h5>Helper <code>{{#switch}}</code></h5>
+    <p>The switch pattern tests a statement for different results which is then applied to the matching case.</p>
+    <p>In the next example a semantic query produces results for person and birthplace. 
+      A semantic link is always created for the person, but the birthPlace specifically tests a specific case.</p>
+
+    <mp-code-block mode='text/html'>
+      <![CDATA[
+<semantic-query query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                        SELECT ?person ?birthPlace {
+                        ?person crm:P2_has_type <http://www.researchspace.org/resource/architect> .
+                        ?person crm:P98i_was_born/crm:P7_took_place_at ?birthPlace .
+                        }'
+      
+        template='{{> architectsTemplate}}'>
+
+  <template id='architectsTemplate'>
+    List of female architects:
+    <ul>
+      {{#each bindings}}
+        <li>
+          <semantic-link iri='{{person.value}}'></semantic-link>
+          {{#switch birthPlace.value}}
+            {{#case "http://www.researchspace.org/id/place/Cetinje" break=true}}
+              <p>was born at Cetinje</p>
+            {{/case}}
+            {{#case "http://www.researchspace.org/id/place/Vrpolje" break=true}}
+              <p>was born at  Vrpolje</p>
+            {{/case}}
+            {{#default}}
+              <p>was born elsewhere</p>
+            {{/default}}
+          {{/switch}}
+        </li>
+      {{/each}}
+    </ul>
+  </template>
+</semantic-query>
+      ]]>
+    </mp-code-block>                
+
+    <hr class="divider">
+
+    <h5>Helper <code>dateTimeFormat</code></h5>
+    <p>
+      Date-time formating function. Default format is  "Month name, day of month, year" - e.g 
+      "September 4 1986". It is possible to use any format supported by moment.js, see 
+      <a href='http://momentjs.com/docs/#/displaying/' class="text-link-action" target="_blank">Supported Formats</a> for more details.
+    </p>
+    <code>{{dateTimeFormat "2014-09-08T08:02:17-05:00" "YYYY MM DD"}}</code>
+
+    <hr class="divider">
+    <h5>Helper <code>isIri</code>, <code>isLiteral</code>, <code>isBnode</code></h5>
+    <p>Returns true if specified argument is IRI, literal or blank node respectively.</p>
+    <code>{{#if (isIri value)}} IRI: {{value.value)} {{/if}}</code>
+
+    <hr class="divider">
+    <h5>Helper <code>encodeUriComponent</code></h5>
+    <p>Encodes a URI component.</p>
+    <code>{{encodeUriComponent '?uri=http://example.com'}}</code>
+
+    <hr class="divider">
+    <h5>Helper <code>decodeUriComponent</code></h5>
+    <p>Decodes a URI component.</p>
+    <code>{{decodeUriComponent '%3Furi%3Dhttp%3A%2F%2Fexample.com'}}</code>
+    
+    <hr class="divider">
+    <h5>Helper <code>currentDateTime</code></h5>
+    <p>Returns the current system time. Default format is "DD.MM.YYYY HH:mm:ss.SSS"</p>
+    <code>{{currentDateTime}}</code>
+    <br>
+    <code>{{currentDateTime 'MM-DD-YYYY'}}</code>
+    
+    <hr class="divider">
+    <h5>Helper <code>ceil</code></h5>
+    <p>Returns the smallest integer greater than or equal to a given number.</p>
+    <code>{{ceil 123.456}}</code>
+    
+    <hr class="divider">
+    <h5>Helper <code>floor</code></h5>
+    <p>Returns the largest integer less than or equal to a given number.</p>
+    <code>{{floor 123.456}}</code>
+    
+    <hr class="divider">
+    <h5>Helper <code>round</code></h5>
+    <p>Returns the value of a number rounded to the nearest integer.</p>
+    <code>{{round 123.456}}</code>
+
+    <hr class="divider">
+    <h5>Helper <code>toFixed</code></h5>
+    <p>Returns a string representing a number in fixed-point notation.</p>
+    <code>{{toFixed 123.456 2}}</code>
+
+  </section>
+
+  <hr class="divider">
+
+  <section id="rs-doc_specialTemplates">
+    <h2>Special Templates</h2>
+    <p>The ResearchSpace system has the following default layout templates:</p>
+    <ul>
+      <li><b>header.hbs</b> a template applied as header in every page of the system.</li>
+      <li><b>footer.hbs</b> a template applied as footer in every page of the system.</li>
+      <li><b>no-permissions-page.hbs</b> an info page for users that don’t have security access.</li>
+      <li><b>login.hbs</b> the system login page.</li>
+      <li><b>html-head.hbs</b> and <b>main.hbs</b> including the HTML page layout with 
+        <code>head</code> and <code>body</code> applied in every page of the system.</li>
+    </ul>
+    <p class="alert alert-info">
+      ResearchSpace special default templates are available in Github  
+      <a href="https://github.com/researchspace/researchspace/tree/master/src/main/resources/org/researchspace/apps/default/config/page-layout"
+      class="text-link-action" target="_blank">here</a>.
+    </p>
+
+    <p>These special default templates can be overridden by custom versions in the <b>Custom App</b> feature. A custom app is a set of templates 
+      and config files that override default ones and can be stored separately. This means that different custom apps 
+      can be applied to the same application.</p>
+
+    <p>Inside the custom app directory, special templates can be found/added in the dedicated folder <code>custom-app/config/page-layout/</code></p>
+
+    <pre>
+      <div>config/page-layout/header.hbs</div>
+      <div>config/page-layout/footer.hbs</div>
+      <div>config/page-layout/no-permissions-page.hbs</div>
+      <div>config/page-layout/login.hbs</div>
+      <div>config/page-layout/html-head.hbs</div>
+      <div>config/page-layout/main.hbs</div>
+      </pre>
+
+    <p>To discover more look at the dedicated 
+      <semantic-link iri="[[resolvePrefix 'Help:AppsMechanism']]" target="_blank" class="text-link-action">App mechanism</semantic-link>.</p>
+
+    <hr class="divider">
+    <h3>Header and Footer</h3>
+    <p>These act like any other template but are applied to the top and bottom of every page 
+      in the system. Therefore if you don’t want a universal header and/or footer, you should 
+      consider disabling these and building your own header and footer into individual 
+      templates as and when required. </p>
+    <hr class="divider">
+    <h3>Login</h3>
+    <p>This provides a standard login form. This should not be changed functionally 
+      but the styling and structure can be altered to reflect general styling needs.</p>
+    <hr class="divider">
+    <h3>No-permissions-page</h3>
+    <p>This is just information to the user if there is no access permission. 
+      It is again provided to allow custom styling and messages.</p>
+    <hr class="divider">
+    <h3>Html-head</h3>
+    <p>This is inserted into html <code>head</code> for all pages. For example, <code>meta</code> tags.</p>
+    <hr class="divider">
+    <h3>Main</h3>
+    <p>HTML page main layout.</p>
+    <hr class="divider">
+    <h3>How the special templates are applied</h3>
+    <p>The process starts with the main application react component that is loaded
+        when a ResearchSpace page is loaded through the browser.</p>
+    
+    <div class="alert alert-info">
+      <b>Note on terminology:</b>
+      <ul>
+        <li>a page is the result of rendering a header, footer and template;</li>
+        <li>a template is one of the template types specified in the section templates;</li>
+        <li>header and footer are special types of system templates.</li>
+      </ul>
+    </div>
+
+    <p>The 
+      <a href="https://github.com/researchspace/researchspace/blob/master/src/main/web/app/app.ts#L290fetches"
+      class="text-link-action" target="_blank">app component</a> and renders the header and footer templates and invokes 
+      the pageViewer component that selects 
+      and renders the given page using the selected template, e.g. a “kind of” template for a given 
+      entity type. 
+    </p>
+
+    <p>The 
+      <a href="https://github.com/researchspace/researchspace/blob/master/src/main/web/app/page/PageViewer.ts#L55"
+      class="text-link-action" target="_blank">pageViewer component</a>
+      fetches and renders the template using the API. The logic of selecting the template is in the API. 
+      PageViewer simply transforms the results of the call to the API into Javascript (ReactJS).
+    </p>
+    
+    <p>
+      To see the details of the API implementation see 
+      <a href="https://github.com/researchspace/researchspace/blob/master/src/main/java/org/researchspace/rest/endpoint/TemplateEndpoint.java"
+      class="text-link-action" target="_blank">TemplateEndpoint.java</a>.
+    </p>
+
+  </section>
+
+[[#if includedTemplate]]
+[[else]]
+  </div>
+</div>
+[[/if]]

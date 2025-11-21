@@ -17,7 +17,7 @@
 
 package org.researchspace.security.sso.utils;
 
-import org.apache.shiro.util.Factory;
+import org.apache.shiro.lang.util.Factory;
 
 /**
  * Shiro value factory that can be used to enable override of default parameters

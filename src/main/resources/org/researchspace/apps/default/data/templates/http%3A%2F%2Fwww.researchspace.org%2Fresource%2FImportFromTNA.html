@@ -1,0 +1,180 @@
+<semantic-search>
+    <semantic-search-form-query query-template='{"queryString": "PREFIX tnadiscovery: <http://www.researchspace.org/resource/system/services/tnadiscovery/>
+                                                                SELECT ?subject WHERE {
+                                                                    BIND(CONCAT(\"\\\"\", ?query, \"\\\"\") AS ?q) .
+                                                                    SERVICE tnadiscovery:TNADiscoverySearchRecordService {
+                                                                    ?subject tnadiscovery:q ?q;
+                                                                    tnadiscovery:sps.catalogueLevels ?catalogueLevelInput;
+                                                                    tnadiscovery:sps.resultsPageSize 20;
+                                                                    tnadiscovery:sps.heldByCode \"TNA\";
+                                                                    tnadiscovery:sps.sortByOption \"REFERENCE_ASCENDING\";
+                                                                    tnadiscovery:hasReference ?reference;
+                                                                    tnadiscovery:hasId ?id;
+                                                                    tnadiscovery:hasDescription ?description;
+                                                                    tnadiscovery:hasCatalogueLevel ?catalogueLevel ;
+                                                                    tnadiscovery:hasScore ?score.
+                                                                    }
+                                                                }",
+                                                "arguments": {"query": {"type": "xsd:string"},
+                                                              "catalogueLevelInput": {"type": "xsd:string", "optional": true}
+                                                             }
+                                                }'
+                                fields='[
+                                            {
+                                                "id": "query",
+                                                "label": "Search for",
+                                                "xsdDatatype": "xsd:string",
+                                                "minOccurs": "1",
+                                                "maxOccurs": "1"
+                                            },
+                                            {
+                                                "id": "catalogueLevelInput",
+                                                "label": "Catalogue level",
+                                                "xsdDatatype": "xsd:string",
+                                                "minOccurs": "0",
+                                                "maxOccurs": "1",
+                                                "valueSetPattern": "SELECT ?value ?label { VALUES(?value ?label) { (\"Level3\" \"Series\") (\"Level6\" \"Piece\") (\"Level7\" \"Item\") } }"
+                                            }
+                                        ]'>
+        
+        <div style="display: flex; align-items: flex-start; gap: 10px; width: 100%; flex: 1;">
+            <div style="flex: 1;">
+                <semantic-form-text-input for="query" render-header="false" placeholder="Search by catalogue reference number or description"></semantic-form-text-input>
+            </div>
+            <div style="flex: 1;">
+                <semantic-form-select-input for="catalogueLevelInput" render-header="false" placeholder='Select catalogue level' readonly-resource="true"></semantic-form-select-input>
+            </div>
+            <button type='button' name='submit' className='btn btn-action' style="height: 37px;">Search</button>
+        </div>
+    </semantic-search-form-query>
+
+    <div class='rs-result-holder' style="padding-top: 10px;">
+        <semantic-search-result-holder>
+            <semantic-search-result id='table'> 
+                <semantic-context repository='ephedra'>
+                    <div class="TNAapiResultsTable">
+                        <semantic-table id='semantic-search-result-table'
+                                        query='SELECT DISTINCT ?reference ?cleanedDescription ?catalogueLevel ?id
+                                                WHERE {
+                                                    FILTER(?catalogueLevel in (3, 6, 7)) .
+                                                    BIND (REPLACE(STR(?description), "\"", "") as ?cleanedDescription)
+                                                } ORDER BY ?reference'
+
+                                        number-of-displayed-rows=20
+                                        options='{"showFilter":true}' 
+                                        column-configuration='[{"displayName": "Reference", "variableName": "reference", "cellTemplate": "{{> reference}}" },
+                                                                {"displayName": "Catalogue level", "variableName": "catalogueLevel", "cellTemplate": "{{> catalogueLevel}}" },
+                                                                {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}"},
+                                                                {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
+                                                            ]'
+                                        >
+                            <template id='reference'>
+                                <div>
+                                    <a  class="text-link-action" 
+                                        target="_blank" 
+                                        href="https://discovery.nationalarchives.gov.uk/details/r/{{id.value}}"
+                                        title="https://discovery.nationalarchives.gov.uk/details/r/{{id.value}}">
+                                        {{reference.value}}
+                                    </a> 
+                                </div>
+                                
+                            </template>
+
+                            <template id='description'>
+                                <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                    {{cleanedDescription.value}}
+                                </mp-text-truncate>
+                            </template>
+                            
+                            <template id='catalogueLevel'>
+                                {{#switch catalogueLevel.value}}
+                                    {{#case "3" break=true}}
+                                        Series
+                                    {{/case}}
+                                    {{#case "6" break=true}}
+                                        Piece
+                                    {{/case}}
+                                    {{#case "7" break=true}}
+                                        Item
+                                    {{/case}}
+                                    {{#default}}
+                                        {{catalogueLevel.value}}
+                                    {{/default}}
+                                {{/switch}}
+                            </template>
+
+                            <template id='actions'>
+                                <div> 
+                                    <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
+                                        <semantic-query query='SELECT DISTINCT ?TNAResourceURI WHERE {
+                                                                BIND(IRI(CONCAT("https://discovery.nationalarchives.gov.uk/details/r/", STR("{{id.value}}"))) AS ?TNAResourceURI)
+                                                            }'
+                                                        
+                                                    template='{{> template}}'>
+                                            
+                                            <template id='template'>
+                                                <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                                                type='apiResourceImportInModal' 
+                                                                data='{"apiResourceURI": "{{bindings.0.TNAResourceURI.value}}", 
+                                                                        "apiResourceName": "{{reference.value}}", 
+                                                                        "apiResourceMuseumId": "{{reference.value}}", 
+                                                                        "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/catalogue_reference_number", 
+                                                                        "apiResourceSystemId": "{{id.value}}",
+                                                                        "apiResourceDescription": "{{cleanedDescription.value}}"
+                                                                    }' 
+                                                            >
+                                                    <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
+                                                </mp-event-trigger>
+                                            </template>
+                                        </semantic-query> 
+
+                                        <semantic-query query='SELECT DISTINCT ?existingRecord ?existingRecordLabel WHERE {
+                                                                BIND(IRI(CONCAT("https://discovery.nationalarchives.gov.uk/details/r/", STR("{{id.value}}"))) AS ?TNAResourceURI)
+
+                                                                ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                                                ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                                ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                                ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                                ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                                ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                                ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                                ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                                ?importFromExternalSource crmdig:L14_transferred ?TNAResourceURI .
+                                                                ?TNAResourceURI a crmdig:D1_Digital_Object .
+                                                                ?TNAResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+
+                                                                ?existingRecord crm:P1_is_identified_by ?appellation . 
+                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                ?appellation crm:P190_has_symbolic_content ?existingRecordLabel .        
+                                                                
+                                                            }'
+                                                        
+                                                    template='{{> template}}'>
+                                            
+                                            <template id='template'>
+                                                <bs-dropdown-button pull-right=true id='{{viewId}}-open-record-dropdown-{{__semanticTableIndex.value}}' title="Open record">
+                                                    {{#each bindings}}
+                                                        <mp-event-trigger id='{{../viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                                            type='Dashboard.AddFrame'
+                                                                            data='{"viewId":"resource-editor", 
+                                                                                    "resourceIri":"{{existingRecord.value}}",
+                                                                                    "entityTypeConfig": "{{domainConfig}}",
+                                                                                    "mode":"edit" }' 
+                                                                            targets='["thinking-frames"]'>
+                                                            <bs-menu-item draggable='true'>{{existingRecordLabel.value}}</bs-menu-item>
+                                                        </mp-event-trigger>
+                                                    {{/each}}
+                                                </bs-dropdown-button>
+                                            </template>
+                                        </semantic-query> 
+                                    </div>
+                                </div>
+                            </template>
+
+                        </semantic-table>
+                    </div>
+                </semantic-context>
+            </semantic-search-result>
+        </semantic-search-result-holder>
+    </div>
+</semantic-search>

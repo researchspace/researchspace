@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -45,8 +46,8 @@ export class NavigateToIRI extends React.Component<NavigateToIRIProps, State> {
   }
 
   static defaultProps = {
-    placeholder: 'Enter the full IRI to navigate to the resource page, e.g http://example.org/bob#me',
-    buttonCaption: 'Navigate',
+    placeholder: 'Enter full page IRI, e.g http://example.org/bob#me',
+    buttonCaption: 'Go to template',
   };
 
   render() {
@@ -60,11 +61,11 @@ export class NavigateToIRI extends React.Component<NavigateToIRIProps, State> {
               value={this.state.value}
               onChange={this.onValueChange}
             />
-            <InputGroup.Button>
-              <Button bsStyle="success" disabled={this.isExploreDisabled()} onClick={this.onClick}>
+            <div>
+              <Button bsStyle="default" className='btn-action' disabled={this.isExploreDisabled()} onClick={this.onClick}>
                 {this.props.buttonCaption}
               </Button>
-            </InputGroup.Button>
+            </div>
           </InputGroup>
           {this.state.error ? (
             <HelpBlock>Can't navigate to the resource? The value is not a valid IRI.</HelpBlock>

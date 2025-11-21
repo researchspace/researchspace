@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -38,17 +39,15 @@ export class NavigationConfirmationDialog extends React.Component<Props, {}> {
         </Modal.Header>
         <Modal.Body>
           <p>{message}</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <ButtonGroup>
-            <Button bsStyle="primary" onClick={(e) => onConfirm(false)}>
+          <div className='form-btn-group'>
+            <Button bsStyle="default" onClick={(e) => onConfirm(false)}>
               Stay
             </Button>
-            <Button bsStyle="danger" onClick={(e) => onConfirm(true)}>
+            <Button bsStyle="default" className='btn-action' onClick={(e) => onConfirm(true)}>
               Leave
             </Button>
-          </ButtonGroup>
-        </Modal.Footer>
+          </div>
+        </Modal.Body>
       </Modal>
     );
     return dialog;

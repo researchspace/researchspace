@@ -102,6 +102,7 @@ export class SplitPaneComponent extends Component<Props, State> {
     defaultSize: 300,
     defaultOpen: true,
     navHeight: 92, // our default nav + breadcrumbs size
+    persistResize: false,
   };
 
   private readonly cancellation = new Cancellation();
@@ -153,10 +154,10 @@ export class SplitPaneComponent extends Component<Props, State> {
     const newIsOpen = isOpen === undefined ? !this.state.isOpen : isOpen;
     this.setState({isOpen: newIsOpen, size}, () => {
       if (this.isPersistResize()) {
-        LocalStorageState.update(this.getLSIdentifier(), {
+         LocalStorageState.update(this.getLSIdentifier(), {
           isOpen: this.state.isOpen,
           size: this.state.size,
-        });
+        }); 
       }
 
       this.triggerWindowResize();

@@ -1,0 +1,182 @@
+@prefix rsp: <http://www.researchspace.org/resource/> .
+@prefix rs: <http://www.researchspace.org/ontology/> .
+@prefix User: <http://www.researchspace.org/resource/user/> .
+@prefix Help: <http://help.researchspace.org/resource/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/> .
+@prefix rshelp: <http://researchspace.org/help/> .
+@prefix crmsci: <http://www.cidoc-crm.org/extensions/crmsci/> .
+@prefix crmgeo: <http://www.cidoc-crm.org/extensions/crmgeo/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix crminfluence: <http://www.cidoc-crm.org/extensions/influence/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix crminf: <http://www.cidoc-crm.org/extensions/crminf/> .
+@prefix Admin: <http://www.researchspace.org/resource/admin/> .
+@prefix bds: <http://www.bigdata.com/rdf/search#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix crmba: <http://www.cidoc-crm.org/extensions/crmba/> .
+@prefix ontodia: <http://ontodia.org/schema/v1#> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/extensions/crmarchaeo/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix lrmoo: <http://iflastandards.info/ns/lrm/lrmoo/> .
+@prefix crmtex: <http://www.cidoc-crm.org/extensions/crmtex/> .
+
+<http://www.researchspace.org/ontology/context> {
+
+  <http://www.researchspace.org/ontology/> a owl:Ontology;
+    rdfs:label "ResearchSpace ontology"@en .
+
+  rs:Relationship a owl:Class;
+    rdfs:label "Relationship"@en;
+    rdfs:comment "This typically models the long-term relationship of two instances of E21 Person. This would indicate interaction that would impact the attitudes or beliefs of the participants. ";
+    rdfs:subClassOf crm:E2_Temporal_Entity . 
+
+  rs:EX_Digital_Image a owl:Class;
+    rdfs:comment "Digital images are both CRM visual items and digital objects according to CRMdig.";
+    rdfs:subClassOf crm:E36_Visual_Item, crmdig:D1_Digital_Object;
+    rdfs:label "Digital image"@en .
+
+  rs:EX_Digital_Image_Region a owl:Class;
+    rdfs:label "Digital image region"@en;
+    rdfs:comment "Image regions are the direct result of a digital machine event on an digital image according to CRMdig.";
+    rdfs:subClassOf crm:E36_Visual_Item, crmdig:D9_Data_Object . 
+  
+  rs:EX_File a owl:Class;
+    rdfs:comment "Digital file is subclass of CRMdig digital object.";
+    rdfs:subClassOf crmdig:D1_Digital_Object;
+    rdfs:label "Digital file"@en .
+
+  rs:EX_Assertion a owl:Class;
+    rdfs:label "Assertion"@en ;
+    rdfs:subClassOf crm:E7_Activity;
+    rdfs:comment "Records the beliefs asserted into the system by a given user" .
+
+  rs:PX_binds a owl:ObjectProperty;
+    rdfs:label "bind"@en;
+    rdfs:domain rs:Relationship;
+    rdfs:range crm:E21_Person;
+    rdfs:comment "Relationship that binds a person ." .
+
+  rs:PX_is_bind_by a owl:ObjectProperty;
+    rdfs:label "Is bind by"@en;
+    rdfs:domain crm:E21_Person;
+    rdfs:range rs:Relationship;
+    rdfs:comment "Person bound by the relationship." .
+
+  rs:PX_to a owl:ObjectProperty;
+    rdfs:label "Bound to"@en;
+    rdfs:domain rs:Relationship;
+    rdfs:range crm:E21_Person;
+    rdfs:comment "Person the relationship is bound to. " .
+  
+  rs:PX_display_wrap a owl:DatatypeProperty;
+    rdfs:label "display wrap"@en;
+    rdfs:comment "This predicate is to encapsulate text/notes which are for indexing and to explain in a text format structured data represented in RDF";
+    rdfs:range xsd:string;
+    rdfs:domain crm:E1_CRM_Entity;
+    rdfs:subPropertyOf crm:P3_has_note .
+  
+  rs:PX_has_main_representation a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P138i_has_representation;
+    rdfs:label "has main representation"@en;
+    rdfs:range rs:EX_Digital_Image;
+    rdfs:comment "This is to identifier the primary representation an object may have";
+    rdfs:domain crm:E1_CRM_Entity;
+    owl:inverseOf rs:PX_main_represents .
+
+  rs:PX_main_represents a owl:ObjectProperty;
+    rdfs:label "is main representation of"@en ;
+    owl:inverseOf rs:PX_has_main_representation;
+    rdfs:subPropertyOf crm:P138_represents;
+    rdfs:domain rs:EX_Digital_Image;
+    rdfs:range crm:E1_CRM_Entity;
+    rdfs:comment "This is to identifier the primary representation of an entity" .
+
+  rs:viewport a owl:DatatypeProperty;
+    rdfs:label "viewport"@en;
+    rdfs:range xsd:string;
+    rdfs:domain rs:EX_Digital_Image_Region .
+
+  rs:boundingBox a owl:DatatypeProperty;
+    rdfs:label "region bounding box"@en;
+    rdfs:range xsd:string;
+    rdfs:domain rs:EX_Digital_Image_Region .
+  
+  rs:PX_gender a owl:ObjectProperty;
+    rdfs:label "gender"@en;
+    rdfs:range crm:E55_Type;
+    rdfs:domain crm:E1_CRM_Entity;
+    rdfs:subPropertyOf crm:P2_has_type .
+  
+  rs:PX_escapement a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P2_has_type;
+    rdfs:range crm:E55_Type;
+    rdfs:domain crm:E1_CRM_Entity;
+    rdfs:label "escapement"@en .
+  
+  rs:PX_commemorates a owl:ObjectProperty;
+    rdfs:subPropertyOf crm:P67_refers_to;
+    rdfs:range crm:E1_CRM_Entity;
+    rdfs:domain crm:E89_Propositional_Object;
+    rdfs:label "commemorates"@en .
+  
+  rs:PX_asserts rdfs:domain rs:EX_Assertion;
+    rdfs:range crminf:I2_Belief;
+    rdfs:label "asserts"@en ;
+    rdfs:type owl:ObjectProperty .
+    
+  rs:PX_nationality a owl:ObjectProperty;
+    rdfs:label "nationality"@en ;
+    rdfs:subPropertyOf crm:P107i_is_current_or_former_member_of;
+    # rdfs:comment "This is the nationality of an E39 Actor.  It is a sub-property of P107i (is current or former member of) - thus the Nation is modelled as a group (E74)";
+    rdfs:range crm:E74_Group;
+    rdfs:domain crm:E39_Actor .
+  
+  rs:PX_likelihood a owl:ObjectProperty;
+    rdfs:comment "BM Likelihood";
+    rdfs:label "likelihood"@en ;
+    rdfs:range crm:E55_Type;
+    rdfs:domain crm:E1_CRM_Entity;
+    rdfs:subPropertyOf crm:P2_has_type .
+  
+  rs:PX_profession a owl:ObjectProperty;
+    rdfs:label "profession"@en ;
+    rdfs:subPropertyOf crm:P107i_is_current_or_former_member_of;
+    rdfs:range crm:E74_Group;
+    # rdfs:comment "This is the profession of an E39 Actor.  It is a sub-property of P107i (is current or former member of) - thus the profession is modelled as a group (E74)";
+    rdfs:domain crm:E39_Actor .
+  
+  rs:targetsEntity a owl:ObjectProperty;
+    rdfs:domain crminf:I1_Argumentation;
+    rdfs:label "targets entity"@en ;
+    rdfs:range crm:E1_CRM_Entity .
+  
+  rs:PX_object_type a owl:ObjectProperty;
+    rdfs:label "object type"@en ;
+    rdfs:range crm:E55_Type;
+    rdfs:domain crm:E1_CRM_Entity;
+    rdfs:subPropertyOf crm:P2_has_type .
+
+  rs:PX_format a owl:ObjectProperty;
+    rdfs:label "format"@en ;
+    rdfs:range crm:E55_Type;
+    rdfs:domain crm:E1_CRM_Entity;
+    rdfs:subPropertyOf crm:P2_has_type .
+
+  rs:PX_media a owl:ObjectProperty;
+    rdfs:label "media"@en ;
+    rdfs:range crm:E55_Type;
+    rdfs:domain crm:E1_CRM_Entity;
+    rdfs:subPropertyOf crm:P2_has_type .
+  
+  rs:targetsField a owl:ObjectProperty;
+    rdfs:comment ""@en;
+    rdfs:label "targets field"@en ;
+    rdfs:domain crminf:I1_Argumentation .
+  
+}

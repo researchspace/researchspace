@@ -35,6 +35,7 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { InlineValuesEditor, ConfigRecord } from './InlineValuesEditor';
 
 import * as styles from './ConfigManager.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface ConfigManagerProps {
   group?: string;
@@ -75,10 +76,10 @@ export class ConfigManager extends Component<ConfigManagerProps, State> {
       <div className={styles.component}>
         {this.getTable()}
         {this.props.editable ? null : (
-          <i>
+          <Alert alert={AlertType.WARNING} message="">
             {capitalizeFirstLetter(this.props.group)}
             &nbsp;configuration group is not editable during runtime.
-          </i>
+          </Alert>
         )}
       </div>
     );
@@ -153,11 +154,12 @@ export class ConfigManager extends Component<ConfigManagerProps, State> {
                     ))}
                   </div>
                   <Button
-                    className="btn-grey"
+                    className="btn-default btn-textAndIcon"
                     disabled={!editable || savingProperty}
                     onClick={() => setEditedProperty(record.name)}
                   >
-                    <span className="fa fa-pencil btn-icon-left" /> Edit
+                    <Icon iconType='rounded' iconName='edit' symbol />
+                    Edit
                   </Button>
                 </div>
               )}

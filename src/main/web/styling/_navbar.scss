@@ -1,6 +1,7 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,12 +23,17 @@
   height: $nav-height;
   border: none;
   font-size: 14px;
+  font-weight: 600;
   margin-bottom: 0px;
   color: $color-navbar;
 
-  .container {
+  i {
+    color: $color-navbar;
+    font-size: 22px;
+  }
 
-    height: 100%;
+  a {
+    color: $color-navbar;
   }
 }
 
@@ -47,40 +53,35 @@
 
 .navbar-default {
   background-color: $color-navbar-bg;
-
-  .navbar-brand {
-
-    color: $color-dark;
-
-    &:hover, 
-    &:focus {
-      color: $color-dark--op75;
-    }
-  }
+  box-shadow: 0px 1px 2px 0px #00000061;
 
   & .navbar-toggle {
-    border-color: #dedede;
-    border-radius: 6px;
-    margin-top: 0;
-    margin-bottom: 0;
 
-    &:hover,
-    &:focus {
-      background-color: $color-primary-100;
-    }
-
-    & .icon-bar {
-      background-color: $color-white;
-    }
+    display: none;
   }
 
+  & .navbar-nav {
+
+    .dropdown {
+
+      &.open,
+      &:hover,
+      &:focus {
+
+        .dropdown-menu {
+          display: block;
+          max-height: unset;
+        }
+      }
+    }
+  }
+  
   & .navbar-nav > li > a {
     color: $color-navbar;
 
     &:focus,
     &:hover {
         background-color: inherit;
-      
     }
   }
 
@@ -90,44 +91,7 @@
 
     color: $color-navbar;
     opacity: 0.6;
-  }
-
-  & .navbar-nav.icon-btns-container > li > a {
-
-    padding: 0;
-  }
-
-  .nav-iconAndLabel {
-
-    color: $color-navbar;
-    width: 76px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    line-height: 1;
-    font-size: 12px;
-    padding: 8px;
-    font-weight: 700;
-    border-radius: 5px;
-
-    i {
-
-      font-size: 19px;
-      padding-bottom: 8px;
-      color: inherit;
-
-      &.rs-icon-diagram {
-        font-size: 23px;
-        padding-bottom: 5px;
-      }
-    }
-
-    &:focus,
-    &:hover {
-      background-color: #ffffff24;
-    
-    }
+    background-color: $color-dark;
   }
 
   .vl {
@@ -138,279 +102,238 @@
     width: 60px;
   }
 
-  .navbar-nav > .open > a,
-  .navbar-nav > .open > a:hover,
-  .navbar-nav > .open > a:focus {
-    background-color: $color-dark;
-  }
-
-/*   a#main-header-dropdown {
-    font-family: $font-family-base;
-    font-size: 13.5px;
-    background-color: transparent;
-    font-weight: 600;
-
-    &:hover {
-      color: $color-navbar;
-      opacity: 0.7;
-    }
-
-    &:focus {
-      outline: none;
-      border: none;
-      color: $color-navbar;
-      opacity: 0.7;
-    }
-
-    .caret {
-      margin-left: 8px;
-    }
-  } */
-
-  
-  .dropdown:hover .dropdown-menu {
-    display: block;
-  }
-  
-  #iconAndText-dropdown {
-    height: 100%;
+  #navbar-dropdown {
 
     color: $color-navbar;
-    width: 76px;
+    background-color: $color-navbar-btn-bg;
     border: none;
-    border-radius: 5px;
-    padding: 8px;
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
+/*     display: flex;
+    align-items: center;
+    gap: 4px; */
 
-    &:focus,
-    &:hover {
-      background-color: #ffffff24;
-    }
 
     & .navDropdown-iconAndLabel {
 
       display: flex;
-      flex-direction: column;
       align-items: center;
-      text-align: center;
+      gap: 8px;
       line-height: 1;
-      font-size: 12px;
-      font-weight: 700;
-
-      i {
-        font-size: 19px;
-        padding-bottom: 8px;
-        color: inherit;
-      }
     }
+  }
+
+  .user-dropdown {
+    margin-right: 20px;
   }
 
   .dropdown-menu {
+    margin: 0;
+  }
 
-    padding: 5px 0;
-    border: 1px solid $input-border-color;
-    background-color: $color-white;
+  .dropdown-sectionTitle {
+
+    padding: 6px 25px 10px 25px;
+    color: $color-dark;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.1px;
+    border-bottom: 1px solid $color-light;
+  }
+
+  .dropdown-grid-container {
+
+    padding: 10px;
+    font-weight: 500;
+    width: 700px;
+    max-width: 700px;
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-auto-rows: auto;
 
     & > li > a {
 
-      color: $color-dark;
-      font-size: 12.5px;
-      font-weight: 600;
-      line-height: 1.2;
-      padding: 7px 18px;
+      align-items: start;
+      gap: 15px;
+      padding: 20px 20px 20px 15px;
+      border-radius: $border-radius;
+    }
 
-      &:focus,
-      &:hover {
-        background-color: $color-primary-50;
-        color: $color-dark;
-        font-weight: 600;
-        font-size: 12.5px;
+    .dropdown-item-iconContainer {
+
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border: 1px solid $color-light;
+      border-radius: 4px;
+      background-color: $color-white;
+
+      i {
+        font-size: 25px;
       }
     }
 
-    & .divider {
-      margin: 3px 0px 5px 0px;
-      height: 0.8px;
+    .dropdown-item-title {
+
+      color: $color-dark;
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: -2px;
+    }
+
+    .dropdown-item-description {
+      color: $color-secondary;
+      font-size: 12px;
+      white-space: pre-wrap;
+      padding-top: 2px;
     }
   }
 
-  .align-right-dropdown .dropdown-menu {
-
-    right: 0;
-    left: unset;
+  .btn {
+    height: 36px;
+    border-radius: 3px;
   }
 
-  .text-dropdown {
+  .btn-icon, 
+  .btn a {
 
+    display: flex;
+    align-items: center;
+  }
+
+  .btn-icon {
+
+    padding: 8px;
+    margin-left: 5px;
+    background-color: $color-navbar-btn-bg;
+
+    i, span {
+
+      color: $color-navbar;
+    }
+
+  }
+
+  .btn-icon:active, 
+  .btn-icon:active:hover, 
+  .btn-icon:active:focus, 
+  .btn-icon:active.focus, 
+  .btn-icon.active, 
+  .btn-icon.active:hover, 
+  .btn-icon.active:focus, 
+  .btn-icon.active.focus {
+
+    background-color: transparent;
+  }
+
+  .btn-default {
+    background-color: $color-navbar-btn-bg;
     color: $color-navbar;
-    font-size: 13.5px;
-    font-weight: 600;
+    border-color: transparent;
 
-    & > a {
-/*       &:hover {
-        color: $color-navbar;
-        opacity: 0.6;
-      } */
-
-      /* &:focus {
-        outline: none;
-        border: none;
-        color: $color-navbar;
-        opacity: 0.6;
-      } */
-    }
-
-    .caret {
-      margin-left: 8px;
-    }
-
-    & .dropdown-menu {
-      top: 55px;
+    &:hover,
+    &:focus,
+    &:focus-within {
+      background-color: $color-navbar-btn-bg;
+      color: $color-navbar;
+      border-color: transparent;
     }
   }
+}
 
-  .rs-dropdown-sectionTitle {
-    font-family: $font-family-base;
-    font-weight: 800;
-    color: $color-dark;
-    font-size: 12px;
-    line-height: 1.2;
-    padding: 5px 8px !important;
-    letter-spacing: 0.2px;
-  }
+.rs-header {
+  padding: 0 10px 0 4px;
+}
 
-  .rs-documentation-icon {
-    font-size: 18px;
-    padding: 16px 6px 10px 35px;
-  }
-
-  /* .rs-setting-icon {
-    font-size: 17px;
-  } */
-
-  .rs-navigate-input {
-    padding-right: 50px;
-  }
-
-  .rs-icon {
-
-    color: $color-navbar;
-    font-size: 16px;
-  }
+.navbar-header {
+  display: flex;
+  align-items: center;
 }
 
 .rs-header-logo {
   border: none;
-  padding-left: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  height: 36px;
+  padding: 8px 3px 5px;
+  border-radius: 2px;
+//  border: 1px solid $color-navbar-btn-bg;
+//  background-color: $color-navbar-btn-bg;
 
   &:hover,
   &:focus {
-    color: $color-navbar;
     text-decoration: none;
   }
+
+  img {
+    height: 25px;
+  }
+}
+
+.rs-header-title {
+  font-size: 17px;
+  font-weight: 200;
+  letter-spacing: .1px;
+//  color: #4879ff;
+}
+
+.navbar-left {
+
+  display: flex;
+  gap: 7px;
+}
+
+.navbar-right {
+
+  display: flex;
+  align-items: center;
 }
 
 .nav > li > a {
   padding: 0px 15px;
 }
 
-.user-dropdown_item {
-  display: flex;
-  align-items: center;
-
-  .rs-icon-user_round,
-  .rs-icon-logout {
-    color: $color-dark;
-    margin-right: 9px;
-  }
-}
-
 @media (max-width: 767px) {
 
-  .navbar {
-    height: auto;
+  .navbar-right {
+    margin: 0;
   }
 
-  .navbar-header {
+  .navbar-default .navbar-toggle {
+    border: none;
+    margin: 0;
+    display: flex; 
+    justify-content:space-between;
     width: 100%;
-    display: flex;
     align-items: center;
-    padding: 15px 46px;
-  }
+    gap: 10px;
+    padding: 0 3px;
 
-  .navbar-nav {
-    margin: 0px;
+    &:hover,
+    &:focus {
+      background-color: transparent;
+    }
 
-    & .dropdown-menu .divider {
-      height: 0.8px;
-      background-color: #e5e5e54d;
-      margin: 7px 0px;
+    img {
+      height: 25px;
+      cursor: pointer;
     }
   }
 
-  .navbar-default {
-    .dropdown-menu {
-      margin-top: 0px;
+  .rs-header-logo {
 
-      & > li > a {
-        font-size: 14.5px;
-        padding: 6px 28px !important;
-        cursor: pointer;
-  
-        &:hover,
-        &:focus {
-          font-size: 14.5px;
-        }
-      }
-    }
-
-    .rs-nav-resources--margin.open .rs-dropdown-sectionTitle {
-      font-size: 14px;
-      color: $color-navbar;
-    }
-
-    & .navbar-nav .open .dropdown-menu > li > a:hover,
-    & .navbar-nav .open .dropdown-menu > li > a:focus {
-      background-color: rgba(145, 137, 184, 0.1);
-      text-shadow: 0px 0px 0.5px $color-white;
-    }
+    display: none;
   }
-
-  .rs-nav-resources--margin {
-    
-    & .btn-group.special {
-      display: flex;
-      flex-direction: column;
-    }
-
-    & .btn-group .btn {
-      display: flex;
-      flex-direction: row;
-      justify-content: start;
-    }
-  }
-
-  .navbar-default .navbar-nav > li > a,
-  .navbar-nav .btn {
-    text-transform: uppercase;
-    font-size: 15px !important;
-  }
-
-  .nav > li > a {
-    padding: 4px 15px;
-  }
-
 }
 
 @media (min-width: 768px) {
-  
 
   .collapse.navbar-collapse {
     display: flex !important;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
   }
 
   .navbar-collapse::before,
@@ -429,97 +352,299 @@
     }
   }
 
-  .rs-nav-about--margin {
-    margin-left: 25px;
+}
+
+#new-resource-tab-container {
+  
+  margin-top: -15px;
+  color: $color-dark;
+  font-size: 15px;
+
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  & .nav.nav-tabs {
+    margin: 0;
   }
 
-  .rs-nav-resources--margin {
-    margin-left: 15px;
+  .tab-content {
+    flex: 1;
+    overflow: auto;
+    margin-top: 10px;
+    padding-right: 5px;
+
+    .tab-pane {
+      height: 100%;
+      padding: 0;
+    }
+  }
+
+  .resources-tab-container {
+
+    display: flex;
+    flex-wrap: wrap;
+    height: 100%;
+
+    .griddle-custom-row {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fill, 120px);
+      grid-auto-flow: row dense;
+      gap: 15px;
+    }
+
+  }
+
+  .resources-tab-table {
+    flex: 1;
+  }
+
+  .new-resource-card {
+
+    position: relative;
+
+    height: 120px;
+    border:1px solid $color-border;
+    border-radius:$border-radius;
+    background-color: $color-white;
+    padding: 10px;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    text-align: center;
+
+    cursor: pointer;
+
+    &:hover,
+    &:focus,
+    &:focus-within {
+
+      background-color: $color-lighter;
+
+      i.new-resource-card-info {
+
+        visibility:visible;
+      }
+    }
+
+    i {
+      color: $color-base;
+      font-size: 35px;
+    }
+  }
+
+  i.new-resource-card-info {
+
+    position: absolute; 
+    right: 0; 
+    top: 0;
+    font-size: 18px; border-left: 1px solid #e0e0e4; border-bottom:1px solid #e0e0e4;color: #b0b0ba; padding:5px;
+    visibility: hidden;
+  }
+
+  .resource-info-area-container {
+
+    width: 20%;
+    min-width: 300px;
+    margin-left: 10px;
+    border: 1px solid $color-border;
+    background-color: $color-white;
+    border-radius: $border-radius;
+  }
+
+  .resource-info-area-header {
+
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 5px 5px 18px;
+    border-bottom: 1px solid $color-border;
+
+    b::first-letter {
+
+      text-transform: uppercase;
+    }
+
+    .btn-icon {
+      padding: 4px;
+    }
+  }
+
+}
+
+.resource-info-area-content {
+  padding: 15px 18px;
+  font-size: $font-size-base;
+  line-height: 1.5;
+
+  .resource-info-area-section-title {
+    margin-bottom: 3px;
+
+    &::first-letter {
+
+      text-transform: uppercase;
+      }
+  }
+
+  p:last-of-type {
+    margin: 0;
+  }
+
+  .text-section {
+    color: $color-dark;
+    border: 1px solid $color-border;
+    border-radius: $border-radius;
+    background-color: $color-lighter;
+
+    display: block;
+    font-size: 14px;
+    line-height: 1.43;
+    margin: 0 0 20px;
+    padding: 10px;
+  }
+
+  .example-section {
+    white-space: pre-line;
   }
 }
 
-@media (min-width: 768px) and (max-width: 949px) {
-  .navbar-nav > li > a {
-    padding: 0 6px;
-  }
-
-  .navbar-nav > li > a {
-    font-size: 11.5px;
-  }
-
-  .navbar-default {
-    .rs-documentation-icon {
-      font-size: 16px;
-      padding: 16px 6px 10px 15px;
-    }
-
-    /* .rs-setting-icon {
-      font-size: 16px;
-    } */
-
-    .rs-body-m-M {
-      font-size: 11.5px;
-    }
-
-    input {
-      width: 100px;
-    }
-
-    .rs-navigate-input {
-      padding-right: 5px;
-    }
-
-    .rs-search-icon {
-      height: 21px;
-      width: 21px;
-    }
-  }
+.header-contact-modal__body {
+  padding: 0;
 }
 
-@media (min-width: 950px) and (max-width: 1100px) {
-  .navbar-nav > li > a {
-    padding: 0 10px;
+.contact-container {
+
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  grid-template-rows: 200px auto;
+  grid-template-areas:
+      ". contactHeader . "
+      ". contactContent .";
+  column-gap: 40px;
+  row-gap: 50px;
+
+  .contact-motif {
+    grid-column: 1 / -1;
+    grid-row: 1 / 2;
+    background: $color-secondary-light;
+    background: linear-gradient(208deg, $color-secondary-light 0%, $color-secondary-light 11%, $color-medium 60%, $color-light 80%, $color-lighter 98%);
   }
 
-  .navbar-nav > li > a {
-    font-size: 12.5px;
+  .contact-header {
+    grid-area: contactHeader;
+    align-self: center;
+
+    .title {
+        font-size: 40px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: $color-secondary;
+    }
+
+    .contact-icons-container {
+
+      display: flex;
+      padding-top: 13px;
+  
+      a {
+  
+          margin-right: 15px;
+          text-decoration: none;
+  
+          &:hover,
+          &:focus {
+  
+              text-decoration: none;
+          }
+  
+      }
+  
+      a:first-child {
+  
+          margin-right: 18px;
+      }
+  
+      .rs-icon, .fa {
+  
+          color: $color-secondary-light;
+          opacity: .7;
+  
+          &:hover,
+          &:focus {
+              opacity: 1;
+          }
+      }
+
+      .rs-icon {
+        font-size: 27px;
+      }
+
+      .fa {
+        font-size: 32px;
+        margin-top: -2px;
+      }
+  
+      img {
+          height: 28px;
+          opacity: .7;
+  
+          &:hover,
+          &:focus {
+              opacity: 1;
+          }
+      }
+    }
   }
 
-  .navbar-default {
-    .rs-documentation-icon {
-      font-size: 16px;
-      padding: 16px 6px 10px 5px;
+  .contact-content {
+    grid-area: contactContent;
+    
+    .contact-content-buttons {
+
+      margin: 20px 0;
+      display: flex;
+      justify-content: flex-end;
     }
 
-  /*   .rs-setting-icon {
-      font-size: 16px;
-    } */
+    .contact-card-container {
 
-    .rs-body-m-M {
-      font-size: 12.5px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
     }
 
-    input {
-      width: 120px;
+    .contact-card {
+
+      padding: 20px;
+      border-radius: $border-radius;
+      border: 1px solid $color-border;
+      background-color: $color-white;
+
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+
+      i {
+        font-size: 34px;
+        color: $color-base;
+      }
+
+      .card-title {
+        color: $color-dark;
+        font-size: 16px;
+        font-weight: 600;
+        padding-bottom: 5px;
+      }
+
+      .card-content {
+        color: $color-secondary;
+        font-size: 12.5px;
+        line-height: 1.3;
+      }
     }
-
-    .rs-navigate-input {
-      padding-right: 15px;
-    }
-
-    .rs-search-icon {
-      height: 21px;
-      width: 21px;
-    }
-  }
-}
-
-@media (min-width: 950px) {
-  .rs-nav-about--margin {
-    margin-left: 60px;
-  }
-
-  .rs-nav-resources--margin {
-    margin-left: 30px;
   }
 }

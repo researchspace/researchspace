@@ -20,6 +20,7 @@
 import * as Kefir from 'kefir';
 import * as SparqlJs from 'sparqljs';
 
+import { Rdf } from 'platform/api/rdf';
 import { SparqlUtil } from 'platform/api/sparql';
 
 import * as ConfigService from './config';
@@ -42,6 +43,8 @@ export class ConfigHolderClass {
   private environmentConfig: EnvironmentConfig;
   private uiConfig: UIConfig;
   private globalConfig: GlobalConfig;
+
+  private dashboard: Rdf.Iri;
 
   constructor() {
     this.isLoading = true;
@@ -78,6 +81,10 @@ export class ConfigHolderClass {
       throw Error('Config has not been initialized yet');
     }
     return this.globalConfig;
+  }
+
+  public getDashboard(): Rdf.Iri {
+    return this.dashboard;
   }
 
   fetchConfig(): Kefir.Property<RawConfig> {
@@ -132,13 +139,15 @@ export class ConfigHolderClass {
     };
   }
 
-  private setGlobalConfig(config: GlobalConfig) {
+  private setGlobalConfig(config: GlobalConfig) {    
     this.globalConfig = config;
+    this.dashboard = SparqlUtil.resolveIris([this.globalConfig?.dashboard?this.globalConfig?.dashboard.value:'rsp:ThinkingFrames'])[0];  
   }
 }
 
 export interface EnvironmentConfig {
   readonly resourceUrlMapping?: StringValue;
+  readonly platformBaseIri?: StringValue;
 }
 
 interface RawUIConfig {
@@ -165,6 +174,7 @@ export interface UIConfig {
 
 export interface GlobalConfig {
   readonly homePage?: StringValue;
+  readonly dashboard?: StringValue;
 }
 
 export interface StringValue {

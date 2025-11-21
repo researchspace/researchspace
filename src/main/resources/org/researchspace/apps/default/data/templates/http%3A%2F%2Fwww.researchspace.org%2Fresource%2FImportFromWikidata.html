@@ -1,0 +1,233 @@
+<semantic-search>
+  <semantic-search-query-keyword  domain='<{{domain}}>'
+                                  placeholder="Search {{label}}"
+                                  min-search-term-length=2
+                                  tokenize-lucene-query=false
+                                  escape-lucene-syntax=false
+                                  debounce=500
+                                  debounce=500
+                                  query='PREFIX wikidataentity: <http://www.researchspace.org/resource/system/service/wikidataentity/>
+                                          SELECT ?subject WHERE { 
+                                            ?subject wikidataentity:search ?__token__ .
+                                            ?subject wikidataentity:language "en" .
+                                            ?subject wikidataentity:id ?wikidataId .
+                                            ?subject wikidataentity:concepturi ?concepturi .
+                                            ?subject wikidataentity:label ?wikidataEntityLabel .
+                                            ?subject wikidataentity:description ?description_original .
+                                            BIND(REPLACE(?description_original,"\"","") as ?description)
+                                          }'
+  ></semantic-search-query-keyword>
+  <!-- add label-->
+  <semantic-search-result-holder>
+    <div style="margin-top: 25px;">
+      <semantic-search-result>
+        <div class="wikipediaResultsTable">
+          <semantic-context repository='wikidata-entity'>
+            <semantic-table id='semantic-search-result-table'
+                            query='SELECT DISTINCT ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi WHERE {
+                                    BIND(?subject as ?iri) .
+                                  } ORDER BY ?subject'
+
+                            options='{"showFilter":true, "resultsPerPage":10}' 
+                            column-configuration='[
+                                                    {"displayName": "Name", "variableName": "wikidataEntityLabel", "cellTemplate": "{{> resourceName}}" },
+                                                    {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}"},
+                                                    {"displayName": "Resource type", "cellTemplate": "{{> type}}"},
+                                                    {"displayName": "Image", "cellTemplate": "{{> images}}"},
+                                                    {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
+                                                  ]'   
+            >
+
+              <template id='resourceName'>
+                <div>
+                  {{#if wikidataId.value}}
+                    <a class="text-link-action" 
+                        target="_blank" 
+                        href="http://www.wikidata.org/entity/{{wikidataId.value}}"
+                        title="http://www.wikidata.org/entity/{{wikidataId.value}}">
+                      {{wikidataEntityLabel.value}}
+                    </a>
+                  {{else}}
+                    {{wikidataEntityLabel.value}}
+                  {{/if}}
+                </div>
+              </template>
+
+              <template id='description'>
+                <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                    {{description.value}}
+                </mp-text-truncate>
+              </template>
+
+              <template id='type'>
+                <div>
+                  {{#if wikidataId.value}} 
+                    <semantic-context repository='default'>
+                      <semantic-query query='
+                                        PREFIX wikibase: <http://wikiba.se/ontology#>
+                                        PREFIX bd: <http://www.bigdata.com/rdf#>
+                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                        PREFIX wd: <http://www.wikidata.org/entity/>
+                                        
+                                        SELECT ?typeLabel WHERE { 
+                                          BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?wikidataEntity) .
+                                          SERVICE <https://query.wikidata.org/sparql> {  
+                                              ?wikidataEntity wdt:P31 ?type .
+                                            SERVICE wikibase:label { 
+                                              bd:serviceParam wikibase:language "en".
+                                              ?type rdfs:label ?typeLabel .                                      
+                                            }
+                                          } 
+                                        }'
+                                      
+                          template='{{> template}}'
+                          no-result-template='{{> noResults}}'>
+
+                          <template id='template'>
+                              <strong>{{bindings.0.typeLabel.value}}</strong>
+                          </template>
+                          <template id='noResults'>
+                            <div></div>
+                          </template>
+                      </semantic-query>
+                    </semantic-context>
+                  {{/if}}
+                </div>
+              </template>
+
+              <template id='images'>
+                <div>
+                  {{#if wikidataId.value}}
+                    <semantic-context repository='default'>
+                      <semantic-query query='
+                                        PREFIX wikibase: <http://wikiba.se/ontology#>
+                                        PREFIX bd: <http://www.bigdata.com/rdf#>
+                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                        PREFIX wd: <http://www.wikidata.org/entity/>
+                                        PREFIX schema: <http://schema.org/>
+
+                                        SELECT (SAMPLE(?_image) AS ?image) WHERE { 
+                                          SERVICE <https://query.wikidata.org/sparql> {  
+                                            BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?wikidataResourceURI) .
+                                            ?wikidataResourceURI wdt:P18 ?_image .
+                                          }
+                                        } LIMIT 1'
+
+                                        template='{{> image}}'
+                                        >
+                                          <template id='image'>
+                                            <div>
+                                              <a href="[[decodeUriComponent '{{bindings.0.image.value}}']]"
+                                                title="[[decodeUriComponent '{{bindings.0.image.value}}']]"
+                                                target="_blank">
+                                                
+                                                <img src="[[decodeUriComponent '{{bindings.0.image.value}}']]" 
+                                                    width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
+                                              </a>
+                                            </div>
+                                          </template>
+                                        </semantic-query>
+                    </semantic-context>
+                  {{/if}}
+                </div>
+              </template>
+              
+              <template id='actions'>
+                <div>
+                  {{#if wikidataId.value}} 
+                    <semantic-context repository='default'>
+                      <semantic-if query='PREFIX wikibase: <http://wikiba.se/ontology#>
+                                          PREFIX bd: <http://www.bigdata.com/rdf#>
+                                          PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                          PREFIX wd: <http://www.wikidata.org/entity/>
+                      
+                                          ASK { 
+                                            SERVICE <https://query.wikidata.org/sparql> { 
+                                              {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
+                                                <{{concepturi.value}}> wdt:P31 wd:Q5 .
+                                              {{else if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E74_Group")}}
+                                                <{{concepturi.value}}> wdt:P31 ?group .
+                                                ?group wdt:P279 wd:Q16334295 .
+                                              {{else}}
+                                                <{{concepturi.value}}> wdt:P31 ?type .
+                                              {{/if}}
+                                            }
+                                          }'
+
+                                    then='{{> then}}'>
+
+                        <template id='then'> 
+                          <div> 
+                            <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
+                              <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                                type='apiResourceImportInModal' 
+                                                data='{"apiResourceURI": "{{concepturi.value}}", 
+                                                        "apiResourceName": "{{wikidataEntityLabel.value}}", 
+                                                        "apiResourceDescription": "{{description.value}}"
+                                                      }' 
+                                          >
+                                <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
+                              </mp-event-trigger>
+
+                              <semantic-query query='SELECT DISTINCT ?existingRecord ?existingRecordLabel WHERE {
+                                                      BIND(<{{concepturi.value}}> as ?wikidataResourceURI)
+
+                                                      OPTIONAL {
+                                                        ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                                        ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                        ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                        ?importFromExternalSource crmdig:L14_transferred ?wikidataResourceURI .
+                                                        ?wikidataResourceURI a crmdig:D1_Digital_Object .
+                                                        ?wikidataResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+
+                                                        ?existingRecord crm:P1_is_identified_by ?appellation . 
+                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                        ?appellation crm:P190_has_symbolic_content ?existingRecordLabel .
+                                                      }
+                                                    }'
+                                                    
+                                              template='{{> template}}'>
+                                      
+                                <template id='template'>
+                                  <bs-dropdown-button pull-right=true id='{{viewId}}-open-record-dropdown-{{__semanticTableIndex.value}}' title="Open record">
+                                    {{#each bindings}}
+                                      <mp-event-trigger id='{{../viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                          type='Dashboard.AddFrame'
+                                                          data='{"viewId":"resource-editor", 
+                                                                "resourceIri":"{{existingRecord.value}}",
+                                                                "entityTypeConfig": "{{domainConfig}}",
+                                                                "mode":"edit" }' 
+                                                          targets='["thinking-frames"]'>
+                                          <bs-menu-item draggable='true'>{{existingRecordLabel.value}}</bs-menu-item>
+                                      </mp-event-trigger>
+                                    {{/each}}
+                                  </bs-dropdown-button>
+                                </template>
+                              </semantic-query>
+                            </div>
+                          </div>
+                        </template>
+                      </semantic-if>
+
+                    </semantic-context>
+                  {{/if}}
+                </div>
+              </template>
+
+            </semantic-table>
+          </semantic-context>
+        </div>
+      </semantic-search-result>
+    </div>
+  </semantic-search-result-holder>
+  
+</semantic-search>
+

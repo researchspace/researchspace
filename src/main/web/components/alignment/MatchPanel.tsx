@@ -46,6 +46,7 @@ import { AlignmentNode, AlignKind, findExcludedChildren } from './AlignmentNodeM
 import { PanelState, AlignementRole } from './ToolController';
 
 import * as styles from './MatchPanel.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface MatchPanelProps {
   role: AlignementRole;
@@ -326,7 +327,7 @@ export class MatchPanel extends Component<MatchPanelProps, {}> {
         overlay={overlay}
       >
         <Button bsSize="xsmall" className={styles.nodeInfoButton} onClick={this.onShowNodeInfoClick}>
-          <span className="fa fa-info" aria-hidden="true" />
+          <Icon iconType='rounded' iconName='info' symbol />
         </Button>
       </OverlayTrigger>
     );
@@ -377,7 +378,7 @@ export class MatchPanel extends Component<MatchPanelProps, {}> {
           onFindAligned(Node.keyOf(node.matchedTargetNode));
         }}
       >
-        <span className="fa fa-arrow-right" aria-hidden="true"></span>
+        <Icon iconType='rounded' iconName='arrow_right_alt' symbol />
       </Button>
     );
   }

@@ -1,0 +1,305 @@
+[[#if includedTemplate]]
+  <h2>CSS style guide</h2>
+[[else]]
+  <div class="page__grid-container help-page-container">
+    <div class='page__content-container'>
+      <h1>CSS style guide</h1>
+[[/if]]
+
+<style>
+  .grid-demo {
+    background: #e3e7ef;
+    border: 1px solid;
+    color: #8f9caf;
+    text-align: center;
+  }
+</style>
+
+<p>The layout frameworks help to manage the layout of pages. They allow dividing HTML-elements into grids of rows and columns.</p>
+
+[[#if includedTemplate]]<h3>Bootstrap Layout</h3>[[else]]<h2>Bootstrap Layout</h2>[[/if]]
+<div class="documentation__example">
+  <div class="documentation__example__description">
+    <p>To create a basic grid system one need to use <code>bs-row</code> and <code>bs-col</code> components with <code>xs</code>, <code>sm</code>, <code>md</code>, <code>lg</code> attributes. 
+      See <a href="https://getbootstrap.com/docs/3.3/css/#grid" class="text-link-action" target="_blank">Bootstrap Grid</a> to learn more about grid system.</p>
+    <p>Use Bootstrap Layout to create a responsive layout based on the 12-columns grid system.</p>
+  </div>
+  <div class="documentation__example__demo">
+    <mp-code-example>
+    <![CDATA[
+<bs-row>
+  <bs-col sm="6" md="3">
+    <div class="grid-demo">sm-6 md-3</div>
+  </bs-col>
+  <bs-col sm="6" md="3">
+    <div class="grid-demo">sm-6 md-3</div>
+  </bs-col>
+  <bs-col sm="6" md="3">
+    <div class="grid-demo">sm-6 md-3</div>
+  </bs-col>
+  <bs-col sm="6" md="3">
+    <div class="grid-demo">sm-6 md-3</div>
+  </bs-col>
+</bs-row>
+  ]]>
+  </mp-code-example>
+  </div>
+</div>
+
+<hr class="divider">
+
+[[#if includedTemplate]]<h3>Flex Layout</h3>[[else]]<h2>Flex Layout</h2>[[/if]]
+<p>To use Flex Layout one need to add <code>data-flex-layout</code> 
+  and <code>data-flex-self</code> attributes to HTML-elements. 
+  See <a href="http://progressivered.com/fla" class="text-link-action" target="_blank">Flex 
+    Layout Attribute</a> for more details and configuration options.</p>
+<p>Use Flex Layout to create a flexible responsive layout.</p>
+<h4>Example 1</h4>
+  <mp-code-example>
+  <![CDATA[
+<div data-flex-layout="row center-stretch">
+  <div class="grid-demo">1</div>
+  <div class="grid-demo">2</div>
+  <div class="grid-demo">3</div>
+</div>
+  ]]>
+  </mp-code-example>
+<h4>Example 2</h4>
+<mp-code-example>
+<![CDATA[
+<div data-flex-layout="row stretch-stretch">
+  <div data-flex-layout="column top-stretch">
+    <div class="grid-demo">1</div>
+    <div class="grid-demo" data-flex-self="size-x1" data-flex-layout="column center-center">2</div>
+  </div>
+  <div class="grid-demo" data-flex-layout="column center-center" style="height: 70px;">3</div>
+</div>
+  ]]>
+</mp-code-example>
+
+<hr class="divider">
+[[#if includedTemplate]]<h3>Mix of Bootstrap and Flex Layouts</h3>[[else]]<h2>Mix of Bootstrap and Flex Layouts</h2>[[/if]]
+<mp-code-example>
+<![CDATA[
+<bs-row>
+  <bs-col md="6">
+    <div data-flex-layout="row md-column center-stretch">
+      <div class="grid-demo">1</div>
+      <div class="grid-demo">2</div>
+      <div class="grid-demo">3</div>
+    </div>
+  </bs-col>
+  <bs-col md="6">
+    <div class="grid-demo">4</div>
+  </bs-col>
+</bs-row>
+  ]]>
+</mp-code-example>
+<hr class="divider">
+[[#if includedTemplate]]<h3>Built-in CSS classes</h3>[[else]]<h2>Built-in CSS classes</h2>[[/if]]
+<p>The platform provides a set of CSS classes that help to layout page header and body.</p>
+<h4>Example 1</h4>
+<mp-code-example>
+<![CDATA[
+<div class="page__header">
+  <div class="page__header-thumbnail">
+    <span class="rs-icon rs-icon-actor"></span>
+  </div>
+  <div class="page__header-body">
+    <h2>Alice</h2>
+    <p><b>URI</b>: <a href="http://example.com/person/alice"><i>http://example.com/person/alice</i></a></p>
+  </div>
+</div>
+<div class="page__body" style="float:unset;">Content</div>
+  ]]>
+</mp-code-example>
+
+<h4>Example 2</h4>
+<mp-code-example>
+<![CDATA[
+<h3><i class="fa fa-user" style="margin-right:4px;"></i> Alice</h3>
+<div class="page__body--borderless">Content</div>
+  ]]>
+</mp-code-example>
+<hr class="divider">
+[[#if includedTemplate]]<h3>Built-in CSS classes with Tabs</h3>[[else]]<h2>Built-in CSS classes with Tabs</h2>[[/if]]
+<p>These CSS classes can also be used with horizontal tabs <code>bs-tabs</code>.</p>
+<h4>Example 1</h4>
+<mp-code-example>
+<![CDATA[
+<div>
+  <div class="page__header-navtabs">
+    <div class="page__header-thumbnail">
+      <span class="rs-icon rs-icon-actor"></span>
+    </div>
+    <div class="page__header-body">
+      <h2>Alice</h2>
+      <p><b>URI</b>: <a href="http://example.com/person/alice"><i>http://example.com/person/alice</i></a></p>
+    </div>
+  </div>
+  <bs-tabs class="page__body-navtabs--borderless" unmount-on-exit=true>
+    <bs-tab event-key="1" title="Tab 1">
+      Tab 1
+    </bs-tab>
+    <bs-tab event-key="2" title="Tab 2">
+      Tab 2
+    </bs-tab>
+  </bs-tabs>
+</div>
+  ]]>
+</mp-code-example>
+<hr class="divider">
+[[#if includedTemplate]]<h3>React-Bootstrap Components</h3>[[else]]<h2>React-Bootstrap Components</h2>[[/if]]
+
+<p>The ResearchSpace platform exposes some components from the 
+  <a href="https://react-bootstrap-v3.netlify.app/" class="text-link-action" target="_blank">React Bootstrap</a> framework.  
+All components provided through react-bootstrap are being prefixed with <code>bs-*</code>.</p>
+
+[[#if includedTemplate]]<h3>Horizontal Tabs</h3>[[else]]<h2>Horizontal Tabs</h2>[[/if]]
+<p>See <a href="https://react-bootstrap-v3.netlify.app/components/tabs" class="text-link-action" 
+target="_blank">https://react-bootstrap-v3.netlify.app/components/tabs</a> for more details and configuration options.</p>
+<h4>Example</h4>
+
+<mp-code-example>
+<![CDATA[
+<bs-tabs id="tabs">
+  <bs-tab event-key="1" title="Tab 1">
+    Tab Content 1
+  </bs-tab>
+  <bs-tab event-key="2" title="Tab 2">
+    Tab Content 2
+  </bs-tab>
+</bs-tabs>
+  ]]>
+</mp-code-example>
+<hr class="divider">
+[[#if includedTemplate]]<h3>Vertical Tabs</h3>[[else]]<h2>Vertical Tabs</h2>[[/if]]
+
+<p>See <a href="https://react-bootstrap-v3.netlify.app/components/tabs/#tabs-custom-layout" 
+class="text-link-action" target="_blank">https://react-bootstrap-v3.netlify.app/components/tabs/#tabs-custom-layout</a> for more 
+details and configuration options.</p>
+
+<h4>Example</h4>
+
+<mp-code-example>
+<![CDATA[
+<bs-tab-container id="some-ide" class="bs-left-vertical-tabs" default-active-key="first">
+  <bs-row class="clearfix">
+    <bs-col sm="2">
+      <bs-nav bs-style="tabs" stacked="true">
+      	<bs-nav-item event-key="first">
+      		Tab 1
+      	</bs-nav-item>
+      	<bs-nav-item event-key="second">
+      		Tab 2
+      	</bs-nav-item>
+      </bs-nav>
+    </bs-col>
+    <bs-col sm="10">
+      <bs-tab-content animation="true">
+      	<bs-tab-pane event-key="first">Tab 1 content</bs-tab-pane>
+      	<bs-tab-pane event-key="second">Tab 2 content</bs-tab-pane>
+      </bs-tab-content>
+    </bs-col>
+  </bs-row>
+</bs-tab-container>
+  ]]>
+</mp-code-example>
+<hr class="divider">
+[[#if includedTemplate]]<h3>Grid Layout</h3>[[else]]<h2>Grid Layout</h2>[[/if]]
+<p>See <a href="https://react-bootstrap-v3.netlify.app/layout/grid" 
+class="text-link-action" target="_blank">https://react-bootstrap-v3.netlify.app/layout/grid</a> for more details and configuration options.</p>
+
+<h4>Example</h4>
+<mp-code-example>
+<![CDATA[
+<bs-row>
+  <bs-col sm="12">
+    <div style="background-color:#D9828B;">
+      This is a row with only one column with 12 units.<br>
+      One row is divided into 12 units that can be distributed over arbitrary columns with sum of max. 12 units.
+    </div>
+  </bs-col>
+</bs-row>
+ <bs-row>
+  <bs-col sm="4">
+    <div style="background-color:#F0FFFF;"> column 1 with 4 units</div>
+  </bs-col>
+  <bs-col sm="4" sm-offset="1">
+    <div style="background-color:#CFECEC"> column 2 with 4 units, 1 offset </div>
+  </bs-col>
+  <bs-col sm="3">
+    <div style="background-color:#ADDFFF">column 3 with 2 units</div>
+  </bs-col>
+</bs-row> 
+  ]]>
+</mp-code-example>
+<hr class="divider">
+[[#if includedTemplate]]<h3>Alert</h3>[[else]]<h2>Alert</h2>[[/if]]
+
+<p>See <a href="https://react-bootstrap-v3.netlify.app/components/alerts" class="text-link-action" 
+target="_blank">https://react-bootstrap-v3.netlify.app/components/alerts</a> for more details and configuration options.</p>
+
+<h4>Example</h4>
+<mp-code-example>
+<![CDATA[
+<bs-alert bs-style="warning">
+  <strong>Holy guacamole!</strong> Best check yo self, you're not looking too good.
+</bs-alert>
+  ]]>
+</mp-code-example>
+<hr class="divider">
+[[#if includedTemplate]]<h3>Navbar and Navbar Items</h3>[[else]]<h2>Navbar and Navbar Items</h2>[[/if]]
+<p>See <a href="https://react-bootstrap-v3.netlify.app/components/navbar" class="text-link-action" 
+target="_blank">https://react-bootstrap-v3.netlify.app/components/navbar</a> for more details and configuration options.</p>
+<h4>Example</h4>
+<mp-code-example>
+<![CDATA[
+<bs-navbar>
+  <bs-navbar-header>
+    <bs-navbar-brand>
+      <a href="#">Platform Help</a>
+    </bs-navbar-brand>
+  </bs-navbar-header>
+  <bs-nav>
+    <mp-resource-link-container uri="http://help.researchspace.org/resource/SemanticQuery"><bs-nav-item>Query</bs-nav-item></mp-resource-link-container>
+    <bs-nav-dropdown title="Components" id="basic-nav-dropdown">
+      <mp-resource-link-container uri="http://help.researchspace.org/resource/SemanticTable"><bs-menu-item>Table</bs-menu-item></mp-resource-link-container>
+      <mp-resource-link-container uri="http://help.researchspace.org/resource/SemanticGraph"><bs-menu-item>Graph</bs-menu-item></mp-resource-link-container>
+      <mp-resource-link-container uri="http://help.researchspace.org/resource/SemanticCarousel"><bs-menu-item>Carousel</bs-menu-item></mp-resource-link-container>
+      <bs-menu-item divider="true"></bs-menu-item>
+      <mp-resource-link-container uri="http://help.researchspace.org/resource/SemanticSimpleSearch"><bs-menu-item >Simple Search</bs-menu-item></mp-resource-link-container>
+    </bs-nav-dropdown>
+  </bs-nav>
+</bs-navbar>
+  ]]>
+</mp-code-example>
+<hr class="divider">
+[[#if includedTemplate]]<h3>Panels</h3>[[else]]<h2>Panels</h2>[[/if]]
+<p>See <a href="https://react-bootstrap-v3.netlify.app/components/panel" class="text-link-action" 
+target="_blank">https://react-bootstrap-v3.netlify.app/components/panel</a> for more details and configuration options.</p>
+<h4>Example</h4>
+<mp-code-example>
+<![CDATA[
+<bs-panel header="Content" collapsible="true">
+  Panel Content
+</bs-panel>
+  ]]>
+</mp-code-example>
+<hr class="divider">
+[[#if includedTemplate]]<h3>Popovers</h3>[[else]]<h2>Popovers</h2>[[/if]]
+<p>See <a href="https://react-bootstrap-v3.netlify.app/components/popovers" class="text-link-action" 
+target="_blank">https://react-bootstrap-v3.netlify.app/components/popovers</a> for more details and configuration options.</p>
+<h4>Example</h4>
+<mp-code-example>
+<![CDATA[
+<mp-popover title="My Popover">
+  <mp-popover-trigger placement="top"  trigger='["hover","focus"]'> 
+    <i class="fa fa-question-circle" aria-hidden="true"></i>
+  </mp-popover-trigger>
+  <mp-popover-content style="background:white;">
+    <div>Content</div>
+  </mp-popover-content>
+</mp-popover>
+  ]]>
+</mp-code-example>

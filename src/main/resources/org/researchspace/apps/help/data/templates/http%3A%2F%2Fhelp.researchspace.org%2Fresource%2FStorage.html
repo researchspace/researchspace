@@ -1,35 +1,21 @@
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
-  </li>
-  <li>
-    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
-  </li>
-  <li class="active">Storage</li>
-</ol>
-
-<div class="page">
-  <div class='page__body'>
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
    <h1>Storage</h1>
-    <p>
-      <i>
-        The concept of "storages" provides an abstraction from the low-level file system.
+    <p>The concept of "storages" provides an abstraction from the low-level file system.
         While previously the platform did heavily rely on file system pointers for persisting configuration changes,
         the new storage layer provides an abstraction over the low-level file system.
         The storage layer can connect to different storage implementations (local file-based, remote S3 object-based etc.)
         in parallel, whereas every storage is identified by a storage ID.
-      </i>
     </p>
-    <p>
-      <i>
-     		Lookups are be performed against individual storages or as delegation calls,
-        i.e. storages build a chain of responsibility and will be scanned sequentially. This greatly simplifies the development and lifecycle of platform apps (domain/customer specific customizations of the platform) as well as provides integration with (external) storage locations for accessing and storing binary or non-binary file collections like images, 3D models or documents.
-      </i>
+    <p>Lookups are be performed against individual storages or as delegation calls,
+        i.e. storages build a chain of responsibility and will be scanned sequentially. 
+        This greatly simplifies the development and lifecycle of platform apps 
+        (domain/customer specific customizations of the platform) as well as provides 
+        integration with (external) storage locations for accessing and storing binary 
+        or non-binary file collections like images, 3D models or documents.
     </p>
-   <h2 id="configuration">Storage Types</h2>
+    <hr class="divider">
+   <h2 id="configuration">Storage types</h2>
     <style>
       .config-params dt { margin-left: 1em; }
       .config-params dd { margin-left: 3em; }
@@ -110,7 +96,7 @@
         </tr>
       </tbody>
     </table>
-    Furthermore, the following attributes can be configured for any storage type:
+    <div style="padding: 15px 0;">Furthermore, the following attributes can be configured for any storage type:</div>
     <dl class="config-params">
       <dt><code>mutable</code></dt>
       <dd><p>Default value: <code>false</code></p>
@@ -120,6 +106,7 @@
         <p>The location uses <code>/</code> as path separator and must not start or end with a separator.</p></dd>
     </dl>
 
+    <hr class="divider">
     <h2 id="configuration">Storage configuration via CLI</h2>
     For the time being, it is only possible to configure / connect to a storage during deployment by passing in environment parameters in this form:
     <pre><code>
@@ -133,7 +120,8 @@
 -Dconfig.storage.my-storage.root=/runtime-data
     </code></pre>
 
-    <h2>S3 Storage Configuration</h2>
+    <hr class="divider">
+    <h2>S3 storage configuration</h2>
     If you wish to connect to AWS S3 storage, you have to pass in the respective connection parameters:
     <pre><code>
 -Dconfig.storage.my-storage.type=s3 \
@@ -156,6 +144,8 @@ s3:DeleteObject
 s3:GetBucketLocation
 </code>
     </pre>
+
+    <hr class="divider">
     <h3 id="runtime-s3-example">Example: S3 as <code>runtime</code> Storage</h3>
     Pass the following paramteres to the platform, i.e. by the setting <code>PLATFORM_OPTS</code> in docker:
     <pre><code>
@@ -169,6 +159,7 @@ s3:GetBucketLocation
 -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini
     </code></pre>
 
+    <hr class="divider">
     <h3>Assume role instead of using Keys for S3</h3>
     <p>Instead of specifying an AWS access key and secret key, you can also specify a role name to be assumed:</p>
     <pre><code>
@@ -177,6 +168,7 @@ s3:GetBucketLocation
     <p>(replace <code>{}</code> respectively). This requires local AWS credentials configured in the environment, which have permissions for <code>sts:AssumeRole</code>.</p>
     <p>The assumed role requires the same permissions as listed for users above.</p>
 
+    <hr class="divider">
     <h3>Assume role on EC2 instances</h3>
     <p></p>EC2 instances which are setup with a role allow researchspace to directly utilize these roles. Please do not specify any of <code>access-key</code>, <code>secret-key</code> or <code>assumedRole</code> to utilize these instance profile credentials</p>
 
@@ -184,8 +176,7 @@ s3:GetBucketLocation
    <p>The researchspace log will provide most relevant information, but in some cases (E.g. on 403 Access denied) the AWS CloudTrail will provide additional insights.</p>
    <p>Check under <code>CloudTrail > Event Histroy</code> and filter by <code>Event Name > AssumeRole</code>.</p>
 
-
-
+   <hr class="divider">
    <h2 id="storage-and-apps">Storage and Apps</h2>
    <p>
      A storage is not equal to an app. A storage provides delegated access to non-binary app artefacts, but not every storage is an app. <br>
@@ -199,7 +190,8 @@ s3:GetBucketLocation
       <li>SHACL rules and rule generators (<code>config/rdfunit/*.ttl</code>)</li>
       <li>System configuration files(<code>config/{ui,global,dataQuality,namespaces,environment,proxy}.prop</code>)</li>
       <li>Local user credentials and/or role definitions (<code>config/shiro.ini</code>).<br>
-        <b>Please note </b> that this requires to instruct the security module to read the shiro file explicitly from the storage and not from the default file system. This can be done by setting property <code>securityConfigStorageId</code>: <pre><code>-Dconfig.environment.securityConfigStorageId=[storage-id]</code></pre>
+        <b>Please note </b> that this requires to instruct the security module to read the shiro file explicitly from the storage and not from the default file system. 
+        This can be done by setting property <code>securityConfigStorageId</code>: <pre><code>-Dconfig.environment.securityConfigStorageId=[storage-id]</code></pre>
       </li>
     </ul>
     <p>
@@ -215,7 +207,9 @@ s3:GetBucketLocation
        can be served through a storage. As explained in the previous item, the default storage is file-based, but it can also be configured a remote, object-based storage like, for example, <i>AWS S3</i>.
      </li>
    </ul>
-   <h3 id="immutability">Immutability of App Storages</h3>
+
+   <hr class="divider">
+   <h3 id="immutability">Immutability of app storages</h3>
     Except for the <code>runtime</code> app storage, <b>all apps and respective storages are immutable (read-only)</b>.
     You can configure mutable storages, but these are not designed for apps.
 
@@ -223,16 +217,18 @@ s3:GetBucketLocation
       By design all changes (additions or modifications of existing default settings) during runtime go to the <code>runtime</code> app and respective <code>runtime</code> storage.
     </p>
 
-   <h3 id="delegation-order">Delegation/Access Order of App Storages</h3>
-    The order in which delegated access is provided to the app artefacts is determined by the app dependency order (c.f. <semantic-link iri="[[resolvePrefix "Help:Apps"]]">Apps Help</semantic-link>).
+    <hr class="divider">
+   <h3 id="delegation-order">Delegation/Access order of app storages</h3>
+    The order in which delegated access is provided to the app artefacts is determined by the app dependency order.
     By default, the <code>runtime</code> app storage precedes / shadows the default <code>core</code> app storage, i.e. if the same template is provided in <code>runtime</code> as in  <code>core</code>, the storage will always serve the template from the <code>runtime</code> storage first, if it exists.
 
-    <h3 id="change-runtime-storage">Changing <code>runtime</code> Storage for (local) App Development</h3>
+    <hr class="divider">
+    <h3 id="change-runtime-storage">Changing <code>runtime</code> storage for (local) app development</h3>
     <p>
       In particular for (local) development, it might be convenient to set the <b>runtime storage</b> (default location <code>/runtime-data</code>) to a different directory or even a different storage type.
     </p>
     <h4 id="runtime-git-example">Example: Local Git folder as <code>runtime</code> Storage</h4>
-    <p>Please refer to the <semantic-link iri="[[resolvePrefix "Help:GitStorageGuide"]]">step by step guide to setup git as runtime storage</semantic-link> for detailed configuration steps.</p>  <p></p>
+    <p>Please refer to the <semantic-link iri="[[resolvePrefix 'Help:GitStorageGuide']]" class="text-link-action" target="_blank">step by step guide to setup git as runtime storage</semantic-link> for detailed configuration steps.</p>  <p></p>
     <p>
       With the new storage mechanism it is convenient to set the root of the <b>runtime storage</b> to, for example, a local git folder and all changes (modifications/additions) will be available in isolation to be managed by your git folder:
     </p>
@@ -257,8 +253,9 @@ s3:GetBucketLocation
     </p>
     <b>Please note: </b> If you decide to mount your local (git) folder directly into the <code>/runtime-data</code> folder of the docker container, you may need to provide your own <code>/runtime-data/config/shiro.ini</code> file or set <code>-Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini</code> to a different location, for example, mount your own, standard shiro.ini into a dedicated location.
 
-    <h3 id="implicit-apps">Implicit Apps</h3>
-    <bs-alert bs-style="info" style="width: 800px;margin-left:2%;">
+    <hr class="divider">
+    <h3 id="implicit-apps">Implicit apps</h3>
+    <bs-alert bs-style="info">
       <strong>Info!</strong><br/>
       <p>
         Please note that mechanism of <i>"Implicit Apps"</i> is experimental and may change or even be removed from future versions.

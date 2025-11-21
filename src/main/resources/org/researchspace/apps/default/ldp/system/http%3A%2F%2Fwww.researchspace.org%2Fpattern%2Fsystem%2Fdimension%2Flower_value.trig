@@ -1,0 +1,38 @@
+
+<http://www.researchspace.org/pattern/system/dimension/lower_value/context> {
+  <http://www.researchspace.org/pattern/system/dimension/lower_value> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E54_Dimension>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-c73a815da1e5400c9565eba9d3ccdd17-upma9;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-c73a815da1e5400c9565eba9d3ccdd17-mpcn19;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Lower value"@en;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/dimension>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-c73a815da1e5400c9565eba9d3ccdd17-yl5ji3;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-10-15T10:58:45.545+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-c73a815da1e5400c9565eba9d3ccdd17-mpcn19 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P90a_has_lower_value_limit $value . 
+} WHERE {}""" .
+  
+  _:genid-c73a815da1e5400c9565eba9d3ccdd17-upma9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+  $subject crm:P90a_has_lower_value_limit $value . 
+  FILTER(datatype(?value) = xsd:string)
+}""" .
+  
+  _:genid-c73a815da1e5400c9565eba9d3ccdd17-yl5ji3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+    $subject crm:P90a_has_lower_value_limit $value .
+}  WHERE {
+    $subject crm:P90a_has_lower_value_limit $value .
+    FILTER(datatype(?value) = xsd:string)
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/dimension/lower_value> .
+}

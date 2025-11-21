@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -44,7 +45,8 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
 
     private boolean usingQuads = true;
     private boolean writable = true;
-
+    private boolean silentMode = false;
+    
     public MpSPARQLRepositoryConfig() {
         super();
         setType(DefaultMpSPARQLRepositoryFactory.REPOSITORY_TYPE);
@@ -75,11 +77,20 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
         this.writable = writable;
     }
 
+    public boolean isSilentMode() {
+        return silentMode;
+    }
+
+    public void setSilentMode(boolean silentMode) {
+        this.silentMode = silentMode;
+    }
+
     @Override
     public Resource export(Model model) {
         Resource implNode = super.export(model);
         model.add(implNode, MpRepositoryVocabulary.QUAD_MODE, vf.createLiteral(usingQuads));
         model.add(implNode, MpRepositoryVocabulary.WRITABLE, vf.createLiteral(writable));
+        model.add(implNode, MpRepositoryVocabulary.SILENT_MODE, vf.createLiteral(silentMode));
         return implNode;
     }
 
@@ -92,7 +103,9 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
                     .ifPresent(lit -> setUsingQuads(lit.booleanValue()));
             Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.WRITABLE, null))
                     .ifPresent(lit -> setWritable(lit.booleanValue()));
-        } catch (ModelException e) {
+            Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SILENT_MODE, null))
+                    .ifPresent(lit -> setSilentMode(lit.booleanValue()));
+            } catch (ModelException e) {
             throw new SailConfigException(e.getMessage(), e);
         }
     }

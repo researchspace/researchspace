@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,22 +22,27 @@
 .nav.nav-tabs {
 
     margin-left: 0;
-    border-bottom: 1px solid $input-border-color;
+    border-bottom: 1px solid $color-border;
 
     & > li {
-        padding: 10px 20px;
+        padding: 9px 15px;
+
+        &:first-of-type {
+
+            padding-left: 0;
+        }
 
         &:hover {
-            box-shadow: inset 0px -3px 0px 0px $color-primary-50;
+            box-shadow: inset 0px -3px 0px 0px $color-light;
         }
 
         &.active {
-            box-shadow: inset 0px -3px 0px 0px $color-dark;
+            box-shadow: inset 0px -3px 0px 0px $color-action;
 
             & > a {
                 background-color: transparent;
                 font-weight: bold;
-                color: $color-dark;
+                color: $color-action;
                 border: none;
             }
 
@@ -49,7 +55,8 @@
         }
 
         & > a {
-            color: $color-dark;
+            color: $color-secondary;
+            font-size: $font-size-base;
             border: none;
             padding: 0;
 
@@ -59,6 +66,72 @@
             }
         }
     }
+
+    & > li.tab-right {
+
+        float: right;
+    }
+}
+
+.nav.icon-tabs {
+
+    display: flex;
+    justify-content: end;
+
+    & > li {
+
+        color: $color-secondary-light;
+     //   background-color: $color-lighter;
+        background-color: $color-white;
+        border-radius: $border-radius;
+        border: 1px solid $color-border;
+
+        padding: 4px;
+        margin-left: 3px;
+
+        &:hover,
+        &:focus,
+        &:focus-within {
+            color: $color-secondary-light;
+            background-color: $color-white;
+        }
+        
+        &:active,
+        &.active,
+        &:active:hover, 
+        &:active:focus, 
+        &:active.focus, 
+        &.active:hover, 
+        &.active:focus, 
+        &.active.focus {
+            background-color: $color-secondary-light;
+
+            i {
+                color: $color-white;
+            }
+        }
+
+        & > a {
+   
+            padding: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover, 
+            &:focus {
+                background-color: transparent;
+            }
+
+            i, span {
+                color: $color-secondary;
+                font-size: 20px;
+            }
+        }
+    }
+
+
 }
 
 /* Object record tabs */
@@ -71,165 +144,28 @@
 
 .rs-resource-tabs .nav.nav-tabs {
 
-    background-color: $color-primary-50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
 
-    @media (min-width: 768px) {
-        padding-left: 8.333333%;
-    }
-    
-    @media (min-width: 1200px) {
-        padding-left: 16.666667%;
-    }
-
-    &.rs-entity-bg-thing {
-        background-color: $color-entity-bg-thing;
-    }
-    
-    &.rs-entity-bg-actor{
-        background-color: $color-entity-bg-actor;
-
-        & > li:hover,
-        & > li:focus {
-
-            background-color: $color-secondaryB-100;
-        }
-    }
-    
-    &.rs-entity-bg-type {
-        background-color: $color-entity-bg-type;
-
-        & > li:hover,
-        & > li:focus {
-
-            background-color:  $color-secondaryA-100;
-        }
-    }
-    
-    &.rs-entity-bg-resource {
-        background-color: $color-entity-bg-resource;
-    }
-
-    border-bottom: none;
-
-    & > li:hover,
-    & > li:focus {
-        background-color: $color-primary-80;
-        box-shadow: none;
-    }
+    border: none;
 
     & > li {
-        padding: 9px 40px;
+        padding: 9px 3%;
+        text-align: center;
     }
 
     & > li > a {
-        @include font-common($color-dark, 12px, 1.95);
-
+        line-height: 1.95;
         font-weight: 600;
-        margin-right: 0px;
         border: none;
-        
-    }
-
-    & > li:not(:last-child):not(.active) {
-        border-right: 1px solid $color-dark;
-    }
-
-    & > li.active {
-        margin-right: -1px;
-        margin-left: -1px;
-
-        background-color: $color-resourceTabs-bg;
-        box-shadow: none;
-
-        &:hover,
-        &:focus {
-
-            background-color: $color-resourceTabs-bg;
-        }
     }
 
     & > li.disabled {
 
         cursor: not-allowed;
         opacity: 0.5;
-    }
-}
-
-
-#activity-tab-container {
-    
-    .rs-table .griddle .top-section {
-        right: 18px;
-    }
-
-    .researchspace-table-widget-holder .filter-container .form-control {
-        background-color: $color-secondaryB-10;
-    }
-
-    .nav-tabs {
-        border-bottom: none;
-    }
-
-    .nav-tabs > li {
-        padding: 7px;
-    }
-
-    .nav-tabs > li > a {
-        color: $color-dark;
-    }
-
-    .nav-tabs > li:hover {
-        background-color: #f1f4f55c;
-        border-top-right-radius: 8px;
-        border-top-left-radius: 8px;
-    }
-
-    .nav > li > a:hover, .nav > li > a:focus {
-        background-color: transparent;
-    }
-
-    .nav-tabs > li > a:hover {
-        border-color: transparent;
-    }
-
-    .nav-tabs > li > a {
-        border: 2px solid transparent;
-    }
-
-    .nav.nav-tabs li.active,
-    .nav-tabs > li.active > a,
-    .nav-tabs > li.active > a,
-    .nav-tabs > li.active > a:focus,
-    .nav-tabs > li.active > a:hover {
-        color: $color-dark;
-        background-color: $color-secondaryB-10;
-        border: 1px solid $color-secondaryB-10;
-        border-top-right-radius: 4px;
-        border-top-left-radius: 4px;
-    }
-
-    .tab-content {
-        background-color: $color-secondaryB-10;
-        padding: 10px 50px 30px 50px;
-        margin-bottom: 50px;
-        border-bottom-right-radius: 4px;
-        border-bottom-left-radius: 4px;
-        border-top-right-radius: 4px;
-
-        .table .table {
-            background-color: $color-secondaryB-10;
-        }
-
-        .pagination > .disabled > span,
-        .pagination > .disabled > span:hover,
-        .pagination > .disabled > span:focus,
-        .pagination > .disabled > a,
-        .pagination > .disabled > a:hover,
-        .pagination > .disabled > a:focus {
-            color: $color-dark;
-            background-color: $color-secondaryB-10;
-            opacity: 0.3 !important;
-        }
     }
 }
 
@@ -246,4 +182,72 @@
 
 .tab-pane {
     padding-top: $padding-base-vertical;
-  }
+}
+
+.bs-left-vertical-tabs {
+
+    ul.nav.nav-tabs {
+      border-bottom: initial;
+      border-right: 1px solid $color-border;
+  
+      li {
+        margin-bottom: initial;
+      }
+    }
+}
+
+.bs-button-tabs {
+
+    &.bs-vertical-tabs {
+        display: flex;
+    }
+
+    &.bs-orizontal-tabs {
+
+        .nav.nav-tabs {
+            display: flex;
+            flex-direction: row;
+
+            & > li {
+                margin-bottom: 0;
+                margin-right: 5px;
+            }
+        }
+    }
+    
+    .nav.nav-tabs {
+        margin: 0;
+        border: none;
+        
+        & > li {
+
+            padding: 7px 12px;
+
+            border: 1px solid $color-border;
+            border-radius: $border-radius;
+            background-color: $color-lighter;
+
+            margin-bottom: 5px;
+
+            a {
+                font-size: $font-size-xsmall;
+                color: $color-secondary;
+            }
+
+            &.active {
+                box-shadow: none;
+                background-color: $color-secondary;
+
+                a {
+                    color: $color-white;
+                }
+            }
+
+            &:hover {
+                box-shadow: none;
+            }
+        }
+
+        
+    }
+}

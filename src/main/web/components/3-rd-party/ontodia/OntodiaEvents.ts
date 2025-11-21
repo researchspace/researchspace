@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -42,6 +43,15 @@ export interface OntodiaEventData {
     model: OpaqueDiagramModel;
     authoringState: OpaqueAuthoringState;
     temporaryState: OpaqueTemporaryState;
+  };
+
+   /**
+   * Event which should be triggered when diagram has been changed.
+   * iris stores the iri of a resource in the system that has just been changed.
+   */
+  'Ontodia.DiagramDataPersisted': {
+    iris: string[];
+    
   };
   /**
    * Event which should be triggered when diagram has been changed.
@@ -120,6 +130,7 @@ const event: EventMaker<OntodiaEventData> = EventMaker;
 export const DiagramSaved = event('Ontodia.DiagramSaved');
 export const DiagramChanged = event('Ontodia.DiagramChanged');
 export const DiagramIsDirty = event('Ontodia.DiagramIsDirty');
+export const DiagramDataPersisted = event('Ontodia.DiagramDataPersisted');
 
 export const CreateElement = event('Ontodia.CreateElement');
 export const EditElement = event('Ontodia.EditElement');

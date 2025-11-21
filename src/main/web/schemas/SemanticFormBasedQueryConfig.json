@@ -237,6 +237,9 @@
                     "description": "Children query with [?parent] input and [?item, ?label, ?hasChildren] output variables.",
                     "type": "string"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "parentsQuery": {
                     "description": "Parent nodes query with [?item] inputs through VALUES(...) clause\nand [?item, ?parent, ?parentLabel] outputs.",
                     "type": "string"
@@ -258,6 +261,7 @@
             },
             "propertyOrder": [
                 "type",
+                "id",
                 "rootsQuery",
                 "childrenQuery",
                 "parentsQuery",
@@ -411,6 +415,14 @@
         },
         "SimpleTreeConfig": {
             "properties": {
+                "labelPattern": {
+                    "description": "Input bindings: `?item`\nOutput bindings: `?label`",
+                    "type": "string"
+                },
+                "orderByPattern": {
+                    "description": "Input bindings: `?item`\nOutput bindings: `?order`",
+                    "type": "string"
+                },
                 "relationPattern": {
                     "description": "Output bindings: `?item`, `?parent`",
                     "type": "string"
@@ -434,7 +446,9 @@
                 "type",
                 "scheme",
                 "schemePattern",
-                "relationPattern"
+                "relationPattern",
+                "orderByPattern",
+                "labelPattern"
             ],
             "required": [
                 "type"
@@ -443,11 +457,19 @@
         }
     },
     "properties": {
+        "defaultQuery": {
+            "description": "Default query that should be executed when no input values are provided.",
+            "type": "string"
+        },
         "domain": {
             "description": "Specifies the search domain category IRI (full IRI enclosed in <>).\nRequired, if component is used together with facets.",
             "type": "string"
         },
         "domainField": {
+            "type": "string"
+        },
+        "elementIdToHideAfterSearch": {
+            "description": "ID of the DOM element in the template to hide when query search has been executed",
             "type": "string"
         },
         "fields": {
@@ -456,6 +478,9 @@
                 "$ref": "#/definitions/FieldDefinitionProp"
             },
             "type": "array"
+        },
+        "id": {
+            "type": "string"
         },
         "multi": {
             "default": false,
@@ -468,11 +493,14 @@
         }
     },
     "propertyOrder": [
+        "id",
         "queryTemplate",
         "fields",
         "domain",
         "domainField",
-        "multi"
+        "multi",
+        "defaultQuery",
+        "elementIdToHideAfterSearch"
     ],
     "required": [
         "fields",

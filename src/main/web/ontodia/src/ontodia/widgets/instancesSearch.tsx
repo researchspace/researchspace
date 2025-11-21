@@ -12,6 +12,7 @@ import { ProgressBar, ProgressState } from '../widgets/progressBar';
 import { SearchResults } from './searchResults';
 
 import { WorkspaceContextTypes, WorkspaceContextWrapper, WorkspaceEventKey } from '../workspace/workspaceContext';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const DirectionInImage = require('../../../images/direction-in.png');
 const DirectionOutImage = require('../../../images/direction-out.png');
@@ -94,12 +95,12 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
             />
             <span className="ontodia-input-group-btn">
               <button
-                className="ontodia-btn ontodia-btn-default"
+                className="btn btn-action btn-input-height"
                 type="button"
                 title="Search"
                 onClick={() => this.submitCriteriaUpdate()}
               >
-                <span className="fa fa-search" aria-hidden="true" />
+                Search
               </button>
             </span>
           </div>
@@ -116,12 +117,12 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
           <div className={`${CLASS_NAME}__rest-end`}>
             <button
               type="button"
-              className={`${CLASS_NAME}__load-more ontodia-btn ontodia-btn-primary`}
+              className={`${CLASS_NAME}__load-more btn btn-secondary btn-textAndIcon`}
               disabled={this.state.quering}
               style={{ display: this.state.moreItemsAvailable ? undefined : 'none' }}
               onClick={() => this.queryItems(true)}
             >
-              <span className="fa fa-chevron-down" aria-hidden="true" />
+              <Icon iconType='rounded' iconName='expand_more' symbol />
               &nbsp;Show more
             </button>
           </div>
@@ -143,13 +144,15 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
       const classLabel = view.formatLabel(classInfo.label, classInfo.id);
       criterions.push(
         <div key="hasType" className={`${CLASS_NAME}__criterion`}>
+          <div className={`${CLASS_NAME}__criterion-row`}>
+            Has type{' '}
+            <span className={`${CLASS_NAME}__criterion-class`} title={classInfo.id}>
+              {classLabel}
+            </span>
+          </div>
           {this.renderRemoveCriterionButtons(() =>
             this.props.onCriteriaChanged({ ...this.props.criteria, elementType: undefined })
           )}
-          Has type{' '}
-          <span className={`${CLASS_NAME}__criterion-class`} title={classInfo.id}>
-            {classLabel}
-          </span>
         </div>
       );
     } else if (criteria.refElement) {
@@ -201,7 +204,7 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
     return (
       <div className={`${CLASS_NAME}__criterion-remove ontodia-btn-group ontodia-btn-group-xs`}>
         <button type="button" className="ontodia-btn ontodia-btn-default" title="Remove criteria" onClick={onClick}>
-          <span className="fa fa-times" aria-hidden="true"></span>
+          <Icon iconType='rounded' iconName='close' symbol />
         </button>
       </div>
     );

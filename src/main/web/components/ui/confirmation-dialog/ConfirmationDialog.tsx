@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -20,6 +21,7 @@ import * as React from 'react';
 import { Modal, Button, ButtonGroup } from 'react-bootstrap';
 
 export interface Props {
+  title?: string;
   message: string;
   onHide: () => void;
   onConfirm: (confirm: boolean) => void;
@@ -27,22 +29,23 @@ export interface Props {
 
 export class ConfirmationDialog extends React.Component<Props, {}> {
   render() {
-    const { message, onHide, onConfirm } = this.props;
+    const { title, message, onHide, onConfirm } = this.props;
     return (
       <Modal onHide={onHide} show={true}>
+        <Modal.Header>
+          <Modal.Title>{title}</Modal.Title>
+        </Modal.Header>
         <Modal.Body>
-          <Modal.Title>{message}</Modal.Title>
-        </Modal.Body>
-        <Modal.Footer>
-          <ButtonGroup>
-            <Button bsStyle="danger" onClick={(e) => onConfirm(false)}>
+          <p>{message}</p>
+          <div className='form-btn-group'>
+            <Button bsStyle="default" onClick={(e) => onConfirm(false)}>
               Cancel
             </Button>
-            <Button bsStyle="success" onClick={(e) => onConfirm(true)}>
+            <Button bsStyle="default" className='btn-action' onClick={(e) => onConfirm(true)}>
               Confirm
             </Button>
-          </ButtonGroup>
-        </Modal.Footer>
+          </div>
+        </Modal.Body>
       </Modal>
     );
   }

@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -23,10 +24,15 @@ import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
 import { LdpService } from 'platform/api/services/ldp';
 import { refresh, navigateToResource } from 'platform/api/navigation';
+import {SparqlClient} from 'platform/api/sparql';
 
 interface Props extends ReactProps<RemoveFromContainerComponent> {
   container: string;
   iri: string;
+
+  /* Use this prop to specify an ontology resource is being deleted, 
+     so all associated KPs are also deleted */
+  ontology?: boolean;
 
   /**
    * @default 'reload'
@@ -48,16 +54,50 @@ class RemoveFromContainerComponent extends Component<Props, {}> {
   }
 
   private deleteItem = () => {
-    new LdpService(this.props.container, this.context.semanticContext)
-      .deleteResource(Rdf.iri(this.props.iri))
-      .onValue(() => {
-        if (this.props.postAction === 'reload') {
-          refresh();
-        } else {
-          navigateToResource(Rdf.iri(this.props.postAction)).onValue((v) => v);
-        }
-      });
+    if (this.props.ontology)
+      this.deleteOntologyAndKPs();
+    else 
+      new LdpService(this.props.container, this.context.semanticContext)
+        .deleteResource(Rdf.iri(this.props.iri))
+        .onValue(() => {
+          if (this.props.postAction === 'reload') {
+            refresh();
+          } else {
+            navigateToResource(Rdf.iri(this.props.postAction)).onValue((v) => v);
+          }
+        });
   };
+
+  private deleteOntologyAndKPs(){
+    //first delete KPs
+    const delimeter = !this.props.iri.endsWith("/")?"/":"";
+    const ontologyIriGraph = Rdf.iri(this.props.iri+delimeter+"context");
+    const kpsSelectQuery = "prefix owl: <http://www.w3.org/2002/07/owl#> "+
+                           "prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> "+
+                           "SELECT ?kp WHERE { "+
+                           "  ?kp a <http://www.researchspace.org/resource/system/fields/Field> . "+          
+                           "  graph " + ontologyIriGraph + " {" +
+                           "    ?kp a ?type . VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property} } "+                                         
+                           "}";
+
+    SparqlClient.select(kpsSelectQuery).onValue(( results ) => {
+      for (const binding of results.results.bindings) {
+        const { kp } = binding;
+        new LdpService(kp.value, this.context.semanticContext)
+          .deleteResource(Rdf.iri(kp.value)).onValue(() => {});       
+      }});
+    
+    //delete ontology last
+    new LdpService(this.props.container, this.context.semanticContext)
+        .deleteResource(Rdf.iri(this.props.iri))
+        .onValue(() => {
+          if (this.props.postAction === 'reload') {
+            refresh();
+          } else {
+            navigateToResource(Rdf.iri(this.props.postAction)).onValue((v) => v);
+          }
+        });
+  }
 }
 
 export type component = RemoveFromContainerComponent;

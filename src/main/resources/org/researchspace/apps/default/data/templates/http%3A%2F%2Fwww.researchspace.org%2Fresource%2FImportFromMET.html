@@ -1,0 +1,170 @@
+<semantic-search>
+  <semantic-search-query-keyword  domain='<{{domain}}>'
+                                  placeholder="Search {{label}}"
+                                  min-search-term-length=4
+                                  tokenize-lucene-query=false
+                                  escape-lucene-syntax=false
+                                  debounce=500
+                                  debounce=500
+                                  query='PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
+                                         SELECT ?subject ?objectid WHERE { 
+                                           service met:METCollectionSearchService {
+                                             ?subject met:q ?__token__ .
+                                             ?subject met:objectIDs ?objectid.                                                                                       
+                                           }
+                                         }'
+  ></semantic-search-query-keyword>
+  <!-- add label-->
+  <semantic-search-result-holder>
+    <div style="margin-top: 25px;">
+      <semantic-search-result>
+        <div class="METapiResultsTable">
+          <semantic-context repository='ephedra'>
+            <semantic-table id='semantic-search-result-table'
+                            query='prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
+                                   SELECT DISTINCT ?subject ?id ?name ?title ?objectType ?primaryImageSmall ?accessionNumber ?artistName ?artistRole  WHERE {
+                                    BIND(?objectid as ?id)
+                                    BIND(?subject as ?iri) .
+                                    service met:METObjectDescriptionService {                                           
+                                        ?subject met:objectid ?id .
+                                        ?subject met:objectName ?objectType .
+                                        ?subject met:title ?rawTitle .
+                                        ?subject met:primaryImage ?primaryImage .
+                                        ?subject met:primaryImageSmall ?primaryImageSmall .
+                                        ?subject met:objectWikidata_URL ?objectWikidata_URL .
+                                        ?subject met:accessionNumber ?accessionNumber .
+
+                                        ?subject met:artistDisplayName ?artistName .
+                                        ?subject met:artistRole ?artistRole .
+                                        BIND(REPLACE(STR(?rawTitle),"\"","") as ?title)
+                                    }
+                                  } ORDER BY ?title ?id  LIMIT 100'
+
+                            options='{"showFilter":true, "resultsPerPage":10}' 
+                            column-configuration='[
+                                                    {"displayName": "Title", "variableName": "title", "cellTemplate": "{{> resourceName}}" },
+                                                    {"displayName": "Accession number", "variableName": "accessionNumber" },
+                                                    {"displayName": "Type", "variableName": "objectType" },
+                                                    {"displayName": "Primary artist name", "variableName": "artistName" },
+                                                    {"displayName": "Primary artist role", "variableName": "artistRole" },
+                                                    {"displayName": "Image", "cellTemplate": "{{> images}}"},
+                                                    {"displayName": "Actions", "cellTemplate": "{{> actions}}"}
+                                                  ]'   
+            >
+
+            <template id='resourceName'>
+              <div>
+                {{#if title.value}}
+                <a class="text-link-action" 
+                    target="_blank" 
+                    href="https://www.metmuseum.org/art/collection/search/{{id.value}}"
+                    title="https://www.metmuseum.org/art/collection/search/{{id.value}}">
+                  {{title.value}}
+                </a>
+                {{else}}
+                  <a class="text-link-action" 
+                    target="_blank" 
+                    href="https://www.metmuseum.org/art/collection/search/{{id.value}}"
+                    title="https://www.metmuseum.org/art/collection/search/{{id.value}}">
+                  {{objectType.value}}
+                </a>
+                {{/if}}   
+              </div>
+            </template>
+            
+            <template id='images'>
+                <div>
+                  {{#if primaryImageSmall.value}}
+                    <a href="[[decodeUriComponent '{{primaryImageSmall.value}}']]"
+                    title="[[decodeUriComponent '{{primaryImageSmall.value}}']]"
+                    target="_blank">
+                    
+                    <img src="[[decodeUriComponent '{{primaryImageSmall.value}}']]" 
+                        width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
+                    </a>
+                   {{/if}}
+                </div>
+            </template>
+
+            <template id='actions'>
+              <div> 
+                <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
+                  <semantic-context repository='default'>
+                    <semantic-query query='SELECT DISTINCT ?MetResourceURI WHERE {
+                                            BIND(IRI(CONCAT("https://www.metmuseum.org/art/collection/search/", STR({{id.value}}))) AS ?MetResourceURI)
+                                          }'
+                                          
+                                    template='{{> template}}'>
+                            
+                      <template id='template'>
+                        <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                          type='apiResourceImportInModal' 
+                                          data='{"apiResourceURI": "{{bindings.0.MetResourceURI.value}}", 
+                                                  "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}", 
+                                                  "apiResourceMuseumId": "{{accessionNumber.value}}",
+                                                  "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/accession_number", 
+                                                  "apiResourceSystemId": "{{id.value}}",
+                                                  "apiResourceArtistName": "{{artistName.value}}",
+                                                  "apiResourceArtistRole": "{{artistRole.value}}"
+                                                }' 
+                                    >
+                          <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
+                        </mp-event-trigger>
+                      </template>
+                    </semantic-query>
+                  </semantic-context>
+
+                  <semantic-context repository='default'>
+                    
+                    <semantic-query query='SELECT DISTINCT ?existingRecord ?existingRecordLabel WHERE {
+
+                                            BIND(IRI(CONCAT("https://www.metmuseum.org/art/collection/search/", STR({{id.value}}))) AS ?MetResourceURI)
+
+                                            ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                            ?entityFormRecord a crmdig:D1_Digital_Object .
+                                            ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                            ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                            ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                            ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                            ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                            ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                            ?importFromExternalSource crmdig:L14_transferred ?MetResourceURI .
+                                            ?MetResourceURI a crmdig:D1_Digital_Object .
+                                            ?MetResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+
+                                            ?existingRecord crm:P1_is_identified_by ?appellation . 
+                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                            ?appellation crm:P190_has_symbolic_content ?existingRecordLabel .
+                                            
+                                          }'
+                                          
+                                    template='{{> template}}'>
+                            
+                              <template id='template'>
+                                <bs-dropdown-button pull-right=true id='{{viewId}}-open-record-dropdown-{{__semanticTableIndex.value}}' title="Open record">
+                                  {{#each bindings}}
+                                    <mp-event-trigger id='{{../viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                        type='Dashboard.AddFrame'
+                                                        data='{"viewId":"resource-editor", 
+                                                              "resourceIri":"{{existingRecord.value}}",
+                                                              "entityTypeConfig": "{{domainConfig}}",
+                                                              "mode":"edit" }' 
+                                                        targets='["thinking-frames"]'>
+                                        <bs-menu-item draggable='true'>{{existingRecordLabel.value}}</bs-menu-item>
+                                    </mp-event-trigger>
+                                  {{/each}}
+                                </bs-dropdown-button>
+                              </template>
+                    </semantic-query>
+                  </semantic-context>
+                </div>
+              </div>
+            </template>
+            </semantic-table>
+          </semantic-context>
+        </div>
+      </semantic-search-result>
+    </div>
+  </semantic-search-result-holder>
+  
+</semantic-search>

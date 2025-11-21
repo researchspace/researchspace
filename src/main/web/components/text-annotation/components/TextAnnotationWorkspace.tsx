@@ -51,14 +51,14 @@ export interface TextAnnotationWorkspaceProps {
    */
   documentIri: string;
   /**
-   * ID of the <semantic-link iri='http://help.researchspace.org/resource/Storage'>
+   * ID of the <semantic-link iri='http://help.researchspace.org/resource/Storage' class='text-link-action' target='_blank'>
    * storage</semantic-link> to load text document content.
    */
   storage: string;
   /**
    * IRI template for generating annotation IRIs. See <code>new-subject-template</code>
    * attribute at
-   * <semantic-link iri='http://help.researchspace.org/resource/SemanticForm'></semantic-link>
+   * <semantic-link iri='http://help.researchspace.org/resource/SemanticForm' class='text-link-action' target='_blank'></semantic-link>
    * for syntax.
    */
   annotationSubjectTemplate: string;

@@ -10,12 +10,14 @@
 
 <div class="page rs-fileUpload" style="  padding-bottom: 40px;">
   
-  [[> rsp:adminPageHeader title="File Upload" icon="rs-icon rs-icon-image_upload"]]
+  [[> rsp:adminPageHeader title="File Upload" materialIcon="upload_file"]]
+
   
-  <div class="container-fluid">
-      <bs-row class="row-center">
-        <bs-col xs=12 sm=11 md=10 lg=9 class='rs-col-xl-8'>
-              <bs-alert bs-style="warning">
+    <div class="container-fluid">
+        <bs-row class="row-center">
+          <bs-col xs=12 sm=11 md=10 lg=9 class='rs-col-xl-8'>
+            [[#if (hasPermission "sparql:update")]]
+              <bs-alert bs-style="info">
                 <b>Please note:</b>
                   <ul>
                     <li>Uploads may silently overwrite exiting files. For the time being, there is no additional warning or check. </li>
@@ -25,7 +27,6 @@
                   </ul>
               </bs-alert>
               <mp-direct-file-uploader
-                placeholder="Drag&drop a file for upload here or click into the field to open the browser's default file selector."
                 [[!-- 
                 Currently it is not easily possible to specify a pattern that is more restrictive but allows all required mime types such as x-handlebars-template, which is not detected by the browser.
                 Other formats are detected differently based on the platform, i.e. see https://github.com/react-dropzone/react-dropzone/issues/276
@@ -36,8 +37,21 @@
                 default-object-kind="assets"
               >
               </mp-direct-file-uploader>
-    
- 				 </bs-col>   
-      </bs-row> <!--  close row -->
-  </div>
+            [[else]]
+              <div class="warning-documentation-section warning-documentation-section-withIcon">
+                <div class="warning-documentation-section-icon-container">
+                  <rs-icon icon-type="rounded" icon-name="lock" symbol="true"></rs-icon>
+                </div>
+                <div> 
+                  <div class="warning-documentation-section-title">Permission denied!</div>
+                  <div class="warning-documentation-section-content">
+                    <div>You don't have permission to upload files in the system</div>
+                  </div>
+                </div>
+              </div>
+            [[/if]]
+          </bs-col>   
+        </bs-row> <!--  close row -->
+    </div>
+
 </div>

@@ -1,0 +1,322 @@
+<semantic-context repository="ephedra">
+<semantic-search>
+    <semantic-search-form-query query-template='{"queryString": "SELECT DISTINCT ?subject WHERE {
+                                                    
+                                                        ?subject a <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing> .
+
+
+                                                        
+                                                        ?subject <http://www.w3.org/2000/01/rdf-schema#label> ?objectLabel .
+                                                        SERVICE <http://www.bigdata.com/rdf/search#search> {       
+                                                            ?objectLabel <http://www.bigdata.com/rdf/search#search> ?searchLabel ;
+                                                                        <http://www.bigdata.com/rdf/search#minRelevance> \"0.5\" ;
+                                                                        <http://www.bigdata.com/rdf/search#relevance> ?score ;
+                                                                        <http://www.bigdata.com/rdf/search#matchAllTerms> \"true\" .
+                                                        }
+                                                        ?subject <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?searchObjectType .
+                                                        ?searchObjectType skos:inScheme <http://collection.britishmuseum.org/id/thesauri/objecttype> .
+
+                                                        ?subject crm:P45_consists_of ?searchObjectMaterial .
+                                                        ?searchObjectMaterial skos:inScheme <http://collection.britishmuseum.org/id/thesauri/material> .
+       
+                                                        OPTIONAL { ?subject crm:P67i_is_referred_to_by ?InfoObj .
+                                                                    ?InfoObj rdf:type <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> .
+                                                                    ?InfoObj crm:P2_has_type <http://amara-west.researchspace.org/vocabulary/general/object_description>.
+                                                                    ?InfoObj crm:P3_has_note ?description .
+                                                                }
+                                                    
+                                                }",
+                                                                    
+                                                "arguments": {
+                                                              "searchLabel": {"type": "xsd:string", "optional": false}
+                                                             }
+                                                             
+                                                }'
+                                fields='[
+                                        {
+                                            "id": "searchLabel",
+                                            "label": "Label",
+                                            "minOccurs":"0",
+                                            "maxOccurs": "1",
+                                            "xsdDatatype":"xsd:string",
+                                            "selectPattern" : "SELECT ?value WHERE { ?subject <http://www.w3.org/2000/01/rdf-schema#label> ?value.  }"
+                                        }]'>
+        
+    <semantic-context repository='amara-west'>
+    <div style="display: flex; align-items: flex-start; gap: 20px; width: 100%; flex: 1;">
+       [[!-- <div style="flex: 1;">
+            <semantic-form-select-input for="searchObjectType" label='Object type' placeholder="Select object type"></semantic-form-select-input>
+        </div> --]]
+        <div style="flex: 1;">
+            <semantic-form-text-input for="searchLabel" label='Object label' placeholder='Enter object label'></semantic-form-text-input>
+        </div>
+        [[!--
+        <div style="flex: 1;">
+            <semantic-form-tree-picker-input for="searchObjectMaterial" label='Object material' placeholder="Select object material" 
+                                                close-dropdown-on-selection='true'
+                                                > 
+            </semantic-form-tree-picker-input>
+        </div> --]]
+        <button type='button' name='submit' className='btn btn-primary' style="height: 39px; margin-top: 42px;">Search object</button>
+    </div>
+    </semantic-context>
+        
+    </semantic-search-form-query>
+        <div class='rs-result-holder' style="padding-top: 10px;">
+            <semantic-search-result-holder>
+                <semantic-search-result id='table'> 
+                    <semantic-context repository='amara-west'>
+                        <div class="aw-items-api-table-container">
+                            <semantic-table id='aw_table' 
+                                            query='SELECT ?subject ?objectLabel ?description 
+                                                    WHERE {
+                                                        
+                                                     } GROUP BY ?subject ?objectLabel ?description
+                                                     ORDER BY ?objectLabel'
+                                                number-of-displayed-rows=20
+                                                options='{"showFilter":false}' 
+                                                column-configuration='[{"displayName": "Object label", "variableName": "objectLabel",  "cellTemplate": "{{> label}}" },
+                                                                       {"displayName": "Object image",  "cellTemplate": "{{> images}}" },
+                                                                       {"displayName": "Object type",  "cellTemplate": "{{> types}}" },
+                                                                       {"displayName": "Object material",  "cellTemplate": "{{> materials}}" },
+                                                                       {"displayName": "Description", "variableName": "description"},
+                                                                       {"displayName": "Data source","cellTemplate": "{{> link}}"},
+                                                                       {"displayName": "Actions",  "cellTemplate": "{{> actions}}" }
+                                                                    ]'>
+
+                                <template id='label'>
+                                    <mp-event-target-template-render id='{{viewId}}-awObject-label-{{__semanticTableIndex.value}}' template='{{> template}}'>
+                                        <template id='template'>
+                                            <div>
+                                                {{#if saved}}
+                                                    <mp-draggable iri='{{subject.value}}'>
+                                                        <div style="display: flex; align-items: center; cursor: grab;">
+                                                        <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>                
+                                                        <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                        urlqueryparam-view='resource-editor' urlqueryparam-resource-iri='{{iri}}'
+                                                                        class='a-draggable'
+                                                                        >
+                                                            {{{objectLabel.value}}}
+                                                        </semantic-link>
+                                                        </div>
+                                                    </mp-draggable>
+                                                {{else}}
+                                                    <semantic-context repository="default">
+                                                        <semantic-if query='ASK { <{{subject.value}}> crm:P2_has_type <http://deir-el-medina.site/resource/vocab/authority_entities/object> . 
+                                                                                  <{{subject.value}}> a <http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> . }'
+                                                                        
+                                                                    then='{{> then}}'
+                                                                    else='{{> else}}'>
+
+                                                            <template id='then'>
+                                                                <div style="display: flex; align-items: center;"> 
+                                                                    <mp-draggable iri='{{subject.value}}'>
+                                                                        <div style="display: flex; align-items: center; cursor: grab;">
+                                                                            <i class="rs-icon rs-icon-drag_points" style="margin-right: 8px;"></i> 
+                                                                            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                            urlqueryparam-view='resource-editor' urlqueryparam-resource-iri='{{subject.value}}'
+                                                                                            class='a-draggable'
+                                                                                            >
+                                                                                {{{objectLabel.value}}}
+                                                                            </semantic-link>
+                                                                        </div>
+                                                                    </mp-draggable>
+                                                                </div>
+                                                            </template>
+
+                                                            <template id='else'>
+                                                                {{{objectLabel.value}}}
+                                                            </template>
+
+                                                        </semantic-if>
+                                                    </semantic-context>
+                                                {{/if}}
+                                            </div>
+                                        </template>
+                                    </mp-event-target-template-render>
+                                </template>
+
+                                <template id='images'>
+                                    <semantic-context repository="amara-west">
+                                        <div class="awResults-imageContainer">
+                                            <div class="carousel-container">
+                                                <semantic-carousel query='SELECT DISTINCT ?imgURL ?isMainRep
+                                                                            WHERE {
+                                                                                ?representationProp rdfs:subPropertyOf* crm:P138i_has_representation .
+                                                                                <{{subject.value}}> ?representationProp ?representation .
+                                
+                                                                                OPTIONAL {
+                                                                                <{{subject.value}}> ?representationProp ?representation .
+                                                                                ?representation a rso:EX_Digital_Image ;
+                                                                                                crm:P1_is_identified_by/rs:PX_has_file_name ?fileName.
+                                                                                BIND(CONCAT("https://amara-west.researchspace.org/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
+                                                                                }
+                                                                                    OPTIONAL
+                                                                                {?representation crm:P2_has_type ?rtype .
+                                                                                FILTER (?rtype in (<http://amara-west.researchspace.org/vocabulary/general/object_photo>,<http://amara-west.researchspace.org/vocabulary/general/object_drawing>)) . 
+                                                                                ?representation crm:P138i_has_representation ?representation2 . 
+                                                                                ?representation2 a rso:EX_Digital_Image .  
+                                                                                ?representation2 crm:P1_is_identified_by/rs:PX_has_file_name ?fileName. 
+                                                                                
+                                                                                
+                                                                                BIND(CONCAT("https://amara-west.researchspace.org/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)}
+                                                                                OPTIONAL {
+                                                                                <{{subject.value}}> ?representationProp ?representation .
+                                                                                ?representation a rso:EX_Digital_Image .
+                                                                                BIND(ENCODE_FOR_URI(ENCODE_FOR_URI(REPLACE(STR(?representation), "(^.*)\\/(.*)$", "$2"))) AS ?imageID)
+                                                                                BIND(?imageID as ?imgIiifId)
+                                                                                BIND(CONCAT("https://amara-west.researchspace.org/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
+                                                                                }
+                                                                                BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, ?representation) AS ?imgURL)
+                                                                                BIND(IF(?representationProp = rso:PX_has_main_representation, true, false) AS ?isMainRep)
+                                                                            
+                                                                            } ORDER BY ?imgURL'
+                                                                        
+                                                            options='{"fade": true, "lazyLoad": true }'
+                                                            tuple-template='{{> imageCarousel}}'
+
+                                                            
+                                                            no-result-template='{{> noImages}}'
+                                                                            >
+                                                        <template id="imageCarousel">
+                                                            <div>
+                                                                <img src="{{imgURL.value}}" style="max-height:260px; margin: 0 auto;" class="img-rounded">
+                                                            </div>
+                                                        </template>
+                                                        
+                                                        <template id="noImages">
+                                                            <div class="no-media">
+                                                            No images available
+                                                            </div>
+                                                        </template>
+                                                </semantic-carousel>
+                                            </div>
+                                        </div>
+                                    </semantic-context>
+                                </template> 
+
+                                <template id='types'>
+                                    <semantic-context repository="amara-west">
+                                        <semantic-query query='SELECT DISTINCT ?object_type ?type_label WHERE {
+                                                                    <{{subject.value}}> crm:P2_has_type ?object_type .
+                                                                    
+                                                                    ?object_type skos:inScheme <http://collection.britishmuseum.org/id/thesauri/objecttype> .
+                                                                    ?object_type skos:prefLabel ?type_label .
+                                                                } ORDER BY ASC(?type_label)'
+                                        >
+                                            <template id='template'>
+                                                <span>
+                                                    {{#each bindings}}
+                                                    {{#if @first}}&nbsp;{{else}}, {{/if}}
+                                                        {{type_label.value}} 
+                                                    {{/each}}
+                                                </span>
+                                            </template>
+                                        </semantic-query>
+                                    </semantic-context>
+                                </template>  
+
+                                <template id='materials'>
+                                    <semantic-context repository="amara-west">
+                                        <semantic-query query='SELECT DISTINCT ?object_material ?material_label WHERE {
+                                                                    <{{subject.value}}> crm:P45_consists_of ?object_material .
+                                                                    ?object_material skos:inScheme <http://collection.britishmuseum.org/id/thesauri/material> .
+                                                                    ?object_material skos:prefLabel ?material_label .
+                                                                } ORDER BY ASC(?material_label)'
+                                        >
+                                            <template id='template'>
+                                                <span>
+                                                    {{#each bindings}}
+                                                    {{#if @first}}&nbsp;{{else}}, {{/if}}
+                                                        {{material_label.value}} 
+                                                    {{/each}}
+                                                </span>
+                                            </template>
+                                        </semantic-query>
+                                    </semantic-context>
+                                </template>       
+
+                                <template id='link'>
+                                    <span>
+                                        <a href="https://amara-west.researchspace.org/resource?uri={{subject.value}}" target="_blank" style="text-decoration: underline;">
+                                            https://amara-west.researchspace.org/resource?uri={{subject.value}}
+                                        </a>
+                                    </span>
+                                </template>
+
+                                <template id='actions'>
+                                    <mp-event-target-template-render id='{{viewId}}-awObject-actions-{{__semanticTableIndex.value}}' template='{{> template}}'>
+                                        <template id='template'>
+                                            <div>
+                                                {{#if saved}}
+                                                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='resource-editor' urlqueryparam-resource-iri='{{iri}}'
+                                                                    class='a-btn-container'
+                                                                    >
+                                                    <button class="btn btn-table btn-default">Edit</button>
+                                                    </semantic-link>
+                                                {{else}}
+                                                    <semantic-context repository="default">
+                                                        <semantic-if query='ASK { <{{subject.value}}> crm:P2_has_type <http://deir-el-medina.site/resource/vocab/authority_entities/object> . 
+                                                                                    <{{subject.value}}> a <http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> .}' 
+                                                                        then='{{> then}}'
+                                                                        else='{{> else}}'>
+    
+                                                            <template id='then'>
+                                                                <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                urlqueryparam-view='resource-editor' urlqueryparam-resource-iri='{{subject.value}}'
+                                                                                class='a-btn-container'
+                                                                >
+                                                                    <button class="btn btn-table btn-default">Edit</button>
+                                                                </semantic-link>
+                                                            </template>
+    
+                                                            <template id='else'>
+                                                                <div>
+                                                                    <div style='display: none'>
+                                                                        <inline-template template-iri='http://www.researchspace.org/resource/system/forms/object_form_partial' 
+                                                                                            options='{
+                                                                                                    "formId": "{{viewId}}-awObject-form-{{__semanticTableIndex.value}}",
+                                                                                                    "subject": "{{subject.value}}",
+                                                                                                    "awLabel": "{{objectLabel.value}}",
+                                                                                                    "description": "{{description.value}}"
+                                                                                                    }'>
+                                                                        </inline-template>
+                                                                        </div>
+                                                        
+                                                                        <mp-event-proxy id='{{viewId}}-awObject-on-form-save-{{__semanticTableIndex.value}}' 
+                                                                                        on-event-source='{{viewId}}-awObject-form-{{__semanticTableIndex.value}}'
+                                                                                        on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                                                                                        additional-data='{"saved": "true"}'
+                                                                                        proxy-event-type='Component.TemplateUpdate' 
+                                                                                        proxy-targets='["{{viewId}}-awObject-label-{{__semanticTableIndex.value}}",  
+                                                                                                    "{{viewId}}-awObject-actions-{{__semanticTableIndex.value}}" 
+                                                                                                    ]'>
+                                                                        </mp-event-proxy>
+                                                        
+                                                                        <mp-event-trigger id='{{viewId}}-awObject-save-{{__semanticTableIndex.value}}' 
+                                                                                        type='Form.Save' 
+                                                                                        targets='["{{viewId}}-awObject-form-{{__semanticTableIndex.value}}"]'>
+                                                                        <button class="btn btn-table btn-action">
+                                                                            Import
+                                                                        </button>
+                                                                        </mp-event-trigger>
+                                                                </div>
+                                                            </template>
+    
+                                                        </semantic-if>
+                                                    </semantic-context> 
+                                                {{/if}}
+                                            </div>
+                                            
+                                        </template>
+                                    </mp-event-target-template-render>
+                                </template>
+                            </semantic-table> 
+                        </div>
+                    </semantic-context>
+                </semantic-search-result>
+            </semantic-search-result-holder>
+        </div>
+</semantic-search>
+</semantic-context>

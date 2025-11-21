@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -28,7 +29,7 @@ import { getOverlaySystem } from 'platform/components/ui/overlay';
 /**
  * @example
  * <mp-restart-wrapper>
- *  <Button><i class="fa fa-power-off fa-5x" aria-hidden="true"></i></Button>
+ *  <Button>restart</i></Button>
  * </mp-restart-wrapper>
  */
 export class RestartWrapper extends React.Component {
@@ -103,6 +104,7 @@ function showRestartConfirmationDialog(execute: (b: boolean) => void) {
   getOverlaySystem().show(
     dialogRef,
     <ConfirmationDialog
+      title={'System restart'}
       message={'Are you sure you want to restart the system?'}
       onHide={onHide}
       onConfirm={(confirm) => {

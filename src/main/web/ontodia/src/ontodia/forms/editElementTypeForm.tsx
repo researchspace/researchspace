@@ -1,3 +1,22 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 import * as React from 'react';
 
 import { EditorController } from '../editor/editorController';
@@ -171,19 +190,20 @@ export class EditElementTypeForm extends React.Component<Props, State> {
               <ProgressBar state={ProgressState.loading} height={10} />
             </div>
           ) : null}
+          <div className={`${CLASS_NAME}__controls`}>
+            <button className="btn btn-default" onClick={this.props.onCancel}>
+              Cancel
+            </button>
+            <button
+              className={`btn btn-action ${CLASS_NAME}__apply-button`}
+              onClick={() => this.props.onApply(elementValue.value, elementValue.isNew, linkValue.value.link)}
+              disabled={elementValue.loading || !isValid || isValidating}
+            >
+              Create
+            </button>
+          </div>
         </div>
-        <div className={`${CLASS_NAME}__controls`}>
-          <button
-            className={`ontodia-btn ontodia-btn-success ${CLASS_NAME}__apply-button`}
-            onClick={() => this.props.onApply(elementValue.value, elementValue.isNew, linkValue.value.link)}
-            disabled={elementValue.loading || !isValid || isValidating}
-          >
-            Apply
-          </button>
-          <button className="ontodia-btn ontodia-btn-danger" onClick={this.props.onCancel}>
-            Cancel
-          </button>
-        </div>
+
       </div>
     );
   }

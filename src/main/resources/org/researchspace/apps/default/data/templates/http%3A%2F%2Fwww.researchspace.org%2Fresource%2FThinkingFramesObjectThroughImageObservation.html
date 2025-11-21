@@ -8,14 +8,14 @@
             <{{iri}}> a ontodia:Diagram .
             <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?o .
             ?o a/rdfs:subClassOf* crm:E18_Physical_Thing .
-            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+            ?o crm:P138i_has_representation|rs:PX_has_main_representation ?image .
           } UNION {
             <{{iri}}> a Platform:Set .
             <{{iri}}> ldp:contains / Platform:setItem ?o .
             ?o a/rdfs:subClassOf* crm:E18_Physical_Thing .
-            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+            ?o crm:P138i_has_representation|rs:PX_has_main_representation ?image . 
           } UNION {
-            <{{iri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+            <{{iri}}> crm:P138i_has_representation|rs:PX_has_main_representation ?image .
             BIND(<{{iri}}> as ?o) .
           }
         }'
@@ -29,39 +29,39 @@
               iris='{{bindings.0.items.value}}'
               query='
                 SELECT DISTINCT ?image WHERE {
-                  ?subject (crm:P138i_has_representation|rso:PX_has_main_representation) ?image .
+                  ?subject (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
                   ?image a ?type .
-                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+                  FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
               }'
               annotation-view-tooltip-template='
                 {{{{raw}}}}                                
                 <div class="all-annotations" id="annotation-viewer-{{windowId}}">
-                  <div class="text-viewer">Image Region(s)</div>
+                  <div class="text-viewer">Image annotation</div>
                   {{#each annotations}}
                     <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
                       <div class="button-container">
                         {{#if id}}
                           <mp-template-item style="max-width: calc(100% - 80px);">
                             <div>
-                              <semantic-link iri="{{id}}" style="display: block; width: 100%;">{{{annoText}}}</semantic-link>
+                              <semantic-link iri="{{id}}" style="display: block; width: 100%;" draggable="true">{{{annoText}}}</semantic-link>
                             </div>
                           </mp-template-item>
                         {{/if}}
                         <div>
                           {{#if showUpdate}}
                           <a href="#edit" class="edit">
-                            <i class="rs-icon rs-icon-annotation"></i>
+                            <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
                             <!-- {{t "edit"}} -->
                           </a>
                         {{/if}}
                         {{#if showDelete}}
                           <a href="#delete" class="delete">
-                            <i class="iconmoon iconmoon-bin"></i>
+                            <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
                             <!-- {{t "delete"}} -->
                           </a>
                         {{/if}}
                           <a class="focus">
-                            <i class="rs-icon rs-icon-image"></i>
+                            <rs-icon icon-type="rounded" icon-name="image" symbol="true"></rs-icon>
                           </a>
                         </div>
                         
@@ -99,7 +99,7 @@
                                   SELECT DISTINCT ?region ?objectIri ?regionLabel {
                                     <{{id}}> crmdig:L49_is_primary_area_of ?image .
                                     ?objectIri crm:P138i_has_representation ?image .
-                                    <{{id}}> rso:displayLabel ?regionLabel .
+                                    <{{id}}> crm:P190_has_symbolic_content ?regionLabel .
                                     BIND(<{{id}}> as ?region) .
                                   } LIMIT 1 
                                 "
@@ -110,7 +110,10 @@
                                                                         type="TwoSidePanel.ShowBack" 
                                                                         targets=&#39;["objects-panel"]&#39;
                                                                         data=&#39;{ "regionIri": "{{bindings.0.region.value}}", "regionLabel": "{{bindings.0.regionLabel.value}}", "objectIri": "{{bindings.0.objectIri.value}}" }&#39;>
-                                    <span class="rs-icon rs-icon-annotation" style="cursor:pointer;">Associate feature</span>
+                                    <span>
+                                      <rs-icon icon-type="rounded" icon-name="edit" style="cursor:pointer;" symbol="true"></rs-icon>
+                                      <span >Associate feature</span>
+                                    </span>
                                   </mp-event-trigger>
                                 </template>
                               {{{{/raw}}}}
@@ -124,6 +127,7 @@
                                 {{#each bindings}}
                                   <div style="display: flex; align-items: center; justify-content: space-between;">
                                     <semantic-link iri="{{feature.value}}" 
+                                                  draggable="true"
                                                   style="max-width: 150px;
                                                   white-space: nowrap;
                                                   overflow: hidden;
@@ -135,13 +139,21 @@
                                                         type="TwoSidePanel.ShowBack" 
                                                         targets=&#39;["objects-panel"]&#39;
                                                         data=&#39;{"feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{objectIri.value}}" }&#39;>
-                                         <span class="rs-icon rs-icon-annotation" style="cursor:pointer;">Edit</span>
+                                                        
+                                          <span style="cursor:pointer;">
+                                            <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
+                                            Edit
+                                          </span>
                                       </mp-event-trigger>
                                       <mp-event-trigger id="details-view-trigger"
                                                         type="Component.TemplateUpdate"
                                                         data=&#39;{"iri": "{{feature.value}}"}&#39; targets=&#39;["details-view", "open-details-sidebar"]&#39;
                                       >
-                                        <span class="iconmoon iconmoon-info" title="Explore Feature details" style="padding-left: 8px; cursor:pointer;">Details</span>
+                                      
+                                        <span>
+                                          <rs-icon icon-type="rounded" icon-name="info" symbol="true" title="Explore Feature details" style="padding-left: 8px; cursor:pointer;"></rs-icon>
+                                          Details
+                                        </span>
                                       </mp-event-trigger>
                                     </div>
                                   </div>

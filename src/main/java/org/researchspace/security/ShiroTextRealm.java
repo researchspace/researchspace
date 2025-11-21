@@ -131,7 +131,10 @@ public class ShiroTextRealm extends IniRealm {
         clearCachedAuthorizationInfo(principals);
         Ini ini = getIni();
         Ini.Section usersSection = ini.getSection(USERS_SECTION_NAME);
-        usersSection.put(username, password + "," + StringUtils.join(roles, ","));
+
+        // in shiro2 we need to put the whole password hash into quotes
+        // see https://github.com/apache/shiro/issues/1385#issuecomment-2016571416
+        usersSection.put(username, "\"" + password + "\"," + StringUtils.join(roles, ","));
         saveIni(ini);
 
     }
@@ -149,7 +152,7 @@ public class ShiroTextRealm extends IniRealm {
         Ini ini = getIni();
         logger.info("Updating roles by user : " + SecurityService.getUserName());
         Ini.Section rolesSection = ini.getSection(ROLES_SECTION_NAME);
-        ROLES_LOCK.writeLock().lock();
+        rolesLock.writeLock().lock();
         try {
             for (Map.Entry<String, List<String>> entry : updateRolesMap.entrySet()) {
                 Set<Permission> permissions = PermissionUtils.resolvePermissions(entry.getValue(),
@@ -166,7 +169,7 @@ public class ShiroTextRealm extends IniRealm {
                 this.roles.remove(roleNameToDelete); // Removing from the in-memory stores
             }
         } finally {
-            ROLES_LOCK.writeLock().unlock();
+            rolesLock.writeLock().unlock();
         }
 
         saveIni(ini);
@@ -176,11 +179,11 @@ public class ShiroTextRealm extends IniRealm {
         logger.trace("Deleting account with principal: " + username);
         if (!this.accountExists(username))
             throw new IllegalArgumentException("User with principal " + username + " does not exist.");
-        USERS_LOCK.writeLock().lock();
+        usersLock.writeLock().lock();
         try {
             this.users.remove(username);
         } finally {
-            USERS_LOCK.writeLock().unlock();
+            usersLock.writeLock().unlock();
         }
 
         Ini ini = getIni();

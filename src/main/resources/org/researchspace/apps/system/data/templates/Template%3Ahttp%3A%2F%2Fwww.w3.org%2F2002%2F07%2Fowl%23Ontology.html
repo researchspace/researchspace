@@ -14,82 +14,181 @@
 </ol>
 
 <div class="page">
-  <div class='page__header-navtabs' style="padding-bottom:20px;">
-    [[> Platform:DefaultResourceHeader]]
-    
-    <mp-overlay-dialog title="Print Preview" type="lightbox">
-      <mp-overlay-dialog-trigger>
-        <i class='fa fa-2x fa-print mp-action' style="padding: 16px 25px 0px 0px;" title='Print' aria-hidden='true'></i>
-      </mp-overlay-dialog-trigger>
-      <mp-overlay-dialog-content>
-        <mp-print pages='["[[this]]"]'></mp-print>
-      </mp-overlay-dialog-content>
-    </mp-overlay-dialog>  
-  </div>
-  [[!-- We assume that context is defined only when we load the page using print component, only then we want to include print related template. --]]
-  [[#if (urlParam "context")]]
-    [[> http://www.researchspace.org/resource/assets/OntologyPrint ]]
-  [[/if]]
-  <bs-tabs id="tabs" class='page__body-navtabs' unmount-on-exit=true>
-            <bs-tab event-key="1" title="Classes">
-               <bs-row>
-  							<bs-col sm=8> 
-									 <semantic-table query="SELECT DISTINCT ?Class WHERE { 
-                                            GRAPH ?g { ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology  } FILTER( !isBlank(?Class))
-                                           } ORDER BY ?Class"
-                                  options='{"showTableHeading": false, "filterPlaceholderText":"Filter Classes"}'
-                                  no-result-template='<i>No Classes.</i>'
-                  ></semantic-table>
-                 </bs-col>
-                 <bs-col sm=4>
-                   <semantic-tree 
-                             query="
-                                SELECT DISTINCT ?node ?parent WHERE {
-                                  GRAPH ?g { ?? a owl:Ontology . { ?node a owl:Class } UNION { ?x rdfs:subClassOf ?node } }
-                                  OPTIONAL { ?node rdfs:subClassOf ?parent. FILTER(ISIRI(?parent)) }
-                                  FILTER(ISIRI(?node))
-                                }
-                                ORDER BY ?node"                                    
-                             collapsed="true"
-                             keys-opened='["[[this]]"]'
-                             parentBindingName="parent"
-                             nodeBindingName="node">
-                  	</semantic-tree> 
-                 </bs-col>
-                </bs-row>
-            </bs-tab>
-            <bs-tab event-key="2" title="Object Properties">
-               <semantic-table query="SELECT distinct ?ObjectProperty WHERE { 
-                                      	GRAPH ?g { ?ObjectProperty rdf:type owl:ObjectProperty . ?? rdf:type owl:Ontology } 
-                                     } order by ?ObjectProperty"
-                            	options='{"showTableHeading": false, "filterPlaceholderText":"Filter Object Properties"}'
-                              no-result-template='<i>No Object Properties.</i>'>
-               </semantic-table>
-            </bs-tab>
-            <bs-tab event-key="3" title="Datatype Properties">
-               <semantic-table query="SELECT distinct ?DatatypeProperty WHERE { 
-                                      	GRAPH ?g { ?DatatypeProperty rdf:type owl:DatatypeProperty . ?? rdf:type owl:Ontology } 
-                                     } order by ?DatatypeProperty"
-                               options='{"showTableHeading": false, "filterPlaceholderText":"Filter Datatype Properties"}'
-                               no-result-template='<i>No Datatype Properties.</i>'>
-               </semantic-table>
-            </bs-tab>    
-            <bs-tab event-key="4" title="Individuals">
-              <semantic-table query='SELECT ?Individual ?Class WHERE { 
-                            					GRAPH ?g { ?Individual rdf:type ?Class . ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology } 
-                                     	FILTER( !isBlank(?Individual))
-                           					} LIMIT 500'
-                              options='{"filterPlaceholderText":"Filter Individuals"}'
-                              no-result-template='<i>No Individuals.</i>'>
-              </semantic-table>
-            </bs-tab>
-            <bs-tab event-key="5" title="Diagrams">
-               [[!-- [[> http://www.researchspace.org/resource/assets/OntodiaDiagrams]] --]]
-               <mp-page-loader iri='http://www.researchspace.org/resource/assets/OntodiaDiagramsTable' urlqueryparam-ontology-iri='[[this]]'></mp-page-loader>    
-            </bs-tab>
-            <bs-tab event-key="6" title="VOWL">
-               [[!-- [[> http://www.researchspace.org/resource/OntologyTemplateVowl]] --]]
-               <mp-page-loader iri="http://www.researchspace.org/resource/OntologyTemplateVowl"></mp-page-loader>    
-            </bs-tab>
-  </bs-tabs>
+  <div class="container-fluid">
+    <bs-row class="row-center">
+      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
+  
+        <div style="padding:20px 0 10px 0;display: flex; justify-content: space-between; align-items: self-start; gap:10px;">
+          [[> Platform:DefaultResourceHeader]]
+          
+            <semantic-query query='SELECT DISTINCT ?subject ?graph WHERE {
+                                    BIND(<[[this]]> as ?subject)
+                                    GRAPH ?graph {
+                                      ?subject a owl:Ontology .
+                                    }
+                                  }'
+                                template='{{> template}}'>
+              <template id='template'>
+                <div>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 10px;">
+                    <mp-graph-store-action  title='Download in Turtle Format' 
+                                            action='GET'
+                                            graphuri='{{bindings.0.graph.value}}' 
+                                            file-ending='trig'>
+                      <button class="btn btn-default btn-textAndIcon" title="Download">
+                        <rs-icon icon-type="rounded" icon-name="download" title='Download' symbol="true"></rs-icon>Download
+                      </button> 
+                    </mp-graph-store-action>
+                  
+                    <mp-overlay-dialog title="Print Preview" type="lightbox" id="'printPreview">
+                      <mp-overlay-dialog-trigger>
+                        <button class="btn btn-default btn-textAndIcon" title="Print">
+                          <rs-icon icon-type="rounded" icon-name="print" title='Print' symbol="true"></rs-icon>Print
+                        </button>
+                      </mp-overlay-dialog-trigger>
+                      <mp-overlay-dialog-content>
+                        <mp-print pages='["{{bindings.0.subject.value}}"]'></mp-print>
+                      </mp-overlay-dialog-content>
+                    </mp-overlay-dialog>
+
+                    [[#if (hasPermission "forms:ldp:*")]]
+                    <mp-overlay-dialog id='removeOntology-confirmation-dialog'
+                                      title="Delete ontology" 
+                                      type="modal" 
+                                      bs-size="large">
+                      <mp-overlay-dialog-trigger>
+                        <button class="btn btn-default btn-textAndIcon" title="Delete ontology">
+                          <rs-icon icon-type="rounded" icon-name="delete" title='Delete ontology' symbol="true"></rs-icon>Delete
+                        </button>
+                      </mp-overlay-dialog-trigger>
+                      <mp-overlay-dialog-content>
+                        <div>
+                          <p>Are you sure you want to delete the ontology 
+                            <b><semantic-link iri='{{bindings.0.subject.value}}' class="text-underline;"></semantic-link></b>?
+                          </p>
+                          <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
+                                                    BIND(<{{bindings.0.subject.value}}> AS ?ontology)
+                                                                BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                                BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+                                                                ?kp rdf:type <http://www.researchspace.org/resource/system/fields/Field> .
+                                                                graph ?ontologyContext { 
+                                                                    ?kp a ?type . 
+                                                                    VALUES ?type {owl:ObjectProperty owl:DatatypeProperty owl:AnnotationProperty rdf:Property}
+                                                                }                                             
+                                                  }'
+                                            template='{{> template}}'
+                            >
+                                  <template id='template'>
+                                    <div>
+                                      This action will remove the {{bindings.0.count.value}} knowledge patterns included in the system for this ontology.
+                                    </div>
+                                  </template>
+                            </semantic-query>
+                          <div class="form-btn-group">
+                            <mp-event-trigger id='removeOntology-cancel-dialog-trigger' 
+                                              type='OverlayDialog.Close' 
+                                              targets='["removeOntology-confirmation-dialog"]'>
+                              <button class="btn btn-default">Cancel</button>
+                            </mp-event-trigger>
+                            <mp-event-trigger id='removeOntology-removeKps-dialog-trigger' 
+                                              type='Component.TemplateUpdate' 
+                                              targets='[""]'>
+                                <mp-ldp-remove-from-container-action iri="{{subject.value}}" 
+                                                    container=" http://www.researchspace.org/resource/system/ontologyContainer">
+                                  <button class="btn btn-action">Delete ontology</button> 
+                                </mp-ldp-remove-from-container-action> 
+                            </mp-event-trigger>
+                          </div>
+                        </div>
+                      </mp-overlay-dialog-content>
+                    </mp-overlay-dialog>
+                    [[/if]]  
+                  </div>
+                </div>
+              </template>
+            </semantic-query>     
+         </div> 
+
+        [[!-- We assume that context is defined only when we load the page using print component, only then we want to include print related template. --]]
+        [[#if (urlParam "context")]]
+          [[> http://www.researchspace.org/resource/assets/OntologyPrint ]]
+        [[/if]]
+        
+        <bs-tabs id="tabs" unmount-on-exit=true>
+          <bs-tab event-key="1" title="Classes" style="padding-top: 20px;">
+            <bs-row>
+              <bs-col sm=8> 
+                <semantic-table query="SELECT DISTINCT ?Class WHERE { 
+                                          GRAPH ?g { ?Class rdf:type ?classType . VALUES ?classType {owl:Class rdfs:Class}  ?? rdf:type owl:Ontology  } FILTER( !isBlank(?Class))
+                                        } ORDER BY ?Class"
+                                options='{"showTableHeading": false, "filterPlaceholderText":"Filter Classes"}'
+                                no-result-template='<i>No Classes.</i>'
+                ></semantic-table>
+              </bs-col>
+              <bs-col sm=4>
+                <semantic-tree 
+                          query="
+                              SELECT DISTINCT ?node ?parent WHERE {
+                                GRAPH ?g { ?? a owl:Ontology . { ?node a ?classType . VALUES ?classType {owl:Class rdfs:Class}} UNION { ?x rdfs:subClassOf ?node } }
+                                OPTIONAL { ?node rdfs:subClassOf ?parent. FILTER(ISIRI(?parent)) }
+                                FILTER(ISIRI(?node))
+                              }
+                              ORDER BY ?node"                                    
+                          collapsed="true"
+                          keys-opened='["[[this]]"]'
+                          parentBindingName="parent"
+                          nodeBindingName="node">
+                  </semantic-tree> 
+              </bs-col>
+            </bs-row>
+          </bs-tab>
+          <bs-tab event-key="2" title="Object Properties" style="padding-top: 20px;">
+            <semantic-table query="SELECT distinct ?ObjectProperty WHERE { 
+                                      GRAPH ?g { ?ObjectProperty rdf:type owl:ObjectProperty . ?? rdf:type owl:Ontology } 
+                                  } order by ?ObjectProperty"
+                            options='{"showTableHeading": false, "filterPlaceholderText":"Filter Object Properties"}'
+                            no-result-template='<i>No Object Properties.</i>'>
+            </semantic-table>
+          </bs-tab>
+          <bs-tab event-key="3" title="Datatype Properties" style="padding-top: 20px;">
+            <semantic-table query="SELECT distinct ?DatatypeProperty WHERE { 
+                                      GRAPH ?g { ?DatatypeProperty rdf:type owl:DatatypeProperty . ?? rdf:type owl:Ontology } 
+                                  } order by ?DatatypeProperty"
+                            options='{"showTableHeading": false, "filterPlaceholderText":"Filter Datatype Properties"}'
+                            no-result-template='<i>No Datatype Properties.</i>'>
+            </semantic-table>
+          </bs-tab>   
+          <bs-tab event-key="4" title="RDF Properties" style="padding-top: 20px;">
+            <semantic-table query="SELECT distinct ?rdfProperty WHERE { 
+                                      GRAPH ?g { ?rdfProperty rdf:type rdf:Property . ?? rdf:type owl:Ontology } 
+                                  } order by ?rdfProperty"
+                            options='{"showTableHeading": false, "filterPlaceholderText":"Filter RDF Properties"}'
+                            no-result-template='<i>No RDF Properties.</i>'>
+            </semantic-table>
+          </bs-tab>    
+          <bs-tab event-key="5" title="Individuals" style="padding-top: 20px;">
+            <semantic-table query='SELECT ?Individual ?Class WHERE { 
+                                    ?Individual rdf:type ?Class . ?Class rdf:type ?classType . VALUES ?classType {owl:Class rdfs:Class} ?? rdf:type owl:Ontology 
+                                    FILTER( !isBlank(?Individual))
+                                  } LIMIT 500'
+                            options='{"filterPlaceholderText":"Filter Individuals"}'
+                            no-result-template='<i>No Individuals.</i>'>
+            </semantic-table>
+          </bs-tab>
+          <bs-tab event-key="6" title="Diagrams" style="padding-top: 20px;">
+            [[!-- [[> http://www.researchspace.org/resource/assets/OntodiaDiagrams]] --]]
+            <mp-page-loader iri='http://www.researchspace.org/resource/assets/OntodiaDiagramsTable' urlqueryparam-ontology-iri='[[this]]'></mp-page-loader>    
+          </bs-tab>
+          <bs-tab event-key="7" title="VOWL" style="padding-top: 20px;">
+            [[!-- [[> http://www.researchspace.org/resource/OntologyTemplateVowl]] --]]
+            <mp-page-loader iri="http://www.researchspace.org/resource/OntologyTemplateVowl"></mp-page-loader>    
+          </bs-tab>
+        </bs-tabs>
+        
+      </bs-col>
+    </bs-row> <!--  close row -->
+
+
+</div>
+  
 </div>

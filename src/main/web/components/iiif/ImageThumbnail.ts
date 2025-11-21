@@ -83,7 +83,7 @@ const REGION_OVERLAY_MARGIN_FRACTION = 0.05;
 const REGION_OVERLAY_STROKE_WIDTH = '2%';
 
 /**
- * Displays thumbnail of rso:EX_Digital_Image or rso:EX_Digital_Image_Region.
+ * Displays thumbnail of rs:EX_Digital_Image or rs:EX_Digital_Image_Region.
  *
  * By default component fits image in parent bounds and (if specified) props.{width, height}
  * preserving aspect ratio of image. This could be disabled by setting 'preserveImageSize'.

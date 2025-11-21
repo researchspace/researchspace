@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -23,6 +24,7 @@ import * as _ from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 
 export interface DataSetMappings {
   /** Query variable to pivot on. */
@@ -61,7 +63,7 @@ export interface ProviderSpecificStyle {
 
   /**
    * Options specific to the provider. These options will be merged with widget-generated options and specified style will override defaults.
-   * See <a href="https://www.chartjs.org/docs/" target="_blank">ChartJS Docs</a> and <a href="https://www.highcharts.com/docs/" target="_blank">Highcharts Docs</a> for further information.
+   * See <a href="https://www.chartjs.org/docs/" target="_blank" draggable='false'>ChartJS Docs</a> and <a href="https://www.highcharts.com/docs/" target="_blank" draggable='false'>Highcharts Docs</a> for further information.
    */
   style: any;
 }
@@ -90,12 +92,14 @@ export interface SemanticChartConfig {
   type: ChartType;
 
   /**
-   * List of plotted data sets where each specified through mapping between data points properties and query variables. (Mutually exclusive with `multi-data-sets.`)
+   * List of plotted data sets where each specified through mapping between 
+   * data points properties and query variables. (Mutually exclusive with `multi-data-sets.`)
    */
   sets?: DataSetMappings[];
 
   /**
-   * Data sets specified through pivoting on variable in query and mapping between data points properties and other query variables. (Mutually exclusive with `data-sets.`)
+   * Data sets specified through pivoting on variable in query and mapping 
+   * between data points properties and other query variables. (Mutually exclusive with `data-sets.`)
    */
   multiDataSet?: DataSetMappings;
 
@@ -103,13 +107,16 @@ export interface SemanticChartConfig {
   styles?: ProviderSpecificStyle[];
 
   /**
-   * Chart's dimensions. If any dimension is not set, the default value provided by the charting library is used instead. In most cases the component will occupy all available space, so you should limit dimensions on enclosing HTML container tag if omitting this parameter.
+   * Chart's dimensions. If any dimension is not set, the default value provided
+   * by the charting library is used instead. 
+   * In most cases the component will occupy all available space, 
+   * so you should limit dimensions on enclosing HTML container tag if omitting this parameter.
    */
   dimensions?: ChartDimensions;
 
   /**
    * Charting library provider.
-   * <a target='_blank' href='http://www.chartjs.org/'>Chart.js</a> is used by default.
+   * <a target='_blank' href='http://www.chartjs.org/' draggable='false'>Chart.js</a> is used by default.
    */
   provider?: ChartProvider;
 
@@ -124,13 +131,12 @@ export interface SemanticChartConfig {
   disableTooltips?: boolean;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied when query returns no results.
    */
   noResultTemplate?: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied to render tooltip for chart points; the following properies are provided:
-   * <mp-documentation type="ChartTooltipData"></mp-documentation>
+   * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied to render tooltip for chart points.
    */
   tooltipTemplate?: string;
 }
@@ -203,7 +209,7 @@ export function parseNumeric(value: string | undefined): Data.Maybe<number> {
 export interface ChartTooltipData {
   /**
    * Non-numerical value for argument axis (usually x-axis) at selected data points,
-   * e.g. labels of pie chart segement or bar chart column; may be empty.
+   * e.g. labels of pie chart segment or bar chart column; may be empty.
    */
   category?: {
     /**
@@ -260,6 +266,7 @@ export interface ChartTooltipPoint {
    */
   markerClass?: string;
 }
+const dashboard = ConfigHolder.getDashboard()?ConfigHolder.getDashboard().value:"http://www.researchspace.org/resource/ThinkingFrames";
 
 export const TOOLTIP_ID = 'mp-semantic-chart-tooltip';
 export const DEFAULT_TOOLTIP_MARKUP = `<div>
@@ -278,9 +285,15 @@ export const DEFAULT_TOOLTIP_MARKUP = `<div>
     <div>
       {{> @marker style=category.markerStyle class=category.markerClass}}
       {{#if category.iri}}
-        <semantic-link iri='{{category.iri}}'>
-          {{category.label}}
-        </semantic-link>
+        {{#ifCond category.label "==" "Unknown"}}
+          <span>{{category.label}}</span>
+        {{else}}
+          <semantic-link iri="`+dashboard+`"
+                      urlqueryparam-view='resource-editor' 
+                      urlqueryparam-resource-iri='{{category.iri}}'
+                      style="text-decoration:underline;">{{category.label}}
+          </semantic-link>
+        {{/ifCond}}
       {{else}}
         {{category.label}}
       {{/if}}
@@ -291,7 +304,11 @@ export const DEFAULT_TOOLTIP_MARKUP = `<div>
       <li>
         {{> @marker style=markerStyle class=markerClass}}
         {{#if iri}}
-          <semantic-link iri="{{iri}}">{{label}}</semantic-link>: {{value}}
+          <div style="display:flex;">
+            <semantic-link iri="`+dashboard+`"
+                          urlqueryparam-view='resource-editor' 
+                          urlqueryparam-resource-iri='{{iri}}'>{{label}}</semantic-link>: {{value}}
+            </div>
         {{else}}
           {{label}}: {{value}}
         {{/if}}

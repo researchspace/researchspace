@@ -23,10 +23,17 @@ import * as SparqlJs from 'sparqljs';
 
 import { Rdf } from 'platform/api/rdf';
 import { Resource } from '../Common';
-export { Resource, Resources } from '../Common';
+export type { Resource, Resources } from '../Common';
 
 import { Category, Relation } from '../profiles/Model';
-export { Category, Relation, Categories, Relations, RelationKey, AvailableDomains } from '../profiles/Model';
+export {
+  type Category,
+  type Relation,
+  type Categories,
+  type Relations,
+  RelationKey,
+  type AvailableDomains,
+} from '../profiles/Model';
 
 export interface Search {
   readonly domain: Category;
@@ -395,36 +402,4 @@ export function matchSpatialDisjunct<T>(matcher: SpatialDisjunctMatcher<T>) {
         return matcher[SpatialDisjunctKinds.BoundingBox](disjunct);
     }
   };
-}
-
-export interface GraphScopeSearch {
-  translationId: string;
-  keywords: string;
-}
-
-export interface GraphScopeResults {
-  relations: Array<{ domain: string; range: string; relation: { iri: string; label: string } }>;
-  columns: ReadonlyArray<GraphScopeColumn>;
-  /** variableName looks like this: ?v0 (0...n) */
-  cardinality: ReadonlyArray<{ [variableName: string]: number }>;
-}
-
-export type GraphScopeColumn = GraphScopeConceptColumn | GraphScopeValueColumn;
-interface GraphScopeColumnBase {
-  id: string;
-  tgConcept: { iri: string; label: string; color: string };
-}
-export interface GraphScopeConceptColumn extends GraphScopeColumnBase {
-  type: 'var-concept';
-  attributes: ReadonlyArray<GraphScopeValueColumn>;
-}
-export interface GraphScopeValueColumn extends GraphScopeColumnBase {
-  type: 'var-value';
-  attribute: {
-    /** Datatype IRIs in <>, e.g. <http://example.com/foo> */
-    iri: string;
-    label: string;
-    matched: boolean;
-  };
-  datatype: string;
 }

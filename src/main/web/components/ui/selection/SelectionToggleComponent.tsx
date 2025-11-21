@@ -41,6 +41,8 @@ interface Props {
    * Toggles the checkbox by default
    */
   defaultChecked?: boolean;
+
+  className?: string;
 }
 
 interface State {
@@ -85,7 +87,7 @@ class SelectionToggleComponent extends Component<Props, State> {
   }
 
   render() {
-    return <input type="checkbox" checked={this.state.value} onChange={this.toggleSelection} />;
+    return <input className={this.props.className ?? ''} type="checkbox" checked={this.state.value} onChange={this.toggleSelection} />;
   }
 
   private toggleSelection = () => {

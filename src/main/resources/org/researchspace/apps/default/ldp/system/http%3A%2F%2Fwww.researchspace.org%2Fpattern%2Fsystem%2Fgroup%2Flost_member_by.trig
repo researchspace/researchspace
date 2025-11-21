@@ -1,0 +1,75 @@
+
+<http://www.researchspace.org/pattern/system/group/lost_member_by/context> {
+  <http://www.researchspace.org/pattern/system/group/lost_member_by> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-009e1b6f07ec43df80edd01a3ed96967-jmgh3;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Lost member by"@en;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-009e1b6f07ec43df80edd01a3ed96967-nwtdrs;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-009e1b6f07ec43df80edd01a3ed96967-v3joav;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-009e1b6f07ec43df80edd01a3ed96967-mu528;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E74_Group>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-009e1b6f07ec43df80edd01a3ed96967-qb45qi;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E86_Leaving>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/group>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-10T18:09:49.873+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-009e1b6f07ec43df80edd01a3ed96967-nwtdrs a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E86_Leaving .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-009e1b6f07ec43df80edd01a3ed96967-mu528 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P146i_lost_member_by $value . 
+  $value crm:P146_separated_from $subject .
+}  WHERE {
+  $subject crm:P146i_lost_member_by $value . 
+  $value crm:P146_separated_from $subject .
+      
+  ?value a crm:E86_Leaving .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-009e1b6f07ec43df80edd01a3ed96967-jmgh3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P146i_lost_member_by $value . 
+  $value crm:P146_separated_from $subject .
+} WHERE {}""" .
+  
+  _:genid-009e1b6f07ec43df80edd01a3ed96967-v3joav a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crm:E86_Leaving .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-009e1b6f07ec43df80edd01a3ed96967-qb45qi a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  $subject crm:P146i_lost_member_by $value . 
+
+  ?value a crm:E86_Leaving .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/group/lost_member_by> .
+}

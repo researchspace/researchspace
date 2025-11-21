@@ -35,7 +35,7 @@ import org.researchspace.repository.MpRepositoryProvider;
  */
 @LDPR(iri = I4_Proposition_Set.IRI_STRING)
 public class I4_Proposition_Set extends DefaultLDPResource {
-    public static final String IRI_STRING = "http://www.ics.forth.gr/isl/CRMinf/I4_Proposition_Set";
+    public static final String IRI_STRING = "http://www.cidoc-crm.org/extensions/crminf/I4_Proposition_Set";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public I4_Proposition_Set(IRI iri, MpRepositoryProvider repositoryProvider) {

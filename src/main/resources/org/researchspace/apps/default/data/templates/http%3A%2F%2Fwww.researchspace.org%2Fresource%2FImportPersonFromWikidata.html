@@ -1,0 +1,178 @@
+
+<semantic-search>
+  <semantic-search-query-keyword  domain='<{{domain}}>'
+                                  placeholder="Search {{label}}"
+                                  min-search-term-length=3
+                                  tokenize-lucene-query=false
+                                  escape-lucene-syntax=false                                
+                                  debounce=1000
+                                  query='PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                                    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                    PREFIX p: <http://www.wikidata.org/prop/>
+
+                                    SELECT ?subject ?person_label ?date_of_birth ?str ?year ?month ?day WHERE {                               
+                                    ?subject wdt:P569 ?date_of_birth .
+                                    
+                                    ?subject rdfs:label ?person_label .
+                                    FILTER(LANG(?person_label) = "en")
+                                    BIND (STR(?date_of_birth) AS ?str)
+                                    BIND (YEAR(?date_of_birth) AS ?year)
+                                    BIND (MONTH(?date_of_birth) AS ?month)
+                                    BIND (DAY(?date_of_birth) AS ?day)
+                                    BIND(STR(?__token__) as ?searchToken)
+                                    FILTER REGEX(?person_label, ?__token__,"i") .
+                                    #FILTER (CONTAINS(LCASE(?person_label),?__token__)) 
+                                    
+                                    }'
+
+  ></semantic-search-query-keyword>
+  <!-- add label-->
+  <semantic-search-result-holder>
+    <div style="margin-top: 25px;">
+      <semantic-search-result>
+        <div class="wikipediaResultsTable">
+          <semantic-context repository='qlever-freiburg-wikidata'>
+            <semantic-table id='semantic-search-result-table'
+                            query='SELECT DISTINCT ?subject ?person_label ?date_of_birth ?str ?year ?month ?day  WHERE {
+                                    BIND(?subject as ?iri) .
+                                  } ORDER BY ?subject'
+
+                            options='{"showFilter":true, "resultsPerPage":10}' 
+                            column-configuration='[
+                                                    {"displayName": "Name", "variableName": "person_label", "cellTemplate": "{{> resourceName}}" },
+                                                    {"displayName": "Description", "variableName": "occupation", "cellTemplate": "{{> occupation}}"},
+                                                   
+                                                    {"displayName": "Image", "cellTemplate": "{{> images}}"},
+                                                    {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
+                                                  ]'   
+            >
+
+              <template id='resourceName'>
+                <div>
+                  {{#if subject.value}} 
+                    <a class="text-link-action" 
+                        target="_blank" 
+                        href="{{subject.value}}"
+                        title="{{subject.value}}">
+                      {{person_label.value}}
+                    </a>
+                  {{else}}
+                    {{person_label.value}}
+                  {{/if}}
+                </div>
+              </template>
+
+              <template id='occupation'>
+                <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                    {{occupation.value}}
+                </mp-text-truncate>
+              </template>
+
+              <template id='images'>
+               <semantic-context repository='default'>
+                      <semantic-query query='
+                                        PREFIX wikibase: <http://wikiba.se/ontology#>
+                                        PREFIX bd: <http://www.bigdata.com/rdf#>
+                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                        PREFIX wd: <http://www.wikidata.org/entity/>
+                                        PREFIX schema: <http://schema.org/>
+
+                                        SELECT (SAMPLE(?_image) AS ?image) WHERE { 
+                                          SERVICE <https://query.wikidata.org/sparql> {  
+                                            BIND(IRI("{{subject.value}}") AS ?wikidataResourceURI) .
+                                            ?wikidataResourceURI wdt:P18 ?_image .
+                                          }
+                                        } LIMIT 1'
+
+                                        template='{{> image}}'
+                                        >
+                                          <template id='image'>
+                                            <div>
+                                              <a href="[[decodeUriComponent '{{bindings.0.image.value}}']]"
+                                                title="[[decodeUriComponent '{{bindings.0.image.value}}']]"
+                                                target="_blank">
+                                                
+                                                <img src="[[decodeUriComponent '{{bindings.0.image.value}}']]" 
+                                                    width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
+                                              </a>
+                                         [[!--   <mp-copy-to-clipboard text='{{bindings.0.image.value}}' message='Image IRI has been copied'> 
+                                                <div>
+                                                    <rs-icon icon-type="rounded" icon-name="content_copy" class="icon-left" symbol="true"></rs-icon>
+                                                    <span>Copy IRI</span>  
+                                                </div>                                          
+                                            </mp-copy-to-clipboard> --]]
+                                            </div>
+                                          </template>
+                                        </semantic-query>
+                    </semantic-context>
+              </template>
+              
+              <template id='actions'>
+                <div>
+                  {{#if subject.value}} 
+                   <semantic-context repository="default">
+                          <semantic-query query='SELECT DISTINCT ?wikidataResourceURI ?wikidataResourceName ?wikidataResourceDescription ?existingRecord WHERE {
+                                                  BIND(<{{subject.value}}> as ?wikidataResourceURI)
+
+                                                  BIND("{{person_label.value}}" as ?wikidataResourceName)
+                                                  #BIND("{{description.value}}" as ?wikidataResourceDescription)
+
+                                                  OPTIONAL {
+                                                    ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                                    ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                    ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                    ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                    ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                    ?importFromExternalSource crmdig:L14_transferred ?wikidataResourceURI .
+                                                    ?wikidataResourceURI a crmdig:D1_Digital_Object .
+                                                    ?wikidataResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                  }
+                                                }'
+                                                
+                                          template='{{> template}}'>
+                                  
+                                    <template id='template'>
+                                      <div> 
+                                        {{#if bindings.0.existingRecord.value}}
+                                          <mp-event-trigger id='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                            type='Dashboard.AddFrame'
+                                                            data='{"viewId":"resource-editor", 
+                                                                  "resourceIri":"{{bindings.0.existingRecord.value}}",
+                                                                  "entityTypeConfig": "{{domainConfig}}",
+                                                                  "editable": true,
+                                                                  "mode":"edit" }' 
+                                                            targets='["thinking-frames"]'>
+                                              <button class="btn btn-default" title="Open {{label}} record">Open record</button>
+                                          </mp-event-trigger>
+                                        {{else}}
+                                          <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                                            type='apiResourceImportInModal' 
+                                                            data='{"apiResourceURI": "{{bindings.0.wikidataResourceURI.value}}", 
+                                                                    "apiResourceName": "{{bindings.0.wikidataResourceName.value}}", 
+                                                                    "apiResourceDescription": "{{bindings.0.wikidataResourceDescription.value}}"
+                                                                  }' 
+                                                      >
+                                            <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
+                                          </mp-event-trigger>
+                                        {{/if}}
+                                      </div>
+                                    </template>
+                          </semantic-query>
+                   </semantic-context>  
+                  {{/if}}
+                </div>
+              </template>
+
+            </semantic-table>
+          </semantic-context>
+        </div>
+      </semantic-search-result>
+    </div>
+  </semantic-search-result-holder>
+  
+</semantic-search>
+

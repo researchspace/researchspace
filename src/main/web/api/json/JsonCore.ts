@@ -58,49 +58,14 @@ const TYPE_VARIABLE_NAME = '#type';
 const VALUE_VARIABLE_NAME = '#value';
 
 /**
- * All registered desrializers.
+ * All registered deserializers.
  */
 const deserializers: Array<Deserializer<any>> = [];
 
 /**
- * All registered srializers.
+ * All registered serializers.
  */
 const serializers: Array<Serializer<any>> = [];
-
-/**
- * ES6 decorator function to register method as deserializer for class instance.
- *
- * @example
- *  class MyClass {
- *    @deserializer
- *    public static fromJson(obj: {}) {return new MyClass();}
- *  }
- */
-export function deserializer<T>(target: any, key: string, descriptor: any) {
-  deserializers.push({
-    name: <string>target.prototype.constructor.name,
-    deserializer: descriptor.value,
-  });
-  return descriptor;
-}
-
-/**
- * ES6 decorator function to register method as serializer for class instance.
- *
- * @example
- *  class MyClass {
- *    @serializer
- *    toJson() {return {}}
- *  }
- */
-export function serializer<T>(target: any, key: string, descriptor: any) {
-  serializers.push({
-    name: target.constructor.name,
-    predicate: (obj) => obj instanceof target.constructor,
-    serializer: descriptor.value,
-  });
-  return descriptor;
-}
 
 /**
  * Register serializer for class.

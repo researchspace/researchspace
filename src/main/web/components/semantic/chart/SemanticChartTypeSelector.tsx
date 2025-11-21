@@ -90,7 +90,7 @@ export class SemanticChartTypeSelector extends Component<Props, State> {
       <ButtonGroup style={this.props.style} className={`${CLASS_NAME}__types`}>
         {this.props.types.map((chartType) => (
           <Button
-            className={`${CLASS_NAME}__type-button chart-type-${chartType}`}
+            className={`${CLASS_NAME}__type-button chart-type-${chartType} btn-textAndIcon`}
             key={chartType}
             active={this.state.selectedType === chartType}
             onClick={() => this.selectChartType(chartType)}

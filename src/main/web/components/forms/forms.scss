@@ -1,6 +1,7 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,9 +19,9 @@
  */
 @import '~basic-styles.scss';
 
-$default-error-color: $color-danger;
-$configuration-error-color: #6f6f6f;
-$loading-error-color: $color-warning;
+$default-error-color: $color-danger-text;
+$configuration-error-color: $color-danger-text;
+$loading-error-color: $color-danger-text;
 
 $form-group-margin-bottom: 15px; //bootstrap variable
 
@@ -54,7 +55,7 @@ $form-group-margin-bottom: 15px; //bootstrap variable
 
     &::placeholder {
       color: $color;
-      opacity: .6;
+      opacity: .7;
     }
   }
   // Set validation states also for addons
@@ -72,8 +73,8 @@ $form-group-margin-bottom: 15px; //bootstrap variable
 
   height: $input-height;
 
-  color: $color-dark;
-  font-size: $font-size-base;
+  color: $input-color;
+  font-size: $input-font-size;
   
   background-color: $input-color-bg;
 
@@ -83,6 +84,7 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   padding: 0px 12px;
 
   -webkit-box-shadow: none;
+  -moz--box-shadow: none;
   box-shadow: none;
 
   &::placeholder {
@@ -93,6 +95,7 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   &:focus {
     outline: none;
     -webkit-box-shadow: none;
+    -moz--box-shadow: none;
     box-shadow: none;
     border-color: inherit;
     border: 1px solid $input-border-color;
@@ -107,9 +110,10 @@ $form-group-margin-bottom: 15px; //bootstrap variable
 
 .keyword-search-container {
 
+  flex:1;
   display: flex;
   align-items: center;
-  height: $input-height;
+  height: 35px;
 
   background-color: $input-color-bg;
   border-radius: $input-border-radius;
@@ -117,9 +121,9 @@ $form-group-margin-bottom: 15px; //bootstrap variable
 
   i {
 
-    font-size: 16px;
-    padding-left: 20px;
-    color: $color-dark--op75;
+    font-size: 20px;
+    padding: 1px 0 0 10px;
+    color: $color-base;
   }
 
   .form-group {
@@ -129,12 +133,8 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   }
 
   .form-control.input-keyword-search {
-
+    height: 33px;
     border: none;
-    height: inherit;
-  //  font-size: 15px;
-  //  letter-spacing: 0.2px;
-    padding: 0px 20px;
   }
 }
 
@@ -149,34 +149,39 @@ textarea.form-control {
 .form-control[readonly],
 fieldset[disabled] .form-control {
 
-  background-color: inherit;
-  opacity: 0.4;
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: $input-color-bg
 }
 
 // Feedback states
 .has-success {
-  @include form-control-validation($color-success-text, $color-success, $color-success-light);
+  @include form-control-validation($color-success-text, $color-border, $color-success-light);
 }
 .has-warning {
-  @include form-control-validation($color-warning-text, $color-warning,$color-warning-light);
+  @include form-control-validation($color-warning-text, $color-border,$color-warning-light);
 }
 .has-error {
-  @include form-control-validation($color-danger, $color-danger, $color-danger-light);
+  @include form-control-validation($color-danger, $color-border, $color-danger-light);
 }
 
 .form-group {
- margin-bottom: $form-group-margin-bottom;
- width: 100%;
- min-height: $input-height;
- height: 100%;
- border-radius: $input-border-radius;
+  margin-bottom: $form-group-margin-bottom;
+  width: 100%;
+  height: $input-height;
+  height: 100%;
+  border-radius: $input-border-radius;
 
  .input-group {
    display: flex;
-   align-items: center;
+   align-items: stretch;
    justify-content: space-between;
    width: 100%;
    height: inherit;
+
+   .btn {
+    height: 100%;
+   }
 
    .form-control {
 
@@ -190,9 +195,10 @@ fieldset[disabled] .form-control {
 
      width: auto;
      height: inherit;
+     gap: 5px;
 
      & button {
-      height: 100%;
+      height: $input-height;
       display: flex;
       align-items: center;
     }
@@ -222,27 +228,55 @@ fieldset[disabled] .form-control {
 
   &__add-value {
 
-    text-decoration: underline;
+/*     text-decoration: underline;
 
     &:hover,
     &:focus {
 
       text-decoration: underline;
-    }
+    } */
     
     &--first {
-      align-self: flex-start;
-      margin: 5px 0px 5px 10px;
+/*       align-self: flex-start;
+      margin: 5px 0px 5px 10px; */
     }
 
     &--another {
-      
+
       margin-top: 6px;
+      
+/*       margin-top: 6px;
       align-self: start;
       font-size: 13px;
-      font-weight: lighter;
+      font-weight: lighter; */
       
     }
+
+    .btn-secondary {
+
+      span:first-letter {
+        text-transform: uppercase;
+      }
+    //  width: 100%;
+    }
+  }
+
+  &__add-value-btn {
+
+    width: -webkit-fill-available;
+    width: -moz-available;
+    width: fill-available;
+    
+    min-width: -moz-available;
+    min-width: -webkit-fill-available;
+    min-width: fill-available;
+    padding: 7px 12px;
+    font-size: $font-size-small;
+
+    i { 
+      font-size: 16px;
+    }
+
   }
 
   &__single-instance + &__single-instance,
@@ -252,11 +286,12 @@ fieldset[disabled] .form-control {
 
   &__single-instance {
 
-    border: 1px solid $input-border-color;
-    border-radius: $input-border-radius;
-    background-color: $input-color-bg;
+   // border: 1px solid $input-border-color;
+   // border-radius: $input-border-radius;
+   // background-color: $input-color-bg;
     display: flex;
     align-items: flex-start;
+    height: inherit;
 
     .select-text-field,
     .plain-text-field,
@@ -279,34 +314,61 @@ fieldset[disabled] .form-control {
 
   &__group-instance {
     position: relative;
-    padding: 15px;
+    padding: 20px;
     border: 1px solid $input-border-color;
+    border-radius: $border-radius;
+    background-color: $color-lighter;
 
-    .semantic-form-input-decorator--with-header:first-of-type {
-      .semantic-form-input-decorator__header {
-        margin-top: 15px;
-      }
+    &.cardinality-support_no-header {
+
+      background: inherit;
+      border: none;
     }
+
+    .cardinality-support__add-value-btn {
+      background-color: $color-lighter-hover;
+      border-color: $color-border-darker;
+    }
+    
   }
 
   &_no-header {
 
     padding: 0px;
-    border: none;
 
-    .semantic-form-input-decorator--with-header:first-of-type {
+/*     .semantic-form-input-decorator--with-header:first-of-type {
       .semantic-form-input-decorator__header {
-        margin: 30px 0 5px 0px;
+        margin: 20px 0 8px 0px;
       }
-    }
+    } */
   }
 
   &__group-instance > &__remove-value {
     position: absolute;
-    right: 4px;
-    top: 4px;
-    padding: 3px 6px;
-    border: none;
+    right: 0;
+    top: 0;
+    padding: 0 9px;
+    display: flex;
+    align-items: center;
+    font-size: 17px;
+
+    background-color: transparent;
+    border-right: none;
+    border-top: none;
+    height: 38px;
+    width: 38px;
+
+    &:hover,
+    &:focus,
+    &:focus-within {
+      background-color: transparent;
+    }
+
+    .material-icons-round,
+    .material-symbols-rounded {
+
+     // font-size: inherit;
+    }
   }
 }
 
@@ -331,16 +393,16 @@ fieldset[disabled] .form-control {
 
   textarea.plain-text-field__text {
     
-    min-height: $input-height;
+    min-height: 50px;
     width: 100%;
 
     background-color: $input-color-bg;
     border: 1px solid $input-border-color;
     border-radius: $input-border-radius;
-    font-size: $font-size-base;
-  //  font-weight: 600;
+    font-size: $input-font-size;
 
     padding: 10px 15px;
+    margin-right: 1px;
 
     &::placeholder {
       color: $input-placeholder-color;
@@ -359,6 +421,8 @@ fieldset[disabled] .form-control {
 
   &__language {
     flex-basis: 120px;
+    margin-left: -2px;
+    border-left: 1px solid $color-border;
 
     > .Select-control {
       border-left: none;
@@ -376,88 +440,12 @@ fieldset[disabled] .form-control {
     flex: auto;
   }
 
-  &__create-button {
-
-    display: flex;
-    align-items: center;
-
-    background-color: $input-color-bg;
-
-    border-radius: 0;
-
-    height: $input-height;
-
-    font-weight: 600;
-    font-size: 16px;
-    padding: 0 15px;
-
-    .fa-plus {
-
-      font-size: 14px;
-    }
-
-  }
-
-  &__create-button.btn-default,
-  &__create-button.btn-default:active:hover {
-
-    border: none;
-    border-right: 1px solid $input-border-color;
-    border-left: 1px solid $input-border-color;
-
-  }
-}
-
-.semantic-form-input-decorator {
-  // See also conditinal override at
-  // `platform/components/3-rd-party/ontodia/authoring/EntityForm.scss`
-
-  &__header {
-
-    margin: 30px 0 5px 0px;
-  }
-
-  &__label {
-    text-transform: capitalize;
-    font-weight: bold;
-  }
-
-  &__label-required:after {
-    content: '*';
-    padding-left: 2px;
-    color: $color-danger;
-  }
-
-  &__description-icon {
-    margin-left: 5px;
-    top: -0.2em;
-    text-transform: capitalize;
-    @include icon(question-circle);
-    color: $color-primary-100;
-  }
-
-  &__spinner {
-    left: 10px;
-    color: gray;
-  }
-}
-
-
-.semantic-form-tree-picker-input {
-
-  display: flex;
-
-  &__picker {
-    flex: auto;
-  }
-
-  .semantic-form-tree-picker-input__create-button.btn-default {
-
-    min-height: 40px;
-    height: auto;
+  .autocomplete-text-field__create-button,
+  .autocomplete-text-field__open-in-new-tab {
+    height: inherit;
 
     margin-left: -1px;
-    padding: 0 15px;
+    padding: 0 9px;
 
     border: 1px solid $input-border-color;
     border-top-left-radius: 0;
@@ -491,39 +479,300 @@ fieldset[disabled] .form-control {
     }
   }
 
+  .dropdown.btn-group {
+    margin-top: 0;
+    margin-left: -1px;
+  }
 }
 
-.semantic-form-errors {
+.select-text-field {
+  display: flex;
+  
+  .Select {
 
-  &__error-source {
+    flex: auto;
+  }
 
-    text-transform: capitalize;
-    &:after {
-      content: ': ';
+  .select-text-field__create-button,
+  .select-text-field__open-in-new-tab {
+    height: inherit;
+
+    margin-left: -1px;
+    padding: 0 9px;
+
+    border: 1px solid $input-border-color;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+
+    background-color: $input-color-bg;
+
+    display: flex;
+    align-items: center;
+
+    font-weight: 600;
+
+    &:hover, 
+    &:active, 
+    &.active, 
+    &:focus, 
+    &.focus, 
+    &:active:hover, 
+    &:active:focus, 
+    &:active.focus, 
+    &.active:hover, 
+    &.active:focus, 
+    &.active.focus, 
+    .open > &.dropdown-toggle, 
+    .open > &.dropdown-toggle:hover, 
+    .open > &.dropdown-toggle:focus, 
+    .open > &.dropdown-toggle.focus {
+  
+      border: 1px solid $input-border-color;
+      background-color: $input-color-bg;
+    }
+  
+  }
+
+  .dropdown.btn-group {
+
+    margin-top: 0;
+    margin-left: -1px;
+  }
+}
+
+.SemanticTreeInput--browseButton.btn-default,
+.cardinality-support__single-instance > .cardinality-support__remove-value.btn-default {
+
+
+    min-height: $input-height;
+    box-sizing: border-box;
+    margin-left: -2px;
+
+    padding: 0 9px;
+    line-height: 0;
+
+    &:active,
+    &:active:hover,
+    &.active,
+    .open > &.dropdown-toggle,
+    &:active:hover,
+    &:active:focus,
+    &:active.focus,
+    &.active:hover,
+    &.active:focus,
+    &.active.focus,
+    .open > &.dropdown-toggle:hover,
+    .open > &.dropdown-toggle:focus,
+    .open > &.dropdown-toggle.focus {
+
+        background-color: $color-white;
+    }
+}
+
+.semantic-form-input-decorator {
+  // See also conditinal override at
+  // `platform/components/3-rd-party/ontodia/authoring/EntityForm.scss`
+
+  &__container {
+
+    display: flex;
+    align-items: flex-start;
+  }
+
+  &__input {
+
+    flex: 1;
+  }
+
+  &__header {
+
+    margin: 20px 0 8px 0px;
+    display: flex;
+    align-items: center;
+
+  }
+
+  &__label {
+
+   font-weight: 600;
+   font-size: $font-size-body;
+   display: block;
+
+   &::first-letter {
+
+    text-transform: uppercase;
+   }
+  }
+
+  &__label-required:after {
+    content: '*';
+    padding-left: 3px;
+    color: $color-dark;
+    font-size: 15px;
+  }
+
+  &__description-icon {
+
+    margin-left: 5px;
+    height: $input-height;
+    padding: 0 9px;
+    display: flex;
+    align-items: center;
+  }
+
+  &__spinner {
+    left: 10px;
+    color: $color-secondary;
+  }
+}
+
+.semantic-form-input-title {
+  margin: 20px 0 5px 0px;
+  display: flex;
+  align-items: center;
+
+  font-weight: 600;
+  font-size: $font-size-body;
+  display: inline-block;
+  text-transform: lowercase;
+
+  &::first-letter {
+    text-transform: uppercase;
+   }
+}
+
+.semantic-form-tree-picker-input {
+
+  display: flex;
+
+  &__picker {
+    flex: auto;
+  }
+
+  .semantic-form-tree-picker-input__create-button.btn-default {
+
+    height: inherit;
+
+    margin-left: -1px;
+    padding: 0 9px;
+
+    border: 1px solid $input-border-color;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+
+    background-color: $input-color-bg;
+
+    display: flex;
+    align-items: center;
+
+    font-weight: 600;
+
+    &:hover, 
+    &:active, 
+    &.active, 
+    &:focus, 
+    &.focus, 
+    &:active:hover, 
+    &:active:focus, 
+    &:active.focus, 
+    &.active:hover, 
+    &.active:focus, 
+    &.active.focus, 
+    .open > &.dropdown-toggle, 
+    .open > &.dropdown-toggle:hover, 
+    .open > &.dropdown-toggle:focus, 
+    .open > &.dropdown-toggle.focus {
+  
+      border: 1px solid $input-border-color;
+      background-color: $input-color-bg;
+    }
+  }
+}
+
+.semantic-form-errors__container {
+
+  margin: 0px;
+  margin-top: 15px;
+  padding: 12px;
+  font-size: $font-size-xsmall;
+  line-height: 1.3;
+
+  border-radius: $border-radius;
+  background-color: $color-danger-light;
+  border: 1px solid $color-danger-border;
+  color: $color-danger-text;
+
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+
+  .semantic-form-errors__icon-container {
+    background-color: #e3909b;
+    border: 1px solid #dd7b88;
+
+    border-radius: 5px;
+    padding: 6px;
+    height: 37px;
+    width: 37px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 20px;
+      color: $color-danger-text;
     }
   }
 
-  &__error {
-    color: $default-error-color;
+  .semantic-form-errors__error-title {
+    font-size: 15px;
+    font-weight: 700;
+    padding-bottom: 3px;
+  }
 
-    &--configuration {
-      color: $configuration-error-color;
+  .semantic-form-errors {
+
+    margin: 0;
+    padding-left: 20px;
+
+    &__error-source {
+  
+      text-transform: capitalize;
+      &:after {
+        content: ': ';
+      }
     }
-    &--loading {
-      color: $loading-error-color;
+  
+    &__error {
+  
+      &:not(:first-of-type) {
+    //    padding-top: 4px;
+      }
+  
+      &--configuration {
+        color: $configuration-error-color;
+      }
+      &--loading {
+        color: $loading-error-color;
+      }
     }
   }
+
 }
 
 .semantic-form-validation-messages {
 
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-
   &__error {
-    color: $default-error-color;
-    padding: 8px;
+
+    margin: 5px 0px;
+    padding: 5px 12px;
+    font-size: $font-size-xsmall;
+  
+    border-radius: $border-radius;
+    background-color: $color-danger-light;
+    border: 1px solid $color-danger-border;
+    color: $color-danger-text;
+
 
     &--configuration {
       color: $configuration-error-color;
@@ -552,9 +801,9 @@ fieldset[disabled] .form-control {
   &__hide:focus,
   &__hide:focus-within {
 
-    background-color: $input-color-bg;
+/*     background-color: $input-color-bg;
     border: none;
-    padding: 5px 8px;
+    padding: 5px 8px; */
   }
 
   #hide-i {
@@ -576,11 +825,15 @@ fieldset[disabled] .form-control {
 
   &__label {
     cursor: auto;
-    font-size: 15px;
+    font-size: $input-font-size;
     font-weight: normal;
     display: inline-flex;
     flex-direction: row-reverse;
     margin-right: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
   }
 
   &__input {
@@ -588,8 +841,8 @@ fieldset[disabled] .form-control {
   }
 
   &__input:indeterminate ~ &__checkbox {
-    background-color: darkgrey;
-    border: 3px #ccc solid;
+    background-color: $color-base;
+    border: 3px $color-light solid;
     cursor: auto;
   }
 
@@ -597,16 +850,17 @@ fieldset[disabled] .form-control {
   &__checkbox {
     cursor: pointer;
     position: relative;
-    height: 20px;
-    width: 20px;
+    height: 16px;
+    width: 16px;
     margin-right: 10px;
-    background-color: #ccc;
+    background-color: $color-white;
+    border: 1px solid $color-medium;
   }
   &__radio {
     border-radius: 50%;
   }
   &__checkbox {
-    border-radius: 0;
+    border-radius: 3px;
   }
 
   &__input:checked ~ &__radio,
@@ -617,10 +871,10 @@ fieldset[disabled] .form-control {
   &__input:checked ~ &__checkbox::after {
     content: '';
     position: absolute;
-    top: 6px;
-    left: 6px;
-    width: 8px;
-    height: 8px;
+    top: 3.5px;
+    left: 3.5px;
+    width: 7px;
+    height: 7px;
     background: white;
   }
   &__input:checked ~ &__checkbox::after {
@@ -639,33 +893,19 @@ fieldset[disabled] .form-control {
   &__select {
     text-transform: uppercase;
     font-weight: 600;
+    height: $input-height;
+    box-sizing: border-box;
   }
 }
 
 /* Form buttons */
 
-//btn-default
-.SemanticTreeInput--browseButton.btn-default,
-.cardinality-support__single-instance > .cardinality-support__remove-value {
-
-  color: $color-dark;
-  border: none;
-  font-size: 13px;
-  background-color: transparent;
-
-  min-height: $input-height;
-  height: 100%;
-  margin: 0;
-  padding: 0 10px;
-
-}
-
-.field-editor__delete-label-button.btn-default,
+/* .field-editor__delete-label-button.btn-default,
 .field-editor__row .btn-default:not(.SemanticTreeInput--browseButton)  {
 
-  color: $color-dark;
+  color: $input-color;
   border: 1px solid $input-border-color;
-  font-size: 13px;
+  font-size: 14px;
   background-color: $input-color-bg;
 
   min-height: $input-height;
@@ -673,19 +913,40 @@ fieldset[disabled] .form-control {
   margin-left: 2px;
   padding: 0 10px;
 
-}
+} */
 
 .semantic-form {
 
   // so nested form modal dialog is fully contained inside semantic-form
   position: relative;
+
+  &.modal-open {
+    overflow: hidden;
+  }
+
   .modal, .modal-backdrop {
     position: absolute;
   }
+
   .modal-dialog {
+
+    height: 100%;
     width: 100%;
     margin: 0;
     padding: 15px;
+  }
+
+  .modal-content {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow: auto;
+    display: flex;
   }
 
   .btn-group .btn + .btn, 
@@ -698,7 +959,6 @@ fieldset[disabled] .form-control {
 
   .btn-group {
 
-    margin-top: 25px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -709,7 +969,7 @@ fieldset[disabled] .form-control {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 5px;
+    gap: 6px;
 
     button.btn.btn-default {
       margin: 0;
@@ -723,8 +983,12 @@ fieldset[disabled] .form-control {
   & .DragAndDropInput--itemArea,
   & .form-group {
 
-    font-size: 14.5px;
-    letter-spacing: 0.1px;
+    font-size: $input-font-size;
+   // letter-spacing: 0.1px;
+  }
+
+  & .text-input-limit-height .plain-text-field textarea.plain-text-field__text {
+    max-height: 350px;
   }
 
   & .form-control,
@@ -733,12 +997,1040 @@ fieldset[disabled] .form-control {
   & .form-group,
   .clearable-input {
 
-    border: none;
+ //   border: none;
   }
 
-  .FileManager--FileUploader > div {
+  .Select-arrow-zone {
+    padding: 0 12px 0 5px;
+    width: 31px;
+    background-color: $input-color-bg;
+  }
 
-    border: none !important;
+  .Select-clear-zone {
+    background-color: $input-color-bg;
+  }
+
+  .dropdown-menu,
+  table .dropdown-menu {
+    max-height: 27vh;
   }
   
 } 
+
+.form-section-flexContainer {
+
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  flex-wrap: wrap;
+  min-width: 400px;
+}
+
+.form-section {
+
+  padding: 20px;
+  border: 1px solid $input-border-color;
+  border-radius: $border-radius;
+  background-color: $color-lighter;
+
+  .cardinality-support__add-value-btn {
+
+    background-color: $color-off-white;
+  }
+
+}
+
+.form-section-header {
+
+  margin-top: 22px;
+  font-weight: 400;
+  font-size: 14px;
+  color: $color-secondary;
+  line-height: 1.4;
+
+  h3 {
+    padding-bottom: 5px;
+  //  font-weight: 500;
+    border-bottom: 1px solid $color-border;
+    color: $color-dark;
+  }
+
+  h4 {
+    margin-bottom: 6px;
+  }
+
+}
+
+.form-section-content {
+
+  margin: 10px 0 15px 0;
+  min-width: 355px;
+
+  .semantic-form-input-decorator.semantic-form-input-decorator--with-header:first-of-type {
+
+    .semantic-form-input-decorator__header {
+      margin-top: 0;
+    }
+  }
+
+  .composite-input .semantic-form-input-decorator.semantic-form-input-decorator--with-header:not(:first-of-type) {
+
+    .semantic-form-input-decorator__header {
+      margin-top: 20px;
+    }
+  }
+
+}
+
+.form-inline-inputs {
+
+  display: flex; 
+  align-items:flex-start; 
+  column-gap: 15px; 
+  row-gap: 5px;
+  flex-wrap: wrap;
+  flex: 1;
+
+  &.first-input {
+    margin-top: -20px;
+  }
+}
+
+.composite-first-input,
+.form-section-first-input {
+
+  margin-top: -20px;
+}
+
+.form-inline {
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  input {
+    flex: 1;
+  }
+}
+
+.menu-toggle {
+
+  a {
+    color: inherit;
+  }
+
+  &.toggle-label-right .semantic-form-input-decorator.semantic-form-input-decorator--with-header {
+    flex-direction: row-reverse;
+
+    .semantic-form-input-decorator__container {
+      margin-right: 10px;
+    }
+  }
+
+  &.toggle-label-left .semantic-form-input-decorator.semantic-form-input-decorator--with-header {
+    flex-direction: row;
+
+    .semantic-form-input-decorator__container {
+      margin-left: 10px;
+    }
+  }
+
+  .toggle label {
+    margin: 0;
+  }
+
+  .semantic-form-input-decorator.semantic-form-input-decorator--with-header {
+    display: flex;
+    align-items: center;
+  }
+
+  .semantic-form-input-decorator__header {
+    margin: 0;
+    font-weight: normal;
+    flex: 1;
+  }
+
+  .semantic-form-checkbox-input {
+
+    height: 25px;
+  }
+
+  .semantic-form-validation-messages {
+    padding: 0;
+  }
+
+  &.toggle-flex {
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+.form-2column-container {
+
+  display: grid;
+  grid-template-columns: 450px auto;
+  gap: 30px;
+  min-height: 100%;
+
+}
+
+.tab-pane:has(.form-2column-container) {
+
+  container-name: form-2column-container;
+  container-type: inline-size;
+}
+
+@container form-2column-container (width <= 950px) {
+
+  .form-2column-container {
+    grid-template-columns: 100%;
+    gap: 0px;
+  }
+}
+
+/* .form-3column-container {
+
+  display: grid;
+  grid-template-columns: 1fr 250px 1fr;
+  column-gap: 40px;
+
+  min-height: 100%;
+} */
+
+.formFileUpload-container {
+  margin-top: 20px;
+  margin-bottom: 0; 
+  padding-top: 0; 
+//  width: 400px;
+
+  .FileManager--FileManagerContainer {
+    margin-right: 5px;
+  }
+
+  .FileManager--selectorContainer {
+    border: 1px solid $input-border-color;
+    border-radius: $border-radius;
+    background-color: $input-color-bg;
+  }
+
+  .FileManager--FileManager .FileManager--alertComponent {
+    margin-bottom: 5px;
+  }
+
+  .FileManager--FileVisualizer .FileManager--uploadedImageDepiction img {
+    max-width: 280px;
+  }
+
+/*   .formFileUpload-min0 {
+    .FileManager--FileVisualizer .FileManager--uploadedImageDepiction img {
+      max-width: 240px;
+    }
+  } */
+}
+
+.form-tabs {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  & > ul{
+    display: flex;
+    align-items: center;
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding-bottom: 1px;
+
+    & > li > a {
+      text-wrap: nowrap;
+    }
+
+    .tab-right {
+      margin-left: auto;
+    }
+  }
+
+  .tab-content {
+
+    flex: 1;
+    overflow-y: hidden;
+    padding: 0;
+  }
+
+  .tab-pane {
+    height: 100%;
+    overflow-y: auto;
+    padding: 0 20px 0 0;
+  }
+}
+
+.form-tabs-subtabs {
+
+  display: grid;
+  grid-template-columns: fit-content(250px) auto;
+
+  overflow:hidden; 
+  height: 100%;
+  
+  background-color: $pageSection-bg;
+  border: 1px solid $input-border-color;
+  padding: 5px 0;
+
+  &.form-asset-tabs {
+
+    margin: 10px -15px 10px 0;
+    height: calc(100% - 20px);
+  }
+
+   & > .form-tabs {
+
+    flex: 1;
+
+    .tab-pane {
+      height: calc(100% - 6px);
+    }
+
+    .tab-content {
+      padding: 0;
+      overflow: hidden;
+
+      & .form-tabs {
+
+        .tab-content {
+          flex: 1;
+          overflow-y: auto;
+        }
+      }
+    }
+
+    & > ul {
+
+      border: none;
+  
+      & > li.subtabs-tab {
+  
+        background-color: $pageSection-bg;
+        padding: 8px 18px;
+        margin: 0;
+        border: 1px solid $input-border-color;
+        margin-right: 5px;
+    
+        &.active {
+          box-shadow: none;
+          background-color: #484b4e;
+          border-color: #484b4e;
+          color: $color-white;
+    
+          & > a {
+            color: inherit;
+          }
+        }
+  
+        &:hover {
+          box-shadow: none;
+        }
+      }
+    }
+
+    .subtabs-tab-container {
+
+      overflow-y: auto;
+      padding: 0 25px 20px;
+      margin-top: 5px;
+      height: inherit;
+      background-color: $pageSection-bg;
+      border: 1px solid $input-border-color;
+    }
+   }
+  
+}
+
+.form-tabs-subtabs-triggers-container {
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  padding: 5px 15px;
+
+
+  li.form-tabs-subtabs-trigger,
+  .form-tabs-subtabs-trigger {
+
+    padding: 9px 12px;
+    margin: 0;
+
+    line-height: 1.4;
+    cursor: pointer;
+    border-radius: 2px;
+    font-size: $font-size-body;
+    color: #4d5052;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:first-of-type {
+      padding: 9px 12px;
+    }
+
+    &.active,
+    &.active:hover,
+    &.active:focus {
+
+      background-color: #d4e3f5;
+      box-shadow: none;
+      color: $color-action;
+      font-weight: 700;
+    }
+
+    &:hover,
+    &:focus {
+      background: #e9edf2;
+      box-shadow: none;
+    }
+
+    a {
+      color: inherit;
+      margin: 0;
+     line-height: inherit;
+    }
+  }
+}
+
+.formResourceAsset-tabs {
+
+  margin-top: 1px; 
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+
+  .page__section-container.tab-content {
+
+    overflow: hidden;
+    flex: 1;
+    margin: 5px 0 0;
+    padding: 12px 15px;
+    margin: 0;
+  }
+
+  .tab-pane-content {
+
+    padding: 15px 0;
+
+    .semantic-form-input-decorator__header {
+      margin-top: 15px;
+    }
+
+    ul.btn.btn-secondary.nav>li>a {
+
+      padding: 0;
+    }
+  }
+}
+
+.form-tabs-subtabs-content,
+.tab-pane.form-tabs-subtabs-content {
+
+  height: 100%;
+  flex: 1;
+ // overflow: hidden;
+
+  padding: 0;
+
+  .objects-table-container {
+    overflow: auto;
+    height: 100%;
+  }
+
+  .form-tabs-subtabs-content--title {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid $color-border;
+    position: relative;
+    padding: 0 0 6px 3px;
+    flex-wrap: wrap;
+    column-gap: 20px;
+    row-gap: 10px;
+
+    h4, ul {
+      margin: 0;
+    }
+
+    .form-tabs-subtabs-content--title-actions {
+      display: flex;
+      gap:3px;
+
+      i, span {
+         color: $color-secondary;
+         font-size: 20px;
+     }
+    }
+
+  }
+
+  & .form-tabs-subtabs-form-container {
+
+    height: 100%;
+    
+    & .semantic-form {
+      height: 100%;
+    }
+  }
+  
+  & .semantic-form {
+    flex: unset;
+    overflow: unset;
+  }
+
+  & .rs-result-holder {
+
+    display: flex !important;
+    flex-direction: column;
+    height: inherit;
+    flex: 1;
+    overflow: hidden;
+
+    & > div {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .semantic-table-holder {
+
+    padding-right: 10px;
+
+    flex: 1;
+    height: 100%;
+    overflow: auto;
+  }
+
+  .cardinality-support__add-value-btn {
+
+    background-color: $color-off-white;
+  }
+}
+
+.form-media-column {
+
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.dragAndDrop-full-height {
+
+    height: 100%;
+
+    & > .semantic-form-input-decorator,
+    & .cardinality-support,
+    & .cardinality-support__group-instance,
+    & .dragAndDrop-input-container{
+      height: 100%;
+    }
+
+    & .semantic-form-input-decorator.semantic-form-input-decorator--with-header {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .DragAndDropInput--holder {
+        flex: 1;
+      }
+    }
+
+    .DragAndDropInput--itemArea {
+      align-content: center;
+    }
+}
+
+.dragAndDrop-input-container {
+
+  cursor: pointer;
+
+  .DragAndDropInput--holder {
+
+    flex: 1;
+
+
+    .DropArea--dropArea.mp-droppable-enabled {
+
+      border-color: $color-action;
+      border-style: dashed;
+      background-color: $color-white;
+
+      display: flex;
+
+      &.mp-droppable-hover {
+        
+        border-style: solid;
+        border-color: $color-action;
+        background-color: $color-white;
+      }
+      
+    }
+  }
+
+  .DragAndDropInput--itemArea {
+
+    min-height: -webkit-fill-available;
+    min-height: 80px;
+    border-style: dashed;
+    border-width: 1.5px;
+    border-color: $color-border;
+
+    .placeholder-item {
+      min-height: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      width: 100%; 
+      color:$input-placeholder-color; 
+      padding: 20px; 
+      text-align: center;
+
+      .upload_icon.material-icons-round,
+      .upload_icon.material-symbols-rounded {
+        font-size: 25px;
+        padding-bottom: 10px;
+        color: inherit;
+      }
+    }
+  }
+
+  .DragAndDropInput--placeholderContainer {
+    width: 100%;
+    padding: 0 30px;
+  }
+}
+
+.nested-form {
+  margin-top: -20px;
+}
+
+.customFormHeader {
+  padding: 20px 0 8px 0px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: $font-size-body;
+}
+
+.form-header-withButtons {
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid $color-border;
+  height: 40px;
+
+  ul {
+    margin: 0;
+  }
+}
+
+.resource-editView-form-container {
+
+  & .semantic-form {
+    overflow: auto;
+    width: 100%;
+  }
+}
+
+.resource-finder-configuration-container {
+
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 40px;
+
+  min-height: 100%;
+  padding-top: 10px;
+
+  grid-template-areas: 'preview details';
+
+  .resource-finder-preview {
+    grid-area: preview;
+    padding-top: 10px; 
+    margin-bottom: 0; 
+    display: flex; 
+    flex-direction: column;
+  }
+
+  .resource-finder-details {
+    grid-area: details;
+ //   display: flex; 
+ //   flex-direction: column;
+ //   margin-top: 10px;
+  }
+}
+
+.tab-pane:has(.resource-finder-configuration-container) {
+
+  container-name: finder-configuration-container;
+  container-type: inline-size;
+}
+
+@container finder-configuration-container (width <= 1000px) {
+
+  .resource-finder-configuration-container {
+    grid-template-columns: 100%;
+    gap: 15px;
+
+    grid-template-areas: 'details' 
+                          'preview';
+  }
+}
+
+.hierarchyView-form-container {
+
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.tab-pane:has(.hierarchyView-form-container) {
+  container-name: form-hierarchyView-container;
+  container-type: inline-size;
+}
+
+@container form-hierarchyView-container (width <= 1000px) {
+
+  .hierarchyView-form-container {
+    grid-template-columns: 100%;
+    gap: 0;
+    min-width: 100%;
+  }
+}
+
+.formWholePageSection-container {
+
+  height: 100%;
+  overflow: hidden;
+  padding-top: 15px;
+}
+
+.resource-finder-form-container {
+  
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .semantic-form-input-decorator {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .semantic-form-input-decorator__container {
+    height: 100%;
+    flex: 1;
+
+    .semantic-form-input-decorator__input {
+      height: 100%;
+
+      .cardinality-support {
+        height: 100%;
+
+        .cardinality-support__group-instance.cardinality-support_no-header {
+          height: 100%;
+        }
+      }
+    }
+  }
+}
+
+.composite-input__subject-button {
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  
+  padding: 0 9px;
+  border-right: none;
+  border-top: none;
+  background-color: transparent;
+
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  right: 37px;
+
+  i {
+    color: $color-secondary;
+  }
+
+  &:hover,
+  &:focus,
+  &:focus-within {
+      background-color: transparent;
+  }
+}
+
+.cardinality-support__group-instance {
+
+  .inline-composite-container {
+
+    .cardinality-support__group-instance > .cardinality-support__remove-value {
+      background-color: $color-lighter-hover;
+      border-color: $color-border-darker;
+    }
+  }
+}
+
+.inline-composite-container {
+
+
+  .cardinality-support__group-instance {
+
+    background-color: transparent;
+    border: none;
+    display: flex;
+    align-items: stretch;
+    gap: 5px;
+    padding: 0;
+
+    & > .composite-input {
+
+      &:has(.composite-input__subject-button) {
+        flex-direction: row-reverse !important;
+      }
+
+      .composite-input__subject-button {
+        position: unset;
+        padding: 8px;
+        margin-left: 7px;
+        border: 1px solid $color-border;
+        background-color: $color-lighter;
+      }
+    }
+
+    & > .cardinality-support__remove-value {
+      background-color: $color-lighter;
+    }
+  }
+  
+  .cardinality-support__remove-value.btn-default {
+
+    position: relative;
+    top: unset;
+    right: unset;
+ //   background-color: $input-color-bg;
+    border: 1px solid $color-border;
+  }
+}
+
+.inline-form-switch {
+
+  display: block;
+
+  .form-switch {
+
+    display: flex;
+    align-items: flex-start;
+    gap:15px;
+    flex: 1;
+  }
+
+  .form-switch__content {
+
+    width: auto;
+  }
+
+  .cardinality-support__group-instance {
+
+    background-color: transparent;
+    border: none;
+    display: flex;
+    align-items: stretch;
+    gap: 5px;
+    padding: 0;
+    height: inherit;
+  }
+  
+  .cardinality-support__remove-value.btn-default {
+
+    position: relative;
+    top: unset;
+    right: unset;
+    background-color: $input-color-bg;
+    height: inherit;
+    padding: 0 9px;
+    border: 1px solid $color-border;
+  }
+
+}
+
+.select-input-disabled-container {
+
+  & .semantic-form-input-decorator.semantic-form-input-decorator--with-header:first-of-type .semantic-form-input-decorator__header {
+    margin-top: 20px;
+  }
+
+  .select-text-field__create-button,
+  .select-text-field__open-in-new-tab {
+    display: none;
+  }
+
+  .select-text-field .Select.is-disabled {
+
+  }
+
+  .Select.is-disabled > .Select-control {
+    cursor: not-allowed;
+  }
+
+  .has-value.is-clearable.Select--single > .Select-control .Select-value {
+    padding-left: 4px;
+  }
+
+  .has-value.Select--single > .Select-control .Select-value .Select-value-label {
+    background-color: $color-action;
+    height: 26px;
+    border: none;
+    border-radius: $border-radius;
+    color: $color-white !important;
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    padding: 0px 9px;
+    opacity: 0.8;
+  }
+}
+
+.form-assetView-tabs {
+
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .tab-content {
+    overflow-y: auto;
+    padding-right: 5px;
+    flex: 1;
+  }
+}
+
+.form-assetView-tabs,
+.page__section-container {
+
+  .btn.btn-icon {
+    padding: 4px;
+   // background-color: $color-lighter;
+    background-color: $color-white;
+    border-radius: $border-radius;
+    border: 1px solid $color-border;
+
+    i {
+      font-size: 20px;
+    }
+
+    &:hover,
+    &:focus,
+    &:focus-within {
+        color: $color-secondary-light;
+        background-color: $color-white;
+    }
+  }
+
+  .tab-pane {
+
+    padding: 0;
+  }
+
+}
+
+/* .entity-resource-sidebar {
+
+  position: relative;
+
+  .Resizer {
+    margin-top: 46.5px;
+  }
+
+  .Pane.Pane2 {
+
+    height: calc(100% - 46.5px);
+    margin-top: 46.5px;
+    margin-left: -6px;
+    background-color: $pageSection-bg;
+    border-top: 1px solid $color-border;
+
+    .split-pane__sidebar {
+
+      .btn-toggle-on {
+        padding-top: 20px;
+        
+        i {
+          font-size: 23px;
+        }
+      }
+
+      .btn-toggle-off {
+
+        padding-top: 20px;
+        padding-bottom: 0;
+        gap: 5px;
+        
+        i {
+          font-size: 21px;
+        }
+      }
+
+      .split-pane__sidebar-open {
+
+        padding-bottom: 0;
+      }
+    }
+  }
+} */
+
+.form-details-container {
+
+  display: grid; 
+  grid-template-columns: 2fr minmax(385px, 1fr);
+  gap: 20px;
+
+  height: inherit;
+  width: 100%;
+
+}
+
+.tab-content:has(.form-details-container) {
+  container-name: form-details-container;
+  container-type: inline-size;
+}
+
+@container form-details-container (width <= 1000px) {
+
+  .form-details-container {
+    grid-template-columns: 100%;
+    gap: 0;
+  }
+}
+
+.form-details-assets-container {
+
+  padding-top: 20px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.form-details-inputs-container {
+
+ // overflow-x: auto;
+}

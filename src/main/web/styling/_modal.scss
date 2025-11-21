@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,17 +23,14 @@
         position: absolute;
     }
 }
-
-.modal-backdrop.in {
-    opacity: 0.7;
-}
   
  
  /* Modal */
 .modal .close, 
 .panel-default .close {
 
-    color: $color-dark;
+    color: $color-btn-default;
+    opacity: 1;
 
     &:focus {
 
@@ -41,32 +39,278 @@
 }
 
 .modal-backdrop {
-    background-color: #cfcddd;
+    background-color: $color-secondary;
+
+    &.in {
+        opacity: 0.8;
+    }
 }
 
-.modal-xlSize .modal-dialog {
+.overlay-lightbox.fade.in.modal {
 
-    width: 100%;
-    height: 100%;
+    background-color: $color-secondary;
+}
 
-    max-width: 55vw;
 
-    margin-top: 8vh !important;
+.modal-xlSize {
+
+    &.fade.in.modal {
+  
+        display: flex !important;
+        padding: 0 !important;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+
+        @media screen and (max-width: 1024px) {
+            overflow-y: auto;
+        }
+    }
+      
+    & .modal-dialog {
+        
+    width: 95%;
+    max-width: 95%;
+
+    height: 95vh;
+    max-height: 95vh;
+    
+    margin: 0 !important;
+
+    @media screen and (max-width: 1024px) {
+        
+        height: auto;
+        max-height: auto;
+        margin: 20px 0;
+    }
+    }
+
+    .modal-content {
+
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .modal-body {
+        overflow: auto;
+    }
+
+    &.preview_modal .modal-body {
+        flex: 1;
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        padding-top: 10px;
+        height: 100%;
+        min-height: unset;
+
+        .preview-media-noResults {
+
+            height: 100%;
+            width: 100%;
+
+            .modal-resource-details {
+                width: 100%;
+                height: auto;
+            }
+        }
+
+        .preview-media-tabs {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            
+            ul {
+                margin: 0;
+                margin-bottom: 10px;
+
+                &:empty {
+                    border: none;
+                    margin: 0;
+                }
+            }
+
+            .tab-content {
+                flex: 1;
+                height: 100%;
+                overflow: hidden;
+
+                .tab-pane {
+                    height: 100%;
+                    padding: 0;
+                }
+            }
+        }
+
+        .modal-preview-container {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 4fr minmax(0, 1fr);
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+
+            @media screen and (max-width: 1024px) {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            div:only-child {
+                grid-column: span 2;
+              }
+        }
+
+        .modal-resource-media {
+            padding: 20px 30px;
+            border: 1px solid $color-border;
+            background-color: $color-white;
+            height: 100%;
+
+       
+            & .semantic-chart,
+            & .semantic-chart__renderer {
+                height: 100% !important;
+            }
+
+            @media screen and (max-width: 1024px) {
+                height: 50vh;
+            }
+        }
+
+        .modal-image-thumbnail-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-image-container {
+
+            img {
+
+                object-fit: contain;
+                height: auto;
+                max-height: 75vh;
+            }
+
+            .modal-iiif-container {
+
+                height: 100%;
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
+
+                @media screen and (max-width: 1024px) {
+
+                    height: 50vh;
+                }
+            }
+        }
+
+        .modal-recording-container {
+
+       //     height: unset;
+            align-items: stretch;
+
+            .modal-videos {
+
+                display: flex;
+                flex-wrap: wrap;
+                align-content: flex-start;
+                gap: 20px;
+    
+                width: 100%;
+                overflow: auto;
+            }
+
+            .modal-resource-details {
+                align-self: stretch;
+                height: auto;
+            }
+        }
+
+
+        .modal-resource-details {
+
+            height: 100%;
+            padding: 20px 30px;
+            border: 1px solid $color-border;
+            background-color: $color-white;
+            word-break: break-word;
+
+            @media screen and (max-width: 1024px) {
+                padding: 20px;
+            }
+        }
+
+        .btn-primary {
+
+            white-space: break-spaces;
+            text-align: justify;
+            margin-top: 25px;
+            border-radius: 0;
+            font-weight: 600;
+            letter-spacing: .5px;
+            font-size: 14px;
+            padding: 8px 14px;
+
+
+            @media screen and (max-width: 1024px) {
+
+                margin-top: 15px;
+            }
+        }
+    }
+}
+
+.modal-centered__dialog {
+
+    display: flex !important;
+    align-items: center;
+    min-height: calc(100% - 0rem);
+    margin: 0 auto;
+
+    .modal-content {
+
+        flex: 1;
+    }
+}
+
+.modal-dialog {
+    overflow: auto;
 }
 
 .modal-content {
 
+    background: $color-modal-bg;
+    border-color: $color-medium;
+
     .modal-header {
 
-        padding: 22px 22px 14px 22px;
+        padding: 18px 25px 14px;
+        border-bottom: 1px solid $color-border;
     }
 
     .modal-title {
 
-        font-size: 16px;
-        font-weight: 600;
-        letter-spacing: 0.3px;
+        font-size: 18px;
+        text-transform: lowercase;
+
+        &::first-letter {
+     
+            text-transform: uppercase;
+        }
     }
+}
+
+.overlay-lightbox__dialog .modal-content {
+
+    background: $color-body-bg;
 }
 
 .modal-body {
@@ -76,13 +320,7 @@
         min-height: 100%;
     }
 
-    padding: 30px;
-
-    & .btn {
-        font-size: 13px;
-        letter-spacing: 0.1px;
-        padding: 7px 10px;
-    }
+    padding: 25px;
 
     & > p:last-child {
 
@@ -175,13 +413,13 @@
         .semantic-carousel>.slick-slider .slick-next::before, 
         .semantic-carousel>.slick-slider>.slick-prev::before {
 
-            color: #a4a3a3;
+            color: $color-btn-default;
             opacity: 1;
 
             &:hover,
             &:focus {
 
-                color: #808080;
+                color: $color-btn-default;
             }
         }
 
@@ -195,11 +433,11 @@
           
             background: $color-white;
             border-radius: 50%;
-            border: 1px solid #a4a3a3;
+            border: 1px solid $color-base;
 
             &:hover {
 
-                border: 1px solid #808080;
+                border: 1px solid $color-secondary;
             }
           
           }
@@ -249,54 +487,42 @@
     }
 
    /*  Semantic form inside a modal */
-    .semantic-form {
-
-      /*   .FileManager--urlInputHolder .btn.btn-primary {
-
-            background-color: transparent;
-            border-color: $color-primary-50;
-            color: $color-dark;
-        } */
-    }
-
     .form-inline {
 
         display: flex;
         align-items: baseline;
-
     }
 
-    .confirm-message {
+    /* .newVocabulary-confirm-message {
 
-        padding: 20px;
-        margin-top: 15px;
+        position: relative;
+        margin-bottom: 0;
         display: flex;
-        align-items: center;
-        line-height: 1.35;
-        font-size: 14.5px;
-        background-color: $color-off-white;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    } */
+    
+    .SplitPane .split-pane__sidebar,
+    .SplitPane .split-pane__sidebar .split-pane__sidebar-header {
 
-        .composite-input {
-
-            display: flex;
-        }
+        background-color: $color-modal-bg;
     }
+
+}
+
+.modal-btn-group {
+
+    width: 100%;
+    margin-top: 25px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .modal-footer {
 
-    border-top: 1px solid #f0eded;
-
-    .btn {
-
-        padding: 6px 10px;
-        font-size: 13px;
-        border-radius: 3px;
-
-        & + .btn {
-            margin-left: 5px;
-        }
-    } 
+    border-top: 1px solid $color-lighter;
 }
 
 // documentation modal 
@@ -338,7 +564,7 @@
         display: flex;
         align-items: center;
         padding: 20px 0;
-        color: $color-info;
+        color: $color-action;
         font-size: 15px;
         font-weight: 600;
 
@@ -354,17 +580,11 @@
         }
     }
 
-/*     h1 {
-        font-size: 2.5em;
-    } */
-
     h2 {
-    //    font-size: 18px;
         margin-bottom: 15px;
     }
 
     h3 {
-    //    font-size: 16px;
         margin: 25px 3px 12px 3px;
     }
 
@@ -376,6 +596,75 @@
     }
 }
 
+.save-as-dataset-modal {
+
+    .save-as-dataset-modal__form__collection-name {
+
+        flex: 1;
+    }
+}
+
+.save-as-dataset-modal__form__save-button {
+
+    margin-left: 3px;
+}
 
 
+.newVocabulary-modal__dialog,
+.editVocabulary-modal__dialog {
 
+  //  max-height: calc(100vh - 60px);
+    overflow: hidden;
+
+    .newVocabulary-modal__body.modal-body,
+    .editVocabulary-modal__body.modal-body {
+
+        padding-top: 0;
+    }
+
+    .vocabulary-search-form {
+
+        display: flex;
+        flex-direction: column;
+
+/*         button {
+            align-self: flex-end;
+        } */
+    }
+
+    .vocabularyType-checklist-input-container {
+
+        max-height: 35vh;
+        overflow: auto;
+    }
+
+}
+
+.importVocabulary-modal {
+
+    .dropzone-area {
+
+        height: auto;
+    }
+}
+
+.newImageModal__body {
+
+    height: 100%;
+    padding-top: 0;
+
+    .semantic-form {
+
+        height: 100%;
+    }
+
+    .composite-input {
+
+        display: flex;
+        flex-direction: column;
+
+        .form-scroll-area {
+            flex: 1;
+        }
+    }
+}

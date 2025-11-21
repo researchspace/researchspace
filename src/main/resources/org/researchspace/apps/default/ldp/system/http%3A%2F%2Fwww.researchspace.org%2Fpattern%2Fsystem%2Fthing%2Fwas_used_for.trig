@@ -1,0 +1,84 @@
+
+<http://www.researchspace.org/pattern/system/thing/was_used_for/context> {
+  <http://www.researchspace.org/pattern/system/thing/was_used_for> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-aa5f9205b62642b786918fb4d90837aa-n77cwf;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E70_Thing>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-aa5f9205b62642b786918fb4d90837aa-wpjaqf;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/thing>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Thing was used for"@en;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-aa5f9205b62642b786918fb4d90837aa-i2fr4;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-aa5f9205b62642b786918fb4d90837aa-whaeyw;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "Typically applies to tools, instruments, moulds, raw materials and items embedded in a product. It implies that the presence of the object in question was a necessary condition for the action.";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-aa5f9205b62642b786918fb4d90837aa-v96q1t;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-17T09:50:05.687+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-aa5f9205b62642b786918fb4d90837aa-wpjaqf a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+    $subject crm:P16i_was_used_for $value . 
+    $value crm:P16_used_specific_object $subject .
+} WHERE {
+    $subject crm:P16i_was_used_for $value . 
+    $value crm:P16_used_specific_object $subject .
+      
+	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E7_Activity .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+     
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-aa5f9205b62642b786918fb4d90837aa-n77cwf a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E7_Activity .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+     
+    ?appellation crm:P190_has_symbolic_content ?label .
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-aa5f9205b62642b786918fb4d90837aa-v96q1t a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crm:P16i_was_used_for $value . 
+    $value crm:P16_used_specific_object $subject .
+} WHERE {}""" .
+  
+  _:genid-aa5f9205b62642b786918fb4d90837aa-i2fr4 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  	$subject crm:P16i_was_used_for $value .
+  
+	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E7_Activity .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+     
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-aa5f9205b62642b786918fb4d90837aa-whaeyw a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E7_Activity .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+     
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/thing/was_used_for> .
+}

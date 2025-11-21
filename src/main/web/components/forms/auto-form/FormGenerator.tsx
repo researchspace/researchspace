@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -52,10 +53,17 @@ export type FieldInputElement = React.ReactElement<SingleValueInputProps | Multi
 
 export function generateFormFromFields(params: GenerateFormFromFieldsParams): JSX.Element[] {
   const content: JSX.Element[] = [];
-  for (const field of params.fields) {
+  const contentInputs: JSX.Element[] = [];
+ 
+  const uniqueFields = params.fields.filter((field, index, self) =>
+    index === self.findIndex(f => f.iri === field.iri)
+  );
+
+  for (const field of uniqueFields) {
     let lastMatched: FieldInputElement | undefined;
     for (const override of params.overrides) {
-      const { fieldIri, datatype } = override.target;
+      const { fieldIri, datatype} = override.target;
+      
       if (fieldIri && fieldIri === field.iri) {
         lastMatched = override.input;
       } else if (datatype && field.xsdDatatype && field.xsdDatatype.value === datatype) {
@@ -65,19 +73,22 @@ export function generateFormFromFields(params: GenerateFormFromFieldsParams): JS
     const generatedInput = lastMatched
       ? React.cloneElement(lastMatched, { for: field.iri })
       : generateInputForField(field);
-    content.push(generatedInput);
+      contentInputs.push(generatedInput);
   }
+  content.push(<div className='EntityForm--inputs'>{contentInputs}</div>)
+  
   content.push(<FormErrors />);
   content.push(
-    <button name="submit" className="btn btn-default">
-      Save
-    </button>
+    <div className='btn-form-actions'>
+      <button name="reset" className="btn btn-default">
+        Reset
+      </button>
+      <button name="submit" className="btn btn-action">
+        Save
+      </button>
+    </div>
   );
-  content.push(
-    <button name="reset" className="btn btn-default">
-      Reset
-    </button>
-  );
+
   return content;
 }
 

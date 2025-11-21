@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -39,6 +40,7 @@ import { ErrorNotification, ErrorPresenter } from 'platform/components/ui/notifi
 import { Spinner } from 'platform/components/ui/spinner';
 
 import * as styles from './NamespaceManager.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface State {
   isLoading?: boolean;
@@ -79,13 +81,16 @@ export class NamespaceManager extends Component<{}, State> {
 
     return (
       <div className={styles.component}>
-        {this.getTable()}
+        <strong>New namespace</strong>
+        {this.getUpdatePanel()}
+
         {this.state.modificationError ? (
           <Alert alert={AlertType.DANGER} message="">
             <ErrorPresenter error={this.state.modificationError} />
           </Alert>
         ) : null}
-        {this.getUpdatePanel()}
+
+        {this.getTable()}
       </div>
     );
   }
@@ -144,12 +149,32 @@ export class NamespaceManager extends Component<{}, State> {
       resultsPerPage: 20,
     };
     return (
-      <Table
-        numberOfDisplayedRows={maybe.Just(10)}
-        columnConfiguration={columnConfig}
-        data={Either.Left<any[], SparqlClient.SparqlSelectResult>(tableData)}
-        layout={maybe.Just<{}>({ options: griddleOptions, tupleTemplate: maybe.Nothing<string>() })}
-      />
+      <div>
+        <h1>All namespaces</h1>
+        <hr style={{ marginTop: '0'}} />
+        
+        <div style={{ marginBottom: '20px'}}>
+          <div className="documentation-section documentation-section-withIcon">
+            <div className="documentation-section-icon-container">
+              <i className="fa fa-info"></i>
+            </div>
+
+            <div style={{ flex: '1'}}> 
+              <div className="documentation-section-title">Info</div>
+              <div className="documentation-section-content">
+              Prefixes starting with a capital letter are system namespaces and can not be changed during runtime.
+              </div>
+            </div>
+          </div> 
+        </div>
+        
+        <Table
+          numberOfDisplayedRows={maybe.Just(10)}
+          columnConfiguration={columnConfig}
+          data={Either.Left<any[], SparqlClient.SparqlSelectResult>(tableData)}
+          layout={maybe.Just<{}>({ options: griddleOptions, tupleTemplate: maybe.Nothing<string>() })}
+        />
+      </div>
     );
   }
 
@@ -158,24 +183,24 @@ export class NamespaceManager extends Component<{}, State> {
       return <Spinner />;
     }
     return (
-      <div className={classnames(styles.updatePanel, 'row')}>
-        <div className="col-xs-1 px-0">
+      <div className={styles.updatePanel}>
+        <div style={{ display: 'flex', flex: '1', gap: '10px'}} >
           <FormControl
             type="text"
             placeholder="Prefix"
             value={this.state.selectedPrefix}
             onChange={this.onPrefixInput}
+            style={{ width: 'auto'}}
           />
-        </div>
-        <div className="col-xs-5">
           <FormControl
             type="text"
             placeholder="Namespace"
             value={this.state.selectedNamespace}
             onChange={this.onNamespaceInput}
+            style={{ flex: '1'}}
           />
         </div>
-        <div className={classnames(styles.updatePanel_submit, 'col-xs-6')}>
+        <div className={styles.updatePanel_submit}>
           <StorageSelector
             allApps={this.state.appStatus}
             sourceApps={[]}
@@ -185,12 +210,12 @@ export class NamespaceManager extends Component<{}, State> {
           <ButtonToolbar>
             <Button
               type="submit"
-              bsSize="small"
-              bsStyle="primary"
+              bsStyle="default"
+              className="btn-action"
               onClick={this.onSetNamespace}
               disabled={!(this.state.selectedPrefix && this.state.selectedNamespace && this.state.selectedAppId)}
             >
-              Set Namespace
+              Create namespace
             </Button>
           </ButtonToolbar>
         </div>
@@ -262,22 +287,22 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
       } else if (this.state.confirm) {
         return (
           <div>
-            Delete prefix "{record.prefix}"?
-            <div>
-              <Button className="btn-grey" onClick={this.onConfirm}>
-                Delete
-              </Button>
-              <Button className="btn-grey" onClick={this.onCancel}>
+            <p>Delete namespace "{record.prefix}"?</p>
+            <div style={{ display: 'flex', gap: '5px'}}>
+              <Button className="btn btn-default" onClick={this.onCancel}>
                 Cancel
+              </Button>
+              <Button className="btn btn-action" onClick={this.onConfirm}>
+                Delete
               </Button>
             </div>
           </div>
         );
       } else {
         return (
-          <Button className="btn-grey" onClick={this.onDeleteClick}>
-            <span className="fa fa-trash-o btn-icon-left" />
-            &nbsp;Delete
+          <Button className="btn btn-default btn-textAndIcon" onClick={this.onDeleteClick}>
+            <Icon iconType='rounded' iconName='delete' symbol/>
+            Delete
           </Button>
         );
       }

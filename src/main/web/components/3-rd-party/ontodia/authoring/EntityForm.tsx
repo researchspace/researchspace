@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -155,14 +156,15 @@ export class EntityForm extends Component<EntityFormProps, State> {
     const { model, suggestIri } = this.state;
     return (
       <div className="semantic-form-input-decorator semantic-form-input-decorator--with-header">
-        <div style={{ display: 'flex' }}>
-          <label style={{ marginLeft: -12 }}>IRI</label>
-          <label style={{ marginLeft: 5, opacity: 0.8 }}>
-            (Suggest IRI
-            <input type="checkbox" checked={suggestIri} onClick={() => this.onChangeSuggestingMode()} />)
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <label style={{ margin: 0 }}>Resource IRI</label>
+          <label style={{ marginLeft: 5, fontWeight: 'normal' }}>
+             - suggest IRI
+            <input style={{ marginLeft: 5 }} type="checkbox" checked={suggestIri} onClick={() => this.onChangeSuggestingMode()} />
           </label>
         </div>
         <input
+         style={{ marginBottom: 15 }}
           className="plain-text-field__text form-control"
           value={model.subject.value}
           onChange={(e) => this.onChangeIri(e)}

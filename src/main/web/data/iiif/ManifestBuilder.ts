@@ -108,7 +108,7 @@ PREFIX siocserv: <http://rdfs.org/sioc/services#>
 PREFIX svcs: <http://rdfs.org/sioc/services#>
 PREFIX xml: <http://www.w3.org/XML/1998/namespace>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX rso: <http://www.researchspace.org/ontology/>
+PREFIX rs: <http://www.researchspace.org/ontology/>
 
 CONSTRUCT {
 ?manifestURI a sc:Manifest ;

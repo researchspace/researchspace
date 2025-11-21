@@ -1,0 +1,51 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/services/tnadiscovery/>
+
+:TNADiscoveryRecordDetailsService a ephedra:Service ;    
+    sail:sailType "researchspace:RESTSail" ;
+    rdfs:label "A wrapper for the TNA Discovery Record Details API service." ;
+
+    ephedra:hasSPARQLPattern (
+        [
+            sp:subject :_results ;
+            sp:predicate :hasId ;
+            sp:object :_id
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :hasCitableReference ;
+            sp:object :_hasCitableReference
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :isParent ;
+            sp:object :_isParent
+            ]
+    );
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "Record id" ;
+        spl:predicate :_id ;
+        spl:valueType xsd:string ;
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "citableReference" ;
+        spl:predicate :_hasCitableReference ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.citableReference"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "isParent" ;
+        spl:predicate :_isParent ;
+        spl:valueType xsd:boolean ;
+        ephedra:jsonPath "$.isParent"
+        ] .

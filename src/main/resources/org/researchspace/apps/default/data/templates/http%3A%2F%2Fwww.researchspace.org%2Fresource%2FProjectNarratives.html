@@ -11,25 +11,21 @@
 </ol>
 
 <div class="page rs-project-narrative">
-
-[[#>rsp:ClipboardSidebar]]
-[[#>rsp:DetailsSidebar]]
-
   <div class='page__body--borderless page__body--borderless-pd'>
-  [[#> rsp:adminPageHeader title="Project - Semantic Narratives" icon="rs-icon rs-icon-page" action=true]]
+  [[#> rsp:adminPageHeader title="Project - Semantic Narratives" materialIcon="description" action=true]]
   [[#if (hasPermission "forms:ldp:*")]]
-    <mp-resource-link-container 
+    <semantic-link-container 
                                 uri="http://www.researchspace.org/resource/ThinkingFrames"
                                 urlqueryparam-view='semantic-narrative'
                                 urlqueryparam-previous-page='[[this]]'
                                 urlqueryparam-previous-page-title='Project - Semantic Narratives'
                                 >
 
-      <button class="btn btn-header-right pull-right">
-        <i class="fa fa-plus"></i>
+      <button class="btn btn-default pull-right">
+        <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
         <div>Create Semantic Narrative</div>
       </button>
-    </mp-resource-link-container>
+    </semantic-link-container>
     [[/if]]
     <div class='clearfix'></div>
      
@@ -44,7 +40,7 @@
                 <semantic-table config='{
 
                 "query": "SELECT * WHERE {
-                          ?page a rso:Semantic_Narrative ;
+                          ?page crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> ;
                              rdfs:label ?label ;
                              <http://www.w3.org/ns/prov#generatedAtTime> ?modified .
 
@@ -65,8 +61,8 @@
                                         
                                          {"variableName": "user", 
                                           "displayName": "Author", 
-                                          "cellTemplate": "<div><i class=\"fa fa-user\" style=\"margin-right: 10px\"></i>
-                                          <semantic-link class=\"rs-dashboard--a\" uri=\"{{user.value}}\" target=\"_blank\"></semantic-link></div>" 
+                                          "cellTemplate": "<div><rs-icon icon-type=\"round\" icon-name=\"account_box\" style=\"margin-right: 10px\"></rs-icon>
+                                          <semantic-link class=\"rs-dashboard--a\" iri=\"{{user.value}}\" target=\"_blank\"></semantic-link></div>" 
                                         },
                                         
                                         {
@@ -78,13 +74,12 @@
                                         {"displayName":"Actions", "cellTemplate": 
                                         "<div style=\"display:flex;\">
                                             <mp-ldp-duplicate-resource-action iri=\"{{page.value}}\">
-                                        			<i class=\"fa fa-files-o\" style=\"cursor:pointer; padding-right:12px;\" title=\"Duplicate\" aria-hidden=\"true\"></i>
+                                              <rs-icon icon-type=\"round\" icon-name=\"file_copy\" style=\"cursor:pointer; padding-right:12px;\" title=\"Duplicate\"></rs-icon>
                                             </mp-ldp-duplicate-resource-action>
                                         
                                             <mp-anonymous-hidden>
                                               <mp-ldp-remove-from-container-action data-iri=\"{{page.value}}\" data-container=\"http://www.researchspace.org/ontology/UserDefinedPage\">
-                                        
-                                        				<i class=\"fa fa-trash\" style=\"cursor:pointer;\" title=\"Delete\" aria-hidden=\"true\"></i>
+                                                <rs-icon icon-type=\"round\" icon-name=\"delete\" style=\"cursor:pointer;\" title=\"Delete\"></rs-icon>
                                               </mp-ldp-remove-from-container-action>
                                             </mp-anonymous-hidden>
                                           </div>"} 
@@ -92,7 +87,7 @@
                   
                   <template id='view'>
                     <div style="display: flex; align-items: center;">
-                      <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                      <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true" style="margin-right: 12px;"></rs-icon>
                       <semantic-link iri='{{page.value}}' 
                                       class='a-draggable'
                                       urlqueryparam-previous-page='[[this]]'
@@ -112,7 +107,4 @@
         </bs-row> <!--  close row -->
     </div>
   </div>
-  
-  [[/rsp:DetailsSidebar]]
-  [[/rsp:ClipboardSidebar]]
 </div>

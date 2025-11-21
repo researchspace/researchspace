@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,15 +37,16 @@ import * as ImageApi from '../../data/iiif/ImageAPI';
 import { queryIIIFImageOrRegion, ImageOrRegionInfo, parseImageSubarea } from '../../data/iiif/ImageAnnotationService';
 import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
-import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestObject, AddObjectImagesEvent, RegionCreatedEvent, RegionUpdatedEvent, RegionRemovedEvent, HighlightRegion, RemoveRegion } from './ImageRegionEditorEvents';
+import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestResource, AddResourceImagesEvent, RegionCreatedEvent, RegionUpdatedEvent, RegionRemovedEvent, HighlightRegion, RemoveRegion } from './ImageRegionEditorEvents';
 
 import { renderMirador, removeMirador, scrollToRegions, scrollToRegion } from './mirador/Mirador';
 import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
 import { OARegionAnnotation, getAnnotationTextResource } from 'platform/data/iiif/LDPImageRegionService';
+import { LayoutChanged } from '../dashboard/DashboardEvents';
 
 export interface ImageRegionEditorConfig {
   id?: string;
-  imageOrRegion: string | { [iri: string]: Array<string> } | IiifManifestObject[];
+  imageOrRegion: string | { [iri: string]: Array<string> } | IiifManifestResource[];
   imageIdPattern: string;
   iiifServerUrl: string;
   repositories?: Array<string>;
@@ -72,7 +74,7 @@ interface ImageRegionEditorState {
   iiifImageId?: Map<string, string>;
   errorMessage?: string;
 
-  allImages: IiifManifestObject[];
+  allImages: IiifManifestResource[];
 }
 
 /**
@@ -115,12 +117,12 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   private normalizeImageProps({ imageOrRegion }: ImageRegionEditorProps) {
     if (typeof imageOrRegion === 'string') {
       return [
-        { objectIri: imageOrRegion, images: [imageOrRegion] },
+        { resourceIri: imageOrRegion, images: [imageOrRegion] },
       ];
     } else if (Array.isArray(imageOrRegion)) {
       return imageOrRegion;
     } else {
-      return toPairs(imageOrRegion).map(([objectIri, images]) => ({ images, objectIri }));
+      return toPairs(imageOrRegion).map(([resourceIri, images]) => ({ images, resourceIri }));
     }
   }
 
@@ -128,11 +130,11 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     this.queryAllImagesInfo();
   }
 
-  private triggerManifestUpdatedEvent = (objects: IiifManifestObject[]) => {
+  private triggerManifestUpdatedEvent = (resources: IiifManifestResource[]) => {
     trigger({
       eventType: ManifestUpdatedEvent,
       source: this.props.id,
-      data: { objects }
+      data: { resources }
     });
   }
 
@@ -140,13 +142,13 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     (eventType: typeof RegionCreatedEvent | typeof RegionUpdatedEvent | typeof RegionRemovedEvent) =>
     (regionIri: Rdf.Iri, oa: OARegionAnnotation) => {
       const imageIri = oa.on[0].full;
-      const objectIri = this.state.allImages.find(i => i.images.includes(imageIri)).objectIri;
+      const resourceIri = this.state.allImages.find(i => i.images.includes(imageIri)).resourceIri;
       const regionLabel = getAnnotationTextResource(oa).chars;
       trigger({
         eventType,
         source: this.props.id,
         data: {
-          objectIri, imageIri, regionIri: regionIri.value, regionLabel
+          resourceIri, imageIri, regionIri: regionIri.value, regionLabel
         }
       });
     }
@@ -164,7 +166,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     });
   }
 
-  private queryImagesInfo(allImages: IiifManifestObject[]) {
+  private queryImagesInfo(allImages: IiifManifestResource[]) {
     const { imageIdPattern } = this.props;
 
     const querying = allImages.map(({ images }) => {
@@ -210,11 +212,11 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
     const iiifServerUrl = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
 
-    const manifestQuerying = this.state.allImages.map(({ objectIri, images }) =>
+    const manifestQuerying = this.state.allImages.map(({ resourceIri, images }) =>
       this.queryManifestParameters({
         infos: this.state.info,
         iiifImageIds: this.state.iiifImageId,
-        iri: objectIri, images, iiifServerUrl
+        iri: resourceIri, images, iiifServerUrl
       }).flatMap((allParams) => {
         const params = allParams.filter((param) => param !== undefined);
         if (params.length === 0) {
@@ -224,7 +226,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               'p',
               {},
               'Images of the entity ',
-              React.createElement(ResourceLinkComponent, { iri: objectIri }),
+              React.createElement(ResourceLinkComponent, { iri: resourceIri }),
               ' not found'
             ),
           });
@@ -237,7 +239,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               'p',
               {},
               'Some images of the entity ',
-              React.createElement(ResourceLinkComponent, { iri: objectIri }),
+              React.createElement(ResourceLinkComponent, { iri: resourceIri }),
               ' not found'
             ),
           });
@@ -291,16 +293,16 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     this.cancellation
       .map(
         listen({
-          eventType: AddObjectImagesEvent,
+          eventType: AddResourceImagesEvent,
           target: this.props.id
         })
       )
       .observe({
         value: (event) => {
           const { allImages } = this.state;
-          if (!some(allImages, im => im.objectIri === event.data.objectIri)) {
+          if (!some(allImages, im => im.resourceIri === event.data.resourceIri)) {
             // if we don't have object images loaded, then we need to fetch the manifest
-            const newImage = { objectIri: event.data.objectIri, images: event.data.imageIris };
+            const newImage = { resourceIri: event.data.resourceIri, images: event.data.imageIris };
             allImages.unshift(newImage);
             this.setState({ allImages: this.state.allImages })
 
@@ -310,7 +312,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
                 ({ info, iiifImageId }) => {
                   return this.queryManifestParameters({
                     infos: info, iiifImageIds: iiifImageId,
-                    iri: event.data.objectIri, images: event.data.imageIris, iiifServerUrl
+                    iri: event.data.resourceIri, images: event.data.imageIris, iiifServerUrl
                   })
                 }
               )
@@ -338,7 +340,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
           } else {
             // if object images are already loaded then just add new slot with the object
             const onSlotAdded = (e, { slots }: { slots: Mirador.Slot[] }) => {
-              const objectImages = allImages.find(os => os.objectIri === event.data.objectIri);
+              const objectImages = allImages.find(os => os.resourceIri === event.data.resourceIri);
               const manifest =
                 this.miradorInstance.viewer.manifestsPanel.manifestListItems.find(
                   ({ manifest }) =>
@@ -378,9 +380,19 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
           if (windowForImage) {
             const annotation = windowForImage.annotationsList.find(a => a['@id'] === event.data.regionIri) as OARegionAnnotation;
+            
             this.cancellation.map(
               this.annotationEndpoint.remove(annotation)
-            ).observe({
+            )
+            .onError(() => { 
+              /* Errors are triggered when an image annotation has been created in the image graph authoring,
+                 as the data it creates depends on the persistence model chosen in the ontodia configuration,
+                 the AnnotationEndpoint will create LDP Resources for the image annotations i.e. regions
+              */
+              this.miradorInstance.eventEmitter.publish('updateAnnotationList.'+windowForImage.id);
+              this.triggerManifestUpdatedEvent(this.state.allImages);
+            })
+            .observe({
               value: (event) => {
                 this.miradorInstance.eventEmitter.publish('updateAnnotationList.'+windowForImage.id);
               }
@@ -393,7 +405,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
                   regions => {
                     const regionToRemove =
                       regions.find(region => region['@id'] === event.data.regionIri);
-                    return this.annotationEndpoint.remove(regionToRemove);
+                    return this.annotationEndpoint.remove(regionToRemove);                   
                   }
                 )
             ).observe({
@@ -463,6 +475,21 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
           }
         }
       })
+
+      this.cancellation
+      .map(
+        listen({
+          eventType: LayoutChanged
+        })
+      )
+      .observe({
+        value: (event) => {
+          setTimeout(() => {
+            this.miradorInstance.viewer.workspace.calculateLayout()
+          }, 100)
+          
+        }
+      });
   }
 
   private queryManifestParameters({
@@ -640,7 +667,7 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
 
   remove(annotation: OARegionAnnotation) {
     return this.endpoint.remove(annotation)
-      .onValue(() => this.onRemoved(Rdf.iri(annotation['@id']), annotation));
+      .onValue(() => {this.onRemoved(Rdf.iri(annotation['@id']), annotation); });
   }
 
   userAuthorize = this.endpoint.userAuthorize ? (action: any, annotation: OARegionAnnotation) => {

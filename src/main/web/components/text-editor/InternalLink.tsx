@@ -23,12 +23,15 @@ import { RenderNodeProps } from 'slate-react';
 import { Overlay, Popover, Button } from 'react-bootstrap';
 
 import { ResourceLinkComponent } from 'platform/api/navigation/components';
+import { ResourceLinkContainer } from 'platform/api/navigation/components';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 import { Rdf } from 'platform/api/rdf';
 import { DropArea } from 'platform/components/dnd/DropArea';
 
 import { Inline, RESOURCE_MIME_TYPE } from './EditorSchema';
 
 import * as styles from './TextEditor.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface InternalLinkProps extends RenderNodeProps {
   editor: Slate.Editor
@@ -106,18 +109,22 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
               <div className={styles.linkPopover}>
                 <DropArea
                   onDrop={this.onResourceDrop}
-                  dropMessage='Drop here resource from Clipboard to make a link.'
+                  dropMessage='Drop here resource to make a link'
                   alwaysVisible={isNoHref}
                 >
                   {
                     isNoHref ? null :
                     // because ResourceLinkComponent is not update when iri changes
                     // we need to use react key to recreate it on change
-                    <ResourceLinkComponent key={dataAttributes.href} iri={dataAttributes.href} />
+                    <ResourceLinkComponent 
+                                            iri={ConfigHolder.getDashboard().value}
+                                            urlqueryparam-view="resource-editor"
+                                            urlqueryparam-resource={dataAttributes.href}
+                    />
                   }
                 </DropArea>
-                <Button bsClass='btn-grey' onMouseDown={this.onUnlink}>
-                  <i className='fa fa-chain-broken' aria-hidden='true'></i>
+                <Button bsClass='btn-default' className='btn-default-icon' onMouseDown={this.onUnlink}>
+                  <Icon iconType='rounded' iconName='link_off' symbol/>
                 </Button>
               </div>
             </Popover>

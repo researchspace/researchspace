@@ -45,6 +45,12 @@ export interface OntodiaEntityMetadataProps {
   fields: ReadonlyArray<string>;
 
   /**
+   * Enable extending the list of fields using the fields where the xsdDatatype is to xsd:anyURI in the ontodia-field-configuration 
+   * This is useful for controlling the form generated but enabling all the other connections available for those entity types.
+   */
+  enableOntodiaContextFields?:boolean;   
+
+  /**
    * Field Iri for entity label override
    */
   labelIri?: string;
@@ -71,6 +77,7 @@ export interface OntodiaEntityMetadataProps {
  * <ontodia-entity-metadata
  *   entity-type-iri='http://example.com/Company'
  *   fields='["field-iri-1", "field-iri-2", ...]'
+ *   enable-ontodia-context-fields=false
  *   label-iri='http://www.example.com/fields/companyName'
  *   image-iri='http://www.example.com/fields/hasType'
  *   new-subject-template='http://www.example.com/company/{{UUID}}'
@@ -108,6 +115,7 @@ export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadata
         fieldIris.push(Rdf.iri(otherField));
       }
     }
+  
     return Promise.resolve(fieldIris);
   }
 
@@ -118,7 +126,7 @@ export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadata
 
 assertFieldConfigurationItem(OntodiaEntityMetadata);
 
-function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: FieldConfigurationContext) {
+function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: FieldConfigurationContext) { console.log("extracting metadata for"+props);
   const { fieldByIri: allFieldByIri, typeIri, datatypeFields } = context;
   const {
     entityTypeIri,
@@ -126,6 +134,7 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
     labelIri = context.defaultLabelIri,
     imageIri = context.defaultImageIri,
     newSubjectTemplate = context.defaultSubjectTemplate,
+    enableOntodiaContextFields = props.enableOntodiaContextFields?props.enableOntodiaContextFields:false,
   } = props;
 
   if (typeof entityTypeIri !== 'string') {
@@ -148,8 +157,11 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
   if (!labelField) {
     throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing label field <${labelIri}>`);
   }
-
-  const mappedFields = fields.map((fieldIri) => {
+ 
+  const excludeFields = context.datatypeFields;
+ 
+  const extendedFields = enableOntodiaContextFields === true ? [...fields, ...allFieldByIri.filter(f => checkField(f, excludeFields)).keySeq().toArray()]: fields;
+  const mappedFields = extendedFields.map(function (fieldIri) {
     const field = allFieldByIri.get(fieldIri);
     if (!field) {
       throw new Error(`<ontodia-entity-metadata> for <${entityTypeIri}>: missing field <${labelIri}>`);
@@ -180,6 +192,14 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
   validateFormFieldsDatatype(metadata.formChildren, metadata);
 
   context.collectedMetadata.set(metadata.entityType, metadata);
+}
+
+function checkField(f:FieldDefinition, excludeFields:readonly string[]):boolean { 
+  if (f.xsdDatatype.value !== "http://www.w3.org/2001/XMLSchema#anyURI")
+    return false;
+  if (excludeFields.includes(f.iri))
+    return false;
+  return true;
 }
 
 function validateFormFieldsDatatype(children: ReactNode | undefined, metadata: EntityMetadata) {

@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { WorkspaceLanguage } from './workspace';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface ToolbarProps {
   canSaveDiagram?: boolean;
@@ -49,7 +50,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
         disabled={this.props.canSaveDiagram === false}
         onClick={this.props.onSaveDiagram}
       >
-        <span className="fa fa-floppy-o" aria-hidden="true" /> Save diagram
+        <Icon iconType="rounded" iconName="save" symbol /> Save diagram
       </button>
     );
   }
@@ -65,7 +66,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
         disabled={this.props.canPersistChanges === false}
         onClick={this.props.onPersistChanges}
       >
-        <span className="fa fa-floppy-o" aria-hidden="true" /> Save data
+        <Icon iconType="rounded" iconName="save" symbol /> Save data
       </button>
     );
   }
@@ -105,7 +106,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
               title="Clear All"
               onClick={this.props.onClearAll}
             >
-              <span className="fa fa-trash" aria-hidden="true" />
+              <Icon iconType="rounded" iconName="layers_clear" symbol />
               &nbsp;Clear All
             </button>
           ) : null}
@@ -115,7 +116,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Force layout"
             onClick={this.props.onForceLayout}
           >
-            <span className="fa fa-sitemap" aria-hidden="true" /> Layout
+            <Icon iconType="rounded" iconName="schema" symbol /> Layout
           </button>
           <button
             type="button"
@@ -123,7 +124,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Zoom In"
             onClick={this.props.onZoomIn}
           >
-            <span className="fa fa-search-plus" aria-hidden="true" />
+            <Icon iconType="rounded" iconName="zoom_in" symbol />
           </button>
           <button
             type="button"
@@ -131,7 +132,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Zoom Out"
             onClick={this.props.onZoomOut}
           >
-            <span className="fa fa-search-minus" aria-hidden="true" />
+            <Icon iconType="rounded" iconName="zoom_out" symbol />
           </button>
           <button
             type="button"
@@ -139,7 +140,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Fit to Screen"
             onClick={this.props.onZoomToFit}
           >
-            <span className="fa fa-arrows-alt" aria-hidden="true" />
+            <Icon iconType="rounded" iconName="fit_screen" symbol />
           </button>
           <button
             type="button"
@@ -147,7 +148,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Export diagram as PNG"
             onClick={this.onExportPNG}
           >
-            <span className="fa fa-picture-o" aria-hidden="true" /> PNG
+            <Icon iconType="rounded" iconName="image" symbol /> PNG
           </button>
           <button
             type="button"
@@ -155,7 +156,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Export diagram as SVG"
             onClick={this.onExportSVG}
           >
-            <span className="fa fa-picture-o" aria-hidden="true" /> SVG
+            <Icon iconType="rounded" iconName="image" symbol /> SVG
           </button>
           <button
             type="button"
@@ -163,7 +164,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
             title="Print diagram"
             onClick={this.props.onPrint}
           >
-            <span className="fa fa-print" aria-hidden="true" />
+            <Icon iconType="rounded" iconName="print" symbol />
           </button>
           {this.renderLanguages()}
         </div>

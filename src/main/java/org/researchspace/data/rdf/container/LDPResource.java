@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -112,6 +113,13 @@ public interface LDPResource {
      * @return
      */
     public boolean isContainer();
+
+    /**
+     * Whether the current resource has CidocCRM.P2_has_type as PLATFORM.SET_TYPE.
+     * 
+     * @return
+     */
+    public boolean isSet();
 
     boolean isOwner(IRI user);
 }

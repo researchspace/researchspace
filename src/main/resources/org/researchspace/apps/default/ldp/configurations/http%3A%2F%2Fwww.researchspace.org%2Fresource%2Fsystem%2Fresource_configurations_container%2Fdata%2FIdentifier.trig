@@ -1,0 +1,89 @@
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.cidoc-crm.org/extensions/crmdig/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier> {
+
+  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier>
+    a Platform:resource_configuration ;
+    a crm:E73_Information_Object ;
+    rdfs:label "Identifier configuration";
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> "Identifier";
+    crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system>;
+    crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> ;
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> crm:E42_Identifier;
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> "?item crm:P190_has_symbolic_content ?label";
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> forms:Identifier ;
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> "assignment" ;
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_view_type> <http://www.researchspace.org/resource/system/vocab/search_view_type/list>, <http://www.researchspace.org/resource/system/vocab/search_view_type/grid>, <http://www.researchspace.org/resource/system/vocab/search_view_type/chart>;
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory>  <http://www.researchspace.org/resource/system/category/identifier_search> ;
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_list_in_authority> <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/list_in_authority> ;
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> crm:P71i_is_listed_in;
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> crm:P106i_forms_part_of ;
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column>  
+    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/resource_search_listView_column/1>,
+    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/resource_search_listView_column/2>,
+    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/resource_search_listView_column/3>  .
+
+  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/resource_search_listView_column/1> a crm:E1_CRM_Entity ;
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> "1";
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> "Identifier value" .
+
+  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/resource_search_listView_column/2> a crm:E1_CRM_Entity ;
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> "2";
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> "Type";
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> "tag" ;
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern>
+    "?item crm:P2_has_type ?value . ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/identifier> . ?value skos:prefLabel ?label ." .
+
+  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/resource_search_listView_column/3> a crm:E1_CRM_Entity ;
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/order> "3";
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/title> "Identifies";
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_type> "link" ;
+    <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern>
+    "?item crm:P1i_identifies|^crm:P1_is_identified_by|crm:P48i_is_preferred_identifier_of|^crm:P48_has_preferred_identifier ?value . {?value crm:P1_is_identified_by ?appellation . ?appellation a crm:E41_Appellation . ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . ?appellation crm:P190_has_symbolic_content ?label .} UNION { ?value crm:P170i_time_is_defined_by ?label . } UNION {?value skos:prefLabel ?label .} UNION {?value crm:P190_has_symbolic_content ?label .} " .
+
+  <http://www.researchspace.org/resource/system/configuration_change1> a crm:E13_Attribute_Assignment ;
+    crm:P140_assigned_attribute_to     <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/resource_search_listView_column/3> ;
+    crm:P141_assigned                   "?item crm:P1i_identifies|^crm:P1_is_identified_by|crm:P48i_is_preferred_identifier_of|^crm:P48_has_preferred_identifier ?value . {?value crm:P1_is_identified_by ?appellation . ?appellation a crm:E41_Appellation . ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . ?appellation crm:P190_has_symbolic_content ?label .} UNION { ?value crm:P170i_time_is_defined_by ?label . } UNION {?value skos:prefLabel ?label .} UNION {?value crm:P190_has_symbolic_content ?label .} ";
+    crm:P177_assigned_property_of_type <http://www.researchspace.org/pattern/system/resource_search_listView_column/content_sparql_pattern> ;
+    crm:P14_carried_out_by             <http://www.researchspace.org/resource/user/admin> ;
+    crm:P4_has_time-span               <http://www.researchspace.org/resource/system/timespanApril2025> .
+
+  <http://www.researchspace.org/resource/system/timespanApril2025> a crm:E52_Time-Span;
+    crm:P82_at_some_time_within "2025-04-29T00:00:00.000Z"^^xsd:datetime .
+
+  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier>
+    crm:P129i_is_subject_of <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record> .
+
+  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record> 
+    a crmdig:D1_Digital_Object;
+    crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record>;
+    crm:P129_is_about <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier>;
+    crmdig:L11i_was_output_of <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record/entity_formRecord_creation> .
+
+  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record/entity_formRecord_creation>
+    a crmdig:D7_Digital_Machine_Event;
+    crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>;
+    crmdig:L11_had_output <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record> ;
+    crm:P4_has_time-span <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record/entity_formRecord_creation/at_some_time_within> ;
+    crm:P14_carried_out_by <http://www.researchspace.org/resource/user/admin> .
+
+  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record/entity_formRecord_creation/at_some_time_within>
+    a crm:E52_Time-Span;
+    crm:P82_at_some_time_within "2024-10-22T00:00:00.000Z"^^xsd:datetime .
+  
+  <http://www.researchspace.org/resource/user/admin> crm:P14i_performed
+    <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record/entity_formRecord_creation> .
+  
+  <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record>
+    crm:P2i_is_type_of <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record> .
+  
+  <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>
+    crm:P2i_is_type_of <http://www.researchspace.org/resource/system/resource_configurations_container/data/Identifier/entity_form_record/entity_formRecord_creation> .
+}

@@ -20,6 +20,7 @@
 import { createFactory, CSSProperties } from 'react';
 import * as D from 'react-dom-factories';
 import * as assign from 'object-assign';
+import Icon from 'platform/components/ui/icon/Icon';
 
 import { StaticComponent, StaticFieldProps } from './StaticComponent';
 
@@ -63,7 +64,9 @@ export class RecoverNotification extends StaticComponent<RecoverNotificationProp
           onClick: this.props.discardRecoveredData,
           title: 'Reset form to default state discarding all recovered data',
         },
-        D.i({ id: 'discard-i', className: 'fa fa-times' }),
+        D.i({ id: 'discard-i',
+          className: 'material-icons-round',
+        }, 'close'),
         D.span({ id: 'discard-span' }, ' Discard recovered data.')
       )
     );

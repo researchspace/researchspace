@@ -1,5 +1,308 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "ICloseType": {
+            "enum": [
+                1,
+                2,
+                3
+            ],
+            "type": "number"
+        },
+        "IJsonRowNode": {
+            "properties": {
+                "children": {
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/IJsonRowNode"
+                            },
+                            {
+                                "$ref": "#/definitions/IJsonTabSetNode"
+                            }
+                        ]
+                    },
+                    "type": "array"
+                },
+                "height": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "row"
+                    ],
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "number"
+                },
+                "width": {
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "children",
+                "height",
+                "id",
+                "type",
+                "weight",
+                "width"
+            ],
+            "required": [
+                "children",
+                "type"
+            ],
+            "type": "object"
+        },
+        "IJsonTabNode": {
+            "properties": {
+                "className": {
+                    "type": "string"
+                },
+                "closeType": {
+                    "$ref": "#/definitions/ICloseType"
+                },
+                "component": {
+                    "type": "string"
+                },
+                "config": {
+                },
+                "enableClose": {
+                    "type": "boolean"
+                },
+                "enableDrag": {
+                    "type": "boolean"
+                },
+                "enableFloat": {
+                    "type": "boolean"
+                },
+                "enableRename": {
+                    "type": "boolean"
+                },
+                "enableRenderOnDemand": {
+                    "type": "boolean"
+                },
+                "floating": {
+                    "type": "boolean"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "className",
+                "closeType",
+                "component",
+                "config",
+                "enableClose",
+                "enableDrag",
+                "enableFloat",
+                "enableRename",
+                "enableRenderOnDemand",
+                "floating",
+                "icon",
+                "id",
+                "name",
+                "type"
+            ],
+            "type": "object"
+        },
+        "IJsonTabSetNode": {
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "autoSelectTab": {
+                    "type": "boolean"
+                },
+                "borderInsets": {
+                    "properties": {
+                        "bottom": {
+                            "type": "number"
+                        },
+                        "left": {
+                            "type": "number"
+                        },
+                        "right": {
+                            "type": "number"
+                        },
+                        "top": {
+                            "type": "number"
+                        }
+                    },
+                    "propertyOrder": [
+                        "top",
+                        "right",
+                        "bottom",
+                        "left"
+                    ],
+                    "required": [
+                        "bottom",
+                        "left",
+                        "right",
+                        "top"
+                    ],
+                    "type": "object"
+                },
+                "children": {
+                    "items": {
+                        "$ref": "#/definitions/IJsonTabNode"
+                    },
+                    "type": "array"
+                },
+                "classNameHeader": {
+                    "type": "string"
+                },
+                "classNameTabStrip": {
+                    "type": "string"
+                },
+                "config": {
+                },
+                "enableDeleteWhenEmpty": {
+                    "type": "boolean"
+                },
+                "enableDivide": {
+                    "type": "boolean"
+                },
+                "enableDrag": {
+                    "type": "boolean"
+                },
+                "enableDrop": {
+                    "type": "boolean"
+                },
+                "enableMaximize": {
+                    "type": "boolean"
+                },
+                "enableTabStrip": {
+                    "type": "boolean"
+                },
+                "headerHeight": {
+                    "type": "number"
+                },
+                "height": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "marginInsets": {
+                    "properties": {
+                        "bottom": {
+                            "type": "number"
+                        },
+                        "left": {
+                            "type": "number"
+                        },
+                        "right": {
+                            "type": "number"
+                        },
+                        "top": {
+                            "type": "number"
+                        }
+                    },
+                    "propertyOrder": [
+                        "top",
+                        "right",
+                        "bottom",
+                        "left"
+                    ],
+                    "required": [
+                        "bottom",
+                        "left",
+                        "right",
+                        "top"
+                    ],
+                    "type": "object"
+                },
+                "maximized": {
+                    "type": "boolean"
+                },
+                "minHeight": {
+                    "type": "number"
+                },
+                "minWidth": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "selected": {
+                    "type": "number"
+                },
+                "tabLocation": {
+                    "$ref": "#/definitions/ITabLocation"
+                },
+                "tabStripHeight": {
+                    "type": "number"
+                },
+                "type": {
+                    "enum": [
+                        "tabset"
+                    ],
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "number"
+                },
+                "width": {
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "active",
+                "maximized",
+                "children",
+                "autoSelectTab",
+                "borderInsets",
+                "classNameHeader",
+                "classNameTabStrip",
+                "config",
+                "enableDeleteWhenEmpty",
+                "enableDivide",
+                "enableDrag",
+                "enableDrop",
+                "enableMaximize",
+                "enableTabStrip",
+                "headerHeight",
+                "height",
+                "id",
+                "marginInsets",
+                "minHeight",
+                "minWidth",
+                "name",
+                "selected",
+                "tabLocation",
+                "tabStripHeight",
+                "type",
+                "weight",
+                "width"
+            ],
+            "required": [
+                "children",
+                "type"
+            ],
+            "type": "object"
+        },
+        "ITabLocation": {
+            "enum": [
+                "bottom",
+                "top"
+            ],
+            "type": "string"
+        }
+    },
     "properties": {
         "checkQuery": {
             "description": "SPARQL Ask query that is used to check whether it is possible to display a specific resource type in the specific view. Resource IRI is injected into the query using the <code>?value</code> binding variable.",
@@ -10,7 +313,11 @@
             "type": "string"
         },
         "iconClass": {
-            "description": "Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.",
+            "description": "Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute and <code>iconName</code> attribute aren't specified.",
+            "type": "string"
+        },
+        "iconName": {
+            "description": "Name of the material-design icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.",
             "type": "string"
         },
         "id": {
@@ -25,6 +332,16 @@
             "description": "Label of the view.",
             "type": "string"
         },
+        "layout": {
+            "$ref": "#/definitions/IJsonRowNode"
+        },
+        "resourceNotRequired": {
+            "description": "Allows initiating a component/template without a resource.",
+            "type": "boolean"
+        },
+        "unique": {
+            "type": "boolean"
+        },
         "viewIds": {
             "description": "Linked views IDs.",
             "items": {
@@ -37,14 +354,20 @@
         "id",
         "label",
         "viewIds",
+        "layout",
         "description",
         "image",
+        "iconName",
         "iconClass",
-        "checkQuery"
+        "checkQuery",
+        "resourceNotRequired",
+        "unique"
     ],
     "required": [
         "id",
         "label",
+        "layout",
+        "unique",
         "viewIds"
     ],
     "type": "object"

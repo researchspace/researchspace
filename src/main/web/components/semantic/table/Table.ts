@@ -37,6 +37,7 @@ import { ErrorNotification } from 'platform/components/ui/notification';
 
 import { Pagination, CustomPaginationProps } from './Pagination';
 import { RdfValueDisplay } from './RdfValueDisplay';
+import Icon from 'platform/components/ui/icon/Icon';
 
 import './Table.scss';
 
@@ -75,7 +76,7 @@ export interface ColumnConfiguration {
   variableName?: string;
   /**
    * Custom cell visualization <semantic-link
-   *   uri='http://help.researchspace.org/resource/FrontendTemplating'>template</semantic-link>.
+   *   uri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">template</semantic-link>.
    * Template has access to all projection variables for a single result tuple.
    *
    * In addition to data from the sparql results cell template has access to current row index with "__semanticTableIndex" property and total table size with "__semanticTableSize" property.
@@ -205,8 +206,8 @@ export class Table extends Component<TableProps, State> {
       showFilter: true,
       useGriddleStyles: false,
       tableClassName: 'table',
-      sortAscendingComponent: createElement('span', { className: 'fa fa-sort-alpha-asc' }),
-      sortDescendingComponent: createElement('span', { className: 'fa fa-sort-alpha-desc' }),
+      sortAscendingComponent: createElement(Icon, {iconType:'rounded', iconName: 'north', symbol: true}), 
+      sortDescendingComponent: createElement(Icon, {iconType:'rounded', iconName: 'south', symbol: true}),
       useCustomPagerComponent: true,
       customPagerComponent: Pagination,
       customPagerComponentOptions: paginationProps,

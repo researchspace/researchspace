@@ -1,0 +1,82 @@
+{{#if node}}
+  <semantic-if query='ASK { <{{node}}> crm:P43_has_dimension ?dimension .
+                            ?dimension crm:P1_is_identified_by ?appellation . 
+                            ?appellation a crm:E41_Appellation . 
+                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .  
+                          }'
+                then='{{> then}}'>
+
+    <template id='then'>
+      <semantic-table id='dimension-table' class-name="dimension-table"
+                      query='SELECT DISTINCT ?dimensionName ?dimensionTypeLabel ?currencyLabel ?dimensionValue ?dimensionLowerValue ?dimensionUpperValue ?dimensionUnitLabel ?dimensionDescription WHERE {
+                              BIND(<{{node}}> as ?subject) .
+                              ?subject crm:P43_has_dimension ?dimension .
+                              ?dimension a ?ontologyClass .
+                              FILTER(?ontologyClass in (crm:E54_Dimension, crm:E98_Currency))
+                              ?dimension crm:P1_is_identified_by ?appellation . 
+                              ?appellation a crm:E41_Appellation . 
+                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                              ?appellation crm:P190_has_symbolic_content ?dimensionName .
+
+                              OPTIONAL {
+                                ?dimension crm:P2_has_type ?dimensionType . 
+                                ?dimensionType crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_type> .
+                                ?dimensionType skos:prefLabel ?dimensionTypeLabel .
+                              }
+
+                              OPTIONAL {
+                                ?dimension crm:P180_has_currency ?currency .
+                                ?currency a crm:E98_Currency .
+                                ?currency skos:prefLabel ?currencyLabel .
+                              }
+
+                              OPTIONAL {
+                                ?dimension crm:P90_has_value ?dimensionValue .
+                              }
+
+                              OPTIONAL {
+                                ?dimension crm:P90a_has_lower_value_limit ?dimensionLowerValue .
+                              }
+
+                              OPTIONAL {
+                                ?dimension crm:P90b_has_upper_value_limit ?dimensionUpperValue .
+                              }
+
+                              OPTIONAL {
+                                ?dimension crm:P91_has_unit ?dimensionUnit .
+                                ?dimensionUnit crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .
+                                ?dimensionUnit skos:prefLabel ?dimensionUnitLabel .
+                              }
+
+                              OPTIONAL {
+                                ?dimension crm:P67i_is_referred_to_by ?information_object  .
+                                ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                ?information_object crm:P1_is_identified_by ?information_object_appellation . 
+                                ?information_object_appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                ?information_object_appellation crm:P190_has_symbolic_content ?dimensionDescription .
+                              }
+
+                            }'
+
+                      options='{"showFilter":false}' 
+                      column-configuration='[
+                                              {"displayName": "Type", "cellTemplate": "{{> dimensionType}}" },
+                                              {"displayName": "Value", "variableName": "dimensionValue" },
+                                              {"displayName": "Lower - upper value", "cellTemplate": "{{> dimensionRange}}" },
+                                              {"displayName": "Unit", "variableName": "dimensionUnitLabel" },
+                                              {"displayName": "Description", "variableName": "dimensionDescription" }
+                                            ]'>
+
+          <template id='dimensionType'>
+            <span>{{#if dimensionTypeLabel.value}}{{dimensionTypeLabel.value}}{{else}}{{dimensionName.value}}{{/if}}</span>
+          </template>
+
+          <template id='dimensionRange'>
+            <span>{{dimensionLowerValue.value}}</span>
+            {{#if (or dimensionLowerValue.value dimensionUpperValue.value)}}<span> - </span>{{/if}}
+            <span>{{dimensionUpperValue.value}}</span>
+          </template>
+      </semantic-table>
+    </template>
+  </semantic-if>
+{{/if}}

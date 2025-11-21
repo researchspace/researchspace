@@ -24,6 +24,9 @@ import * as chaiString from 'chai-string';
 use(chaiString);
 
 import * as NamespaceService from 'platform/api/services/namespace';
+if((NamespaceService.getRegisteredPrefixes as any).restore) {
+  (NamespaceService.getRegisteredPrefixes as any).restore();
+}
 sinon.stub(NamespaceService, 'getRegisteredPrefixes').callsFake(function () {
   return Kefir.constant({});
 });

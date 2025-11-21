@@ -1,6 +1,7 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +31,7 @@
   border: 1px solid $input-border-color;
 
   font-family: $font-family-base;
-  font-size: $font-size-base;
+  font-size: $input-font-size;
 
   background-color: $input-color-bg;
 
@@ -49,6 +50,10 @@
 
   & .Select-multi-value-wrapper {
     height: 100%;
+
+    display: flex;
+    flex-wrap: wrap;
+ //   align-items: center;
   }
 }
 
@@ -57,19 +62,16 @@
   color: $input-placeholder-color;
 }
 
-.Select--single > .Select-control .Select-value {
-
-//  font-weight: 600;
-}
-
 .Select-placeholder,
 .Select--single > .Select-control .Select-value {
 
-  color:$color-dark;
+  color:$input-placeholder-color;
   line-height: unset;
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  width: fit-content;
 }
 
 .is-open > .Select-control {
@@ -95,30 +97,75 @@
 .Select.is-clearable .Select-control {
   display: table;
 }
-
+/* <div class="Select-menu-outer">
+  <div role="listbox" tabindex="-1" class="Select-menu" id="react-select-3--list">
+    <div class="Select-option is-focused" role="option" id="react-select-3--option-0">
+      <span class="btn btn-default category-item-holder" title="CRM Entity" 
+      data-rdfa-about="http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity">
+      CRM Entity</span>
+    </div>
+    <div class="Select-option" role="option" id="react-select-3--option-1">
+      <span class="btn btn-default category-item-holder" title="Ontology" data-rdfa-about="http://www.w3.org/2002/07/owl#Ontology">Ontology</span>
+    </div>
+  </div>
+</div> */
 
 .Select-menu-outer {
 
-  background-color: $input-color-bg;
 
-  margin-top: 0;
-  border: 1px solid $input-border-color;
   z-index: $zindex-select-menu;
+
+  border: 1px solid $color-border;
+//  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+
+  color: $dropdown-link-color;
+  min-width: -moz-available;
+  min-width: -webkit-fill-available;
+  min-width: fill-available;
+  border-radius: $border-radius;
+  border-color: $color-border;
+  margin: 2px 0 0;
+  padding: 8px 0;
+  background-clip: unset;
+
+  & .Select-option {
+
+    padding: 9px 25px 9px 20px;
+    margin: 0;
+    color: $dropdown-link-color;
+    font-size: $dropdown-font-size;
+    font-weight: 400;
+    text-shadow: none;
+
+    display: flex;
+    justify-content: start;
+    line-height: 1.4;
+
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover, 
+    &:focus {
+      background-color: $color-lighter;
+      color: $color-dark;
+    }
+  }
 }
 
-
 .Select-clear {
-  padding-top: 2px;
+
+  font-size: 20px;
 }
 
 .Select-option span {
+  font-size: $dropdown-font-size;
   word-break: break-word;
   white-space: pre-wrap;
 }
 
-
 .Select--multi.Select .Select-value-label {
   white-space: nowrap;
+  padding: 0;
 }
 
 // properly style multi select with custom block
@@ -129,15 +176,29 @@
 
 .Select--multi .Select-value {
 
-  font-size: 13px;
-  margin-left: 7px;
-  margin-top: 7px;
-  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row-reverse;
+  gap: 6px;
+
+  color: $color-secondary;
+  background-color: $color-select-value-bg;
+  border-color: $color-select-value-bg;
+  font-size: $font-size-small;
+  font-weight: 600;
+  margin-left: 6px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+
+  height: 27px;
+  padding: 0 7px;
 }
 
 .Select--multi .Select-value-icon {
   border-right: none;
-  padding: 0 3px 0 6px;
+  padding: 0;
+  font-size: 20px;
 
   &:hover, 
   &:focus {
@@ -150,4 +211,35 @@
   .Select-value p {
     margin: 0;
   }
+}
+
+.Select-clear-zone {
+
+  color: $color-icon-dark;
+}
+
+.Select-arrow-zone {
+
+  padding: 0 12px;
+  width: 38px;
+
+  &::after {
+
+    @include materialIcon('\e5cf', 18px);
+    color: $color-icon-dark;
+  }
+}
+.Select-arrow {
+
+  border-color: $color-icon-dark transparent transparent;
+  border: none;
+
+
+}
+
+.Select.is-disabled > .Select-control {
+
+  background-color: $input-color-bg;
+  opacity: 0.5;
+  cursor: not-allowed;
 }

@@ -2,13 +2,14 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding: 12px 15px;
 
   &__sort-switch {
     display: none;
   }
 
   &__sort-switch:checked + &__sort-switch-label {
-    color: #337ab7;
+    color: $color-action;
     opacity: 1;
   }
 
@@ -30,28 +31,32 @@
 }
 
 .ontodia-connections-menu_bread-crumbs {
-  padding: 15px 10px 0 10px;
+  padding: 5px 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 27px;
   flex-grow: 0;
 }
 
 .ontodia-connections-menu__title-label {
+
+  background-color: $color-white;
+  border: 1px solid $color-border;
+  border-bottom: none;
+  font-size: 15px;
+  font-weight: 700;
+  left: -1px;
+  padding: 12px 15px;
   position: absolute;
-  top: -11px;
-  left: 10px;
-  background: $color-km-bg;
-  padding-left: 3px;
-  padding-right: 3px;
-  border-radius: 6px;
+  top: -44px;
+  width: 100.5%;
+  max-width: 100.5%;
 }
 
 .ontodia-connections-menu_search-line {
-  padding: 10px;
   display: flex;
   align-items: center;
   flex: 0 0 auto;
+  margin-bottom: 8px;
 }
 
 .ontodia-connections-menu_search-line-sort-switches {
@@ -60,10 +65,9 @@
 }
 
 .ontodia-connections-menu_links-list {
-  padding: 5px;
+  padding: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  border-top: 1px solid #dbdbdb;
   flex-grow: 1;
   margin: 0;
 }
@@ -77,7 +81,7 @@
   width: 100%;
   position: relative;
   font-size: x-large;
-  color: #cbcbcb;
+  color: $color-base;
   text-align: center;
 }
 
@@ -88,19 +92,20 @@
   position: relative;
   font-size: x-large;
   display: flex;
-  color: #cbcbcb;
+  color: $color-base;
   align-items: center;
   justify-content: center;
 }
 .ontodia-connections-menu__loading-objects {
-  border: 1px solid gray;
+  border: 1px solid $color-border;
+  border-radius: $border-radius;
   flex-grow: 1;
-  box-shadow: inset 0px 0px 23px -8px gray;
-  background-color: whitesmoke;
+  box-shadow: inset 0px 0px 20px -8px $color-box-shadow;
+  background-color: $color-white;
   position: relative;
-  font-size: x-large;
+  font-size: $font-size-large;
   display: flex;
-  color: #cbcbcb;
+  color: $color-base;
   align-items: center;
   justify-content: center;
   margin-bottom: 5px;
@@ -119,56 +124,65 @@
 
 .link-in-popup-menu {
   display: flex;
+  gap: 8px;
   overflow: hidden;
-  padding: 0 5px 0 0;
+  padding: 0 5px;
   align-items: center;
   margin-bottom: 4px;
-  background:#f6f6f6;
-  height: 33px;
+
+  background-color: $color-off-white;
+  padding: 3px 7px;
+  border: 1px solid $color-border;
 
   &__link-title {
     flex-grow: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin: 5px 0px 5px 5px;
+  //  margin: 5px 0px 5px 5px;
   }
 
   &__count {
     flex-shrink: 0;
-    margin-left: 10px;
+  //  margin-left: 10px;
   }
 
   &__navigate-button {
     float: right;
-    background-image: url("../images/expand-link.png");
-    width: 16px;
-    height: 16px;
+  //  background-image: url("../images/expand-link.png");
+  //  width: 16px;
+  //  height: 16px;
     opacity: 0.5;
-    margin-left: 10px;
-    min-width: 16px;
-    background-size: cover;
+  //  margin-left: 10px;
+  //  min-width: 16px;
+   // background-size: cover;
     &:hover { opacity: 1; }
+
+    &::after {
+      @include materialIcon ('\e5cc', 22px);
+    }
   }
 
   &__filter-button {
-    background-image: url("../images/add-to-filter.png");
-    background-size: 20px 20px;
-    width: 20px;
-    height: 20px;
-    opacity: 0.4;
-    margin-left: 10px;
+  //  background-image: url("../images/add-to-filter.png");
+  //  background-size: 20px 20px;
+  //  width: 20px;
+  //  height: 20px;
+    opacity: 0.6;
     &:hover { opacity: 1; }
+
+    &::after {
+      @include materialIcon ('\ef4f', 22px);
+    }
   }
 
   &:hover {
-    background-color: $color-primary-50;
+    background-color: $color-lighter;
   }
 }
 
 .link-in-popup-menu_direction {
 
-    padding: 5px 0px 5px 10px;
     display: flex;
     align-items: center;
 
@@ -177,23 +191,39 @@
 }
 
 .link-in-popup-menu_direction__in-direction {
-  background: url("../images/direction-in.png") 0 0 no-repeat;
+//  background: url("../images/direction-in.png") 0 0 no-repeat;
   flex-shrink: 0;
-  width: 22px;
-  height: 15px;
-  margin: 0 14px 0 0;
-  background-size: contain;
-  opacity: 0.3;
+//  width: 22px;
+//  height: 15px;
+//  margin: 0 14px 0 0;
+//  background-size: contain;
+  opacity: 0.5;
+
+  display: flex;
+  align-items: center;
+
+  &::before {
+    @include materialIcon ('\e890', 18px);
+    transform: rotate(180deg);
+   }
 }
 
 .link-in-popup-menu_direction__out-direction {
-  background: url("../images/direction-out.png") 0 0 no-repeat;
+//  background: url("../images/direction-out.png") 0 0 no-repeat;
   flex-shrink: 0;
-  width: 22px;
+/*   width: 22px;
   height: 15px;
   margin: 0 8px 0 6px;
-  background-size: contain;
+  background-size: contain; */
   opacity: 0.5;
+
+  display: flex;
+  align-items: center;
+
+  &::before {
+    @include materialIcon ('\e890', 18px);
+   }
+
 }
 
 .ontodia-connections-menu_links-list__loading {
@@ -201,17 +231,18 @@
   width: 100%;
   position: relative;
   font-size: x-large;
-  color: #cbcbcb;
+  color: $color-base;
 }
 
 .ontodia-connections-menu_links-list__hr {
-  margin-top: 10px;
-  margin-bottom: 10px;
+
+  border: none !important;
+  margin-bottom: 5px;
+  margin-top: 5px;
 }
 
 .ontodia-connections-menu_objects-panel {
   flex-grow: 1;
-  padding: 10px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -220,16 +251,17 @@
 
 .ontodia-connections-menu_objects-panel__select-all {
     white-space: nowrap;
-    margin: 5px 10px;
     display: flex;
+    margin-top: 7px;
 
     label {
 
       display: flex;
       align-items: center;
+      font-weight: 600;
     }
 
-    input, input[type='checkbox'] {
+    input, input[type="checkbox"] {
       margin-right: 5px;
       &:disabled { opacity: 0.3 }
     }
@@ -246,7 +278,7 @@
   height: 25px;
   float: left;
   padding: 0px 5px;
-  font-size: larger;
+  font-size: 15px;
   display: flex;
   align-items: center;
   max-width: 60%;
@@ -277,9 +309,5 @@
   color: $color-dark;
   font-weight: bold;
   cursor: pointer;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
+  text-decoration: underline;
 }

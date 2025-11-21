@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
  *
@@ -116,7 +117,7 @@ function createRootsQuery({ relation, scheme, orderBy, label }: TreePatterns) {
       OPTIONAL {
         FILTER(?__orderBy__)
       }
-    } ORDER BY ?order ?label
+    } ORDER BY ?order ASC(LCASE(STR(?label)))
   `);
   const childRelation = bindTreePatterns(relation, { itemVar: 'child', parentVar: 'item' });
   new PatternBinder('__childRelation__', childRelation).sparqlQuery(query);
@@ -138,7 +139,7 @@ function createChildrenQuery({ relation, scheme, orderBy, label }: TreePatterns)
       OPTIONAL {
         FILTER(?__orderBy__)
       }
-    } ORDER BY ?order ?label
+    } ORDER BY ?order ASC(LCASE(STR(?label)))
   `);
   const childRelation = bindTreePatterns(relation, { itemVar: 'child', parentVar: 'item' });
   new PatternBinder('__childRelation__', childRelation).sparqlQuery(query);

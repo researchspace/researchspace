@@ -1,5 +1,6 @@
 /**
  * ResearchSpace
+ * Copyright (C) 2022-2024, © Kartography Community Interest Company
  * Copyright (C) 2015-2020, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
@@ -94,7 +95,7 @@ export interface State {
  *       <semantic-form new-subject-template='http://www.example.com/entity/digitalimageregion/{{UUID}}'
  *          fields='[ {
  *             "iri" : "http://www.example.com/fieldDefinition/is%20primary%20area%20of",
- *             "selectPattern" : "SELECT ?value ?label WHERE {\n  $subject <http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of> ?value.\n}",
+ *             "selectPattern" : "SELECT ?value ?label WHERE {\n  $subject <http://www.cidoc-crm.org/extensions/crmdig/L49_is_primary_area_of> ?value.\n}",
  *             "minOccurs" : "1",
  *             "domain" : [ "http://www.researchspace.org/ontology/EX_Digital_Image_Region" ],
  *             "range" : [ "http://www.researchspace.org/ontology/EX_Digital_Image" ],
@@ -102,7 +103,7 @@ export interface State {
  *             "maxOccurs" : "1",
  *             "id" : "isPrimaryAreaOf",
  *             "label" : "is primary area of",
- *             "insertPattern" : "INSERT { $subject <http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of> $value } WHERE {}",
+ *             "insertPattern" : "INSERT { $subject <http://www.cidoc-crm.org/extensions/crmdig/L49_is_primary_area_of> $value } WHERE {}",
  *             "order" : 0
  *           }, {
  *             "iri" : "http://www.example.com/fieldDefinition/region%20type",
@@ -118,7 +119,7 @@ export interface State {
  *             "order" : 0
  *           }, {
  *             "iri" : "http://www.example.com/fieldDefinition/region%20label",
- *             "selectPattern" : "SELECT ?value WHERE {\n  $subject <http://www.researchspace.org/ontology/displayLabel> ?value.\n}",
+ *             "selectPattern" : "SELECT ?value WHERE {\n  $subject <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?value.\n}",
  *             "minOccurs" : "1",
  *             "xsdDatatype" : "http://www.w3.org/2001/XMLSchema#string",
  *             "domain" : [ "http://www.researchspace.org/ontology/EX_Digital_Image_Region" ],
@@ -127,7 +128,7 @@ export interface State {
  *             "maxOccurs" : "1",
  *             "id" : "label",
  *             "label" : "region label",
- *             "insertPattern" : "INSERT { $subject <http://www.researchspace.org/ontology/displayLabel> $value} WHERE {}",
+ *             "insertPattern" : "INSERT { $subject <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> $value} WHERE {}",
  *             "order" : 0
  *           }, {
  *             "iri" : "http://www.example.com/fieldDefinition/region%20value",
@@ -178,9 +179,9 @@ export interface State {
  *          <semantic-form-hidden-input for="viewport"></semantic-form-hidden-input>
  *          <semantic-form-hidden-input for="boundingBox"></semantic-form-hidden-input>
  *
- *          <button name="submit" class="btn btn-sm btn-success">Save</button>
  *          <button name="reset" class="btn btn-sm btn-default">Reset</button>
- *          <button name="cancel" class="btn btn-sm btn-danger pull-right">Cancel</button>
+ *          <button name="cancel" class="btn btn-sm pull-right">Cancel</button>
+ *          <button name="submit" class="btn btn-sm btn-action">Save</button>
  *        </semantic-form>
  *      </ontodia>
  *    </div>

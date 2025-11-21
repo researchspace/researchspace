@@ -95,7 +95,7 @@ class AccountManagerComponent extends Component<{}, State> {
         numberOfDisplayedRows: maybe.Just<number>(10),
         data: Either.Left<any[], SparqlClient.SparqlSelectResult>(this.state.data.get()),
         columnConfiguration: [
-          { variableName: 'principal', displayName: 'User Principal' },
+          { variableName: 'principal', displayName: 'Username' },
           { variableName: 'roles', displayName: 'Roles' },
           {
             variableName: 'permissions',

@@ -1,0 +1,180 @@
+<semantic-search>
+  <semantic-search-query-keyword  domain='<{{domain}}>'
+                                  placeholder="Search {{label}}"
+                                  min-search-term-length=4
+                                  tokenize-lucene-query=false
+                                  escape-lucene-syntax=false
+                                  debounce=500
+                                  debounce=500
+                                  query='PREFIX vam: <http://www.researchspace.org/resource/system/service/vam/>
+                                         SELECT ?subject ?objectid {
+                                           service vam:vam {
+                                             ?subject vam:hasQuery ?__token__.
+                                             ?subject vam:hasPageSize "100" .
+                                             ?subject vam:hasPrimaryTitle ?rawTitle .
+                                             ?subject vam:hasObjectType ?objectType .
+                                             ?subject vam:hasSystemNumber ?objectid.
+                                             ?subject vam:hasAccessionNumber ?accessionNumber .
+                                             ?subject vam:hasIIIFImageUrl ?objectImageUrl .
+
+                                             ?subject vam:hasPrimaryMaker ?artistName .
+                                             ?subject vam:hasPrimaryMakerInTheRole ?artistRole .
+                                              
+                                             BIND(REPLACE(STR(?rawTitle),"\"","") as ?title)
+                                            } 
+                                         } LIMIT 100'
+  ></semantic-search-query-keyword>
+  <!-- add label-->
+  <semantic-search-result-holder>
+    <div style="margin-top: 25px;">
+      <semantic-search-result>
+        <div class="VAMResultsTable">
+          <semantic-context repository='ephedra'>
+            <semantic-table id='semantic-search-result-table'
+                            query='PREFIX vam: <http://www.researchspace.org/resource/system/service/vam/>
+                                   SELECT DISTINCT ?subject ?id ?objectType ?title ?objectImageUrl ?description ?accessionNumber ?artistName ?artistRole WHERE {
+                                    BIND(?objectid as ?id)
+                                    BIND(?subject as ?iri) .
+                                    service vam:VamObject {
+                                        ?subject vam:objectid ?id .
+                                        ?subject vam:summaryDescription ?rawDescription .                                        
+                                    }
+                                    BIND(REPLACE(?rawDescription,"\"","") as ?description)
+                                  } ORDER BY ?title ?id'
+
+                            options='{"showFilter":false, "resultsPerPage":10}' 
+                            column-configuration='[
+                                                    {"displayName": "Title", "variableName": "title", "cellTemplate": "{{> resourceName}}" },
+                                                    {"displayName": "Accession number", "variableName": "accessionNumber" },
+                                                    {"displayName": "Type", "variableName": "objectType" },
+                                                    {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}" },
+                                                    {"displayName": "Primary artist name", "variableName": "artistName" },
+                                                    {"displayName": "Primary artist role", "variableName": "artistRole" },
+                                                    {"displayName": "Image", "cellTemplate": "{{> images}}"},
+                                                    {"displayName": "Actions", "cellTemplate": "{{> actions}}"}
+                                                  ]'   
+            >
+
+            <template id='resourceName'>
+              <div>
+                {{#if title.value}}
+                  <a class="text-link-action" 
+                    target="_blank" 
+                    href="https://collections.vam.ac.uk/item/{{id.value}}"
+                    title="https://collections.vam.ac.uk/item/{{id.value}}">
+                  {{title.value}}                
+                  </a>
+                {{else}}
+                  <a class="text-link-action" 
+                    target="_blank" 
+                    href="https://collections.vam.ac.uk/item/{{id.value}}"
+                    title="https://collections.vam.ac.uk/item/{{id.value}}">
+                  {{id.value}} 
+                </a>
+                {{/if}}
+                         
+              </div>
+            </template>
+
+            <template id='description'>
+              <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                  {{description.value}}
+              </mp-text-truncate>
+            </template>
+            
+            <template id='images'>
+                <div>
+                  {{#if objectImageUrl.value}}
+                    <a href="[[decodeUriComponent '{{objectImageUrl.value}}/full/!250,/0/default.jpg']]"
+                    title="[[decodeUriComponent '{{objectImageUrl.value}}/full/!250,/0/default.jpg']]"
+                    target="_blank">
+                    
+                    <img src="[[decodeUriComponent '{{objectImageUrl.value}}/full/!250,/0/default.jpg']]" 
+                        width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
+                    </a>
+                   {{/if}}
+                </div>
+                    
+            </template>
+
+            <template id='actions'>
+              <div> 
+                <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
+                  <semantic-context repository='default'>
+                    <semantic-query query='SELECT DISTINCT ?VAMResourceURI WHERE {
+                                            BIND(IRI(CONCAT("https://collections.vam.ac.uk/item/", STR("{{id.value}}"))) AS ?VAMResourceURI)
+                                          }'
+                                          
+                                    template='{{> template}}'>
+                            
+                      <template id='template'>
+                        [[!-- TO DO: description value is creating sometimes encoding problems --]]
+                        <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                          type='apiResourceImportInModal' 
+                                          data='{"apiResourceURI": "{{bindings.0.VAMResourceURI.value}}", 
+                                                  "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}", 
+                                                  "apiResourceMuseumId": "{{accessionNumber.value}}",
+                                                  "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/accession_number", 
+                                                  "apiResourceSystemId": "{{id.value}}",
+                                                  "apiResourceDescription": "{{description.value}}", 
+                                                  "apiResourceArtistName": "{{artistName.value}}",
+                                                  "apiResourceArtistRole": "{{artistRole.value}}"
+                                                }' 
+                                    >
+                          <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
+                        </mp-event-trigger>
+                      </template>
+                    </semantic-query>
+                  </semantic-context>
+                  <semantic-context repository='default'>
+                    <semantic-query query='SELECT DISTINCT ?existingRecord ?existingRecordLabel WHERE {
+
+                                            BIND(IRI(CONCAT("https://collections.vam.ac.uk/item/", STR("{{id.value}}"))) AS ?VAMResourceURI)
+
+                                            ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                            ?entityFormRecord a crmdig:D1_Digital_Object .
+                                            ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                            ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                            ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                            ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                            ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                            ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                            ?importFromExternalSource crmdig:L14_transferred ?VAMResourceURI .
+                                            ?VAMResourceURI a crmdig:D1_Digital_Object .
+                                            ?VAMResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+
+                                            ?existingRecord crm:P1_is_identified_by ?appellation . 
+                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                            ?appellation crm:P190_has_symbolic_content ?existingRecordLabel .
+                                          }'
+                                          
+                                    template='{{> template}}'>
+                            
+                              <template id='template'>
+                                <bs-dropdown-button pull-right=true id='{{viewId}}-open-record-dropdown-{{__semanticTableIndex.value}}' title="Open record">
+                                  {{#each bindings}}
+                                    <mp-event-trigger id='{{../viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                        type='Dashboard.AddFrame'
+                                                        data='{"viewId":"resource-editor", 
+                                                              "resourceIri":"{{existingRecord.value}}",
+                                                              "entityTypeConfig": "{{domainConfig}}",
+                                                              "mode":"edit" }' 
+                                                        targets='["thinking-frames"]'>
+                                        <bs-menu-item draggable='true'>{{existingRecordLabel.value}}</bs-menu-item>
+                                    </mp-event-trigger>
+                                  {{/each}}
+                                </bs-dropdown-button>
+                              </template>
+                    </semantic-query>
+                  </semantic-context>
+              </div>
+            </div>
+          </template>
+          </semantic-context>
+        </div>
+      </semantic-search-result>
+    </div>
+  </semantic-search-result-holder>
+  
+</semantic-search>
+

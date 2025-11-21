@@ -17,77 +17,80 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as RDF from '../core/Rdf';
+import * as Rdf from '../core/Rdf';
 
-module platform {
+namespace platform {
   export const _NAMESPACE = 'http://www.researchspace.org/resource/system/';
-
-  export const SyntheticJsonDatatype = RDF.iri(_NAMESPACE + 'syntheticJson');
+  export const _NAMESPACE_VOCABULARY_RESOURCE_TYPE = 'http://www.researchspace.org/resource/system/vocab/resource_type/'
+  export const SyntheticJsonDatatype = Rdf.iri(_NAMESPACE + 'syntheticJson');
 
   // LDP
-  export const UserSetContainer = RDF.iri(_NAMESPACE + 'userSetContainer');
-  export const SetContainer = RDF.iri(_NAMESPACE + 'setContainer');
-  export const VisibilityContainer = RDF.iri(_NAMESPACE + 'visibilityContainer');
-  export const FieldDefinitionContainer = RDF.iri(_NAMESPACE + 'fieldDefinitionContainer');
-  export const FormContainer = RDF.iri(_NAMESPACE + 'formContainer');
-  export const OntodiaDiagramContainer = RDF.iri(_NAMESPACE + 'ontodiaDiagramContainer');
-  export const QueryContainer = RDF.iri(_NAMESPACE + 'queryContainer');
-  export const QueryTemplateContainer = RDF.iri(_NAMESPACE + 'queryTemplateContainer');
-  export const PersistedComponentContainer = RDF.iri(_NAMESPACE + 'persistedComponentContainer');
-  export const WorkflowContainer = RDF.iri(_NAMESPACE + 'workflowContainer');
-  export const WorkflowDefinitionContainer = RDF.iri(_NAMESPACE + 'workflowDefinitionContainer');
+  export const UserSetContainer = Rdf.iri(_NAMESPACE + 'userSetContainer');
+  export const SetContainer = Rdf.iri(_NAMESPACE + 'setContainer');
+  export const VisibilityContainer = Rdf.iri(_NAMESPACE + 'visibilityContainer');
+  export const FieldDefinitionContainer = Rdf.iri(_NAMESPACE + 'fieldDefinitionContainer');
+  export const FormContainer = Rdf.iri(_NAMESPACE + 'formContainer');
+  export const OntologyContainer = Rdf.iri(_NAMESPACE + 'ontologyContainer');
+  export const OntodiaDiagramContainer = Rdf.iri(_NAMESPACE + 'ontodiaDiagramContainer');
+  export const QueryContainer = Rdf.iri(_NAMESPACE + 'queryContainer');
+  export const QueryTemplateContainer = Rdf.iri(_NAMESPACE + 'queryTemplateContainer');
+  export const PersistedComponentContainer = Rdf.iri(_NAMESPACE + 'persistedComponentContainer');
+  export const WorkflowContainer = Rdf.iri(_NAMESPACE + 'workflowContainer');
+  export const WorkflowDefinitionContainer = Rdf.iri(_NAMESPACE + 'workflowDefinitionContainer');
 
-  export const Set = RDF.iri(_NAMESPACE + 'Set');
-  export const SetItem = RDF.iri(_NAMESPACE + 'SetItem');
+  export const RootContainer = Rdf.iri(_NAMESPACE + 'rootContainer');
+
+  export const Set = Rdf.iri(_NAMESPACE_VOCABULARY_RESOURCE_TYPE + 'set');
+  export const SetItem = Rdf.iri(_NAMESPACE_VOCABULARY_RESOURCE_TYPE + 'set_item');
 
   // SET Container can have set-container of resources
-  export const containerType = RDF.iri(_NAMESPACE + 'containerType');
-  export const setItem = RDF.iri(_NAMESPACE + 'setItem');
-  export const setItemIndex = RDF.iri(_NAMESPACE + 'setItemIndex');
-  export const clipboardItem = RDF.iri(_NAMESPACE + 'clipboardItem');
-  export const visibilityItem = RDF.iri(_NAMESPACE + 'visibilityItem');
+  export const containerType = Rdf.iri(_NAMESPACE + 'containerType');
+  export const setItem = Rdf.iri(_NAMESPACE + 'setItem');
+  export const setItemIndex = Rdf.iri(_NAMESPACE + 'setItemIndex');
+  export const clipboardItem = Rdf.iri(_NAMESPACE + 'clipboardItem');
+  export const visibilityItem = Rdf.iri(_NAMESPACE + 'visibilityItem');
 
   /**
    * Specifies visibility of the resource.
    * Possible values are publicVisibility, privateVisibility, sharedVisibility and groupVisibility
    * from bellow.
    */
-  export const visibility = RDF.iri(_NAMESPACE + 'visibility');
+  export const visibility = Rdf.iri(_NAMESPACE + 'visibility');
 
   /**
    * Resource can be visible to everyone, including anonymous user.
    */
-  export const publicVisibility = RDF.iri(_NAMESPACE + 'visibilityPublic');
+  export const publicVisibility = Rdf.iri(_NAMESPACE + 'visibilityPublic');
 
   /**
    * Resource can be visible only to the original author.
    */
-  export const privateVisibility = RDF.iri(_NAMESPACE + 'visibilityPrivate');
+  export const privateVisibility = Rdf.iri(_NAMESPACE + 'visibilityPrivate');
 
   /**
    * Resource can be visible to any logged-in user.
    */
-  export const sharedVisibility = RDF.iri(_NAMESPACE + 'visibilityShared');
+  export const sharedVisibility = Rdf.iri(_NAMESPACE + 'visibilityShared');
 
   /**
    * Resource can be visible to any groups specified with visibleToGroups predicate.
    */
-  export const groupVisibility = RDF.iri(_NAMESPACE + 'visibilityGroup');
+  export const groupVisibility = Rdf.iri(_NAMESPACE + 'visibilityGroup');
 
   /**
    * Specifies groups that resource is visible to in case of groupVisibility.
    */
-  export const visibleToGroups = RDF.iri(_NAMESPACE + 'visibleToGroups');
+  export const visibleToGroups = Rdf.iri(_NAMESPACE + 'visibleToGroups');
 
   // property which points to UI state for the saved query
-  export const searchState = RDF.iri(_NAMESPACE + 'searchState');
-  export const searchResultCategory = RDF.iri(_NAMESPACE + 'searchResultCategory');
+  export const searchState = Rdf.iri(_NAMESPACE + 'searchState');
+  export const searchResultCategory = Rdf.iri(_NAMESPACE + 'searchResultCategory');
 
   /** Resource type for an uplodaded file. */
-  export const File = RDF.iri(_NAMESPACE + 'File');
-  export const fileName = RDF.iri(_NAMESPACE + 'fileName');
-  export const mediaType = RDF.iri(_NAMESPACE + 'mediaType');
-  export const fileContext = RDF.iri(_NAMESPACE + 'fileContext');
+  export const File = Rdf.iri(_NAMESPACE + 'File');
+  export const fileName = Rdf.iri(_NAMESPACE + 'fileName');
+  export const mediaType = Rdf.iri(_NAMESPACE + 'mediaType');
+  export const fileContext = Rdf.iri(_NAMESPACE + 'fileContext');
 }
 
 export default platform;

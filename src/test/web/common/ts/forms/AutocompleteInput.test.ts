@@ -20,6 +20,7 @@
 import { createElement, HTMLAttributes } from 'react';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
+import { render, cleanup } from '@testing-library/react';
 
 import { Rdf } from 'platform/api/rdf';
 import {
@@ -28,17 +29,11 @@ import {
   FieldValue,
   normalizeFieldDefinition,
 } from 'platform/components/forms';
+import { AutoCompletionInput } from 'platform/components/ui/inputs';
 
-import { shallow } from 'platform-tests/configuredEnzyme';
 import { mockConfig } from 'platform-tests/mocks';
 
 mockConfig();
-
-interface AutocompleteProps extends HTMLAttributes<HTMLElement> {
-  minimumInput: string;
-  templates: { suggestion: string };
-  actions: { onSelected: any };
-}
 
 const DATATYPE = Rdf.iri('http://www.w3.org/2001/XMLSchema-datatypes#string');
 
@@ -62,32 +57,45 @@ const completeInputProps: AutocompleteInputProps = {
   value: FieldValue.empty,
 };
 
-const AUTOCOMPLETE_SELECTOR = 'AutoCompletionInput';
-
 describe('AutocompleteInput Component', () => {
-  const autocompleteComponent = shallow(createElement(AutocompleteInput, completeInputProps));
-  const autocomplete = autocompleteComponent.find(AUTOCOMPLETE_SELECTOR);
-  const fieldProps = autocomplete.props() as AutocompleteProps;
+  let renderStub: sinon.SinonStub;
+
+  beforeEach(() => {
+    // Stub the render method of the child component to intercept props
+    renderStub = sinon.stub(AutoCompletionInput.prototype, 'render').returns(null);
+  });
+
+  afterEach(() => {
+    cleanup();
+    renderStub.restore();
+  });
 
   it('render with default parameters', () => {
-    expect(autocomplete).to.have.length(1);
+    render(createElement(AutocompleteInput, completeInputProps));
+    expect(renderStub.called).to.be.true;
   });
 
   it('have minimum query limit for request', () => {
-    expect(fieldProps.minimumInput).to.be.equal(3);
+    render(createElement(AutocompleteInput, completeInputProps));
+    const props = renderStub.lastCall.thisValue.props;
+    expect(props.minimumInput).to.be.equal(3);
   });
 
   it('have template for suggestion', () => {
     const template = `<span title="{{label.value}}">{{label.value}}</span>`;
-    expect(fieldProps.templates.suggestion).to.be.equal(template);
+    render(createElement(AutocompleteInput, completeInputProps));
+    const props = renderStub.lastCall.thisValue.props;
+    expect(props.templates.suggestion).to.be.equal(template);
   });
 
   it('call callback when value is changed', () => {
     const callback = sinon.spy();
     const props: AutocompleteInputProps = { ...completeInputProps, updateValue: callback };
-    const wrapper = shallow(createElement(AutocompleteInput, props));
-    const inputProps = wrapper.find(AUTOCOMPLETE_SELECTOR).props() as AutocompleteProps;
+    render(createElement(AutocompleteInput, props));
+    
+    const inputProps = renderStub.lastCall.thisValue.props;
     inputProps.actions.onSelected();
+    
     expect(callback.called).to.be.true;
   });
 });

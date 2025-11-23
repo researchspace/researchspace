@@ -17,13 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createElement } from 'react';
+import { createElement, Component } from 'react';
 import { expect } from 'chai';
+import { render, waitFor, cleanup } from '@testing-library/react';
 
 import { Rdf, vocabularies } from 'platform/api/rdf';
-import { Graph, GraphProps, GraphState } from 'platform/components/semantic/graph';
+import { Graph } from 'platform/components/semantic/graph';
+import { CytoscapeContextTypes } from 'platform/components/semantic/graph/api/Api';
 
-import { mount } from 'platform-tests/configuredEnzyme';
 import { mockConfig } from 'platform-tests/mocks';
 
 import { foaf, person } from './TestData';
@@ -306,27 +307,58 @@ const GRAPH_STYLESHEET = [
   },
 ];
 
+class TestConsumer extends Component<{ onReady: (cy: Cy.Instance) => void }> {
+  static contextTypes = CytoscapeContextTypes;
+
+  componentDidMount() {
+    this.check();
+  }
+
+  componentDidUpdate() {
+    this.check();
+  }
+
+  check() {
+    // Access cytoscapeApi from context
+    const api = this.context.cytoscapeApi;
+    if (api && api.instance) {
+      api.instance.map((cy: Cy.Instance) => {
+        this.props.onReady(cy);
+      });
+    }
+  }
+
+  render() {
+    return null;
+  }
+}
+
 describe('cytoscape', () => {
   let cytoscape: Cy.Instance;
 
-  before(function (done) {
-    this.timeout(10000);
-
-    const cytoscapeComponent = mount<GraphProps, GraphState>(
+  beforeEach(async () => {
+    cytoscape = undefined;
+    
+    render(
       createElement(Graph, {
         elements: GRAPH_DATA,
         graphStyle: GRAPH_STYLESHEET,
         height: 0,
-      })
+      }, createElement(TestConsumer, {
+        onReady: (cy) => {
+          cytoscape = cy;
+        }
+      }))
     );
 
-    // because we asynchronously fetch data in the graph-widget, we need to wait until
-    // all mocked asynchronous calls are resolved.
-    setTimeout(() => {
-      cytoscapeComponent.update();
-      cytoscapeComponent.state().cytoscape.map((cy) => (cytoscape = cy));
-      done();
-    }, 3000);
+    // Wait until cytoscape instance is available
+    await waitFor(() => {
+      expect(cytoscape).to.exist;
+    }, { timeout: 5000 });
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it('use handlebars templates to access node values in stylesheets', () => {

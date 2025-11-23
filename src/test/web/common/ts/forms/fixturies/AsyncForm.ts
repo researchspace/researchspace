@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
 import { createElement, ReactNode } from 'react';
 
 import { Rdf } from 'platform/api/rdf';
@@ -32,7 +33,7 @@ import {
 import { mount } from 'platform-tests/configuredEnzyme';
 
 export class AsyncForm {
-  /** enzyme wrapper */
+  / ** enzyme wrapper * /
   wrapper: any;
   private props: SemanticFormProps;
 
@@ -98,3 +99,4 @@ export class AsyncForm {
     });
   }
 }
+*/

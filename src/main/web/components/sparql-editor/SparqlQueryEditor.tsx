@@ -185,6 +185,7 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
     delete YASR.plugins['pivot'];
     delete YASR.plugins['gChart'];
     delete YASR.plugins['leaflet'];
+    // must be a normal function, not an arrow, because YASR may call it with `new`
     YASR.registerOutput('yasrTable', function(yasr) {
       return YASRTable(yasr);
     });

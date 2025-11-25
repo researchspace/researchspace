@@ -22,13 +22,13 @@
  */
 
 import * as React from 'react';
-import { Component, Children, ReactNode, cloneElement, ReactElement, SyntheticEvent } from 'react';
+import { Component, Children, cloneElement, ReactElement } from 'react';
 import * as _ from 'lodash';
 import { Event, listen } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { SelectionEvents } from 'platform/components/ui/selection';
 import { SelectionGroupContext, SelectionGroupContextTypes } from './SelectionGroupComponent';
-import classnames = require('classnames');
+import classnames from 'classnames';
 
 interface Props {
   /**

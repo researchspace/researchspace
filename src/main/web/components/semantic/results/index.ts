@@ -17,4 +17,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { ResultsNumberComponent as ResultsNumber, Props as ResultsNumberProps } from './ResultsNumber';
+export { ResultsNumberComponent as ResultsNumber, type Props as ResultsNumberProps } from './ResultsNumber';

@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
 plugins {
     // Apply the war plugin to add support for Java webpapp build
     id 'war'
@@ -59,6 +61,14 @@ def getSecretJvmArgs = {
         secretArgs.add("-D${key}=${value}")
     }
     return secretArgs
+}
+
+def npmExecutable() {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        return 'npm.cmd'
+    } else {
+        return 'npm'
+    }
 }
 
 // currently we use Java 11 for development
@@ -240,20 +250,20 @@ gretty {
 
 // install npm dependencies in development mode
 task npmInstall(type: Exec) {
-    executable 'npm'
+    executable npmExecutable()
     args 'i', '--no-audit', '--no-fund', '--loglevel=error'
 }
 
 // we want to get clean node_modules when we are building on CI or production version locally
 // see https://docs.npmjs.com/cli/ci
 task npmInstallCi(type: Exec) {
-    executable 'npm'
+    executable npmExecutable()
     args 'ci', '--no-audit', '--no-fund', '--loglevel=error'
 }
 
 // execute webpack in production mode with minifications, etc
 task runProdWebpack(type: Exec) {
-    executable 'npm'
+    executable npmExecutable()
     args 'run', 'prod'
 }
 tasks.runProdWebpack.dependsOn npmInstallCi
@@ -264,7 +274,7 @@ task startWebpack(type: com.github.psxpaul.task.ExecFork) {
     // see also https://github.com/springdoc/springdoc-openapi-gradle-plugin/pull/142
     workingDir = java.nio.file.Files.createTempDirectory('webpack').toFile()
 
-    executable = 'npm'
+    executable = npmExecutable()
     args = [ 'run', '--prefix', projectDir.getAbsolutePath(), 'dev' ]
     timeout = 1200
 
@@ -307,7 +317,7 @@ project.afterEvaluate {
 // execute frontend tests
 task testKarma(type: Exec) {
     workingDir "$projectDir/webpack"
-    executable 'npm'
+    executable npmExecutable()
     args 'run', 'test-ci'
 }
 tasks.testKarma.dependsOn npmInstall

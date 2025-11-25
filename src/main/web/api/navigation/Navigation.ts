@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const h = require('history');
+import * as h from 'history';
 import * as React from 'react';
 import * as _ from 'lodash';
 import * as Kefir from 'kefir';

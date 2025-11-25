@@ -23,5 +23,5 @@ import * as SparqlUtil from './SparqlUtil';
 
 export { SparqlClient, SparqlTypeGuards, SparqlUtil };
 export * from './QueryVisitor';
-export { QueryContext } from './SparqlClient';
+export type { QueryContext } from './SparqlClient';
 export * from './QueryBinder';

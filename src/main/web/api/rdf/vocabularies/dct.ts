@@ -22,7 +22,7 @@ import * as Rdf from '../core/Rdf';
 /**
  * DCMI Metadata Terms
  */
-module dct {
+namespace dct {
   export const NAMESPACE = 'http://purl.org/dc/terms/';
   export const iri = (s: string) => Rdf.iri(NAMESPACE + s);
 

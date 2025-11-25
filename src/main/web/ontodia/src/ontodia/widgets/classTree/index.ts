@@ -1,1 +1,1 @@
-export { ClassTree, ClassTreeProps } from './classTree';
+export { ClassTree, type ClassTreeProps } from './classTree';

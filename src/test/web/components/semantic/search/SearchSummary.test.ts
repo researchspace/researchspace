@@ -230,3 +230,4 @@
 //     expect(searchSummary).to.be.equal(expectedSearchSummary);
 //   });
 // });
+export {}

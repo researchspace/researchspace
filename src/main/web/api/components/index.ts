@@ -18,12 +18,11 @@
  */
 
 export {
-  PlatformComponent as Component,
-  type ComponentProps,
-  type ComponentContext,
-  ContextTypes,
-  type ComponentChildContext,
+  PlatformComponent as Component, 
+  ContextTypes 
 } from './PlatformComponent';
 
+export type {ComponentProps, ComponentContext, ComponentChildContext} from './PlatformComponent';
+
 export * from './SemanticContext';
-export { type TemplateContext, TemplateContextTypes } from './TemplateContext';
+export type {TemplateContext, TemplateContextTypes } from './TemplateContext';

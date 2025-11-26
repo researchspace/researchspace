@@ -25,14 +25,14 @@ import { Rdf } from 'platform/api/rdf';
 import { Resource } from '../Common';
 export type { Resource, Resources } from '../Common';
 
-import { Category, Relation } from '../profiles/Model';
-export {
-  type Category,
-  type Relation,
-  type Categories,
-  type Relations,
-  RelationKey,
-  type AvailableDomains,
+import type { Category, Relation } from '../profiles/Model';
+export { RelationKey } from '../profiles/Model';
+export type {
+  Category,
+  Relation,
+  Categories,
+  Relations,
+  AvailableDomains,
 } from '../profiles/Model';
 
 export interface Search {

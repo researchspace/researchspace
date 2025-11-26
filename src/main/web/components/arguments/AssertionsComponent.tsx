@@ -109,7 +109,6 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
   static childContextTypes = {
     ...Component.childContextTypes,
     ...ArgumentsContextTypes,
-    ...TemplateContextTypes,
   };
 
   getChildContext(): ComponentChildContext & ArgumentsContext {

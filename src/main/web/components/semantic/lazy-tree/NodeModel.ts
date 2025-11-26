@@ -35,7 +35,7 @@ export namespace TreeNode {
     error?: boolean;
   };
 
-  export function set<T extends TreeNode>(node: T, props: Properties<T>): T {
+  export function set<T extends TreeNode>(node: T, props: Properties<any>): T {
     return { ...(node as any), ...props } as T;
   }
 }

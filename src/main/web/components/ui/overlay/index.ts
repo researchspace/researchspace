@@ -17,5 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { type OverlaySystem, renderOverlaySystem, registerOverlaySystem, getOverlaySystem } from './OverlaySystem';
+export { renderOverlaySystem, registerOverlaySystem, getOverlaySystem } from './OverlaySystem';
+export type { OverlaySystem } from './OverlaySystem';
 export * from './OverlayDialog';

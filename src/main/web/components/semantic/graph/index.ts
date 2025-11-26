@@ -17,15 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export {
-  SemanticGraph,
-  type SemanticGraphProps as SemanticGraphConifg,
-  type SemanticGraphProps,
-  type State as SemanticGraphState,
+export { SemanticGraph } from './SemanticGraph';
+export type {
+  SemanticGraphProps as SemanticGraphConifg,
+  SemanticGraphProps,
+  State as SemanticGraphState,
 } from './SemanticGraph';
-export {
-  Graph,
-  type Config as GraphConfig,
-  type Props as GraphProps,
-  type State as GraphState,
-} from './Graph';
+export { Graph } from './Graph';
+export type { Config as GraphConfig, Props as GraphProps, State as GraphState } from './Graph';

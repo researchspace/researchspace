@@ -19,7 +19,8 @@
 
 export {
   StorageSelector,
-  type StorageSelectorProps,
-  type AppStatus,
   chooseDefaultTargetApp,
 } from './StorageSelector';
+
+export type {StorageSelectorProps,
+  AppStatus} from './StorageSelector';

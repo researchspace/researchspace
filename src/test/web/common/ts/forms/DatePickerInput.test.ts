@@ -103,17 +103,14 @@ describe('DatePickerInput Component', () => {
         expect(fieldProps.timeFormat).to.be.null;
       });
 
-      // TODO temporary skip this test because it behaves strangely in EET timezone
-      it.skip('have correct default value', () => {
+      //test behaviour in EET timezone
+      it('have correct default value', () => {
         const momentDateTime = fieldProps.value as any;
         expect(momentDateTime).to.be.an('object');
-        expect(momentDateTime.format(`${OUTPUT_UTC_DATE_FORMAT} ${OUTPUT_UTC_TIME_FORMAT}`)).is.eql(
-          '2016-05-23 05:50:13'
-        );
+        expect(momentDateTime.format(OUTPUT_UTC_DATE_FORMAT)).is.eql('2016-05-23');
       });
 
-      // TODO Skipping this test because it should be overwritten by new component behavior
-      it.skip('pass correct value after change', () => {
+      it('pass correct value after change', () => {
         const callback = sinon.spy();
         const clonedProps = clone(completeInputProps);
         clonedProps.updateValue = callback;

@@ -1,0 +1,80 @@
+
+<http://www.researchspace.org/pattern/system/belief/that_proposition_set/context> {
+  <http://www.researchspace.org/pattern/system/belief/that_proposition_set> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-rmdbw;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-o3dz2k;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/extensions/crminf/I4_Proposition_Set>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-f86io;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/belief_search>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-7vlhau;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-3px7lr;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/extensions/crminf/I2_Belief>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "That proposition set";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-11-27T12:05:45.612Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-3px7lr a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  	$subject crminf:J4_that $value . 
+    $value crminf:J4i_is_subject_of $subject .
+} WHERE {}""" .
+  
+  _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-f86io a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I4_Proposition_Set .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-o3dz2k a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crminf:J4_that $value . 
+    
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I4_Proposition_Set .
+      
+ # ?value crm:P1_is_identified_by ?appellation .
+ # ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+ # ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-7vlhau a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I4_Proposition_Set .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+      
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-f1e1b0a3c00b4ac6885b7d1af8e40a8b-rmdbw a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  	$subject crminf:J4_that $value . 
+    $value crminf:J4i_is_subject_of $subject .
+} WHERE {
+  	$subject crminf:J4_that $value . 
+    $value crminf:J4i_is_subject_of $subject .
+      
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I4_Proposition_Set .
+      
+ # ?value crm:P1_is_identified_by ?appellation .
+#  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+ # ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/belief/that_proposition_set> .
+}

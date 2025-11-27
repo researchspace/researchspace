@@ -1,0 +1,80 @@
+
+<http://www.researchspace.org/pattern/system/argumentation/concluded_belief/context> {
+  <http://www.researchspace.org/pattern/system/argumentation/concluded_belief> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-9021dfef361642e98732d0d7e06bb78e-idi1z9;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-9021dfef361642e98732d0d7e06bb78e-q80rtk;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-9021dfef361642e98732d0d7e06bb78e-vc89mj;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-9021dfef361642e98732d0d7e06bb78e-wl44ro;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/extensions/crminf/I1_Argumentation>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Concluded belief";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/argumentation_search>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/extensions/crminf/I2_Belief>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-9021dfef361642e98732d0d7e06bb78e-3fbr9;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-11-27T17:29:59.244Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-9021dfef361642e98732d0d7e06bb78e-q80rtk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  	$subject crminf:J2_concluded_that  $value . 
+    $value crminf:J2i_was_concluded_by $subject .
+} WHERE {
+  	$subject crminf:J2_concluded_that  $value . 
+    $value crminf:J2i_was_concluded_by $subject .
+      
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I2_Belief .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-9021dfef361642e98732d0d7e06bb78e-idi1z9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I2_Belief .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+      
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-9021dfef361642e98732d0d7e06bb78e-3fbr9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crminf:J2_concluded_that $value . 
+    
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I2_Belief .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-9021dfef361642e98732d0d7e06bb78e-wl44ro a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I2_Belief .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-9021dfef361642e98732d0d7e06bb78e-vc89mj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  	$subject crminf:J2_concluded_that  $value . 
+    $value crminf:J2i_was_concluded_by $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/argumentation/concluded_belief> .
+}

@@ -167,8 +167,10 @@ export class DatePickerInput extends AtomicValueInput<DatePickerInputProps, {}> 
     if (typeof value === 'string') {
       // if user enter a string without using the date picker
       // we pass direclty to validation
-      parsed = this.parse(value);
       parsed = this.handleKeyboardInput(value);
+      if (FieldValue.isEmpty(parsed)) {
+        parsed = this.parse(value);
+      }
     } else {
       // otherwise we format to UTC
       const utcMoment = this.localMomentAsIfItWasUtc(value);

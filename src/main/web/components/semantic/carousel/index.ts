@@ -17,4 +17,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { SemanticCarousel, type SemanticCarouselConfig, type SemanticCarouselProps } from './SemanticCarousel';
+export { SemanticCarousel } from './SemanticCarousel';
+export type { SemanticCarouselConfig, SemanticCarouselProps } from './SemanticCarousel';

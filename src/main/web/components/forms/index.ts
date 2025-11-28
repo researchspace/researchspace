@@ -25,19 +25,22 @@ export * from './ResourceEditorForm';
 export * from './ResourceEditorFormConfig';
 export * from './SemanticForm';
 export { queryValues } from './QueryValues';
-export { type ValuePatch, applyValuePatch, computeValuePatch } from './Serialization';
+export { applyValuePatch, computeValuePatch } from './Serialization';
+export type { ValuePatch } from './Serialization';
 
 export * from './inputs';
 export * from './static';
 
-export {
-  type GenerateFormFromFieldsParams,
-  type InputOverride,
-  type InputOverrideTarget,
-  type FieldInputElement,
-  generateFormFromFields,
+export { generateFormFromFields } from './auto-form/FormGenerator';
+export type {
+  GenerateFormFromFieldsParams,
+  InputOverride,
+  InputOverrideTarget,
+  FieldInputElement,
 } from './auto-form/FormGenerator';
 export * from './persistence/PersistenceUtils';
 export * from './persistence/TriplestorePersistence';
-export { LdpPersistence, type LdpPersistenceConfig } from './persistence/LdpPersistence';
-export { RawSparqlPersistence, type RawSparqlPersistenceConfig } from './persistence/RawSparqlPersistence';
+export { LdpPersistence } from './persistence/LdpPersistence';
+export type { LdpPersistenceConfig } from './persistence/LdpPersistence';
+export { RawSparqlPersistence } from './persistence/RawSparqlPersistence';
+export type { RawSparqlPersistenceConfig } from './persistence/RawSparqlPersistence';

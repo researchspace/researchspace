@@ -18,4 +18,4 @@
  */
 
 export * from './ChartingCommons';
-export { SemanticChart, SemanticChartConfig, SemanticChartProps } from './SemanticChart';
+export { SemanticChart, type SemanticChartConfig, type SemanticChartProps } from './SemanticChart';

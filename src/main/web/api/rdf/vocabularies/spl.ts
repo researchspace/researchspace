@@ -17,16 +17,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import RDF = require('../core/Rdf');
+import * as Rdf from '../core/Rdf';
 
-module spl {
+namespace spl {
   export const _NAMESPACE = 'http://spinrdf.org/spl#';
 
-  export const optionalProp = RDF.iri(_NAMESPACE + 'optional');
-  export const predicateProp = RDF.iri(_NAMESPACE + 'predicate');
-  export const valueTypeProp = RDF.iri(_NAMESPACE + 'valueType');
-  export const defaultValue = RDF.iri(_NAMESPACE + 'defaultValue');
-  export const Argument = RDF.iri(_NAMESPACE + 'Argument');
+  export const optionalProp = Rdf.iri(_NAMESPACE + 'optional');
+  export const predicateProp = Rdf.iri(_NAMESPACE + 'predicate');
+  export const valueTypeProp = Rdf.iri(_NAMESPACE + 'valueType');
+  export const defaultValue = Rdf.iri(_NAMESPACE + 'defaultValue');
+  export const Argument = Rdf.iri(_NAMESPACE + 'Argument');
 }
 
 export default spl;

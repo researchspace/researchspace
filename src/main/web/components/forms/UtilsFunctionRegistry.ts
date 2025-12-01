@@ -1,5 +1,4 @@
 import { getObservedEntity, getPrimaryAppellation } from "platform/api/services/resource-util";
-import React = require("react");
 
 export const UtilsFunctionRegistry = {      
     primaryAppellation: getPrimaryAppellation,

@@ -2,7 +2,7 @@
  * We use this small typings instead of typings from DefinitelyTyped because of typescript bug:
  * see https://github.com/Microsoft/TypeScript/issues/10759
  */
-
+/*
 declare module 'enzyme' {
   export function configure({ adapter: any }): void;
   export function shallow(...args: any[]): any;
@@ -17,4 +17,4 @@ declare module 'enzyme' {
     find(comp: any): any;
     update();
   }
-}
+}*/

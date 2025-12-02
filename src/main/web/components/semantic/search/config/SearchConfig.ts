@@ -647,6 +647,39 @@ export interface NumericRange {
   datatype?: string;
 }
 
+export type PresetFacetValueConfig =
+  | PresetResourceFacetValue
+  | PresetLiteralFacetValue
+  | PresetDateRangeFacetValue
+  | PresetNumericRangeFacetValue;
+
+interface BasePresetFacetValue {
+  relation: string;
+  label?: string;
+}
+
+export interface PresetResourceFacetValue extends BasePresetFacetValue {
+  kind?: 'resource';
+  value: string;
+}
+
+export interface PresetLiteralFacetValue extends BasePresetFacetValue {
+  kind: 'literal';
+  value: string;
+  language?: string;
+  datatype?: string;
+}
+
+export interface PresetDateRangeFacetValue extends BasePresetFacetValue {
+  kind: 'date-range';
+  dateRange: { begin: string; end: string };
+}
+
+export interface PresetNumericRangeFacetValue extends BasePresetFacetValue {
+  kind: 'numeric-range';
+  numericRange: { begin: number; end: number };
+}
+
 export interface SemanticFacetConfig {
   /**
    * Unique HTML id that is used by all nested search-related components, used when one need to have multiple search interfaces on the same page.
@@ -767,6 +800,16 @@ export interface SemanticFacetConfig {
    * @default false
    */
   hideToggleButton?: boolean;
+
+  /**
+   * Optional preset facet that will be pre-selected before a user interacts with the filter UI.
+   */
+  presetFacet?: PresetFacetValueConfig;
+
+  /**
+   * Multiple preset facets applied together when no saved facet state is present.
+   */
+  presetFacets?: Array<PresetFacetValueConfig>;
 }
 
 /**
@@ -775,6 +818,8 @@ export interface SemanticFacetConfig {
  * Currently supported kinds of categories/relations:
  * 1) `resource` - any RDF resource, selection of value is performed with checkbox.
  * 2) `date-range` - date range values, selection of value is performed with slider.
+ * 3) `numeric-range`
+ * 4) `literal`
  */
 export interface FacetValuePatterns {
   [iri: string]: FacetValuePattern;

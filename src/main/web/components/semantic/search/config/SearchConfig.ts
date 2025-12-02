@@ -818,6 +818,8 @@ export interface SemanticFacetConfig {
  * Currently supported kinds of categories/relations:
  * 1) `resource` - any RDF resource, selection of value is performed with checkbox.
  * 2) `date-range` - date range values, selection of value is performed with slider.
+ * 3) `numeric-range`
+ * 4) `literal`
  */
 export interface FacetValuePatterns {
   [iri: string]: FacetValuePattern;

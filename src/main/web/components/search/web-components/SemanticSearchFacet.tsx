@@ -350,21 +350,22 @@ export function buildPresetFacetAst(
   }
 
   const conjuncts: FacetModel.Conjuncts = [];
-  presets.forEach((preset, index) => {
+  presets.forEach((preset) => {
     const relationIri = toIri(preset.relation);
     const relation = relations.find((rel) => rel.iri.equals(relationIri));
     if (!relation) {
       return;
     }
 
-    const disjunct = createPresetDisjunct(preset, relation, index);
+    const conjunctIndex = conjuncts.length;
+    const disjunct = createPresetDisjunct(preset, relation, conjunctIndex);
     if (!disjunct) {
       return;
     }
 
     conjuncts.push({
       kind: Model.ConjunctKinds.Relation,
-      conjunctIndex: [index],
+      conjunctIndex: [conjunctIndex],
       relation,
       range: relation.hasRange,
       disjuncts: [disjunct],

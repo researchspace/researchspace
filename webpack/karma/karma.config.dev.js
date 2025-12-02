@@ -30,6 +30,9 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
     autoWatch: true,
     reporters: [ 'mocha' ],
+    mochaReporter: {
+      output: 'full'
+    },
     // Fix for tests run twice
     // https://github.com/nikku/karma-browserify/issues/67#issuecomment-84281528
     files: [

@@ -32,7 +32,7 @@ module.exports = function (config) {
       outputFile: 'test-results.xml'
     },
     singleRun: true,
-    reporters: ['junit'],
+    reporters: ['junit', 'mocha'],
     files: [
         defaults.TEST + '/**/*.test.ts'
     ],

@@ -109,6 +109,12 @@ export interface SelectInputProps extends AtomicValueInputProps {
    */
   showDropdownFilter?: boolean;
 
+  /**
+   * If set to true, re-initiates the value set each time the dropdown is opened
+   * @default false
+   */
+  updateListOnOpen?: boolean;
+
 }
 
 interface State {
@@ -371,6 +377,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
           value={selectedValue}
           optionRenderer={this.optionRenderer}
           valueRenderer={this.valueRenderer}
+          onOpen={() => {this.props.updateListOnOpen && this.initValueSet()}}
         />
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
         { showCreateNewButton && (

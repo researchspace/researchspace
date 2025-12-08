@@ -17,4 +17,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { SemanticMap, type SemanticMapConfig, type SemanticMapProps } from './SemanticMap';
+export { SemanticMap } from './SemanticMap';
+export type { SemanticMapConfig, SemanticMapProps } from './SemanticMap';

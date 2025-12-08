@@ -17,7 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { Droppable, type DroppableProps } from './DroppableComponent';
-export { Draggable, type DraggableProps } from './DraggableComponent';
+export { Droppable } from './DroppableComponent';
+export type { DroppableProps } from './DroppableComponent';
+export { Draggable } from './DraggableComponent';
+export type { DraggableProps } from './DraggableComponent';
 import * as DragAndDropApi_ from './DragAndDropApi';
 export const DragAndDropApi = DragAndDropApi_;

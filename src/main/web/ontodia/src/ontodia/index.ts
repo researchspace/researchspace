@@ -19,80 +19,64 @@ export * from './data/sparql/sparqlGraphBuilder';
 export { DIAGRAM_CONTEXT_URL_V1 } from './data/schema';
 
 export { RestoreGeometry, setElementExpanded, setElementData, setLinkData } from './diagram/commands';
-export {
-  Element,
-  type  ElementEvents,
-  type ElementTemplateState,
-  Link,
-  type LinkEvents,
-  type LinkTemplateState,
-  LinkVertex,
-  type Cell,
-  LinkDirection,
+export { Element, Link, LinkVertex, LinkDirection } from './diagram/elements';
+export type {
+  ElementEvents,
+  ElementTemplateState,
+  LinkEvents,
+  LinkTemplateState,
+  Cell,
 } from './diagram/elements';
 export { EmbeddedLayer } from './diagram/embeddedLayer';
 export * from './diagram/geometry';
 export * from './diagram/history';
-export { DiagramModel, type DiagramModelEvents } from './diagram/model';
+export { DiagramModel } from './diagram/model';
+export type { DiagramModelEvents } from './diagram/model';
 export * from './diagram/view';
-export {
-  type PointerEvent,
-  type PointerUpEvent,
-  getContentFittingBox,
-  type ViewportOptions,
-  type ScaleOptions,
-} from './diagram/paperArea';
+export { getContentFittingBox } from './diagram/paperArea';
+export type { PointerEvent, PointerUpEvent, ViewportOptions, ScaleOptions } from './diagram/paperArea';
 
 export * from './editor/asyncModel';
-export {
-  AuthoredEntity,
-  type AuthoredEntityProps,
-  type AuthoredEntityContext,
-} from './editor/authoredEntity';
+export { AuthoredEntity } from './editor/authoredEntity';
+export type { AuthoredEntityProps, AuthoredEntityContext } from './editor/authoredEntity';
 export * from './editor/authoringState';
-export {
-  type EditorOptions,
-  type EditorEvents,
-  EditorController,
-  type PropertyEditor,
-  type PropertyEditorOptions,
+export { EditorController } from './editor/editorController';
+export type {
+  EditorOptions,
+  EditorEvents,
+  PropertyEditor,
+  PropertyEditorOptions,
 } from './editor/editorController';
-export { ValidationState, type ElementValidation, type LinkValidation } from './editor/validation';
+export { ValidationState } from './editor/validation';
+export type { ElementValidation, LinkValidation } from './editor/validation';
 
-export {
-  type LayoutData,
-  type LayoutElement,
-  type LayoutLink,
-  type SerializedDiagram,
-  convertToSerializedDiagram,
-  makeSerializedDiagram,
-  type LinkTypeOptions,
-  makeLayoutData,
+export { convertToSerializedDiagram, makeSerializedDiagram, makeLayoutData } from './editor/serializedDiagram';
+export type {
+  LayoutData,
+  LayoutElement,
+  LayoutLink,
+  SerializedDiagram,
+  LinkTypeOptions,
 } from './editor/serializedDiagram';
 export {
   calculateLayout,
   removeOverlaps,
-  type CalculatedLayout,
-  type UnzippedCalculatedLayout,
-  type LayoutNode,
   applyLayout,
   forceLayout,
 } from './viewUtils/layout';
+export type { CalculatedLayout, UnzippedCalculatedLayout, LayoutNode } from './viewUtils/layout';
 
 export { Cancellation, CancellationToken, CancelledError } from './viewUtils/async';
 export * from './viewUtils/events';
 
 export type { PropertySuggestionParams, PropertyScore } from './widgets/connectionsMenu';
 
-export { DefaultToolbar, type ToolbarProps } from './workspace/toolbar';
-export {
-  Workspace,
-  type WorkspaceProps,
-  type WorkspaceState,
-  type WorkspaceLanguage,
-  renderTo,
-} from './workspace/workspace';
-export { type WorkspaceEventHandler, WorkspaceEventKey } from './workspace/workspaceContext';
+export { DefaultToolbar } from './workspace/toolbar';
+export type { ToolbarProps } from './workspace/toolbar';
+export { Workspace, renderTo } from './workspace/workspace';
+export type { WorkspaceProps, WorkspaceState, WorkspaceLanguage } from './workspace/workspace';
+export { WorkspaceEventKey } from './workspace/workspaceContext';
+export type { WorkspaceEventHandler } from './workspace/workspaceContext';
 export { DraggableHandle } from './workspace/draggableHandle';
 export * from './workspace/layout/layout';
 

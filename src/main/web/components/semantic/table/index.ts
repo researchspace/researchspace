@@ -17,13 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { SemanticTable, type SemanticTableProps, type SemanticTableConfig } from './SemanticTable';
-export {
-  Table,
-  type TableProps,
-  type TableConfig,
-  type TableLayout,
-  type CellRendererProps,
-  type ColumnConfiguration,
-  type TableColumnConfiguration,
+export { SemanticTable } from './SemanticTable';
+export type { SemanticTableProps, SemanticTableConfig } from './SemanticTable';
+export { Table } from './Table';
+export type {
+  TableProps,
+  TableConfig,
+  TableLayout,
+  CellRendererProps,
+  ColumnConfiguration,
+  TableColumnConfiguration,
 } from './Table';

@@ -208,7 +208,7 @@
                       <div class="semantic-search-header-actions">
                         <semantic-search-query-keyword  domain='<{{resourceOntologyClass}}>'
                                                         query='SELECT ?subject WHERE { 
-                                                                    <{{node}}> crm:P71_lists|^crm:P71i_is_listed_in ?subject .
+                                                                    <{{node}}> (crm:P71_lists|^crm:P71i_is_listed_in|^skos:inScheme) ?subject .
                                                                     ?subject a <{{resourceOntologyClass}}> .
 
                                                                     { 
@@ -231,7 +231,7 @@
                                                                     }
                                                                 }'
                                                         default-query='SELECT ?subject WHERE {
-                                                                          <{{node}}> crm:P71_lists|^crm:P71i_is_listed_in ?subject .
+                                                                          <{{node}}> (crm:P71_lists|^crm:P71i_is_listed_in|^skos:inScheme) ?subject .
                                                                           ?subject a <{{resourceOntologyClass}}> .
                                                                         }'
                                                         debounce=500
@@ -271,10 +271,7 @@
                                                           WHERE {
                                                               BIND(?subject as ?iri) .
                                                               BIND(<{{listedResourceConfig}}> as ?listedResourceConfig) .
-
-                                                              ?subject a <{{resourceOntologyClass}}> .
-                                                              <{{node}}> crm:P71_lists|^crm:P71i_is_listed_in ?subject .
-
+                                                             
                                                               { 
                                                                 ?subject crm:P1_is_identified_by ?appellation .
                                                                 ?appellation a crm:E41_Appellation .

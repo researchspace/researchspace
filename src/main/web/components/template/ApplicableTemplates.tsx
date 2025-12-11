@@ -4,12 +4,12 @@ import { ButtonToolbar, ButtonGroup } from 'react-bootstrap';
 import { Rdf, vocabularies } from 'platform/api/rdf';
 import { PageService, TemplateInfo } from 'platform/api/services/page';
 import { ResourceLink, ResourceLinkAction } from 'platform/api/navigation/components';
+import { getResourceConfigurationValue } from 'platform/api/services/resource-config';
 
-const P2_HAS_TYPE = 'http://www.cidoc-crm.org/cidoc-crm/P2_has_type';
-
+/** For a given resourceConfigurationIri determine if the visualisation template exists using the ResourceConfiguration handler */
 export interface ApplicableTemplatesProps {
-  rdfType?: Rdf.Iri;
-  hasType?: Rdf.Iri;
+  
+  resourceConfigurationIri: Rdf.Iri;
 }
 
 export const ApplicableTemplates: React.FC<ApplicableTemplatesProps> = (props) => {
@@ -17,28 +17,17 @@ export const ApplicableTemplates: React.FC<ApplicableTemplatesProps> = (props) =
   const [appliedTemplate, setAppliedTemplate] = React.useState<string | undefined>(undefined);
 
   React.useEffect(() => {
-    // 1. Identify types from props
-    const types: string[] = [];
-    
-    if (props.rdfType) { console.log("here"+props.rdfType.toString());
-      types.push(props.rdfType.toString());
-    }
-    
-    if (props.hasType) {
-      types.push(props.hasType.toString());
-    }
-
+   
     // 2. Generate candidate template identifiers
     const candidates = new Set<string>();
-    
-    // Add Template:<Type> for each type
-    types.forEach(type => {
-      candidates.add('Template:' + type);console.log("Template:"+type);
-    });
 
-    // Add default template
-    candidates.add('Template:' + vocabularies.rdfs.Resource.value);
-
+    if (props.resourceConfigurationIri) {
+      const templateIri = getResourceConfigurationValue(props.resourceConfigurationIri.toString(), 'resourceDetailedVisualisationTemplateIRI');
+      if (templateIri) {
+        candidates.add(templateIri);
+      }
+    }
+   
     // 3. Fetch all existing templates and filter candidates
     PageService.getAllTemplateInfos().onValue((templateInfos: TemplateInfo[]) => {
       const existingTemplatesSet = new Set(templateInfos.map(t => t.iri));
@@ -53,7 +42,7 @@ export const ApplicableTemplates: React.FC<ApplicableTemplatesProps> = (props) =
       }
     });
 
-  }, [props.rdfType, props.hasType]);
+  }, [props.resourceConfigurationIri]);
 
   if (applicableTemplates.length === 0) {
     return null;

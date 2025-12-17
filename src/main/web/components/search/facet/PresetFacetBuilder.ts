@@ -305,14 +305,14 @@ function createDisjunct(
         kind: Model.TemporalDisjunctKinds.DateRange,
         disjunctIndex,
         value: { begin: preset.begin, end: preset.end },
-      } as FacetModel.FacetRelationDisjunct;
+      };
     }
     case Model.NumericRangeDisjunctKind: {
       return {
         kind: Model.NumericRangeDisjunctKind,
         disjunctIndex,
         value: { begin: preset.begin, end: preset.end },
-      } as FacetModel.FacetRelationDisjunct;
+      };
     }
   }
 }

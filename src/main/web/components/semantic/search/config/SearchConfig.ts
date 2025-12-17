@@ -427,6 +427,16 @@ export interface SemanticSearchConfig {
    * Compressed JSON representation of the search state. Can be used to load saved search.
    */
   initialState?: string;
+
+  /**
+   * List of preset facets that will be pre-selected before a user interacts with the filter UI.
+   * Applied when no saved facet state is present.
+   *
+   * Logic:
+   *  - Multiple values for the same relation are treated as OR.
+   *  - Values for different relations are treated as AND.
+   */
+  presetFacets?: Array<PresetFacetValueConfig>;
 }
 
 /**
@@ -647,38 +657,17 @@ export interface NumericRange {
   datatype?: string;
 }
 
-export type PresetFacetValueConfig =
-  | PresetResourceFacetValue
-  | PresetLiteralFacetValue
-  | PresetDateRangeFacetValue
-  | PresetNumericRangeFacetValue;
-
-interface BasePresetFacetValue {
+export interface PresetFacetValueConfig {
   relation: string;
+  value: PresetFacetValue | PresetFacetValue[];
   label?: string;
 }
 
-export interface PresetResourceFacetValue extends BasePresetFacetValue {
-  kind?: 'resource';
-  value: string;
-}
-
-export interface PresetLiteralFacetValue extends BasePresetFacetValue {
-  kind: 'literal';
-  value: string;
-  language?: string;
-  datatype?: string;
-}
-
-export interface PresetDateRangeFacetValue extends BasePresetFacetValue {
-  kind: 'date-range';
-  dateRange: { begin: string; end: string };
-}
-
-export interface PresetNumericRangeFacetValue extends BasePresetFacetValue {
-  kind: 'numeric-range';
-  numericRange: { begin: number; end: number };
-}
+export type PresetFacetValue =
+  | string
+  | number
+  | { begin: string | number; end: string | number }
+  | { value: string; language?: string; datatype?: string };
 
 export interface SemanticFacetConfig {
   /**

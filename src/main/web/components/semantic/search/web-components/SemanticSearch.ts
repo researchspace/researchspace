@@ -40,6 +40,9 @@ import * as FacetModel from '../data/facet/Model';
 import { Dataset, Alignment } from '../data/datasets/Model';
 import { SemanticSearchContext, ResultOperation, ExtendedSearchValue } from './SemanticSearchApi';
 import { SearchProfileStore, createSearchProfileStore } from '../data/profiles/SearchProfileStore';
+import {
+  buildPresetFacetAstWithLabels,
+} from '../../../search/facet/PresetFacetBuilder';
 
 export interface Props extends React.Props<SemanticSearch>, SemanticSearchConfig {}
 interface State {
@@ -155,14 +158,31 @@ export class SemanticSearch extends Component<Props, State> {
           this.decodeSavedSearch(store, this.props.initialState, { reload: true }) :
           this.getStateFromHistory(store, { reload: true });
 
-        this.setState((s: State) => ({
-          selectedDatasets: savedState.map((state) => state.datasets).getOrElse(s.selectedDatasets),
-          selectedAlignment: savedState.chain((state) => state.alignment).orElse(() => s.selectedAlignment),
-          searchProfileStore: Maybe.Just(store),
-          baseQueryStructure: savedState.chain((state) => Maybe.fromNullable(state.search)),
-          facetStructure: savedState.chain((state) => Maybe.fromNullable(state.facet)).getOrElse(undefined),
-          resultState: savedState.map((state) => state.result).getOrElse({}),
-        }));
+        const savedFacetStructure = savedState.chain((state) => Maybe.fromNullable(state.facet)).getOrElse(undefined);
+        let facetObservable: Kefir.Observable<FacetModel.Ast | undefined>;
+
+        if (savedFacetStructure) {
+          facetObservable = Kefir.constant(savedFacetStructure);
+        } else {
+          const presetConfigs = this.props.presetFacets || [];
+          if (presetConfigs.length > 0) {
+            const semanticContext = (this.context as any).semanticContext;
+            facetObservable = buildPresetFacetAstWithLabels(presetConfigs, store.relations, this.props, semanticContext);
+          } else {
+            facetObservable = Kefir.constant(undefined);
+          }
+        }
+
+        facetObservable.onValue((facetStructure) => {
+          this.setState((s: State) => ({
+            selectedDatasets: savedState.map((state) => state.datasets).getOrElse(s.selectedDatasets),
+            selectedAlignment: savedState.chain((state) => state.alignment).orElse(() => s.selectedAlignment),
+            searchProfileStore: Maybe.Just(store),
+            baseQueryStructure: savedState.chain((state) => Maybe.fromNullable(state.search)),
+            facetStructure: facetStructure,
+            resultState: savedState.map((state) => state.result).getOrElse({}),
+          }));
+        });
       });
     }
     trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });

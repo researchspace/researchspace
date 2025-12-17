@@ -25,217 +25,314 @@ import { SparqlClient, QueryContext } from 'platform/api/sparql';
 import * as LabelsService from 'platform/api/services/resource-label';
 
 import {
-  SemanticFacetConfig,
   PresetFacetValueConfig,
-  PresetLiteralFacetValue,
-  PresetResourceFacetValue,
-  PresetDateRangeFacetValue,
-  PresetNumericRangeFacetValue,
+  SemanticSearchConfig,
+  PresetFacetValue,
 } from 'platform/components/semantic/search/config/SearchConfig';
 import * as Model from 'platform/components/semantic/search/data/search/Model';
 import * as FacetModel from 'platform/components/semantic/search/data/facet/Model';
+import { tryGetRelationPatterns } from 'platform/components/semantic/search/data/search/SparqlQueryGenerator';
+
+type ValidatedResourcePreset = {
+  kind: typeof Model.EntityDisjunctKinds.Resource;
+  relation: Model.Relation;
+  value: Rdf.Iri;
+  label?: string;
+};
+
+type ValidatedLiteralPreset = {
+  kind: typeof Model.LiteralDisjunctKind;
+  relation: Model.Relation;
+  value: Rdf.Literal;
+};
+
+type ValidatedDateRangePreset = {
+  kind: typeof Model.TemporalDisjunctKinds.DateRange;
+  relation: Model.Relation;
+  begin: moment.Moment;
+  end: moment.Moment;
+};
+
+type ValidatedNumericRangePreset = {
+  kind: typeof Model.NumericRangeDisjunctKind;
+  relation: Model.Relation;
+  begin: number;
+  end: number;
+};
+
+type ValidatedPreset =
+  | ValidatedResourcePreset
+  | ValidatedLiteralPreset
+  | ValidatedDateRangePreset
+  | ValidatedNumericRangePreset;
 
 // ============================================================================
-// Disjunct Creators
+// Helpers
 // ============================================================================
 
 function parseIri(iri: string): Rdf.Iri {
   return iri.startsWith('<') && iri.endsWith('>') ? Rdf.fullIri(iri) : Rdf.iri(iri);
 }
 
-function createLiteralDisjunct(
-  preset: PresetLiteralFacetValue,
-  disjunctIndex: Model.DisjunctIndex
-): FacetModel.FacetRelationDisjunct | undefined {
-  if (!preset.value) {
-    return undefined;
-  }
+function inferDisjunctKind(
+  config: SemanticSearchConfig,
+  relation: Model.Relation
+): FacetModel.FacetRelationDisjunct['kind'] {
+  const relationPatterns = tryGetRelationPatterns(config, relation).filter((p) =>
+    _.some(['resource', 'hierarchy', 'literal', 'date-range', 'numeric-range'], (kind) => kind === p.kind)
+  );
 
-  const literalNode = preset.language
-    ? Rdf.langLiteral(preset.value, preset.language)
-    : Rdf.literal(preset.value, preset.datatype ? parseIri(preset.datatype) : undefined);
+  const patternConfig = relationPatterns.length >= 1 ? relationPatterns[0] : undefined;
+  const kind = patternConfig?.kind || 'resource';
 
-  return {
-    kind: Model.LiteralDisjunctKind,
-    disjunctIndex,
-    value: { literal: literalNode },
-  };
-}
-
-function createDateRangeDisjunct(
-  preset: PresetDateRangeFacetValue,
-  disjunctIndex: Model.DisjunctIndex
-): FacetModel.FacetRelationDisjunct | undefined {
-  if (!preset.dateRange) {
-    return undefined;
-  }
-
-  const begin = moment(preset.dateRange.begin);
-  const end = moment(preset.dateRange.end);
-
-  if (!begin.isValid() || !end.isValid()) {
-    return undefined;
-  }
-
-  return {
-    kind: Model.TemporalDisjunctKinds.DateRange,
-    disjunctIndex,
-    value: { begin, end },
-  } as FacetModel.FacetRelationDisjunct;
-}
-
-function createNumericRangeDisjunct(
-  preset: PresetNumericRangeFacetValue,
-  disjunctIndex: Model.DisjunctIndex
-): FacetModel.FacetRelationDisjunct | undefined {
-  if (!preset.numericRange) {
-    return undefined;
-  }
-
-  const { begin, end } = preset.numericRange;
-
-  if (!_.isFinite(begin) || !_.isFinite(end)) {
-    return undefined;
-  }
-
-  return {
-    kind: Model.NumericRangeDisjunctKind,
-    disjunctIndex,
-    value: { begin, end },
-  } as FacetModel.FacetRelationDisjunct;
-}
-
-function createResourceDisjunct(
-  valueIri: Rdf.Iri,
-  label: string,
-  disjunctIndex: Model.DisjunctIndex
-): FacetModel.FacetRelationDisjunct {
-  const tuple: SparqlClient.Binding = {
-    value: valueIri,
-    label: Rdf.literal(label),
-  };
-
-  return {
-    kind: Model.EntityDisjunctKinds.Resource,
-    disjunctIndex,
-    value: {
-      iri: valueIri,
-      label,
-      tuple,
-    },
-  };
-}
-
-// ============================================================================
-// AST Building
-// ============================================================================
-
-/**
- * Tracks a resource preset that needs its label fetched from the label service.
- */
-interface ResourceNeedingLabel {
-  conjunctIndex: number;
-  disjunctIndex: number;
-  iri: Rdf.Iri;
-}
-
-/**
- * Result of building the preset AST, including metadata about resources
- * that need their labels fetched.
- */
-interface PresetBuildResult {
-  ast: FacetModel.Ast;
-  resourcesNeedingLabels: ResourceNeedingLabel[];
-}
-
-/**
- * Creates a disjunct from a preset configuration.
- */
-function createDisjunctFromPreset(
-  preset: PresetFacetValueConfig,
-  disjunctIndex: Model.DisjunctIndex
-): { disjunct?: FacetModel.FacetRelationDisjunct; needsLabel?: Rdf.Iri } {
-  switch (preset.kind) {
-    case 'literal':
-      return { disjunct: createLiteralDisjunct(preset, disjunctIndex) };
-
-    case 'date-range':
-      return { disjunct: createDateRangeDisjunct(preset, disjunctIndex) };
-
-    case 'numeric-range':
-      return { disjunct: createNumericRangeDisjunct(preset, disjunctIndex) };
-
+  switch (kind) {
     case 'resource':
-    case undefined: {
-      const resourcePreset = preset as PresetResourceFacetValue;
-      if (resourcePreset.value) {
-        const valueIri = parseIri(resourcePreset.value);
-        // Use explicit label if provided, otherwise use IRI as placeholder
-        const label = preset.label || valueIri.value;
-        const disjunct = createResourceDisjunct(valueIri, label, disjunctIndex);
-        // Mark for label fetching if no explicit label was provided
-        const needsLabel = preset.label ? undefined : valueIri;
-        return { disjunct, needsLabel };
-      }
-      break;
+    case 'hierarchy':
+      return Model.EntityDisjunctKinds.Resource;
+    case 'literal':
+      return Model.LiteralDisjunctKind;
+    case 'date-range':
+      return Model.TemporalDisjunctKinds.DateRange;
+    case 'numeric-range':
+      return Model.NumericRangeDisjunctKind;
+    default:
+      return Model.EntityDisjunctKinds.Resource;
+  }
+}
+
+// ============================================================================
+// Parsing & Validation
+// ============================================================================
+
+function parseResourceValue(value: PresetFacetValue): Rdf.Iri | undefined {
+  let valueStr: string | undefined;
+  if (typeof value === 'string') {
+    valueStr = value;
+  } else if (typeof value === 'object' && 'value' in value && typeof value.value === 'string') {
+    valueStr = value.value;
+  }
+
+  return valueStr ? parseIri(valueStr) : undefined;
+}
+
+function parseLiteralValue(value: PresetFacetValue): Rdf.Literal | undefined {
+  if (typeof value === 'string') {
+    return Rdf.literal(value);
+  } else if (typeof value === 'object' && 'value' in value && typeof value.value === 'string') {
+    return value.language
+      ? Rdf.langLiteral(value.value, value.language)
+      : Rdf.literal(value.value, value.datatype ? parseIri(value.datatype) : undefined);
+  } else if (typeof value === 'number') {
+    return Rdf.literal(value.toString());
+  }
+  return undefined;
+}
+
+function parseDateRangeValue(
+  value: PresetFacetValue
+): { begin: moment.Moment; end: moment.Moment } | undefined {
+  if (typeof value === 'object' && 'begin' in value && 'end' in value) {
+    const begin = moment(value.begin);
+    const end = moment(value.end);
+    if (begin.isValid() && end.isValid()) {
+      return { begin, end };
     }
   }
-
-  return {};
+  return undefined;
 }
 
-/**
- * Builds conjuncts from preset configurations.
- */
-function buildConjuncts(
+function parseNumericRangeValue(
+  value: PresetFacetValue
+): { begin: number; end: number } | undefined {
+  if (typeof value === 'object' && 'begin' in value && 'end' in value) {
+    const begin = typeof value.begin === 'number' ? value.begin : parseFloat(value.begin as string);
+    const end = typeof value.end === 'number' ? value.end : parseFloat(value.end as string);
+    if (_.isFinite(begin) && _.isFinite(end)) {
+      return { begin, end };
+    }
+  }
+  return undefined;
+}
+
+function validateAndParsePresets(
   presets: ReadonlyArray<PresetFacetValueConfig>,
-  relations: Model.Relations
-): PresetBuildResult | undefined {
-  const conjuncts: FacetModel.Conjuncts = [];
-  const resourcesNeedingLabels: ResourceNeedingLabel[] = [];
+  relations: Model.Relations,
+  config: SemanticSearchConfig
+): ValidatedPreset[] {
+  const result: ValidatedPreset[] = [];
 
   for (const preset of presets) {
     const relationIri = parseIri(preset.relation);
     const relation = relations.find((rel) => rel.iri.equals(relationIri));
 
     if (!relation) {
-      continue;
+      throw new Error(`Preset facet relation '${preset.relation}' not found in search profile.`);
     }
 
-    let conjunct = conjuncts.find((c) => c.relation.iri.equals(relation.iri));
-    let conjunctIndex: number;
+    const kind = inferDisjunctKind(config, relation);
+    const values = Array.isArray(preset.value) ? preset.value : [preset.value];
 
-    if (!conjunct) {
-      conjunctIndex = conjuncts.length;
-      conjunct = {
+    for (const value of values) {
+      if (kind === Model.EntityDisjunctKinds.Resource) {
+        const parsed = parseResourceValue(value);
+        if (!parsed) {
+          throw new Error(
+            `Invalid value '${JSON.stringify(value)}' for resource relation '${preset.relation}'. Expected IRI string or object with 'value' property.`
+          );
+        }
+        result.push({
+          kind,
+          relation,
+          value: parsed,
+          label: preset.label,
+        });
+      } else if (kind === Model.LiteralDisjunctKind) {
+        const parsed = parseLiteralValue(value);
+        if (!parsed) {
+          throw new Error(
+            `Invalid value '${JSON.stringify(value)}' for literal relation '${preset.relation}'. Expected string, number, or object with 'value' property.`
+          );
+        }
+        result.push({
+          kind,
+          relation,
+          value: parsed,
+        });
+      } else if (kind === Model.TemporalDisjunctKinds.DateRange) {
+        const parsed = parseDateRangeValue(value);
+        if (!parsed) {
+          throw new Error(
+            `Invalid value '${JSON.stringify(value)}' for date-range relation '${preset.relation}'. Expected object with 'begin' and 'end' properties.`
+          );
+        }
+        result.push({
+          kind,
+          relation,
+          ...parsed,
+        });
+      } else if (kind === Model.NumericRangeDisjunctKind) {
+        const parsed = parseNumericRangeValue(value);
+        if (!parsed) {
+          throw new Error(
+            `Invalid value '${JSON.stringify(value)}' for numeric-range relation '${preset.relation}'. Expected object with numeric 'begin' and 'end' properties.`
+          );
+        }
+        result.push({
+          kind,
+          relation,
+          ...parsed,
+        });
+      }
+    }
+  }
+
+  return result;
+}
+
+function collectRequiredLabels(validatedPresets: ValidatedPreset[]): Rdf.Iri[] {
+  return validatedPresets
+    .filter(
+      (p): p is ValidatedResourcePreset =>
+        p.kind === Model.EntityDisjunctKinds.Resource && !p.label
+    )
+    .map((p) => p.value);
+}
+
+// ============================================================================
+// AST Construction
+// ============================================================================
+
+function createDisjunct(
+  preset: ValidatedPreset,
+  disjunctIndex: Model.DisjunctIndex,
+  labelMap?: any
+): FacetModel.FacetRelationDisjunct {
+  switch (preset.kind) {
+    case Model.EntityDisjunctKinds.Resource: {
+      const resolvedLabel =
+        preset.label ||
+        (labelMap ? labelMap.get(preset.value) : undefined) ||
+        preset.value.value;
+
+      const tuple: SparqlClient.Binding = {
+        value: preset.value,
+        label: Rdf.literal(resolvedLabel),
+      };
+
+      return {
+        kind: Model.EntityDisjunctKinds.Resource,
+        disjunctIndex,
+        value: {
+          iri: preset.value,
+          label: resolvedLabel,
+          tuple,
+        },
+      };
+    }
+    case Model.LiteralDisjunctKind: {
+      return {
+        kind: Model.LiteralDisjunctKind,
+        disjunctIndex,
+        value: { literal: preset.value },
+      };
+    }
+    case Model.TemporalDisjunctKinds.DateRange: {
+      return {
+        kind: Model.TemporalDisjunctKinds.DateRange,
+        disjunctIndex,
+        value: { begin: preset.begin, end: preset.end },
+      } as FacetModel.FacetRelationDisjunct;
+    }
+    case Model.NumericRangeDisjunctKind: {
+      return {
+        kind: Model.NumericRangeDisjunctKind,
+        disjunctIndex,
+        value: { begin: preset.begin, end: preset.end },
+      } as FacetModel.FacetRelationDisjunct;
+    }
+  }
+}
+
+function buildAst(
+  validatedPresets: ValidatedPreset[],
+  labelMap?: any
+): FacetModel.Ast | undefined {
+  if (validatedPresets.length === 0) {
+    return undefined;
+  }
+
+  // Group by relation
+  const grouped = new Map<Model.Relation, ValidatedPreset[]>();
+  for (const preset of validatedPresets) {
+    if (!grouped.has(preset.relation)) {
+      grouped.set(preset.relation, []);
+    }
+    grouped.get(preset.relation)!.push(preset);
+  }
+
+  const conjuncts: FacetModel.Conjuncts = [];
+  let conjunctIndex = 0;
+
+  for (const [relation, presets] of grouped.entries()) {
+    const disjuncts: FacetModel.FacetRelationDisjunct[] = [];
+    
+    // We create the conjunct structure first so we can pass indices
+    const currentConjunctIndex = [conjunctIndex];
+
+    for (let i = 0; i < presets.length; i++) {
+      const disjunctIndex = [conjunctIndex, i];
+      disjuncts.push(createDisjunct(presets[i], disjunctIndex, labelMap));
+    }
+
+    if (disjuncts.length > 0) {
+      conjuncts.push({
         kind: Model.ConjunctKinds.Relation,
-        conjunctIndex: [conjunctIndex],
+        conjunctIndex: currentConjunctIndex,
         relation,
         range: relation.hasRange,
-        disjuncts: [],
-      };
-      conjuncts.push(conjunct);
-    } else {
-      conjunctIndex = conjunct.conjunctIndex[0];
-    }
-
-    const currentDisjunctIndex = conjunct.disjuncts.length;
-    const disjunctIndex: Model.DisjunctIndex = [conjunctIndex, currentDisjunctIndex];
-
-    const { disjunct, needsLabel } = createDisjunctFromPreset(preset, disjunctIndex);
-
-    if (!disjunct) {
-      continue;
-    }
-
-    conjunct.disjuncts.push(disjunct);
-
-    if (needsLabel) {
-      resourcesNeedingLabels.push({
-        conjunctIndex,
-        disjunctIndex: currentDisjunctIndex,
-        iri: needsLabel,
+        disjuncts,
       });
+      conjunctIndex++;
     }
   }
 
@@ -243,165 +340,33 @@ function buildConjuncts(
     return undefined;
   }
 
-  return {
-    ast: { conjuncts },
-    resourcesNeedingLabels,
-  };
-}
-
-/**
- * Updates the AST with fetched labels.
- */
-function updateAstWithLabels(
-  ast: FacetModel.Ast,
-  resourcesNeedingLabels: ResourceNeedingLabel[],
-  labelMap: any
-): FacetModel.Ast {
-  for (const { conjunctIndex, disjunctIndex, iri } of resourcesNeedingLabels) {
-    const label = labelMap.get(iri) || iri.value;
-    const conjunct = ast.conjuncts[conjunctIndex];
-    const oldDisjunct = conjunct.disjuncts[disjunctIndex];
-    const oldResource = oldDisjunct.value as Model.Resource;
-
-    // Create updated tuple with new label
-    const updatedTuple = { ...oldResource.tuple, label: Rdf.literal(label) };
-
-    // Create new resource with updated label
-    const updatedResource: Model.Resource = {
-      iri: oldResource.iri,
-      label,
-      tuple: updatedTuple,
-    };
-
-    // Replace the disjunct with updated resource
-    conjunct.disjuncts[disjunctIndex] = {
-      kind: Model.EntityDisjunctKinds.Resource,
-      disjunctIndex: oldDisjunct.disjunctIndex,
-      value: updatedResource,
-    };
-  }
-  return ast;
-}
-
-// ============================================================================
-// Public API
-// ============================================================================
-
-/**
- * Collects preset configurations from the facet config.
- */
-export function collectPresetConfigs(props: SemanticFacetConfig): PresetFacetValueConfig[] {
-  const presets: PresetFacetValueConfig[] = [];
-
-  if (Array.isArray(props.presetFacets)) {
-    presets.push(...props.presetFacets);
-  }
-
-  return presets;
-}
-
-/**
- * Builds a facet AST from preset configurations (synchronous version).
- * 
- * For resource presets without explicit labels, the IRI value is used as a 
- * placeholder label. Use `augmentPresetLabels` to fetch proper labels from 
- * the label service.
- * 
- * This function is exported primarily for testing purposes.
- */
-export function buildPresetFacetAst(
-  presets: ReadonlyArray<PresetFacetValueConfig>,
-  relations?: Model.Relations
-): FacetModel.Ast | undefined {
-  if (!presets || presets.length === 0 || !relations) {
-    return undefined;
-  }
-
-  const result = buildConjuncts(presets, relations);
-  return result?.ast;
+  return { conjuncts };
 }
 
 /**
  * Builds a facet AST from preset configurations with async label resolution.
  * 
  * For resource presets without explicit labels, labels are fetched from the
- * label service. This provides a better user experience by showing human-readable
- * labels instead of IRIs.
- * 
- * @param presets - The preset configurations
- * @param relations - Available relations from the search profile
- * @param queryContext - Query context for label service calls
- * @returns A Kefir property that resolves to the AST with proper labels
+ * label service.
  */
 export function buildPresetFacetAstWithLabels(
   presets: ReadonlyArray<PresetFacetValueConfig>,
   relations: Model.Relations | undefined,
+  config: SemanticSearchConfig,
   queryContext?: QueryContext
 ): Kefir.Property<FacetModel.Ast | undefined> {
   if (!presets || presets.length === 0 || !relations) {
     return Kefir.constant(undefined);
   }
 
-  const result = buildConjuncts(presets, relations);
+  const validatedPresets = validateAndParsePresets(presets, relations, config);
+  const requiredLabels = collectRequiredLabels(validatedPresets);
 
-  if (!result) {
-    return Kefir.constant(undefined);
-  }
-
-  const { ast, resourcesNeedingLabels } = result;
-
-  // If no labels need fetching or no context provided, return immediately
-  if (resourcesNeedingLabels.length === 0 || !queryContext) {
+  if (requiredLabels.length === 0 || !queryContext) {
+    const ast = buildAst(validatedPresets);
     return Kefir.constant(ast);
   }
 
-  // Fetch labels for resources without explicit labels
-  const iris = resourcesNeedingLabels.map((r) => r.iri);
-
-  return LabelsService.getLabels(iris, { context: queryContext })
-    .map((labelMap) => updateAstWithLabels(ast, resourcesNeedingLabels, labelMap));
+  return LabelsService.getLabels(requiredLabels, { context: queryContext })
+    .map((labelMap) => buildAst(validatedPresets, labelMap));
 }
-
-/**
- * Augments an existing AST with labels from the label service.
- * 
- * This is useful when you have an AST with placeholder labels and want to
- * update them with proper labels asynchronously.
- * 
- * @param ast - The AST to augment
- * @param queryContext - Query context for label service calls
- * @returns A Kefir property that resolves to the augmented AST
- */
-export function augmentPresetLabels(
-  ast: FacetModel.Ast,
-  queryContext: QueryContext
-): Kefir.Property<FacetModel.Ast> {
-  const resourcesNeedingLabels: ResourceNeedingLabel[] = [];
-
-  // Find all resource disjuncts where label equals IRI (placeholder)
-  ast.conjuncts.forEach((conjunct, index) => {
-    conjunct.disjuncts.forEach((disjunct, disjunctIndex) => {
-      if (disjunct.kind === Model.EntityDisjunctKinds.Resource) {
-        const resource = disjunct.value as Model.Resource;
-        // Check if label is just the IRI value (placeholder)
-        if (resource.label === resource.iri.value) {
-          resourcesNeedingLabels.push({
-            conjunctIndex: index,
-            disjunctIndex,
-            iri: resource.iri,
-          });
-        }
-      }
-    });
-  });
-
-  if (resourcesNeedingLabels.length === 0) {
-    return Kefir.constant(ast);
-  }
-
-  const iris = resourcesNeedingLabels.map((r) => r.iri);
-
-  return LabelsService.getLabels(iris, { context: queryContext })
-    .map((labelMap) => updateAstWithLabels(ast, resourcesNeedingLabels, labelMap));
-}
-

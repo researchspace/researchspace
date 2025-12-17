@@ -22,16 +22,28 @@ import { OrderedMap } from 'immutable';
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
 import {
-  buildPresetFacetAst,
-  collectPresetConfigs,
+  buildPresetFacetAstWithLabels,
 } from 'platform/components/search/facet/PresetFacetBuilder';
 import {
   PresetFacetValueConfig,
   SemanticFacetConfig,
+  SemanticSearchConfig,
 } from 'platform/components/semantic/search/config/SearchConfig';
 import * as Model from 'platform/components/semantic/search/data/search/Model';
+import * as FacetModel from 'platform/components/semantic/search/data/facet/Model';
 
 describe('SemanticSearchFacet preset facets', () => {
+  function buildPresetFacetAst(
+    presets: ReadonlyArray<PresetFacetValueConfig>,
+    relations: Model.Relations,
+    config: SemanticSearchConfig
+  ): FacetModel.Ast | undefined {
+    let result: FacetModel.Ast | undefined;
+    buildPresetFacetAstWithLabels(presets, relations, config).onValue((val) => {
+      result = val;
+    });
+    return result;
+  }
   const relationIri = '<http://example.com/relation>'; // configuration-style IRI
   const presetValueIri = '<http://example.com/value>'; // configuration-style IRI
 
@@ -63,6 +75,15 @@ describe('SemanticSearchFacet preset facets', () => {
     return OrderedMap<Model.RelationKey.Key, Model.Relation>().set(key, relation);
   }
 
+  const baseMockConfig: SemanticSearchConfig = {
+    searchProfile: {
+      categoriesQuery: '',
+      relationsQuery: '',
+    },
+    relations: {},
+    categories: {},
+  };
+
   it('builds resource preset ast when relation exists', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
@@ -70,8 +91,14 @@ describe('SemanticSearchFacet preset facets', () => {
       value: presetValueIri,
       label: 'Preset Resource',
     };
+    const config: SemanticSearchConfig = {
+      ...baseMockConfig,
+      relations: {
+        [relationIri]: [{ kind: 'resource', queryPattern: '' }],
+      },
+    };
 
-    const ast = buildPresetFacetAst([preset], relations);
+    const ast = buildPresetFacetAst([preset], relations, config);
     expect(ast).to.exist;
     const conjunct = ast!.conjuncts[0];
     expect(conjunct.relation.iri.value).to.equal('http://example.com/relation');
@@ -87,12 +114,16 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      value: 'Example literal',
-      kind: 'literal',
-      language: 'en',
+      value: { value: 'Example literal', language: 'en' },
+    };
+    const config: SemanticSearchConfig = {
+      ...baseMockConfig,
+      relations: {
+        [relationIri]: [{ kind: 'literal', queryPattern: '' }],
+      },
     };
 
-    const ast = buildPresetFacetAst([preset], relations);
+    const ast = buildPresetFacetAst([preset], relations, config);
     expect(ast).to.exist;
     const disjunct = ast!.conjuncts[0].disjuncts[0];
     expect(disjunct.kind).to.equal(Model.LiteralDisjunctKind);
@@ -105,11 +136,16 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      kind: 'date-range',
-      dateRange: { begin: '2020-01-01', end: '2021-01-01' },
+      value: { begin: '2020-01-01', end: '2021-01-01' },
+    };
+    const config: SemanticSearchConfig = {
+      ...baseMockConfig,
+      relations: {
+        [relationIri]: [{ kind: 'date-range', queryPattern: '' }],
+      },
     };
 
-    const ast = buildPresetFacetAst([preset], relations);
+    const ast = buildPresetFacetAst([preset], relations, config);
     expect(ast).to.exist;
     const disjunct = ast!.conjuncts[0].disjuncts[0];
     expect(disjunct.kind).to.equal(Model.TemporalDisjunctKinds.DateRange);
@@ -122,11 +158,16 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      kind: 'numeric-range',
-      numericRange: { begin: 10, end: 20 },
+      value: { begin: 10, end: 20 },
+    };
+    const config: SemanticSearchConfig = {
+      ...baseMockConfig,
+      relations: {
+        [relationIri]: [{ kind: 'numeric-range', queryPattern: '' }],
+      },
     };
 
-    const ast = buildPresetFacetAst([preset], relations);
+    const ast = buildPresetFacetAst([preset], relations, config);
     expect(ast).to.exist;
     const disjunct = ast!.conjuncts[0].disjuncts[0];
     expect(disjunct.kind).to.equal(Model.NumericRangeDisjunctKind);
@@ -135,15 +176,47 @@ describe('SemanticSearchFacet preset facets', () => {
     expect(numericValue.end).to.equal(20);
   });
 
-  it('returns undefined when relation cannot be resolved', () => {
+  it('throws error when relation cannot be resolved', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: '<http://example.com/missing>',
       value: presetValueIri,
     };
+    const config = baseMockConfig;
 
-    const ast = buildPresetFacetAst([preset], relations);
-    expect(ast).to.be.undefined;
+    expect(() => buildPresetFacetAst([preset], relations, config)).to.throw(/Preset facet relation .* not found/);
+  });
+
+  it('throws error when resource value is invalid', () => {
+    const relations = createRelations();
+    const preset: PresetFacetValueConfig = {
+      relation: relationIri,
+      value: { invalid: 'object' } as any,
+    };
+    const config: SemanticSearchConfig = {
+      ...baseMockConfig,
+      relations: {
+        [relationIri]: [{ kind: 'resource', queryPattern: '' }],
+      },
+    };
+
+    expect(() => buildPresetFacetAst([preset], relations, config)).to.throw(/Invalid value .* for resource relation/);
+  });
+
+  it('throws error when date-range value is invalid', () => {
+    const relations = createRelations();
+    const preset: PresetFacetValueConfig = {
+      relation: relationIri,
+      value: { begin: 'invalid-date', end: '2021-01-01' },
+    };
+    const config: SemanticSearchConfig = {
+      ...baseMockConfig,
+      relations: {
+        [relationIri]: [{ kind: 'date-range', queryPattern: '' }],
+      },
+    };
+
+    expect(() => buildPresetFacetAst([preset], relations, config)).to.throw(/Invalid value .* for date-range relation/);
   });
 
   it('builds multiple presets when more than one relation configured', () => {
@@ -169,8 +242,15 @@ describe('SemanticSearchFacet preset facets', () => {
       { relation: relationIri, value: presetValueIri, label: 'First' },
       { relation: secondRelationIri, value: '<http://example.com/value2>', label: 'Second' },
     ];
+    const config: SemanticSearchConfig = {
+      ...baseMockConfig,
+      relations: {
+        [relationIri]: [{ kind: 'resource', queryPattern: '' }],
+        [secondRelationIri]: [{ kind: 'resource', queryPattern: '' }],
+      },
+    };
 
-    const ast = buildPresetFacetAst(presets, relationsWithSecond);
+    const ast = buildPresetFacetAst(presets, relationsWithSecond, config);
     expect(ast).to.exist;
     expect(ast!.conjuncts).to.have.lengthOf(2);
     const [first, second] = ast!.conjuncts;
@@ -185,8 +265,14 @@ describe('SemanticSearchFacet preset facets', () => {
       value: presetValueIri,
       // No label provided - should use IRI value as placeholder
     };
+    const config: SemanticSearchConfig = {
+      ...baseMockConfig,
+      relations: {
+        [relationIri]: [{ kind: 'resource', queryPattern: '' }],
+      },
+    };
 
-    const ast = buildPresetFacetAst([preset], relations);
+    const ast = buildPresetFacetAst([preset], relations, config);
     expect(ast).to.exist;
     const resource = ast!.conjuncts[0].disjuncts[0].value as Model.Resource;
     // When no label is provided, the IRI value is used as placeholder
@@ -199,8 +285,14 @@ describe('SemanticSearchFacet preset facets', () => {
       { relation: relationIri, value: presetValueIri, label: 'First' },
       { relation: relationIri, value: '<http://example.com/value2>', label: 'Second' },
     ];
+    const config: SemanticSearchConfig = {
+      ...baseMockConfig,
+      relations: {
+        [relationIri]: [{ kind: 'resource', queryPattern: '' }],
+      },
+    };
 
-    const ast = buildPresetFacetAst(presets, relations);
+    const ast = buildPresetFacetAst(presets, relations, config);
     expect(ast).to.exist;
     expect(ast!.conjuncts).to.have.lengthOf(1);
 
@@ -212,19 +304,4 @@ describe('SemanticSearchFacet preset facets', () => {
     expect((conjunct.disjuncts[1].value as Model.Resource).label).to.equal('Second');
   });
 
-  describe('collectPresetConfigs', () => {
-    it('returns empty array when no presets configured', () => {
-      const config = {} as SemanticFacetConfig;
-      expect(collectPresetConfigs(config)).to.deep.equal([]);
-    });
-
-    it('collects multiple presets from presetFacets array', () => {
-      const presets: PresetFacetValueConfig[] = [
-        { relation: relationIri, value: presetValueIri },
-        { relation: '<http://example.com/other>', value: '<http://example.com/other-value>' },
-      ];
-      const config = { presetFacets: presets } as SemanticFacetConfig;
-      expect(collectPresetConfigs(config)).to.deep.equal(presets);
-    });
-  });
 });

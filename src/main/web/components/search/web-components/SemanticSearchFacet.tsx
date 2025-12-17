@@ -40,10 +40,6 @@ import * as FacetModel from 'platform/components/semantic/search/data/facet/Mode
 import Facet from '../facet/Facet';
 import { FacetStore, FacetData } from '../facet/FacetStore';
 import { SearchFilterToggled } from 'platform/components/search/query-builder/SearchEvents';
-import {
-  collectPresetConfigs,
-  buildPresetFacetAstWithLabels,
-} from '../facet/PresetFacetBuilder';
 
 interface SemanticSearchFacetProps extends SemanticFacetConfig {}
 
@@ -74,7 +70,6 @@ interface State {
 
 class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
   private facetStore: FacetStore;
-  private isInitializing = false;
 
   constructor(props: InnerProps) {
     super(props);
@@ -109,7 +104,8 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
       .chain((currentDomain) => nextContext.domain.map((newDomain) => ({ currentDomain, newDomain })))
       .map(({ currentDomain, newDomain }) => !currentDomain.iri.equals(newDomain.iri))
       .getOrElse(false);
-    if ((!this.facetStore && !this.isInitializing && canUpdateFacets) || isNewDomain) {
+
+    if ((!this.facetStore && canUpdateFacets) || isNewDomain) {
       this.createFacetStore(nextContext.baseQuery.get(), nextContext);
     } else if (canUpdateFacets) {
       this.facetStore.facetActions().setBaseQuery(nextContext.baseQuery.get());
@@ -142,24 +138,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
 
   private createFacetStore(baseQuery: SparqlJs.SelectQuery, context: FacetContext & SemanticContext) {
     const existingAst = context.facetStructure.getOrElse(undefined);
-
-    if (existingAst) {
-      // Use existing AST (e.g., from saved state)
-      this.initializeFacetStore(baseQuery, context, existingAst);
-    } else {
-      // Build preset AST with async label fetching
-      const relations = context.searchProfileStore.map((store) => store.relations).getOrElse(undefined);
-      const presetConfigs = collectPresetConfigs(this.props);
-
-      this.isInitializing = true;
-      buildPresetFacetAstWithLabels(presetConfigs, relations, context.semanticContext).onValue((presetAst) => {
-        this.isInitializing = false;
-        if (presetAst) {
-          context.setFacetStructure(_.cloneDeep(presetAst));
-        }
-        this.initializeFacetStore(baseQuery, context, presetAst);
-      });
-    }
+    this.initializeFacetStore(baseQuery, context, existingAst);
   }
 
   private initializeFacetStore(

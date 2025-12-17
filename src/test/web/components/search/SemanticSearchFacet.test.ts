@@ -23,8 +23,12 @@ import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
 import {
   buildPresetFacetAst,
-} from 'platform/components/search/web-components/SemanticSearchFacet';
-import { PresetFacetValueConfig } from 'platform/components/semantic/search/config/SearchConfig';
+  collectPresetConfigs,
+} from 'platform/components/search/facet/PresetFacetBuilder';
+import {
+  PresetFacetValueConfig,
+  SemanticFacetConfig,
+} from 'platform/components/semantic/search/config/SearchConfig';
 import * as Model from 'platform/components/semantic/search/data/search/Model';
 
 describe('SemanticSearchFacet preset facets', () => {
@@ -172,5 +176,55 @@ describe('SemanticSearchFacet preset facets', () => {
     const [first, second] = ast!.conjuncts;
     expect((first.disjuncts[0].value as Model.Resource).label).to.equal('First');
     expect(second.relation.iri.value).to.equal('http://example.com/another-relation');
+  });
+
+  it('uses IRI as placeholder label when no explicit label provided', () => {
+    const relations = createRelations();
+    const preset: PresetFacetValueConfig = {
+      relation: relationIri,
+      value: presetValueIri,
+      // No label provided - should use IRI value as placeholder
+    };
+
+    const ast = buildPresetFacetAst([preset], relations);
+    expect(ast).to.exist;
+    const resource = ast!.conjuncts[0].disjuncts[0].value as Model.Resource;
+    // When no label is provided, the IRI value is used as placeholder
+    expect(resource.label).to.equal('http://example.com/value');
+  });
+
+  it('groups multiple presets for same relation into single conjunct', () => {
+    const relations = createRelations();
+    const presets: PresetFacetValueConfig[] = [
+      { relation: relationIri, value: presetValueIri, label: 'First' },
+      { relation: relationIri, value: '<http://example.com/value2>', label: 'Second' },
+    ];
+
+    const ast = buildPresetFacetAst(presets, relations);
+    expect(ast).to.exist;
+    expect(ast!.conjuncts).to.have.lengthOf(1);
+
+    const conjunct = ast!.conjuncts[0];
+    expect(conjunct.relation.iri.value).to.equal('http://example.com/relation');
+    expect(conjunct.disjuncts).to.have.lengthOf(2);
+
+    expect((conjunct.disjuncts[0].value as Model.Resource).label).to.equal('First');
+    expect((conjunct.disjuncts[1].value as Model.Resource).label).to.equal('Second');
+  });
+
+  describe('collectPresetConfigs', () => {
+    it('returns empty array when no presets configured', () => {
+      const config = {} as SemanticFacetConfig;
+      expect(collectPresetConfigs(config)).to.deep.equal([]);
+    });
+
+    it('collects multiple presets from presetFacets array', () => {
+      const presets: PresetFacetValueConfig[] = [
+        { relation: relationIri, value: presetValueIri },
+        { relation: '<http://example.com/other>', value: '<http://example.com/other-value>' },
+      ];
+      const config = { presetFacets: presets } as SemanticFacetConfig;
+      expect(collectPresetConfigs(config)).to.deep.equal(presets);
+    });
   });
 });

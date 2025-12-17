@@ -18,24 +18,13 @@
  */
 
 import * as React from 'react';
-import * as D from 'react-dom-factories';
 import * as _ from 'lodash';
 import * as classNames from 'classnames';
 import * as SparqlJs from 'sparqljs';
-import * as moment from 'moment';
 
 import { trigger } from 'platform/api/events';
 import { Component, SemanticContext } from 'platform/api/components';
-import { SparqlClient } from 'platform/api/sparql';
-import { Rdf } from 'platform/api/rdf';
-import {
-  SemanticFacetConfig,
-  PresetFacetValueConfig,
-  PresetLiteralFacetValue,
-  PresetResourceFacetValue,
-  PresetDateRangeFacetValue,
-  PresetNumericRangeFacetValue,
-} from 'platform/components/semantic/search/config/SearchConfig';
+import { SemanticFacetConfig } from 'platform/components/semantic/search/config/SearchConfig';
 import {
   DefaultFacetValueTemplate,
   DefaultFacetRelationTupleTemplate,
@@ -51,6 +40,10 @@ import * as FacetModel from 'platform/components/semantic/search/data/facet/Mode
 import Facet from '../facet/Facet';
 import { FacetStore, FacetData } from '../facet/FacetStore';
 import { SearchFilterToggled } from 'platform/components/search/query-builder/SearchEvents';
+import {
+  collectPresetConfigs,
+  buildPresetFacetAstWithLabels,
+} from '../facet/PresetFacetBuilder';
 
 interface SemanticSearchFacetProps extends SemanticFacetConfig {}
 
@@ -81,6 +74,7 @@ interface State {
 
 class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
   private facetStore: FacetStore;
+  private isInitializing = false;
 
   constructor(props: InnerProps) {
     super(props);
@@ -115,7 +109,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
       .chain((currentDomain) => nextContext.domain.map((newDomain) => ({ currentDomain, newDomain })))
       .map(({ currentDomain, newDomain }) => !currentDomain.iri.equals(newDomain.iri))
       .getOrElse(false);
-    if ((!this.facetStore && canUpdateFacets) || isNewDomain) {
+    if ((!this.facetStore && !this.isInitializing && canUpdateFacets) || isNewDomain) {
       this.createFacetStore(nextContext.baseQuery.get(), nextContext);
     } else if (canUpdateFacets) {
       this.facetStore.facetActions().setBaseQuery(nextContext.baseQuery.get());
@@ -148,21 +142,38 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
 
   private createFacetStore(baseQuery: SparqlJs.SelectQuery, context: FacetContext & SemanticContext) {
     const existingAst = context.facetStructure.getOrElse(undefined);
-    const relations = context.searchProfileStore.map((store) => store.relations).getOrElse(undefined);
-    const presetConfigs = collectPresetConfigs(this.props);
-    const presetAst = existingAst || buildPresetFacetAst(presetConfigs, relations);
 
-    if (!existingAst && presetAst) {
-      context.setFacetStructure(_.cloneDeep(presetAst));
+    if (existingAst) {
+      // Use existing AST (e.g., from saved state)
+      this.initializeFacetStore(baseQuery, context, existingAst);
+    } else {
+      // Build preset AST with async label fetching
+      const relations = context.searchProfileStore.map((store) => store.relations).getOrElse(undefined);
+      const presetConfigs = collectPresetConfigs(this.props);
+
+      this.isInitializing = true;
+      buildPresetFacetAstWithLabels(presetConfigs, relations, context.semanticContext).onValue((presetAst) => {
+        this.isInitializing = false;
+        if (presetAst) {
+          context.setFacetStructure(_.cloneDeep(presetAst));
+        }
+        this.initializeFacetStore(baseQuery, context, presetAst);
+      });
     }
+  }
 
+  private initializeFacetStore(
+    baseQuery: SparqlJs.SelectQuery,
+    context: FacetContext & SemanticContext,
+    initialAst: FacetModel.Ast | undefined
+  ) {
     this.facetStore = new FacetStore(
       {
         domain: context.domain.get(),
         availableDomains: context.availableDomains.getOrElse(undefined),
         baseConfig: context.baseConfig,
         baseQuery: baseQuery,
-        initialAst: presetAst,
+        initialAst: initialAst,
         searchProfileStore: context.searchProfileStore.get(),
         config: this.props,
       },
@@ -224,157 +235,3 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
 }
 
 export default SemanticSearchFacet;
-
-function toIri(value: string): Rdf.Iri {
-  try {
-    return Rdf.fullIri(value);
-  } catch (error) {
-    return Rdf.iri(value);
-  }
-}
-
-function collectPresetConfigs(props: SemanticFacetConfig): Array<PresetFacetValueConfig> {
-  const presets: Array<PresetFacetValueConfig> = [];
-  if (props.presetFacet) {
-    presets.push(props.presetFacet);
-  }
-  if (Array.isArray(props.presetFacets)) {
-    presets.push(...props.presetFacets);
-  }
-  return presets;
-}
-
-function isLiteralPreset(preset: PresetFacetValueConfig): preset is PresetLiteralFacetValue {
-  return preset.kind === 'literal';
-}
-
-function isDateRangePreset(preset: PresetFacetValueConfig): preset is PresetDateRangeFacetValue {
-  return preset.kind === 'date-range';
-}
-
-function isNumericRangePreset(preset: PresetFacetValueConfig): preset is PresetNumericRangeFacetValue {
-  return preset.kind === 'numeric-range';
-}
-
-function isResourcePreset(preset: PresetFacetValueConfig): preset is PresetResourceFacetValue {
-  return !preset.kind || preset.kind === 'resource';
-}
-
-function createPresetDisjunct(
-  preset: PresetFacetValueConfig,
-  relation: Model.Relation,
-  conjunctIndex: number
-): FacetModel.FacetRelationDisjunct | undefined {
-  if (!preset) {
-    return undefined;
-  }
-  const disjunctIndex: Model.DisjunctIndex = [conjunctIndex, 0];
-
-  if (isLiteralPreset(preset)) {
-    if (!preset.value) {
-      return undefined;
-    }
-    const literalNode = preset.language
-      ? Rdf.langLiteral(preset.value, preset.language)
-      : Rdf.literal(preset.value, preset.datatype ? toIri(preset.datatype) : undefined);
-    const literal: Model.Literal = { literal: literalNode };
-    return {
-      kind: Model.LiteralDisjunctKind,
-      disjunctIndex,
-      value: literal,
-    };
-  }
-
-  if (isDateRangePreset(preset)) {
-    if (!preset.dateRange) {
-      return undefined;
-    }
-    const begin = moment(preset.dateRange.begin);
-    const end = moment(preset.dateRange.end);
-    if (!begin.isValid() || !end.isValid()) {
-      return undefined;
-    }
-    const value: Model.DateRange = { begin, end };
-    return {
-      kind: Model.TemporalDisjunctKinds.DateRange,
-      disjunctIndex,
-      value,
-    } as FacetModel.FacetRelationDisjunct;
-  }
-
-  if (isNumericRangePreset(preset)) {
-    if (!preset.numericRange) {
-      return undefined;
-    }
-    const { begin, end } = preset.numericRange;
-    if (!_.isFinite(begin) || !_.isFinite(end)) {
-      return undefined;
-    }
-    const value: Model.NumericRange = { begin, end };
-    return {
-      kind: Model.NumericRangeDisjunctKind,
-      disjunctIndex,
-      value,
-    } as FacetModel.FacetRelationDisjunct;
-  }
-
-  if (!isResourcePreset(preset) || !preset.value) {
-    return undefined;
-  }
-
-  const valueIri = toIri(preset.value);
-  const label = preset.label || preset.value;
-  const tuple: SparqlClient.Binding = {
-    value: valueIri,
-    label: Rdf.literal(label),
-  };
-  const resource: Model.Resource = {
-    iri: valueIri,
-    label,
-    tuple,
-  };
-
-  return {
-    kind: Model.EntityDisjunctKinds.Resource,
-    disjunctIndex,
-    value: resource,
-  };
-}
-
-export function buildPresetFacetAst(
-  presets: ReadonlyArray<PresetFacetValueConfig>,
-  relations?: Model.Relations
-): FacetModel.Ast | undefined {
-  if (!presets || presets.length === 0 || !relations) {
-    return undefined;
-  }
-
-  const conjuncts: FacetModel.Conjuncts = [];
-  presets.forEach((preset) => {
-    const relationIri = toIri(preset.relation);
-    const relation = relations.find((rel) => rel.iri.equals(relationIri));
-    if (!relation) {
-      return;
-    }
-
-    const conjunctIndex = conjuncts.length;
-    const disjunct = createPresetDisjunct(preset, relation, conjunctIndex);
-    if (!disjunct) {
-      return;
-    }
-
-    conjuncts.push({
-      kind: Model.ConjunctKinds.Relation,
-      conjunctIndex: [conjunctIndex],
-      relation,
-      range: relation.hasRange,
-      disjuncts: [disjunct],
-    });
-  });
-
-  if (conjuncts.length === 0) {
-    return undefined;
-  }
-
-  return { conjuncts };
-}

@@ -802,12 +802,12 @@ export interface SemanticFacetConfig {
   hideToggleButton?: boolean;
 
   /**
-   * Optional preset facet that will be pre-selected before a user interacts with the filter UI.
-   */
-  presetFacet?: PresetFacetValueConfig;
-
-  /**
-   * Multiple preset facets applied together when no saved facet state is present.
+   * List of preset facets that will be pre-selected before a user interacts with the filter UI.
+   * Applied when no saved facet state is present.
+   *
+   * Logic:
+   *  - Multiple values for the same relation are treated as OR.
+   *  - Values for different relations are treated as AND.
    */
   presetFacets?: Array<PresetFacetValueConfig>;
 }

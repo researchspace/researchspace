@@ -269,7 +269,7 @@ function collectRequiredLabels(validatedGroups: ValidatedGroup[]): Rdf.Iri[] {
 function createDisjunct(
   preset: ValidatedPreset,
   disjunctIndex: Model.DisjunctIndex,
-  labelMap?: any
+  labelMap?: Map<Rdf.Iri, string>
 ): FacetModel.FacetRelationDisjunct {
   switch (preset.kind) {
     case Model.EntityDisjunctKinds.Resource: {

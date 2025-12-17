@@ -154,12 +154,26 @@ function parseNumericRangeValue(
   return undefined;
 }
 
+function resolveItem(
+  item: PresetFacetValue | { value: PresetFacetValue; label?: string }
+): { value: PresetFacetValue; label?: string } {
+  if (typeof item === 'object' && item !== null && 'label' in item) {
+    return { value: (item as any).value, label: (item as any).label };
+  }
+  return { value: item as PresetFacetValue, label: undefined };
+}
+
+type ValidatedGroup = {
+  relation: Model.Relation;
+  presets: ValidatedPreset[];
+};
+
 function validateAndParsePresets(
   presets: ReadonlyArray<PresetFacetValueConfig>,
   relations: Model.Relations,
   config: SemanticSearchConfig
-): ValidatedPreset[] {
-  const result: ValidatedPreset[] = [];
+): ValidatedGroup[] {
+  const result: ValidatedGroup[] = [];
 
   for (const preset of presets) {
     const relationIri = parseIri(preset.relation);
@@ -170,9 +184,11 @@ function validateAndParsePresets(
     }
 
     const kind = inferDisjunctKind(config, relation);
+    const groupPresets: ValidatedPreset[] = [];
 
     for (const item of preset.values) {
-      const value = item.value;
+      const { value, label } = resolveItem(item);
+
       if (kind === Model.EntityDisjunctKinds.Resource) {
         const parsed = parseResourceValue(value);
         if (!parsed) {
@@ -180,11 +196,11 @@ function validateAndParsePresets(
             `Invalid value '${JSON.stringify(value)}' for resource relation '${preset.relation}'. Expected IRI string or object with 'value' property.`
           );
         }
-        result.push({
+        groupPresets.push({
           kind,
           relation,
           value: parsed,
-          label: item.label,
+          label: label,
         });
       } else if (kind === Model.LiteralDisjunctKind) {
         const parsed = parseLiteralValue(value);
@@ -193,7 +209,7 @@ function validateAndParsePresets(
             `Invalid value '${JSON.stringify(value)}' for literal relation '${preset.relation}'. Expected string, number, or object with 'value' property.`
           );
         }
-        result.push({
+        groupPresets.push({
           kind,
           relation,
           value: parsed,
@@ -205,7 +221,7 @@ function validateAndParsePresets(
             `Invalid value '${JSON.stringify(value)}' for date-range relation '${preset.relation}'. Expected object with 'begin' and 'end' properties.`
           );
         }
-        result.push({
+        groupPresets.push({
           kind,
           relation,
           ...parsed,
@@ -217,25 +233,33 @@ function validateAndParsePresets(
             `Invalid value '${JSON.stringify(value)}' for numeric-range relation '${preset.relation}'. Expected object with numeric 'begin' and 'end' properties.`
           );
         }
-        result.push({
+        groupPresets.push({
           kind,
           relation,
           ...parsed,
         });
       }
     }
+    if (groupPresets.length > 0) {
+      result.push({
+        relation,
+        presets: groupPresets,
+      });
+    }
   }
 
   return result;
 }
 
-function collectRequiredLabels(validatedPresets: ValidatedPreset[]): Rdf.Iri[] {
-  return validatedPresets
-    .filter(
-      (p): p is ValidatedResourcePreset =>
-        p.kind === Model.EntityDisjunctKinds.Resource && !p.label
-    )
-    .map((p) => p.value);
+function collectRequiredLabels(validatedGroups: ValidatedGroup[]): Rdf.Iri[] {
+  return _.flatMap(validatedGroups, (group) =>
+    group.presets
+      .filter(
+        (p): p is ValidatedResourcePreset =>
+          p.kind === Model.EntityDisjunctKinds.Resource && !p.label
+      )
+      .map((p) => p.value)
+  );
 }
 
 // ============================================================================
@@ -294,45 +318,33 @@ function createDisjunct(
 }
 
 function buildAst(
-  validatedPresets: ValidatedPreset[],
+  validatedGroups: ValidatedGroup[],
   labelMap?: any
 ): FacetModel.Ast | undefined {
-  if (validatedPresets.length === 0) {
+  if (validatedGroups.length === 0) {
     return undefined;
   }
 
-  // Group by relation
-  const grouped = new Map<Model.Relation, ValidatedPreset[]>();
-  for (const preset of validatedPresets) {
-    if (!grouped.has(preset.relation)) {
-      grouped.set(preset.relation, []);
-    }
-    grouped.get(preset.relation)!.push(preset);
-  }
-
   const conjuncts: FacetModel.Conjuncts = [];
-  let conjunctIndex = 0;
 
-  for (const [relation, presets] of grouped.entries()) {
+  for (let i = 0; i < validatedGroups.length; i++) {
+    const { relation, presets } = validatedGroups[i];
+    const conjunctIndex = [i];
     const disjuncts: FacetModel.FacetRelationDisjunct[] = [];
-    
-    // We create the conjunct structure first so we can pass indices
-    const currentConjunctIndex = [conjunctIndex];
 
-    for (let i = 0; i < presets.length; i++) {
-      const disjunctIndex = [conjunctIndex, i];
-      disjuncts.push(createDisjunct(presets[i], disjunctIndex, labelMap));
+    for (let j = 0; j < presets.length; j++) {
+      const disjunctIndex = [i, j];
+      disjuncts.push(createDisjunct(presets[j], disjunctIndex, labelMap));
     }
 
     if (disjuncts.length > 0) {
       conjuncts.push({
         kind: Model.ConjunctKinds.Relation,
-        conjunctIndex: currentConjunctIndex,
+        conjunctIndex,
         relation,
         range: relation.hasRange,
         disjuncts,
       });
-      conjunctIndex++;
     }
   }
 

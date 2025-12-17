@@ -113,7 +113,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      values: [{ value: { value: 'Example literal', language: 'en' } }],
+      values: [{ value: 'Example literal', language: 'en' }],
     };
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -135,7 +135,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      values: [{ value: { begin: '2020-01-01', end: '2021-01-01' } }],
+      values: [{ begin: '2020-01-01', end: '2021-01-01' }],
     };
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -157,7 +157,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      values: [{ value: { begin: 10, end: 20 } }],
+      values: [{ begin: 10, end: 20 }],
     };
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -278,11 +278,16 @@ describe('SemanticSearchFacet preset facets', () => {
     expect(resource.label).to.equal('http://example.com/value');
   });
 
-  it('groups multiple presets for same relation into single conjunct', () => {
+  it('handles mixed values (direct and object with label)', () => {
     const relations = createRelations();
     const presets: PresetFacetValueConfig[] = [
-      { relation: relationIri, values: [{ value: presetValueIri, label: 'First' }] },
-      { relation: relationIri, values: [{ value: '<http://example.com/value2>', label: 'Second' }] },
+      {
+        relation: relationIri,
+        values: [
+          presetValueIri,
+          { value: '<http://example.com/value2>', label: 'Second' },
+        ],
+      },
     ];
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -293,13 +298,15 @@ describe('SemanticSearchFacet preset facets', () => {
 
     const ast = buildPresetFacetAst(presets, relations, config);
     expect(ast).to.exist;
-    expect(ast!.conjuncts).to.have.lengthOf(1);
-
     const conjunct = ast!.conjuncts[0];
-    expect(conjunct.relation.iri.value).to.equal('http://example.com/relation');
     expect(conjunct.disjuncts).to.have.lengthOf(2);
 
-    expect((conjunct.disjuncts[0].value as Model.Resource).label).to.equal('First');
+    // Direct value (uses IRI as label placeholder)
+    expect((conjunct.disjuncts[0].value as Model.Resource).iri.value).to.equal('http://example.com/value');
+    expect((conjunct.disjuncts[0].value as Model.Resource).label).to.equal('http://example.com/value');
+
+    // Object with label
+    expect((conjunct.disjuncts[1].value as Model.Resource).iri.value).to.equal('http://example.com/value2');
     expect((conjunct.disjuncts[1].value as Model.Resource).label).to.equal('Second');
   });
 

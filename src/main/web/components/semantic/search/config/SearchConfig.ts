@@ -431,10 +431,6 @@ export interface SemanticSearchConfig {
   /**
    * List of preset facets that will be pre-selected before a user interacts with the filter UI.
    * Applied when no saved facet state is present.
-   *
-   * Logic:
-   *  - Multiple values for the same relation are treated as OR.
-   *  - Values for different relations are treated as AND.
    */
   presetFacets?: Array<PresetFacetValueConfig>;
 }
@@ -659,7 +655,7 @@ export interface NumericRange {
 
 export interface PresetFacetValueConfig {
   relation: string;
-  values: Array<{
+  values: Array<PresetFacetValue | {
     value: PresetFacetValue;
     label?: string;
   }>;

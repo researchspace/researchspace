@@ -659,8 +659,10 @@ export interface NumericRange {
 
 export interface PresetFacetValueConfig {
   relation: string;
-  value: PresetFacetValue | PresetFacetValue[];
-  label?: string;
+  values: Array<{
+    value: PresetFacetValue;
+    label?: string;
+  }>;
 }
 
 export type PresetFacetValue =

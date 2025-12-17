@@ -88,8 +88,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      value: presetValueIri,
-      label: 'Preset Resource',
+      values: [{ value: presetValueIri, label: 'Preset Resource' }],
     };
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -114,7 +113,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      value: { value: 'Example literal', language: 'en' },
+      values: [{ value: { value: 'Example literal', language: 'en' } }],
     };
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -136,7 +135,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      value: { begin: '2020-01-01', end: '2021-01-01' },
+      values: [{ value: { begin: '2020-01-01', end: '2021-01-01' } }],
     };
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -158,7 +157,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      value: { begin: 10, end: 20 },
+      values: [{ value: { begin: 10, end: 20 } }],
     };
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -180,7 +179,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: '<http://example.com/missing>',
-      value: presetValueIri,
+      values: [{ value: presetValueIri }],
     };
     const config = baseMockConfig;
 
@@ -191,7 +190,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      value: { invalid: 'object' } as any,
+      values: [{ value: { invalid: 'object' } as any }],
     };
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -207,7 +206,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      value: { begin: 'invalid-date', end: '2021-01-01' },
+      values: [{ value: { begin: 'invalid-date', end: '2021-01-01' } }],
     };
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -239,8 +238,8 @@ describe('SemanticSearchFacet preset facets', () => {
     const relationsWithSecond = relations.set(secondKey, secondRelation);
 
     const presets: PresetFacetValueConfig[] = [
-      { relation: relationIri, value: presetValueIri, label: 'First' },
-      { relation: secondRelationIri, value: '<http://example.com/value2>', label: 'Second' },
+      { relation: relationIri, values: [{ value: presetValueIri, label: 'First' }] },
+      { relation: secondRelationIri, values: [{ value: '<http://example.com/value2>', label: 'Second' }] },
     ];
     const config: SemanticSearchConfig = {
       ...baseMockConfig,
@@ -262,7 +261,7 @@ describe('SemanticSearchFacet preset facets', () => {
     const relations = createRelations();
     const preset: PresetFacetValueConfig = {
       relation: relationIri,
-      value: presetValueIri,
+      values: [{ value: presetValueIri }],
       // No label provided - should use IRI value as placeholder
     };
     const config: SemanticSearchConfig = {
@@ -282,8 +281,8 @@ describe('SemanticSearchFacet preset facets', () => {
   it('groups multiple presets for same relation into single conjunct', () => {
     const relations = createRelations();
     const presets: PresetFacetValueConfig[] = [
-      { relation: relationIri, value: presetValueIri, label: 'First' },
-      { relation: relationIri, value: '<http://example.com/value2>', label: 'Second' },
+      { relation: relationIri, values: [{ value: presetValueIri, label: 'First' }] },
+      { relation: relationIri, values: [{ value: '<http://example.com/value2>', label: 'Second' }] },
     ];
     const config: SemanticSearchConfig = {
       ...baseMockConfig,

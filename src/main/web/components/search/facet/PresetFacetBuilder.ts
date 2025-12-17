@@ -145,8 +145,8 @@ function parseNumericRangeValue(
   value: PresetFacetValue
 ): { begin: number; end: number } | undefined {
   if (typeof value === 'object' && 'begin' in value && 'end' in value) {
-    const begin = typeof value.begin === 'number' ? value.begin : parseFloat(value.begin as string);
-    const end = typeof value.end === 'number' ? value.end : parseFloat(value.end as string);
+    const begin = typeof value.begin === 'number' ? value.begin : parseFloat(value.begin);
+    const end = typeof value.end === 'number' ? value.end : parseFloat(value.end);
     if (_.isFinite(begin) && _.isFinite(end)) {
       return { begin, end };
     }
@@ -170,9 +170,9 @@ function validateAndParsePresets(
     }
 
     const kind = inferDisjunctKind(config, relation);
-    const values = Array.isArray(preset.value) ? preset.value : [preset.value];
 
-    for (const value of values) {
+    for (const item of preset.values) {
+      const value = item.value;
       if (kind === Model.EntityDisjunctKinds.Resource) {
         const parsed = parseResourceValue(value);
         if (!parsed) {
@@ -184,7 +184,7 @@ function validateAndParsePresets(
           kind,
           relation,
           value: parsed,
-          label: preset.label,
+          label: item.label,
         });
       } else if (kind === Model.LiteralDisjunctKind) {
         const parsed = parseLiteralValue(value);

@@ -4,13 +4,11 @@
         "DateRangeFacetValue": {
             "properties": {
                 "kind": {
-                    "enum": [
-                        "date-range"
-                    ],
+                    "const": "date-range",
                     "type": "string"
                 },
                 "valuesQuery": {
-                    "description": "Base search query will be injected as a sub-query with $subject as projection variable.\n\nExpected projection variables:\n   * `?dateBeginValue` - begin of the date range interval\n   * `?dateEndValue` - end of the date range interval\n\nInjected variables:\n   * `__domain__` - search domain IRI\n   * `__range__` - facet relation range IRI\n   * `__relation__` - facet relation IRI",
+                    "description": "Base search query will be injected as a sub-query with $subject as projection variable.\n\nExpected projection variables:\n  * `?dateBeginValue` - begin of the date range interval\n  * `?dateEndValue` - end of the date range interval\n\nInjected variables:\n  * `__domain__` - search domain IRI\n  * `__range__` - facet relation range IRI\n  * `__relation__` - facet relation IRI",
                     "type": "string"
                 }
             },
@@ -54,34 +52,34 @@
             ],
             "type": "object"
         },
+        "FacetValuePattern": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/ResourceFacetValue"
+                },
+                {
+                    "$ref": "#/definitions/DateRangeFacetValue"
+                },
+                {
+                    "$ref": "#/definitions/LiteralFacetValue"
+                },
+                {
+                    "$ref": "#/definitions/NumericRangeFacetValue"
+                }
+            ]
+        },
         "FacetValuePatterns": {
             "additionalProperties": {
-                "anyOf": [
-                    {
-                        "$ref": "#/definitions/ResourceFacetValue"
-                    },
-                    {
-                        "$ref": "#/definitions/DateRangeFacetValue"
-                    },
-                    {
-                        "$ref": "#/definitions/LiteralFacetValue"
-                    },
-                    {
-                        "$ref": "#/definitions/NumericRangeFacetValue"
-                    }
-                ]
+                "$ref": "#/definitions/FacetValuePattern"
             },
             "description": "Mapping of categories/relations IRIs (fully qualified IRI enclosed in <>) to corresponding UI input components and generated query pattern.\n\nCurrently supported kinds of categories/relations:\n1) `resource` - any RDF resource, selection of value is performed with checkbox.\n2) `date-range` - date range values, selection of value is performed with slider.",
-            "propertyOrder": [
-            ],
+            "propertyOrder": [],
             "type": "object"
         },
         "LiteralFacetValue": {
             "properties": {
                 "kind": {
-                    "enum": [
-                        "literal"
-                    ],
+                    "const": "literal",
                     "type": "string"
                 },
                 "tupleTemplate": {
@@ -106,9 +104,7 @@
         "NumericRangeFacetValue": {
             "properties": {
                 "kind": {
-                    "enum": [
-                        "numeric-range"
-                    ],
+                    "const": "numeric-range",
                     "type": "string"
                 },
                 "valuesQuery": {
@@ -128,9 +124,7 @@
         "ResourceFacetValue": {
             "properties": {
                 "kind": {
-                    "enum": [
-                        "resource"
-                    ],
+                    "const": "resource",
                     "type": "string"
                 },
                 "tupleTemplate": {

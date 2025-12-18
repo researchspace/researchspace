@@ -98,8 +98,13 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
   componentWillReceiveProps(nextProps: InnerProps) {
     const { context } = this.props;
     const { context: nextContext } = nextProps;
+    const hasInitialFacets = nextContext.facetStructure
+      .map((ast) => ast.conjuncts.length > 0)
+      .getOrElse(false);
     const canUpdateFacets =
-      nextContext.baseQuery.isJust && nextContext.domain.isJust && nextContext.resultsStatus.loaded;
+      nextContext.baseQuery.isJust &&
+      nextContext.domain.isJust &&
+      (nextContext.resultsStatus.loaded || hasInitialFacets);
     const isNewDomain = context.domain
       .chain((currentDomain) => nextContext.domain.map((newDomain) => ({ currentDomain, newDomain })))
       .map(({ currentDomain, newDomain }) => !currentDomain.iri.equals(newDomain.iri))

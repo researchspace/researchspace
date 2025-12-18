@@ -31,6 +31,7 @@ import { getCurrentUrl } from 'platform/api/navigation';
 import { Component } from 'platform/api/components';
 import { trigger, BuiltInEvents } from 'platform/api/events';
 import { addNotification } from 'platform/components/ui/notification';
+import { Spinner } from 'platform/components/ui/spinner';
 
 import { SemanticSearchConfig, DatasetAlignmentConfig } from '../config/SearchConfig';
 import * as SearchDefaults from '../config/Defaults';
@@ -63,6 +64,7 @@ interface State {
   selectedAlignment?: Data.Maybe<Alignment>;
   isConfigurationEditable?: boolean;
   visualizationContext?: Data.Maybe<Model.Relation>;
+  isInitialized?: boolean;
 }
 
 const SAVED_STATE_QUERY_KEY = 'semanticSearch';
@@ -110,6 +112,7 @@ export class SemanticSearch extends Component<Props, State> {
       selectedAlignment: this.getDefaultAlignments(availableDatasets),
       isConfigurationEditable: true,
       visualizationContext: Maybe.Nothing<Model.Relation>(),
+      isInitialized: false,
     };
   }
 
@@ -181,6 +184,7 @@ export class SemanticSearch extends Component<Props, State> {
             baseQueryStructure: savedState.chain((state) => Maybe.fromNullable(state.search)),
             facetStructure: facetStructure,
             resultState: savedState.map((state) => state.result).getOrElse({}),
+            isInitialized: true,
           }));
         });
       });
@@ -325,6 +329,9 @@ export class SemanticSearch extends Component<Props, State> {
   }
 
   render() {
+    if (this.props.searchProfile && !this.state.isInitialized) {
+       return React.createElement(Spinner);
+    }
     return React.createElement(
       SemanticSearchContext.Provider,
       { value: this.makeSearchContext() },

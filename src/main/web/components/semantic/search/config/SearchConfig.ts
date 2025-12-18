@@ -653,10 +653,48 @@ export interface NumericRange {
   datatype?: string;
 }
 
+/**
+ * Configuration for pre-selected facet values.
+ * Allows defining a set of values that will be selected in the facet filters by default.
+ *
+ * The expected format for values depends on the 'kind' of the relation (resource, literal, date-range, numeric-range) defined in the Search Profile.
+ *
+ * 1. **Resource / Hierarchy**:
+ *    - Expects an IRI string or an object with a `value` property containing the IRI.
+ *    - Example: `'http://example.org/resource'` or `{ value: 'http://example.org/resource' }`
+ *
+ * 2. **Literal**:
+ *    - Expects a string, number, or an object with `value` (and optional `language` or `datatype`).
+ *    - Example: `'some string'`, `123`, `{ value: 'hello', language: 'en' }`, `{ value: 'true', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' }`
+ *
+ * 3. **Date Range**:
+ *    - Expects an object with `begin` and `end` properties. Values can be ISO strings or timestamps.
+ *    - Example: `{ begin: '2020-01-01', end: '2020-12-31' }`
+ *
+ * 4. **Numeric Range**:
+ *    - Expects an object with `begin` and `end` properties (numbers or strings parseable as numbers).
+ *    - Example: `{ begin: 10, end: 20 }`
+ */
 export interface PresetFacetValueConfig {
+  /**
+   * IRI of the relation to which the preset values apply.
+   * This must match a relation defined in the search profile.
+   */
   relation: string;
+
+  /**
+   * List of values to be pre-selected.
+   * Each item can be a direct value (string, number, range object) or an object wrapper containing the value and an optional label.
+   *
+   * If a label is not provided for a resource value, it will be automatically resolved using the label service.
+   */
   values: Array<PresetFacetValue | {
     value: PresetFacetValue;
+    /**
+     * Optional label for the value.
+     * Used primarily for 'resource' kind relations.
+     * If not provided for a resource, the system will attempt to fetch the label using the labels service.
+     */
     label?: string;
   }>;
 }

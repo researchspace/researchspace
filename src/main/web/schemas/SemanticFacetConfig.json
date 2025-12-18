@@ -72,7 +72,7 @@
             "additionalProperties": {
                 "$ref": "#/definitions/FacetValuePattern"
             },
-            "description": "Mapping of categories/relations IRIs (fully qualified IRI enclosed in <>) to corresponding UI input components and generated query pattern.\n\nCurrently supported kinds of categories/relations:\n1) `resource` - any RDF resource, selection of value is performed with checkbox.\n2) `date-range` - date range values, selection of value is performed with slider.",
+            "description": "Mapping of categories/relations IRIs (fully qualified IRI enclosed in <>) to corresponding UI input components and generated query pattern.\n\nCurrently supported kinds of categories/relations:\n1) `resource` - any RDF resource, selection of value is performed with checkbox.\n2) `date-range` - date range values, selection of value is performed with slider.\n3) `numeric-range`\n4) `literal`",
             "propertyOrder": [],
             "type": "object"
         },
@@ -120,144 +120,6 @@
                 "valuesQuery"
             ],
             "type": "object"
-        },
-        "PresetFacetValueConfig": {
-            "oneOf": [
-                {
-                    "description": "Resource preset",
-                    "properties": {
-                        "kind": {
-                            "enum": [
-                                "resource"
-                            ],
-                            "type": "string"
-                        },
-                        "label": {
-                            "description": "Optional label shown for the pre-selected value before facet values are loaded.",
-                            "type": "string"
-                        },
-                        "relation": {
-                            "description": "Relation IRI (full IRI enclosed in <> recommended) that should be pre-populated in the facet.",
-                            "type": "string"
-                        },
-                        "value": {
-                            "description": "Value IRI for the pre-selected resource.",
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "relation",
-                        "value"
-                    ],
-                    "type": "object"
-                },
-                {
-                    "description": "Literal preset",
-                    "properties": {
-                        "kind": {
-                            "enum": [
-                                "literal"
-                            ],
-                            "type": "string"
-                        },
-                        "label": {
-                            "type": "string"
-                        },
-                        "language": {
-                            "type": "string"
-                        },
-                        "datatype": {
-                            "type": "string"
-                        },
-                        "relation": {
-                            "type": "string"
-                        },
-                        "value": {
-                            "description": "Literal value",
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "relation",
-                        "value"
-                    ],
-                    "type": "object"
-                },
-                {
-                    "description": "Date range preset",
-                    "properties": {
-                        "kind": {
-                            "enum": [
-                                "date-range"
-                            ],
-                            "type": "string"
-                        },
-                        "label": {
-                            "type": "string"
-                        },
-                        "relation": {
-                            "type": "string"
-                        },
-                        "dateRange": {
-                            "properties": {
-                                "begin": {
-                                    "type": "string"
-                                },
-                                "end": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": [
-                                "begin",
-                                "end"
-                            ],
-                            "type": "object"
-                        }
-                    },
-                    "required": [
-                        "relation",
-                        "dateRange"
-                    ],
-                    "type": "object"
-                },
-                {
-                    "description": "Numeric range preset",
-                    "properties": {
-                        "kind": {
-                            "enum": [
-                                "numeric-range"
-                            ],
-                            "type": "string"
-                        },
-                        "label": {
-                            "type": "string"
-                        },
-                        "relation": {
-                            "type": "string"
-                        },
-                        "numericRange": {
-                            "properties": {
-                                "begin": {
-                                    "type": "number"
-                                },
-                                "end": {
-                                    "type": "number"
-                                }
-                            },
-                            "required": [
-                                "begin",
-                                "end"
-                            ],
-                            "type": "object"
-                        }
-                    },
-                    "required": [
-                        "relation",
-                        "numericRange"
-                    ],
-                    "type": "object"
-                }
-            ]
         },
         "ResourceFacetValue": {
             "properties": {
@@ -353,13 +215,6 @@
             "description": "Flag to open the facet by default.",
             "type": "boolean"
         },
-        "presetFacets": {
-            "description": "List of preset facets that will be pre-selected before a user interacts with the filter UI. Applied when no saved facet state is present.\n\nLogic:\n - Multiple values for the same relation are treated as OR.\n - Values for different relations are treated as AND.",
-            "items": {
-                "$ref": "#/definitions/PresetFacetValueConfig"
-            },
-            "type": "array"
-        },
         "relations": {
             "$ref": "#/definitions/FacetRelationConfig",
             "description": "Settings determining the display of relations in the sidebar."
@@ -390,8 +245,8 @@
         "defaultValueTemplate",
         "facetValuesThreshold",
         "listenToContextSwitch",
-        "hideToggleButton",
-        "presetFacets"
+        "hideToggleButton"
     ],
     "type": "object"
 }
+

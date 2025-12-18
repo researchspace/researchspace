@@ -324,6 +324,161 @@
             ],
             "type": "object"
         },
+        "PresetFacetValue": {
+            "anyOf": [
+                {
+                    "properties": {
+                        "begin": {
+                            "type": [
+                                "string",
+                                "number"
+                            ]
+                        },
+                        "end": {
+                            "type": [
+                                "string",
+                                "number"
+                            ]
+                        }
+                    },
+                    "propertyOrder": [
+                        "begin",
+                        "end"
+                    ],
+                    "required": [
+                        "begin",
+                        "end"
+                    ],
+                    "type": "object"
+                },
+                {
+                    "properties": {
+                        "datatype": {
+                            "type": "string"
+                        },
+                        "language": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "propertyOrder": [
+                        "value",
+                        "language",
+                        "datatype"
+                    ],
+                    "required": [
+                        "value"
+                    ],
+                    "type": "object"
+                },
+                {
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                }
+            ]
+        },
+        "PresetFacetValueConfig": {
+            "description": "Configuration for pre-selected facet values.\nAllows defining a set of values that will be selected in the facet filters by default.\n\nThe expected format for values depends on the 'kind' of the relation (resource, literal, date-range, numeric-range) defined in the Search Profile.\n\n1. **Resource / Hierarchy**:\n   - Expects an IRI string or an object with a `value` property containing the IRI.\n   - Example: `'http://example.org/resource'` or `{ value: 'http://example.org/resource' }`\n\n2. **Literal**:\n   - Expects a string, number, or an object with `value` (and optional `language` or `datatype`).\n   - Example: `'some string'`, `123`, `{ value: 'hello', language: 'en' }`, `{ value: 'true', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' }`\n\n3. **Date Range**:\n   - Expects an object with `begin` and `end` properties. Values can be ISO strings or timestamps.\n   - Example: `{ begin: '2020-01-01', end: '2020-12-31' }`\n\n4. **Numeric Range**:\n   - Expects an object with `begin` and `end` properties (numbers or strings parseable as numbers).\n   - Example: `{ begin: 10, end: 20 }`",
+            "properties": {
+                "relation": {
+                    "description": "IRI of the relation to which the preset values apply.\nThis must match a relation defined in the search profile.",
+                    "type": "string"
+                },
+                "values": {
+                    "description": "List of values to be pre-selected.\nEach item can be a direct value (string, number, range object) or an object wrapper containing the value and an optional label.\n\nIf a label is not provided for a resource value, it will be automatically resolved using the label service.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "properties": {
+                                    "begin": {
+                                        "type": [
+                                            "string",
+                                            "number"
+                                        ]
+                                    },
+                                    "end": {
+                                        "type": [
+                                            "string",
+                                            "number"
+                                        ]
+                                    }
+                                },
+                                "propertyOrder": [
+                                    "begin",
+                                    "end"
+                                ],
+                                "required": [
+                                    "begin",
+                                    "end"
+                                ],
+                                "type": "object"
+                            },
+                            {
+                                "properties": {
+                                    "datatype": {
+                                        "type": "string"
+                                    },
+                                    "language": {
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "type": "string"
+                                    }
+                                },
+                                "propertyOrder": [
+                                    "value",
+                                    "language",
+                                    "datatype"
+                                ],
+                                "required": [
+                                    "value"
+                                ],
+                                "type": "object"
+                            },
+                            {
+                                "properties": {
+                                    "label": {
+                                        "description": "Optional label for the value.\nUsed primarily for 'resource' kind relations.\nIf not provided for a resource, the system will attempt to fetch the label using the labels service.",
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "$ref": "#/definitions/PresetFacetValue"
+                                    }
+                                },
+                                "propertyOrder": [
+                                    "value",
+                                    "label"
+                                ],
+                                "required": [
+                                    "value"
+                                ],
+                                "type": "object"
+                            },
+                            {
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            }
+                        ]
+                    },
+                    "type": "array"
+                }
+            },
+            "propertyOrder": [
+                "relation",
+                "values"
+            ],
+            "required": [
+                "relation",
+                "values"
+            ],
+            "type": "object"
+        },
         "QuerySearchProfileConfig": {
             "properties": {
                 "categoriesQuery": {
@@ -512,6 +667,13 @@
             ],
             "type": "string"
         },
+        "presetFacets": {
+            "description": "List of preset facets that will be pre-selected before a user interacts with the filter UI.\nApplied when no saved facet state is present.",
+            "items": {
+                "$ref": "#/definitions/PresetFacetValueConfig"
+            },
+            "type": "array"
+        },
         "relations": {
             "$ref": "#/definitions/Patterns",
             "description": "Definition of the relations to be used in structured search.\n\nIf not specified otherwise, by default, all categories/relations from Search Profile\nare considered of kind 'resource'."
@@ -538,7 +700,8 @@
         "limit",
         "optimizer",
         "selectorMode",
-        "initialState"
+        "initialState",
+        "presetFacets"
     ],
     "required": [
         "searchProfile"

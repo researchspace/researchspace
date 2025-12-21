@@ -182,7 +182,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
     if (this.props.context.baseQuery.isJust) {
       const facetIsShown = this.state.facetData && this.state.showFacets;
       const hiddenRelations = this.getHiddenPresetRelations();
-      const forceShowHiddenRelations = this.props.context.facetBreadcrumbsMounted === true;
+      const forceShowHiddenRelations = !!this.props.context.facetBreadcrumbsMounted;
 
       const toggleButton = (
         <button 

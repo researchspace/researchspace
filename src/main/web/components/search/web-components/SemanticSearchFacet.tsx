@@ -24,6 +24,7 @@ import * as SparqlJs from 'sparqljs';
 
 import { trigger } from 'platform/api/events';
 import { Component, SemanticContext } from 'platform/api/components';
+import { getHiddenPresetRelationIris } from '../facet/PresetFacetBuilder';
 import { SemanticFacetConfig } from 'platform/components/semantic/search/config/SearchConfig';
 import {
   DefaultFacetValueTemplate,
@@ -180,6 +181,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
   render() {
     if (this.props.context.baseQuery.isJust) {
       const facetIsShown = this.state.facetData && this.state.showFacets;
+      const hiddenRelations = this.getHiddenPresetRelations();
 
       const toggleButton = (
         <button 
@@ -203,6 +205,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
             data={this.state.facetData} 
             actions={this.facetStore.facetActions()}
             config={this.props}
+            hiddenRelations={hiddenRelations}
           /> : null}
           {!this.props.hideToggleButton && toggleButton}
         </div>
@@ -216,6 +219,18 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
     this.setState((state) => ({ showFacets: !state.showFacets }));
     trigger({ eventType: SearchFilterToggled, source: this.props.id });
   };
+
+  private getHiddenPresetRelations(): ReadonlySet<string> | undefined {
+    const presetFacets = this.props.context.baseConfig.presetFacets;
+    if (!presetFacets || presetFacets.length === 0) {
+      return undefined;
+    }
+    const hiddenIris = getHiddenPresetRelationIris(presetFacets);
+    if (!hiddenIris.length) {
+      return undefined;
+    }
+    return new Set(hiddenIris.map((iri) => iri.value));
+  }
 }
 
 export default SemanticSearchFacet;

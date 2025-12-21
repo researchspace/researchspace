@@ -796,10 +796,6 @@ export interface SemanticFacetConfig {
      * ```
      */
     literal?: string;
-
-    /**
-     * 
-     */
   };
 
   /**

@@ -224,9 +224,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
 
   private getHiddenPresetRelations(): ReadonlySet<string> | undefined {
     const presetFacets = this.props.context.baseConfig.presetFacets;
-    if (!presetFacets || presetFacets.length === 0) {
-      return undefined;
-    }
+    
     const hiddenIris = getHiddenPresetRelationIris(presetFacets);
     if (!hiddenIris.length) {
       return undefined;

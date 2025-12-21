@@ -44,6 +44,7 @@ export interface FacetProps {
   actions: Actions;
   config: SemanticFacetConfig;
   hiddenRelations?: ReadonlySet<string>;
+  forceShowHiddenRelations?: boolean;
 }
 
 export class FacetComponent extends Component<FacetProps, {}> {
@@ -70,22 +71,27 @@ export class FacetComponent extends Component<FacetProps, {}> {
   }
 
   private renderRelations() {
-    const hiddenRelations = this.props.hiddenRelations;
+    const { hiddenRelations, forceShowHiddenRelations } = this.props;
     return D.div(
       { className: 'facet-relations' },
       ...this.renderLoadingIndicator(),
       this.props.data.relations
         .filter((rel) => rel.available !== false)
-        .map((relationEntity) =>
-          RelationFacet({
+        .map((relationEntity) => {
+          const isHiddenRelation = hiddenRelations?.has(relationEntity.iri.value);
+          let hiddenProp: boolean | undefined = undefined;
+          if (isHiddenRelation) {
+            hiddenProp = forceShowHiddenRelations ? true : false;
+          }
+          return RelationFacet({
             key: relationEntity.iri.value,
             relation: relationEntity,
             data: this.props.data,
             actions: this.props.actions,
             config: this.props.config,
-            hidden: hiddenRelations?.has(relationEntity.iri.value) ? true : undefined,
-          })
-        )
+            hidden: hiddenProp,
+          });
+        })
         .toArray()
     );
   }

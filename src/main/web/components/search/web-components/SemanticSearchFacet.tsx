@@ -24,7 +24,6 @@ import * as SparqlJs from 'sparqljs';
 
 import { trigger } from 'platform/api/events';
 import { Component, SemanticContext } from 'platform/api/components';
-import { getHiddenPresetRelationIris } from '../facet/PresetFacetBuilder';
 import { SemanticFacetConfig } from 'platform/components/semantic/search/config/SearchConfig';
 import {
   DefaultFacetValueTemplate,
@@ -40,6 +39,7 @@ import * as FacetModel from 'platform/components/semantic/search/data/facet/Mode
 
 import Facet from '../facet/Facet';
 import { FacetStore, FacetData } from '../facet/FacetStore';
+import { getHiddenPresetRelationIris } from '../facet/PresetFacetBuilder';
 import { SearchFilterToggled } from 'platform/components/search/query-builder/SearchEvents';
 
 interface SemanticSearchFacetProps extends SemanticFacetConfig {}
@@ -182,6 +182,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
     if (this.props.context.baseQuery.isJust) {
       const facetIsShown = this.state.facetData && this.state.showFacets;
       const hiddenRelations = this.getHiddenPresetRelations();
+      const forceShowHiddenRelations = this.props.context.facetBreadcrumbsMounted === true;
 
       const toggleButton = (
         <button 
@@ -206,6 +207,7 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
             actions={this.facetStore.facetActions()}
             config={this.props}
             hiddenRelations={hiddenRelations}
+            forceShowHiddenRelations={forceShowHiddenRelations}
           /> : null}
           {!this.props.hideToggleButton && toggleButton}
         </div>

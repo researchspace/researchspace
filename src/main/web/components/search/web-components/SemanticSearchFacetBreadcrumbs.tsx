@@ -50,6 +50,14 @@ class SemanticSearchFacetBreadcrumbsInner extends React.Component<InnerProps> {
 
     return null;
   }
+
+  componentDidMount() {
+    this.props.context.setFacetBreadcrumbsMounted(true);
+  }
+
+  componentWillUnmount() {
+    this.props.context.setFacetBreadcrumbsMounted(false);
+  }
 }
 
 export default SemanticSearchFacetBreadcrumbs;

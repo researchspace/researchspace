@@ -75,7 +75,7 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
   }
 
   render() {
-    if (this.props.hidden) {
+    if (this.props.hidden === false) {
       return null;
     }
     return this.props.relation.available === true ? this.renderRelation() : null;

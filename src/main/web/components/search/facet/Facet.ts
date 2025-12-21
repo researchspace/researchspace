@@ -79,17 +79,14 @@ export class FacetComponent extends Component<FacetProps, {}> {
         .filter((rel) => rel.available !== false)
         .map((relationEntity) => {
           const isHiddenRelation = hiddenRelations?.has(relationEntity.iri.value);
-          let hiddenProp: boolean | undefined = undefined;
-          if (isHiddenRelation) {
-            hiddenProp = forceShowHiddenRelations ? true : false;
-          }
+          const shouldHide = isHiddenRelation && !forceShowHiddenRelations;
           return RelationFacet({
             key: relationEntity.iri.value,
             relation: relationEntity,
             data: this.props.data,
             actions: this.props.actions,
             config: this.props.config,
-            hidden: hiddenProp,
+            hidden: shouldHide,
           });
         })
         .toArray()

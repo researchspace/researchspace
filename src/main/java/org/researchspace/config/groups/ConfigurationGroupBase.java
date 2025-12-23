@@ -424,7 +424,7 @@ public abstract class ConfigurationGroupBase implements ConfigurationGroup {
             return ConfigurationParameterType.INTEGER;
         } else if (returnType.isAssignableFrom(List.class)) {
             return ConfigurationParameterType.STRING_LIST;
-        } else if (returnType.isAssignableFrom(Enum.class)) {
+        } else if (returnType.isEnum()) {
             return ConfigurationParameterType.ENUM;
         } else {
             // fallback parameter type

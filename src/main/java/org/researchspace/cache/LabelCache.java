@@ -257,24 +257,22 @@ public class LabelCache {
         LabelsResolutionStrategy strategy = config.getUiConfig().getPreferredLabelsResolutionStrategy();
         Map<CacheKey, Optional<Literal>> chosenLabels = new HashMap<>(labelCandidates.size());
 
-        if (strategy == LabelsResolutionStrategy.PREFER_PROPERTY) {
-            labelCandidates.forEach((key, allLiterals) -> {
+        labelCandidates.forEach((key, allLiterals) -> {
+            final Optional<Literal> chosen;
+            if (strategy == LabelsResolutionStrategy.PREFER_PROPERTY) {
                 if (allLiterals == null) {
-                    chosenLabels.put(key, Optional.empty());
+                    chosen = Optional.empty();
                 } else {
-                    Optional<Literal> chosen = allLiterals.stream().filter(list -> !list.isEmpty()).findFirst().flatMap(
+                    chosen = allLiterals.stream().filter(list -> !list.isEmpty()).findFirst().flatMap(
                             list -> chooseLabelWithPreferredLanguage(list, key.languageTag, systemPreferredLanguages));
-                    chosenLabels.put(key, chosen);
                 }
-            });
-        } else {
-            labelCandidates.forEach((key, allLiterals) -> {
+            } else {
                 List<Literal> literals = ResourcePropertyCache.flattenProperties(allLiterals);
-                Optional<Literal> chosen = chooseLabelWithPreferredLanguage(literals, key.languageTag,
+                chosen = chooseLabelWithPreferredLanguage(literals, key.languageTag,
                         systemPreferredLanguages);
-                chosenLabels.put(key, chosen);
-            });
-        }
+            }
+            chosenLabels.put(key, chosen);
+        });
 
         return chosenLabels;
     }

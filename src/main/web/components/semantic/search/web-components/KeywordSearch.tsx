@@ -27,6 +27,7 @@ import { Rdf } from 'platform/api/rdf';
 import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
 import { Component } from 'platform/api/components';
 import { Action } from 'platform/components/utils';
+import { defaultKeywordSearchConfig, textConfirmsToConfig } from "platform/components/shared/KeywordSearchConfig";
 
 import { setSearchDomain } from '../commons/Utils';
 import { SemanticSimpleSearchBaseConfig } from '../../simple-search/Config';
@@ -88,18 +89,20 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
     placeholder: 'Search all, minimum 3 characters',
     className: "input-keyword-search",
     searchTermVariable: '__token__',
-    minSearchTermLength: 3,
     debounce: 300,
-    escapeLuceneSyntax: true,
+    ... defaultKeywordSearchConfig
   };
 
-  private keys = Action<string>();
+  private keys: Action<string>;
 
   constructor(props: InnerProps) {
     super(props);
+    const value = props.initialInput || '';
     this.state = {
-      value: undefined,
+      value,
     };
+
+    this.keys = Action<string>(value); 
   }
 
   componentDidMount() {
@@ -136,27 +139,34 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
       : Maybe.Nothing<SparqlJs.SelectQuery>();
 
     const queryProp = this.keys.$property
-      .filter((str) => str.length >= this.props.minSearchTermLength)
+      .filter((str) => textConfirmsToConfig(str, this.props))
       .debounce(this.props.debounce)
       .map(this.buildQuery(query));
 
     const defaultQueryProp = this.keys.$property
-      .filter((str) => props.defaultQuery && _.isEmpty(str))
+      .filter((str) => _.isEmpty(str))
       .map(() => defaultQuery.get());
 
     const initializers = [queryProp];
     if (props.defaultQuery) {
-      initializers.push(Kefir.constant(defaultQuery.get()), defaultQueryProp);
+      initializers.push(defaultQueryProp);
     }
 
     Kefir.merge(initializers).onValue((q) => this.props.context.setBaseQuery(Maybe.Just(q)));
   };
 
-  private onKeyPress = (event: React.FormEvent<FormControl>) => this.keys((event.target as any).value);
+  private onKeyPress = (event: React.FormEvent<FormControl>) => {
+    this.setState({ value: (event.target as any).value }, () => this.keys(this.state.value));
+  }
 
   private buildQuery = (baseQuery: SparqlJs.SelectQuery) => (token: string): SparqlJs.SelectQuery => {
-    const { searchTermVariable, escapeLuceneSyntax, tokenizeLuceneQuery } = this.props;
-    const value = SparqlUtil.makeLuceneQuery(token, escapeLuceneSyntax, tokenizeLuceneQuery);
+    const {
+      searchTermVariable, escapeLuceneSyntax,
+      tokenizeLuceneQuery, minTokenLength
+    } = this.props;
+    const value = SparqlUtil.makeLuceneQuery(
+      token, escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength
+    );
     return SparqlClient.setBindings(baseQuery, { [searchTermVariable]: value });
   };
 }

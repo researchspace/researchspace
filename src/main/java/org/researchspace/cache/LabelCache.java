@@ -42,6 +42,7 @@ import org.researchspace.config.Configuration;
 import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.config.PropertyPattern;
 import org.researchspace.config.groups.UIConfiguration;
+import org.researchspace.config.groups.UIConfiguration.LabelsResolutionStrategy;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
@@ -191,12 +192,11 @@ public class LabelCache {
                         preferredLabels.size(),
                         value -> value instanceof Literal ? Optional.of((Literal) value) : Optional.empty());
 
-                // next, we flatten the inner list of list structure into one continuous list,
-                // making sure that we have one entry per IRI
-                Map<CacheKey, List<Literal>> literalByKey = new HashMap<>();
+                // next, associate resource IRI with the list of a lists of literals from above 
+                Map<CacheKey, List<List<Literal>>> literalByKey = new HashMap<>();
                 for (CacheKey key : keys) {
                     List<List<Literal>> literals = iriToListList.get(key.iri);
-                    literalByKey.put(key, flattenProperties(literals));
+                    literalByKey.put(key, literals);
                 }
 
                 // extract the preferred literals based on language tag information
@@ -252,16 +252,29 @@ public class LabelCache {
      * best matching label.
      */
     private Map<CacheKey, Optional<Literal>> chooseLabelsWithPreferredLanguage(
-            Map<CacheKey, List<Literal>> labelCandidates) {
+            Map<CacheKey, List<List<Literal>>> labelCandidates) {
         List<String> systemPreferredLanguages = config.getUiConfig().getPreferredLanguages();
-
+        LabelsResolutionStrategy strategy = config.getUiConfig().getPreferredLabelsResolutionStrategy();
         Map<CacheKey, Optional<Literal>> chosenLabels = new HashMap<>(labelCandidates.size());
 
-        labelCandidates.forEach((key, literals) -> {
-            Optional<Literal> chosen = chooseLabelWithPreferredLanguage(literals, key.languageTag,
-                    systemPreferredLanguages);
-            chosenLabels.put(key, chosen);
-        });
+        if (strategy == LabelsResolutionStrategy.PREFER_PROPERTY) {
+            labelCandidates.forEach((key, allLiterals) -> {
+                if (allLiterals == null) {
+                    chosenLabels.put(key, Optional.empty());
+                } else {
+                    Optional<Literal> chosen = allLiterals.stream().filter(list -> !list.isEmpty()).findFirst().flatMap(
+                            list -> chooseLabelWithPreferredLanguage(list, key.languageTag, systemPreferredLanguages));
+                    chosenLabels.put(key, chosen);
+                }
+            });
+        } else {
+            labelCandidates.forEach((key, allLiterals) -> {
+                List<Literal> literals = ResourcePropertyCache.flattenProperties(allLiterals);
+                Optional<Literal> chosen = chooseLabelWithPreferredLanguage(literals, key.languageTag,
+                        systemPreferredLanguages);
+                chosenLabels.put(key, chosen);
+            });
+        }
 
         return chosenLabels;
     }

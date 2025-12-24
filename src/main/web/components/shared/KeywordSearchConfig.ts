@@ -1,5 +1,20 @@
-import { SparqlUtil } from "platform/api/sparql";
-import { KeywordSearch } from "../sets/Defaults";
+/**
+ * ResearchSpace
+ * Copyright (C) 2025, Pharos: The International Consortium of Photo Archives
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 export interface KeywordSearchConfig {
   /**
@@ -50,7 +65,7 @@ export const defaultKeywordSearchConfig: KeywordSearchConfig = {
 export function textConfirmsToConfig(input: string, searchConfig: KeywordSearchConfig) {
   const { 
     tokenizeLuceneQuery, escapeLuceneSyntax, minTokenLength, minSearchTermLength
-  } = searchConfig;
+  } = { ...defaultKeywordSearchConfig, ...searchConfig };
   if (input && input.length >= minSearchTermLength) {
     if (tokenizeLuceneQuery) {
       // we need to check if when we tokenize the query we get at least one token that
@@ -73,11 +88,11 @@ const LUCENE_ESCAPE_REGEX = /([+\-&|!(){}\[\]^"~*?:\\])/g;
 
 export function luceneTokenize(
   inputText: string, escape = true, tokenize = true, minTokenLength: number
-): String[] {
+): string[] {
   return inputText
     .split(' ')
     .map((w) => w.trim()) // Trim whitespace
-    .filter((w) => minTokenLength ? w.length >=  minTokenLength : w.length > 0) // Filter by length after trimming
+    .filter((w) => w.length >= minTokenLength) // Filter by length after trimming
     .map((w) => {
       let processedWord = w;
       if (escape) {

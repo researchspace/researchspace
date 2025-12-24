@@ -47,7 +47,7 @@ import { Alert, AlertType } from 'platform/components/ui/alert';
  * 	 	urlqueryparam-param1="hello world"
  * 	></mp-page-loader>
  */
-class PageLoaderComponent extends Component<{ iri: string, context?: string, repository?: string }, {}> {
+class PageLoaderComponent extends Component<{ iri: string, context?: string }, {}> {
   public shouldComponentUpdate(nextProps) {
     return !isEqual(this.props, nextProps);
   }

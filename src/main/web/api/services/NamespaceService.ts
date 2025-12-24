@@ -75,7 +75,7 @@ export class NamespaceService {
                 const localPart = iriString.substring(ns.length);
                 const prefix = this.nsMap[ns];
                 // Basic check for valid local part characters
-                if (/^[a-zA-Z0-9_-]*$/.test(localPart)) {
+                if (localPart.indexOf('/') === -1 && localPart.indexOf('#') === -1) {
                     return Maybe.Just(`${prefix}:${localPart}`);
                 }
             }

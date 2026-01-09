@@ -354,19 +354,18 @@ listen({
 
 window.addEventListener('DOMContentLoaded', function () {
   Kefir.combine({
-    url: initNavigation(),
     prefixes: getRegisteredPrefixes(),
     rawConfig: ConfigHolder.fetchConfig(),
     repositories: DefaultRepositoryInfo.init(),
   })
-    .flatMap(({ url, prefixes, rawConfig }) => {
+    .flatMap(({ prefixes, rawConfig }) => {
       try {
         SparqlUtil.init(prefixes);
         ConfigHolder.initializeConfig(rawConfig);
+        return initNavigation().map((url) => ({ url, prefixes, rawConfig }));
       } catch (e) {
         return Kefir.constantError<any>(e);
       }
-      return Kefir.constant(url);
     })
     .flatMap(() => {
       return initResourceConfig();

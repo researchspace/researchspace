@@ -23,6 +23,7 @@ import * as SparqlJs from 'sparqljs';
 
 import { Rdf } from 'platform/api/rdf';
 import { getCurrentResource } from '../navigation/CurrentResource';
+import { namespaceService } from 'platform/api/services/NamespaceService';
 
 import { isQuery, isTerm, isIri } from './TypeGuards';
 import { defaultKeywordSearchConfig, luceneTokenize } from 'platform/components/shared/KeywordSearchConfig';
@@ -37,6 +38,7 @@ export let RegisteredPrefixes: {
 export function init(registeredPrefixes: { [key: string]: string }) {
   RegisteredPrefixes = registeredPrefixes as typeof RegisteredPrefixes;
   Parser = new SparqlJs.Parser(registeredPrefixes);
+  namespaceService.init(registeredPrefixes);
 }
 
 const Generator = new SparqlJs.Generator();
@@ -246,33 +248,9 @@ export function isSelectResultEmpty(result: { results: { bindings: {}[] } }): bo
  * If an IRI is already in a full form, it would be returned as is.
  */
 export function resolveIris(iris: string[]): Rdf.Iri[] {
-  if (iris.length === 0) {
-    return [];
-  }
-  const serializedIris = iris.map((iri) => `(${iri})`).join(' ');
-  // using initialized Sparql.js parser to resolve IRIs
-  const parsed = parseQuery<SparqlJs.SelectQuery>(`SELECT * WHERE {} VALUES (?iri) { ${serializedIris} }`);
-  return parsed.values.map((row) => Rdf.iri(row['?iri']));
+  return iris.map((iri) => namespaceService.resolveToIRI(iri).getOrElse(Rdf.iri(iri)));
 }
 
-// see SPARQL 1.1 grammar for all allowed characters:
-// https://www.w3.org/TR/sparql11-query/#rPN_LOCAL
-const IRI_LOCAL_PART = /^[a-zA-Z][-_a-zA-Z0-9]*$/;
-
-// TODO: move to NamespaceService
 export function compactIriUsingPrefix(iri: Rdf.Iri): string {
-  const iriValue = iri.value;
-  for (const prefix in RegisteredPrefixes) {
-    if (!RegisteredPrefixes.hasOwnProperty(prefix)) {
-      continue;
-    }
-    const expandedPrefix = RegisteredPrefixes[prefix];
-    if (iriValue.startsWith(expandedPrefix)) {
-      const localPart = iriValue.substring(expandedPrefix.length, iriValue.length);
-      if (IRI_LOCAL_PART.test(localPart)) {
-        return prefix + ':' + localPart;
-      }
-    }
-  }
-  return `<${iriValue}>`;
+  return namespaceService.getPrefixedIRI(iri).getOrElse(`<${iri.value}>`);
 }

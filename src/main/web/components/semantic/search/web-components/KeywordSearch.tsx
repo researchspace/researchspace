@@ -138,21 +138,21 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
       ? Maybe.Just(SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.defaultQuery))
       : Maybe.Nothing<SparqlJs.SelectQuery>();
 
-    const queryProp = this.keys.$property
-      .filter((str) => textConfirmsToConfig(str, this.props))
-      .debounce(this.props.debounce)
-      .map(this.buildQuery(query));
-
-    const defaultQueryProp = this.keys.$property
-      .filter((str) => _.isEmpty(str))
-      .map(() => defaultQuery.get());
-
-    const initializers = [queryProp];
-    if (props.defaultQuery) {
-      initializers.push(defaultQueryProp);
-    }
-
-    Kefir.merge(initializers).onValue((q) => this.props.context.setBaseQuery(Maybe.Just(q)));
+    // Use flatMapLatest to handle input changes: debounce valid search queries to avoid triggering on every keystroke,
+    // but execute the default query immediately when input is cleared.
+    this.keys.$property
+      .flatMapLatest<SparqlJs.SelectQuery>((str) => {
+        if (textConfirmsToConfig(str, this.props)) {
+          // Debounce valid search input
+          return Kefir.later(this.props.debounce, str).map(this.buildQuery(query));
+        } else if (_.isEmpty(str) && defaultQuery.isJust) {
+          // Execute default query immediately when input is cleared
+          return Kefir.constant(defaultQuery.get());
+        } else {
+          return Kefir.never();
+        }
+      })
+      .onValue((q) => this.props.context.setBaseQuery(Maybe.Just(q)));
   };
 
   private onKeyPress = (event: React.FormEvent<FormControl>) => {

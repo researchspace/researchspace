@@ -57,11 +57,11 @@
             "properties": {
                 "majorLabels": {
                     "$ref": "#/definitions/TimelineFormatLabelsOption",
-                    "description": "Custom date format for the major labels. Default value:\n<pre>\n{\n     millisecond:'HH:mm:ss',\n     second:     'D MMMM HH:mm',\n     minute:     'ddd D MMMM',\n     hour:       'ddd D MMMM',\n     weekday:    'MMMM YYYY',\n     day:        'MMMM YYYY',\n     week:       'MMMM YYYY',\n     month:      'YYYY',\n     year:       ''\n}\n</pre>"
+                    "description": "Custom date format for the major labels. Default value:\n<pre>\n{\n    millisecond:'HH:mm:ss',\n    second:     'D MMMM HH:mm',\n    minute:     'ddd D MMMM',\n    hour:       'ddd D MMMM',\n    weekday:    'MMMM YYYY',\n    day:        'MMMM YYYY',\n    week:       'MMMM YYYY',\n    month:      'YYYY',\n    year:       ''\n}\n</pre>"
                 },
                 "minorLabels": {
                     "$ref": "#/definitions/TimelineFormatLabelsOption",
-                    "description": "Custom date format for the minor labels. Default value:\n<pre>\n{\n     millisecond:'SSS',\n     second:     's',\n     minute:     'HH:mm',\n     hour:       'HH:mm',\n     weekday:    'ddd D',\n     day:        'D',\n     week:       'w',\n     month:      'MMM',\n     year:       'YYYY'\n}\n</pre>"
+                    "description": "Custom date format for the minor labels. Default value:\n<pre>\n{\n    millisecond:'SSS',\n    second:     's',\n    minute:     'HH:mm',\n    hour:       'HH:mm',\n    weekday:    'ddd D',\n    day:        'D',\n    week:       'w',\n    month:      'MMM',\n    year:       'YYYY'\n}\n</pre>"
                 }
             },
             "propertyOrder": [
@@ -302,20 +302,7 @@
                     "type": "boolean"
                 },
                 "dataAttributes": {
-                    "anyOf": [
-                        {
-                            "items": {
-                                "type": "string"
-                            },
-                            "type": "array"
-                        },
-                        {
-                            "type": [
-                                "string",
-                                "boolean"
-                            ]
-                        }
-                    ],
+                    "$ref": "#/definitions/vis.TimelineOptionsDataAttributesType",
                     "description": "An array of fields optionally defined on the timeline items that will be appended as <code>data-</code> attributes to the DOM element of the items. If value is <code>'all'</code> then each field defined on the timeline item will become a <code>data-</code> attribute."
                 },
                 "end": {
@@ -331,15 +318,12 @@
                     "type": "string"
                 },
                 "groupTemplate": {
-                    "description": "<semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target=\"_blank\">Template</semantic-link> for the groups contents.\nThe variables that available in the template are following:\n<pre>\n{\n     className?: string;\n     content: string;\n     id: string;\n     style?: string;\n     subgroupOrder?: string;\n     title?: string;\n     visible?: boolean;\n     nestedGroups?: string[];\n     showNested?: boolean;\n}\n</pre>",
+                    "description": "<semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target=\"_blank\">Template</semantic-link> for the groups contents.\nThe variables that available in the template are following:\n<pre>\n{\n    className?: string;\n    content: string;\n    id: string;\n    style?: string;\n    subgroupOrder?: string;\n    title?: string;\n    visible?: boolean;\n    nestedGroups?: string[];\n    showNested?: boolean;\n}\n</pre>",
                     "type": "string"
                 },
                 "height": {
-                    "description": "The height of the timeline in pixels or as a percentage. When height is undefined or null, the height of the timeline is automatically adjusted to fit the contents. It is possible to set a maximum height using option maxHeight to prevent the timeline from getting too high in case of automatically calculated height.",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
+                    "$ref": "#/definitions/vis.IdType",
+                    "description": "The height of the timeline in pixels or as a percentage. When height is undefined or null, the height of the timeline is automatically adjusted to fit the contents. It is possible to set a maximum height using option maxHeight to prevent the timeline from getting too high in case of automatically calculated height."
                 },
                 "hiddenDates": {
                     "anyOf": [
@@ -393,11 +377,8 @@
                     "type": "string"
                 },
                 "maxHeight": {
-                    "description": "Specifies the maximum height for the Timeline.",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
+                    "$ref": "#/definitions/vis.IdType",
+                    "description": "Specifies the maximum height for the Timeline."
                 },
                 "maxMinorChars": {
                     "description": "Specifies the maximum number of characters that should fit in minor grid labels. If larger, less and wider grids will be drawn.",
@@ -408,11 +389,8 @@
                     "type": "string"
                 },
                 "minHeight": {
-                    "description": "Specifies the minimum height for the Timeline.",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
+                    "$ref": "#/definitions/vis.IdType",
+                    "description": "Specifies the minimum height for the Timeline."
                 },
                 "moveable": {
                     "description": "Specifies whether the Timeline can be moved and zoomed by dragging the window.",
@@ -500,11 +478,8 @@
                     "type": "boolean"
                 },
                 "width": {
-                    "description": "The width of the timeline in pixels or as a percentage.",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
+                    "$ref": "#/definitions/vis.IdType",
+                    "description": "The width of the timeline in pixels or as a percentage."
                 },
                 "zoomKey": {
                     "$ref": "#/definitions/TimelineZoomKey",
@@ -681,6 +656,28 @@
                 "metaKey"
             ],
             "type": "string"
+        },
+        "vis.IdType": {
+            "type": [
+                "string",
+                "number"
+            ]
+        },
+        "vis.TimelineOptionsDataAttributesType": {
+            "anyOf": [
+                {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                {
+                    "type": [
+                        "string",
+                        "boolean"
+                    ]
+                }
+            ]
         }
     },
     "properties": {

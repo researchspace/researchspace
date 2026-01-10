@@ -1,0 +1,38 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix ex: <http://example.org/ns#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:ServiceB a ephedra:Service ;
+   rdfs:label "Service B Descriptor" ;
+   ephedra:serviceURL "http://localhost:18089/rdf4j-server/repositories/service-b" ;
+   ephedra:httpMethod "GET" ;
+   
+   spin:constraint [
+      a spl:Argument ;
+      spl:predicate ex:_id ;
+      spl:valueType xsd:string 
+   ] ;
+   
+   spin:column [
+      a spin:Column ;
+      spl:predicate ex:_city ;
+      spl:valueType xsd:string ;
+      ephedra:jsonPath "$.city" 
+   ] ;
+   
+   ephedra:hasSPARQLPattern (
+      [
+         sp:subject ex:_results ;
+         sp:predicate ex:hasId ;
+         sp:object ex:_id
+      ]
+      [
+         sp:subject ex:_results ;
+         sp:predicate ex:hasCity ;
+         sp:object ex:_city
+      ]
+   ) .

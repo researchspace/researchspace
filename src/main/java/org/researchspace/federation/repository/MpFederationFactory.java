@@ -19,6 +19,7 @@
 
 package org.researchspace.federation.repository;
 
+import org.eclipse.rdf4j.federated.FedXConfig;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
 import org.eclipse.rdf4j.sail.config.SailFactory;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
@@ -53,11 +54,17 @@ public class MpFederationFactory implements SailFactory {
             throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
         }
         MpFederationConfig config = (MpFederationConfig) originalConfig;
-        MpFederation result = new MpFederation(config.getDefaultMember(), config.getRepositoryIDMappings());
-        result.setUseAsyncParallelJoin(config.isUseAsyncParallelJoin());
-        result.setUseBoundJoin(config.isUseBoundJoin());
-        result.setUseCompetingJoin(config.isUseCompetingJoin());
+        FedXConfig fedXConfig = new FedXConfig();
+        
+        // Map legacy config to FedX config
+        fedXConfig.withEnableServiceAsBoundJoin(config.isUseBoundJoin());
+        
+        // Note: useAsyncParallelJoin and useCompetingJoin are not directly mapped as FedX handles these differently.
+        // FedX is async by default. Competing join is replaced by FedX's optimizer.
+        
+        MpFederation result = new MpFederation(config.getDefaultMember(), config.getRepositoryIDMappings(), fedXConfig);
         result.setEnableQueryHints(config.isEnableQueryHints());
+        
         return result;
     }
 

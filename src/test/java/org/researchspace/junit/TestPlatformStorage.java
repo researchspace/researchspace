@@ -39,7 +39,12 @@ public class TestPlatformStorage implements PlatformStorage {
 
     public TestPlatformStorage() {
         storages.put(STORAGE_ID, new InMemoryStorage());
-        searchOrder = ImmutableList.of(STORAGE_ID);
+        searchOrder = new ArrayList<>(ImmutableList.of(STORAGE_ID));
+    }
+
+    public void addStorage(String id, ObjectStorage storage) {
+        storages.put(id, storage);
+        searchOrder.add(id);
     }
 
     public ObjectStorage getMainStorage() {

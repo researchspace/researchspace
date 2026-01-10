@@ -58,7 +58,7 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.Create;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
-import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
 import org.eclipse.rdf4j.sail.SailException;
 import org.glassfish.jersey.client.ClientProperties;
@@ -250,11 +250,12 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
             }
         }
 
+
         return mapBindingSet;
     }
 
     @Override
-    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
+    protected CloseableIteration<? extends BindingSet> executeAndConvertResultsToBindingSet(
             ServiceParametersHolder parametersHolder) {
         Response response = submit(parametersHolder);
         if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
@@ -262,8 +263,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
                     + response.getStatusInfo().getReasonPhrase());
         }
         InputStream resultStream = (InputStream) response.getEntity();
-        return new CollectionIteration<BindingSet, QueryEvaluationException>(
-                convertResult2BindingSets(resultStream, parametersHolder));
+        return new CloseableIteratorIteration<BindingSet>(
+                convertResult2BindingSets(resultStream, parametersHolder).iterator());
     }
 
     protected Response submit(ServiceParametersHolder parametersHolder) {
@@ -286,6 +287,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
                 String value = parametersHolder.getInputParameters().get(param);
                 url = url.replace("{"+param+"}", value);
             }
+            
+
          
             // Create request
             WebTarget targetResource = this.client.target(url)
@@ -458,6 +461,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
         
         return res;
     }
+
+
 
     /**
      * 

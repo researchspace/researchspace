@@ -49,6 +49,10 @@ public class MpRepositoryVocabulary {
      * Default namespace for the instance URIs of federation members.
      */
     public static final String FEDERATION_MEMBER_NAMESPACE = "http://www.researchspace.org/resource/system/repository/federation#";
+    
+    public static final IRI FEDERATION_MEMBER = VF.createIRI("http://www.openrdf.org/config/sail/federation#member");
+    
+    public static final IRI LEGACY_REPOSITORY_ID = VF.createIRI("http://www.openrdf.org/config/repository#repositoryID");
 
     /**
      * Namespace for the common configuration properties of custom services.

@@ -79,7 +79,7 @@ public class VirtuosoWrapperRepository extends RepositoryWrapper {
     }
 
     @Override
-    public void initialize() {
+    public void init() {
 
     }
 

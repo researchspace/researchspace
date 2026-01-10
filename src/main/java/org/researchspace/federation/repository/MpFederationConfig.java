@@ -36,7 +36,7 @@ import org.eclipse.rdf4j.model.util.ModelException;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.sail.config.AbstractSailImplConfig;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
-import org.eclipse.rdf4j.sail.federation.config.FederationConfig;
+
 import org.researchspace.repository.MpDelegatingImplConfig;
 import org.researchspace.repository.MpRepositoryVocabulary;
 
@@ -160,7 +160,7 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
         Resource res = super.export(model);
         for (MpFederationMemberConfig config : memberConfigs) {
             Resource node = config.export(model);
-            model.add(res, FederationConfig.MEMBER, node);
+            model.add(res, org.eclipse.rdf4j.model.impl.SimpleValueFactory.getInstance().createIRI("http://www.openrdf.org/config/sail/federation#member"), node);
         }
         if (this.getDefaultMember() != null) {
             model.add(res, MpRepositoryVocabulary.DEFAULT_MEMBER,
@@ -191,7 +191,7 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.DEFAULT_MEMBER, null))
                 .ifPresent(lit -> setDefaultMember(lit.stringValue()));
 
-        Models.objectResources(model.filter(implNode, FederationConfig.MEMBER, null)).forEach(node -> {
+        Models.objectResources(model.filter(implNode, org.eclipse.rdf4j.model.impl.SimpleValueFactory.getInstance().createIRI("http://www.openrdf.org/config/sail/federation#member"), null)).forEach(node -> {
             MpFederationMemberConfig conf = new MpFederationMemberConfig();
             conf.parse(model, node);
             memberConfigs.add(conf);

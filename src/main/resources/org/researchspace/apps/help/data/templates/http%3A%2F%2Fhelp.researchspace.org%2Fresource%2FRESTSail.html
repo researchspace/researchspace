@@ -95,24 +95,29 @@
     For more information on the configuration file and the properties available, 
     refer to the <semantic-link iri="[[resolvePrefix 'Help:RepositoryManager']]" class="text-link-action" target="_blank">Repository manager guide</semantic-link>.</p>
 
+    <div class="alert alert-info">
+      <strong>Note:</strong> Starting with RDF4J 5.0, the configuration vocabulary has changed. 
+      The old vocabulary (<code>http://www.openrdf.org/config/repository#</code>) is still supported 
+      for backward compatibility but is deprecated. New configurations should use the new vocabulary 
+      (<code>tag:rdf4j.org,2023:config/repository#</code>).
+    </div>
+
     <p>The following Turtle code shows the Library Cloud configuration file content.</p>
 
     <mp-code-block mode='text/turtle'>
     <![CDATA[
-@prefix repo: <http://www.openrdf.org/config/repository#> .
-@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
-@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
 @prefix : <http://www.researchspace.org/resource/system/repository#> .
 
-[] a repo:Repository ;
-  repo:repositoryID "librarycloud" ;
+[] a config:Repository ;
+  config:rep.id "librarycloud" ;
   rdfs:label "A wrapper for LibraryCloud using RESTSail repository" ;
-  repo:repositoryImpl [
-    repo:repositoryType "openrdf:SailRepository" ;
-    sr:sailImpl [
-      sail:sailType "researchspace:RESTSail" ;
+  config:rep.impl [
+    config:rep.type "openrdf:SailRepository" ;
+    config:sail.impl [
+      config:sail.type "researchspace:RESTSail" ;
       ephedra:serviceURL "https://api.lib.harvard.edu/v2/items.json" ;
       ephedra:httpMethod "GET" ;
       ephedra:implementsService :LibraryCloud

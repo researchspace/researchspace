@@ -28,9 +28,8 @@ import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.evaluation.QueryOptimizer;
-import org.eclipse.rdf4j.sail.federation.algebra.NaryJoin;
+import org.researchspace.federation.sparql.algebra.NaryJoin;
 import org.researchspace.federation.sparql.FederationSparqlAlgebraUtils;
-import org.researchspace.federation.sparql.SparqlAlgebraUtils;
 import org.researchspace.federation.sparql.optimizers.RemoveNodeQueryModelVisitor;
 import org.researchspace.repository.MpRepositoryVocabulary;
 
@@ -58,19 +57,19 @@ public class QueryHintsExtractor implements QueryOptimizer {
         List<StatementPattern> queryHintPatterns = FederationSparqlAlgebraUtils.extractQueryHintsPatterns(tupleExpr);
 
         for (StatementPattern hint : queryHintPatterns) {
-            if (SparqlAlgebraUtils.statementPatternMatches(hint, MpRepositoryVocabulary.PRIOR,
+            if (FederationSparqlAlgebraUtils.statementPatternMatches(hint, MpRepositoryVocabulary.PRIOR,
                     MpRepositoryVocabulary.EXECUTE_FIRST, BooleanLiteral.TRUE)) {
                 Optional<TupleExpr> prevNode = getPreviousJoinOperand(hint);
                 if (prevNode.isPresent()) {
                     this.toExecuteFirst.add(prevNode.get());
                 }
-            } else if (SparqlAlgebraUtils.statementPatternMatches(hint, MpRepositoryVocabulary.PRIOR,
+            } else if (FederationSparqlAlgebraUtils.statementPatternMatches(hint, MpRepositoryVocabulary.PRIOR,
                     MpRepositoryVocabulary.EXECUTE_LAST, BooleanLiteral.TRUE)) {
                 Optional<TupleExpr> prevNode = getPreviousJoinOperand(hint);
                 if (prevNode.isPresent()) {
                     this.toExecuteLast.add(prevNode.get());
                 }
-            } else if (SparqlAlgebraUtils.statementPatternMatches(hint, MpRepositoryVocabulary.QUERY,
+            } else if (FederationSparqlAlgebraUtils.statementPatternMatches(hint, MpRepositoryVocabulary.QUERY,
                     MpRepositoryVocabulary.DISABLE_JOIN_REORDERING, BooleanLiteral.TRUE)) {
                 this.disableReordering = true;
             }
@@ -87,13 +86,23 @@ public class QueryHintsExtractor implements QueryOptimizer {
     }
 
     protected Optional<TupleExpr> getPreviousJoinOperand(StatementPattern hint) {
-        if (!(hint.getParentNode() instanceof NaryJoin)) {
-            return Optional.empty();
-        }
-        NaryJoin parent = (NaryJoin) hint.getParentNode();
-        int idx = parent.getArgs().indexOf(hint);
-        if (idx > 0) {
-            return Optional.of(parent.getArg(idx - 1));
+        if (hint.getParentNode() instanceof NaryJoin) {
+            NaryJoin parent = (NaryJoin) hint.getParentNode();
+            int idx = parent.getArgs().indexOf(hint);
+            if (idx > 0) {
+                return Optional.of(parent.getArg(idx - 1));
+            }
+        } else if (hint.getParentNode() instanceof org.eclipse.rdf4j.federated.algebra.NJoin) {
+            org.eclipse.rdf4j.federated.algebra.NJoin parent = (org.eclipse.rdf4j.federated.algebra.NJoin) hint.getParentNode();
+            int idx = parent.getArgs().indexOf(hint);
+            if (idx > 0) {
+                return Optional.of(parent.getArg(idx - 1));
+            }
+        } else if (hint.getParentNode() instanceof org.eclipse.rdf4j.query.algebra.Join) {
+            org.eclipse.rdf4j.query.algebra.Join parent = (org.eclipse.rdf4j.query.algebra.Join) hint.getParentNode();
+            if (parent.getRightArg() == hint) {
+                return Optional.of(parent.getLeftArg());
+            }
         }
         return Optional.empty();
     }

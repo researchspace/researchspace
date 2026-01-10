@@ -21,18 +21,18 @@
       string ID and its type and configuration parameters are described as an RDF graph 
       using the RDF4J repository configuration 
       format (see example below). Each 
-      configuration RDF graph must include an instance of type <i>rep:Repository</i> 
+      configuration RDF graph must include an instance of type <i>config:Repository</i> 
       with the following mandatory properties:</p> 
     <ul>
-      <li><code>rep:repositoryID</code>: the ID of the repository.</li>
+      <li><code>config:rep.id</code>: the ID of the repository.</li>
       <li><code>rdfs:label</code>: a human-readable description of the repository. </li>
-      <li><code>rep:repositoryImpl</code>: a link to the <i>repository 
+      <li><code>config:rep.impl</code>: a link to the <i>repository 
         implementation resource</i> defining the specific implementation of the 
         concrete repository type.</li>
     </ul>
     <p>The repository implementation resource, in turn, must have one mandatory property:</p>
     <ul>
-      <li><code>rep:repositoryType</code>: A string identifier of the specific 
+      <li><code>config:rep.type</code>: A string identifier of the specific 
         implementation type of the repository (e.g., a SPARQL endpoint or a native 
         RDF4J repository storing data locally on disk).</li>
     </ul>
@@ -40,19 +40,26 @@
       are required: for example, for a SPARQL endpoint one has to specify 
       the URL of the query endpoint, for a native RDF4J repository one has to 
       include the types of statement indices, etc.</p>
+    
+    <div class="alert alert-info">
+      <strong>Note:</strong> Starting with RDF4J 5.0, the configuration vocabulary has changed. 
+      The old vocabulary (<code>http://www.openrdf.org/config/repository#</code>) is still supported 
+      for backward compatibility but is deprecated. New configurations should use the new vocabulary 
+      (<code>tag:rdf4j.org,2023:config/repository#</code>).
+    </div>
+
     <mp-code-block mode="text/turtle">
     <![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
 
-[] a rep:Repository ;
-  rep:repositoryID "default" ;
+[] a config:Repository ;
+  config:rep.id "default" ;
 	rdfs:label "Default HTTP SPARQL Repository" ;
-	rep:repositoryImpl [
-		rep:repositoryType "researchspace:SPARQLRepository" ;
-		sparqlr:query-endpoint <http://example.org/sparql> ;
+	config:rep.impl [
+		config:rep.type "researchspace:SPARQLRepository" ;
+		config:sparql.queryEndpoint <http://example.org/sparql> ;
 	] .
 ]]>
     </mp-code-block>
@@ -92,18 +99,17 @@
     <h3>SPARQL repository</h3>
     <p>This is probably the most common type of the repository representing a SPARQL endpoint running separately from the platform. The platform communicates with such repositories via the HTTP protocol. In the ResearchSpace platform, such repositories are described using repository type <code>researchspace:SPARQLRepository</code>.</p>
     <mp-code-block mode="text/turtle"><![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
 
-[] a rep:Repository ;
-	rep:repositoryID "default" ;
+[] a config:Repository ;
+	config:rep.id "default" ;
 	rdfs:label "Default HTTP SPARQL Repository" ;
-	rep:repositoryImpl [
-		rep:repositoryType "researchspace:SPARQLRepository" ;
-		sparqlr:query-endpoint <http://example.org/sparql> ; # Endpoint to send SPARQL queries to.
-		sparqlr:update-endpoint <http://example.org/update> ; # Update endpoint (optional - only if different from the query endpoint)
+	config:rep.impl [
+		config:rep.type "researchspace:SPARQLRepository" ;
+		config:sparql.queryEndpoint <http://example.org/sparql> ; # Endpoint to send SPARQL queries to.
+		config:sparql.updateEndpoint <http://example.org/update> ; # Update endpoint (optional - only if different from the query endpoint)
 		mph:quadMode true ; # Flag determining whether the requests for statements should retrieve triples <subj, pred, obj> or quads <subj, pred, obj, named_graph>
 	] .
 ]]>
@@ -143,20 +149,17 @@
     
     <mp-code-block mode="text/turtle"><![CDATA[
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-@prefix rep: <http://www.openrdf.org/config/repository#>.
-@prefix sr: <http://www.openrdf.org/config/repository/sail#>.
-@prefix sail: <http://www.openrdf.org/config/sail#>.
-@prefix ns: <http://www.openrdf.org/config/sail/native#>.
+@prefix config: <tag:rdf4j.org,2023:config/> .
 
-[] a rep:Repository ;
-  rep:repositoryID "default" ; # Replace with your repository ID
+[] a config:Repository ;
+  config:rep.id "default" ; # Replace with your repository ID
   rdfs:label "Native store" ; 
-  rep:repositoryImpl [
-    rep:repositoryType "openrdf:SailRepository" ;
-    sr:sailImpl [
-      sail:sailType "openrdf:NativeStore" ;
-      sail:iterationCacheSyncThreshold "0"; # Threshold for syncing query evaluation iteration caches to disk
-      ns:tripleIndexes "spoc,posc" # Triple indices
+  config:rep.impl [
+    config:rep.type "openrdf:SailRepository" ;
+    config:sail.impl [
+      config:sail.type "openrdf:NativeStore" ;
+      config:native.iterationCacheSyncThreshold "0"; # Threshold for syncing query evaluation iteration caches to disk
+      config:native.tripleIndexes "spoc,posc" # Triple indices
     ]
   ].
 ]]>
@@ -175,17 +178,16 @@
       While it is a special case of a SPARQL repository, it requires its own special 
       handling for data loading operations. </p>
     <mp-code-block mode="text/turtle"><![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
 
-[] a rep:Repository ;
-  rep:repositoryID "default" ; # Replace with your repository ID
+[] a config:Repository ;
+  config:rep.id "default" ; # Replace with your repository ID
   rdfs:label "Amazon Neptune repository" ;
-  rep:repositoryImpl [
-    rep:repositoryType "researchspace:NeptuneSPARQLRepository" ;
-    sparqlr:query-endpoint <http://example.org/query> ;
+  config:rep.impl [
+    config:rep.type "researchspace:NeptuneSPARQLRepository" ;
+    config:sparql.queryEndpoint <http://example.org/query> ;
     mph:neptuneDataLoaderUrl <http://example.org/loader>; # Data loader endpoint to be used for bulk loading of the data from an S3 bucket.
     mph:quadMode "true"
   ].
@@ -199,29 +201,25 @@
     queries over several repositories registered in the Repository Manager.
     <mp-code-block mode='text/turtle'>
     <![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
-@prefix sail: <http://www.openrdf.org/config/sail#> .
-@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
 @prefix mps: <http://www.researchspace.org/resource/system/service#> .
 @prefix mpf: <http://www.researchspace.org/resource/system/repository/federation#> .
-@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
 
-[] a rep:Repository ;
-    rep:repositoryID "ephedra" ;
+[] a config:Repository ;
+    config:rep.id "ephedra" ;
     rdfs:label "Local Ephedra federation" ;
-    rep:repositoryImpl [
-      rep:repositoryType "researchspace:FederationSailRepository" ;
-      sr:sailImpl [
-          sail:sailType "researchspace:Federation" ;
+    config:rep.impl [
+      config:rep.type "researchspace:FederationSailRepository" ;
+      config:sail.impl [
+          config:sail.type "researchspace:Federation" ;
           mph:defaultMember "default" # Repository ID of the default member of the federation
-          fedsail:member [
+          config:fed.member [
             mph:delegateRepositoryID "{%Repository ID of the federation member|wikidata-text%}" ;
             mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:wikidata-text%}
           ] ;
-          fedsail:member [
+          config:fed.member [
             mph:delegateRepositoryID "{%Repository ID of the federation member|assets%}" ;
             mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:assets%}
           ] 
@@ -249,16 +247,15 @@
     
     <mp-code-block mode="text/turtle">
     <![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
 
-[] a rep:Repository ;
-  rep:repositoryID "default" ;
+[] a config:Repository ;
+  config:rep.id "default" ;
   rdfs:label "Test Virtuoso SPARQL repository wrapper" ;
-  rep:repositoryImpl [ 
-    rep:repositoryType "researchspace:VirtuosoWrapperRepository" ;
+  config:rep.impl [ 
+    config:rep.type "researchspace:VirtuosoWrapperRepository" ;
     mph:delegateRepositoryID "{Virtuoso Repository ID}" ;
   ] .
       ]]>

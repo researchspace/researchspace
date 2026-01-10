@@ -25,7 +25,6 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Literals;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.eclipse.rdf4j.query.parser.sparql.SPARQLUtil;
 import org.eclipse.rdf4j.queryrender.RenderUtils;
 
 class MpSparqlQueryRendererUtils {
@@ -47,7 +46,7 @@ class MpSparqlQueryRendererUtils {
         } else if (value instanceof Literal) {
             Literal lit = (Literal) value;
 
-            builder.append("\"").append(SPARQLUtil.encodeString(lit.stringValue())).append("\"");
+            builder.append("\"").append(encodeString(lit.stringValue())).append("\"");
             if (Literals.isLanguageLiteral(lit)) {
                 builder.append("@").append(lit.getLanguage().get());
             } else if (lit.getDatatype().equals(XMLSchema.STRING) && !explicitDatatype) {
@@ -57,6 +56,14 @@ class MpSparqlQueryRendererUtils {
                 builder.append("^^<").append(lit.getDatatype().stringValue()).append(">");
             }
         }
+    }
+
+    private static String encodeString(String s) {
+        s = s.replace("\\", "\\\\");
+        s = s.replace("\"", "\\\"");
+        s = s.replace("\n", "\\n");
+        s = s.replace("\r", "\\r");
+        return s;
     }
 
 }

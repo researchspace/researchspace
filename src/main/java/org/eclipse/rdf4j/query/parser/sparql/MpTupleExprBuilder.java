@@ -349,12 +349,12 @@ public class MpTupleExprBuilder extends TupleExprBuilder {
                             }
                         }
                     } else {
-                        if (!groupNames.contains(elem.getTargetName())) {
+                        if (!groupNames.contains(elem.getProjectionAlias().orElse(elem.getName()))) {
                             throw new VisitorException(
-                                    "variable '" + elem.getTargetName() + "' in projection not present in GROUP BY.");
-                        } else if (!groupNames.contains(elem.getSourceName())) {
+                                    "variable '" + elem.getProjectionAlias().orElse(elem.getName()) + "' in projection not present in GROUP BY.");
+                        } else if (!groupNames.contains(elem.getName())) {
                             throw new VisitorException(
-                                    "variable '" + elem.getSourceName() + "' in projection not present in GROUP BY.");
+                                    "variable '" + elem.getName() + "' in projection not present in GROUP BY.");
 
                         }
                     }

@@ -23,24 +23,18 @@ import org.eclipse.rdf4j.query.algebra.AbstractAggregateOperator;
 import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
 import org.eclipse.rdf4j.query.algebra.ValueExpr;
 
-/**
- * A {@link ValueExpr} implementation for the service call aggregates.
- * 
- * @author Andriy Nikolov an@metaphacts.com
- *
- */
 public class ServiceCallAggregate extends AbstractAggregateOperator {
 
-    private static final long serialVersionUID = -2260474333050730277L;
-    protected String uri;
+    private static final long serialVersionUID = 1L;
+    private String serviceUri;
 
-    public ServiceCallAggregate(String uri, ValueExpr arg) {
+    public ServiceCallAggregate(String serviceUri, ValueExpr arg) {
         super(arg);
-        this.setURI(uri);
+        this.serviceUri = serviceUri;
     }
 
-    public ServiceCallAggregate(String uri, ValueExpr arg, boolean distinct) {
-        super(arg, distinct);
+    public String getServiceUri() {
+        return serviceUri;
     }
 
     @Override
@@ -48,12 +42,21 @@ public class ServiceCallAggregate extends AbstractAggregateOperator {
         visitor.meetOther(this);
     }
 
-    public String getURI() {
-        return uri;
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof ServiceCallAggregate && super.equals(other)) {
+            return serviceUri.equals(((ServiceCallAggregate) other).serviceUri);
+        }
+        return false;
     }
 
-    public void setURI(String uri) {
-        this.uri = uri;
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ serviceUri.hashCode();
     }
 
+    @Override
+    public ServiceCallAggregate clone() {
+        return (ServiceCallAggregate) super.clone();
+    }
 }

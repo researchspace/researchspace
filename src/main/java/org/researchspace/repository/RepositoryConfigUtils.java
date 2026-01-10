@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -49,7 +50,7 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.eclipse.rdf4j.sail.config.SailConfigSchema;
-import org.eclipse.rdf4j.sail.federation.config.FederationConfig;
+
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.ObjectRecord;
@@ -81,8 +82,34 @@ public class RepositoryConfigUtils {
      * @throws RepositoryConfigException If the supplied graph can not be converted
      *                                   into a VALID {@link RepositoryConfig}
      */
+    private static final String CONFIG_NAMESPACE = "tag:rdf4j.org,2023:config/";
+    private static final IRI NEW_REPOSITORY_ID = SimpleValueFactory.getInstance().createIRI(CONFIG_NAMESPACE, "rep.id");
+    private static final IRI LEGACY_REPOSITORY_ID = SimpleValueFactory.getInstance()
+            .createIRI("http://www.openrdf.org/config/repository#repositoryID");
+
+    /**
+     * Tries to convert an RDF graph i.e. the specified {@link Model} into a
+     * {@link RepositoryConfig} object.
+     *
+     * @param model
+     * @return
+     * @throws RepositoryConfigException If the supplied graph can not be converted
+     *                                   into a VALID {@link RepositoryConfig}
+     */
     public static RepositoryConfig createRepositoryConfig(Model model) throws RepositoryConfigException {
-        Model idStmt = model.filter(null, RepositoryConfigSchema.REPOSITORYID, null);
+        // Try new vocabulary first
+        Model idStmt = model.filter(null, NEW_REPOSITORY_ID, null);
+        
+        // Fallback to deprecated RepositoryConfigSchema (likely old vocabulary)
+        if (idStmt.isEmpty()) {
+             idStmt = model.filter(null, RepositoryConfigSchema.REPOSITORYID, null);
+        }
+        
+        // Fallback to explicit legacy vocabulary
+        if (idStmt.isEmpty()) {
+            idStmt = model.filter(null, LEGACY_REPOSITORY_ID, null);
+        }
+        
         Optional<Resource> repositoryNode = Models.subject(idStmt);
 
         if (idStmt.size() != 1 || !repositoryNode.isPresent()) {
@@ -255,10 +282,11 @@ public class RepositoryConfigUtils {
 
     private static void writeModelAsPrettyTurtleOutputStream(OutputStream os, Model model) {
         Map<String, String> prefixes = ImmutableMap.<String, String>builder()
+                .put("config", CONFIG_NAMESPACE)
                 .put("rep", RepositoryConfigSchema.NAMESPACE).put("sail", SailConfigSchema.NAMESPACE)
                 .put("sr", SailRepositorySchema.NAMESPACE).put("rdfs", RDFS.NAMESPACE)
                 .put("mph", MpRepositoryVocabulary.NAMESPACE)
-                .put("ephedra", MpRepositoryVocabulary.FEDERATION_NAMESPACE).put("fedsail", FederationConfig.NAMESPACE)
+                .put("ephedra", MpRepositoryVocabulary.FEDERATION_NAMESPACE).put("fedsail", "http://www.openrdf.org/config/sail/federation#")
                 .put("sparqlr", SPARQLRepositoryConfig.NAMESPACE).build();
         for (Entry<String, String> e : prefixes.entrySet()) {
             model.setNamespace(e.getKey(), e.getValue());
@@ -297,6 +325,7 @@ public class RepositoryConfigUtils {
                 String fileNameId = getRepositoryIdFromPath(configFile.getPath());
                 Model model = readTurtleRepositoryConfigFile(configFile);
                 RepositoryConfig repConfig = createRepositoryConfig(model);
+                
                 if (!normalizeRepositoryConfigId(fileNameId).equals(fileNameId)) {
                     throw new RepositoryConfigException(String.format(
                             "File name of repository configuration file \"%s\" contains characters that are not permitted. Please use only alpha-numerical characters.",

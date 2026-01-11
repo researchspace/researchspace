@@ -60,14 +60,20 @@ interface State {
 export class ResourceLink extends Component<ResourceLinkProps, State> {
   constructor(props: ResourceLinkProps, context: any) {
     super(props, context);
-    this.state = {
-      url: construcUrlForResourceSync(
-        this.props.resource,
-        this.props.params,
-        this.getRepository(),
-        this.props.fragment
-      ),
-    };
+    if (this.props.resource && this.props.resource.value) {
+      this.state = {
+        url: construcUrlForResourceSync(
+          this.props.resource,
+          this.props.params,
+          this.getRepository(),
+          this.props.fragment
+        ),
+      };
+    } else {
+      this.state = {
+        url: undefined
+      };
+    }
   }
 
   static defaultProps = {
@@ -75,14 +81,31 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
   };
 
   componentDidMount() {
-    this.setState({
-      url: constructUrlForResource(this.props.resource, this.props.params, this.getRepository(), this.props.fragment),
-    });
+    if (this.props.resource && this.props.resource.value) {
+      this.setState({
+        url: constructUrlForResource(this.props.resource, this.props.params, this.getRepository(), this.props.fragment),
+      });
+    }
   }
 
   public render() {
     const { title, className, activeClassName, style, resource, draggable, target } = this.props;
     const { url } = this.state;
+
+    // It doesn't make sense to render a link without a resource
+    // so it shouldn't ever happen. We have this check here just to make sure that
+    // the template doesn't crash, because it actually happens time to time
+    if (!resource || !resource.value || !url) {
+      console.warn('ResourceLink: resource is undefined or null', this.props);
+      // Render a plain anchor without href if resource is missing
+      return D.a({
+        className,
+        style,
+        title,
+        draggable: false
+      }, this.props.children);
+    }
+
     const props = {
       href: url.toString(),
       title: title,
@@ -125,6 +148,9 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
 
   private isLinkActive = () => {
     const { resource, params } = this.props;
+    if (!resource || !resource.value) {
+      return false;
+    }
     const urlParams = assign({}, params);
     if (!_.isUndefined(this.props.action)) {
       urlParams['action'] = ResourceLinkAction[this.props.action];

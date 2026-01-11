@@ -257,6 +257,10 @@
         fedx:member [
             fedx:store "SPARQLEndpoint" ;
             sd:endpoint "https://query.wikidata.org/sparql"
+        ] ;
+        fedx:member [
+            fedx:store "SPARQLEndpoint" ;
+            sd:endpoint "https://artresearch.net/sparql"
         ]
     ] .
     ]]>
@@ -317,7 +321,7 @@
     </mp-code-block>
 
     <p>
-      This configuration enables complex federated workflows. For example, the "Import from OSM" feature in ResearchSpace typically requires multiple separate queries: one to search Nominatim, and others to fetch details from Wikidata. With the <code>wikidata-ephedra</code> setup, this can be achieved in a <strong>single federated query</strong>:
+      This configuration enables complex federated workflows. For example, you can search for a place using Nominatim, get its details from Wikidata, and then find artworks located in that place from ArtResearch.net (which uses CIDOC-CRM) - all in a <strong>single federated query</strong>:
     </p>
 
     <mp-code-block mode="application/sparql-query">
@@ -325,8 +329,9 @@
 PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
 PREFIX wdt: <http://www.wikidata.org/prop/direct/>
 PREFIX schema: <http://schema.org/>
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
 
-SELECT ?placeName ?wikidataId ?description ?image WHERE {
+SELECT ?placeName ?wikidataId ?description ?pharosPlaceLabel WHERE {
   # 1. Search for "Venice" using Nominatim Service (via Ephedra)
   SERVICE <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService> {
     ?place osm:q "Venice" ;
@@ -337,12 +342,21 @@ SELECT ?placeName ?wikidataId ?description ?image WHERE {
   # 2. Convert the Wikidata ID string (e.g., "Q641") to an IRI
   BIND(IRI(CONCAT("http://www.wikidata.org/entity/", ?wikidataId)) AS ?wikidataEntity)
 
-  # 3. Query Wikidata (via FedX default member) for description and image
-  ?wikidataEntity schema:description ?description .
+  # 3. Query Wikidata (via FedX) for description and TGN ID (P1667)
+  ?wikidataEntity schema:description ?description ;
+                  wdt:P1667 ?tgnId .
   FILTER(LANG(?description) = "en")
+
+  # 4. Construct TGN URI
+  BIND(IRI(CONCAT("http://vocab.getty.edu/tgn/", ?tgnId)) AS ?tgnUri)
   
-  OPTIONAL { ?wikidataEntity wdt:P18 ?image . }
-}
+  # 5. Query ArtResearch.net (via FedX) for label that is used there for Venice
+  {
+    ?tgnUri <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?id. 
+    ?id <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <https://artresearch.net/resource/pharos/vocab/meta/pharos_preferred_name> . 
+    ?id <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?pharosPlaceLabel .
+  }
+} LIMIT 10
     ]]>
     </mp-code-block>
 

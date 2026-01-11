@@ -161,7 +161,7 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
     // Request current state from AppState after map is created
     // This ensures we get any URL state that was already parsed
     setTimeout(() => {
-      console.log('SemanticMap: Requesting current state from AppState');
+      // console.log('SemanticMap: Requesting current state from AppState');
       this.requestCurrentState();
     }, 100);
   }
@@ -506,10 +506,10 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
     
     // Check if we have stored state from URL that needs to be applied
     if (this.state.currentExtent || this.state.currentZoom) {
-      console.log('SemanticMap: Applying stored state from URL:', {
-        extent: this.state.currentExtent,
-        zoom: this.state.currentZoom
-      });
+      // console.log('SemanticMap: Applying stored state from URL:', {
+      //   extent: this.state.currentExtent,
+      //   zoom: this.state.currentZoom
+      // });
       this.applyMapState({
         currentExtent: this.state.currentExtent,
         currentZoom: this.state.currentZoom
@@ -547,7 +547,7 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
         currentZoom: roundedZoom
       });
       
-      console.log('SemanticMap: Updated extent/zoom:', { extent: roundedExtent, zoom: roundedZoom });
+      // console.log('SemanticMap: Updated extent/zoom:', { extent: roundedExtent, zoom: roundedZoom });
     });
   };
 
@@ -560,18 +560,18 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
       return;
     }
 
-    console.log('SemanticMap: Received shared state sync:', syncedState);
-    console.log('SemanticMap: Current map state:', { 
-      mapExists: !!this.map, 
-      currentState: this.state
-    });
+    // console.log('SemanticMap: Received shared state sync:', syncedState);
+    // console.log('SemanticMap: Current map state:', { 
+    //   mapExists: !!this.map, 
+    //   currentState: this.state
+    // });
     
     // Parse extent if it's a string (from URL parameters)
     let parsedExtent = syncedState.currentExtent;
     if (typeof parsedExtent === 'string') {
       try {
         parsedExtent = JSON.parse(parsedExtent);
-        console.log('SemanticMap: Parsed extent from string:', parsedExtent);
+        // console.log('SemanticMap: Parsed extent from string:', parsedExtent);
       } catch (e) {
         console.error('SemanticMap: Failed to parse extent string:', parsedExtent, e);
         parsedExtent = undefined;
@@ -584,7 +584,7 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
         currentExtent: parsedExtent,
         currentZoom: syncedState.currentZoom
       }, () => {
-        console.log('SemanticMap: State updated:', this.state);
+        // console.log('SemanticMap: State updated:', this.state);
         
         // If map is ready, apply immediately
         if (this.map) {
@@ -593,7 +593,7 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
             currentZoom: syncedState.currentZoom
           });
         } else {
-          console.log('SemanticMap: Map not ready yet, state will be applied when ready');
+          // console.log('SemanticMap: Map not ready yet, state will be applied when ready');
         }
       });
     }
@@ -605,12 +605,12 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
   private applyMapState = (state: any) => {
     
     if (!this.map) {
-      console.log('SemanticMap: applyMapState - map not available');
+      // console.log('SemanticMap: applyMapState - map not available');
       return;
     }
     
     if (!state) {
-      console.log('SemanticMap: applyMapState - no state provided');
+      // console.log('SemanticMap: applyMapState - no state provided');
       return;
     }
 

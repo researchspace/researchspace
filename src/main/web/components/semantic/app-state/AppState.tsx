@@ -212,7 +212,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
    */
   private handleComponentRegistration = (event: any) => {
     const registration: ComponentStateRegistration = event.data;
-    console.log('AppState: Registering component', registration.componentId, 'with shared vars:', registration.sharedStateVars);
+    // console.log('AppState: Registering component', registration.componentId, 'with shared vars:', registration.sharedStateVars);
 
     this.setState(prevState => {
       const newRegistry = {
@@ -240,7 +240,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
    */
   private handleComponentUnregistration = (event: any) => {
     const componentId: string = event.data;
-    console.log('AppState: Unregistering component', componentId);
+    // console.log('AppState: Unregistering component', componentId);
 
     this.setState(prevState => {
       const newRegistry = { ...prevState.componentRegistry };
@@ -326,7 +326,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
     // Check for backend state ID first
     if (stateId && this.props.storageMode === 'backend') {
       try {
-        console.log('AppState: Loading state from backend with ID:', stateId);
+        // console.log('AppState: Loading state from backend with ID:', stateId);
         
         // Load state from backend
         const response = await fetch(`/rest/app-state/load/${stateId}`, {
@@ -342,14 +342,14 @@ export class AppState extends Component<AppStateProps, AppStateState> {
         }
 
         const stateData = await response.json();
-        console.log('AppState: Raw state data from backend:', stateData);
+        // console.log('AppState: Raw state data from backend:', stateData);
         
         // Parse the states JSON string
         const parsedStates = typeof stateData.states === 'string' 
           ? JSON.parse(stateData.states) 
           : stateData.states;
         
-        console.log('AppState: Loaded states from backend:', parsedStates);
+        // console.log('AppState: Loaded states from backend:', parsedStates);
 
         // Update global state
         this.setState({
@@ -378,7 +378,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
         const decodedStates = decodeURIComponent(statesParam);
         const parsedStates = this.parseStatesString(decodedStates);
         
-        console.log('AppState: Parsed states from URL:', parsedStates);
+        // console.log('AppState: Parsed states from URL:', parsedStates);
 
         // Update global state
         this.setState({
@@ -417,10 +417,10 @@ export class AppState extends Component<AppStateProps, AppStateState> {
         const decodedJson = decodeURIComponent(atob(stateString));
         const stateObj = JSON.parse(decodedJson);
         result[componentId] = stateObj;
-        console.log(`AppState: Decoded base64 state for ${componentId}:`, stateObj);
+        // console.log(`AppState: Decoded base64 state for ${componentId}:`, stateObj);
       } catch (e) {
         // Fallback to legacy format parsing
-        console.log(`AppState: Falling back to legacy format for ${componentId}`);
+        // console.log(`AppState: Falling back to legacy format for ${componentId}`);
         
         // Remove surrounding braces
         const cleanStateString = stateString.replace(/^\{|\}$/g, '');
@@ -463,7 +463,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
       
       // Update URL without triggering page reload
       window.history.replaceState({}, '', url.toString());
-      console.log('AppState: Updated URL with states:', statesString);
+      // console.log('AppState: Updated URL with states:', statesString);
     }
   };
 
@@ -493,7 +493,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
     const componentState = this.state.globalSharedState[componentId];
     if (!componentState) return;
 
-    console.log('AppState: Syncing state to component', componentId, ':', componentState);
+    // console.log('AppState: Syncing state to component', componentId, ':', componentState);
     
     trigger({
       eventType: APP_STATE_SYNC_STATE_TO_COMPONENT,
@@ -514,7 +514,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
       
       if (this.props.storageMode === 'backend') {
         // Backend mode: Save state to backend and create URL with state ID
-        console.log('AppState: Saving state to backend');
+        // console.log('AppState: Saving state to backend');
         
         const stateData = {
           pageUrl: window.location.pathname + window.location.search,
@@ -538,7 +538,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
         const result = await response.json();
         const stateId = result.stateId;
         
-        console.log('AppState: State saved with ID:', stateId);
+        // console.log('AppState: State saved with ID:', stateId);
         
         // Create URL with state ID
         const currentUrl = new URL(window.location.href);
@@ -566,7 +566,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
         }
         
         const fullUrl = currentUrl.toString();
-        console.log('AppState: Full URL to shorten:', fullUrl);
+        // console.log('AppState: Full URL to shorten:', fullUrl);
 
         // Call the URL minifier service to create a short URL
         const response = await fetch(`/rest/url-minify/getShort?url=${encodeURIComponent(fullUrl)}`, {
@@ -585,7 +585,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
         shortUrl = `${window.location.origin}/l/${shortKey}`;
       }
 
-      console.log('AppState: Created shareable URL:', shortUrl);
+      // console.log('AppState: Created shareable URL:', shortUrl);
 
       // Store the URL for potential copying
       this.setState({ lastSavedUrl: shortUrl });
@@ -666,7 +666,7 @@ export class AppState extends Component<AppStateProps, AppStateState> {
 
     try {
       await navigator.clipboard.writeText(this.state.lastSavedUrl);
-      console.log('AppState: URL copied to clipboard');
+      // console.log('AppState: URL copied to clipboard');
       
       // Show copy confirmation
       addNotification({

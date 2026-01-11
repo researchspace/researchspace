@@ -103,13 +103,13 @@ export abstract class SharedStateComponent<P extends SharedStateProps, S> extend
     
     // Auto-register with AppState if shared state manager exists
     if (this.sharedStateManager) {
-      console.log(`SharedStateComponent: ${this.props.id} registering with AppState. Current state:`, this.state);
-      console.log(`SharedStateComponent: ${this.props.id} shared vars:`, this.sharedStateManager.getSharedStateVars());
+      // console.log(`SharedStateComponent: ${this.props.id} registering with AppState. Current state:`, this.state);
+      // console.log(`SharedStateComponent: ${this.props.id} shared vars:`, this.sharedStateManager.getSharedStateVars());
       this.sharedStateManager.register(this.state);
-      console.log(`SharedStateComponent: ${this.props.id} registered with AppState`);
+      // console.log(`SharedStateComponent: ${this.props.id} registered with AppState`);
     } else if (this.props.sharedStateVars) {
       // Only log warning if sharedStateVars were explicitly provided but manager creation failed
-      console.log(`SharedStateComponent: ${this.props.id} has no shared state manager - sharedStateVars:`, this.props.sharedStateVars);
+      // console.log(`SharedStateComponent: ${this.props.id} has no shared state manager - sharedStateVars:`, this.props.sharedStateVars);
     }
     // If no sharedStateVars provided, component just extends SharedStateComponent for compatibility but doesn't use shared state
   }
@@ -118,7 +118,7 @@ export abstract class SharedStateComponent<P extends SharedStateProps, S> extend
     // Auto-unregister from AppState if shared state manager exists
     if (this.sharedStateManager) {
       this.sharedStateManager.unregister();
-      console.log(`SharedStateComponent: ${this.props.id} unregistered from AppState`);
+      // console.log(`SharedStateComponent: ${this.props.id} unregistered from AppState`);
     }
     
     // Call parent componentWillUnmount if it exists
@@ -161,7 +161,7 @@ export abstract class SharedStateComponent<P extends SharedStateProps, S> extend
       return;
     }
 
-    console.log(`SharedStateComponent: ${this.props.id} received shared state sync:`, syncedState);
+    // console.log(`SharedStateComponent: ${this.props.id} received shared state sync:`, syncedState);
     
     // Smart default: automatically apply any synced state that matches component state keys
     const sharedVars = this.sharedStateManager.getSharedStateVars();
@@ -177,7 +177,7 @@ export abstract class SharedStateComponent<P extends SharedStateProps, S> extend
     });
     
     if (Object.keys(stateUpdates).length > 0) {
-      console.log(`SharedStateComponent: ${this.props.id} applying state updates:`, stateUpdates);
+      // console.log(`SharedStateComponent: ${this.props.id} applying state updates:`, stateUpdates);
       
       // Use the original setState to avoid triggering autoSyncSharedState
       super.setState(stateUpdates);

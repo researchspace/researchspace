@@ -189,21 +189,16 @@ AppState supports two storage modes to handle different use cases:
 
 When using backend storage mode:
 
-1. **Permissions**: The backend storage mode uses standard ResearchSpace page permissions rather than creating new custom permissions. This design choice ensures that:
-   - **No additional configuration needed**: Users who can already work with pages can use backend storage
-   - **Consistent security model**: Follows the existing permission patterns in ResearchSpace
-   - **Logical alignment**: Since app states are typically associated with pages/templates, using page permissions makes semantic sense
+1. **Permissions**: The backend storage mode uses the `services:url-minify` permission for all operations. This design choice ensures that:
+   - **Accessible to regular users**: The url-minify permission is typically available to all authenticated users
+   - **Conceptual alignment**: State sharing is similar to URL bookmarking - both enable saving and sharing views
+   - **No admin privileges required**: Users don't need administrative permissions to save states
    
-   The specific permissions required are:
-   - **`pages:edit:save`** - Required to save states to backend
-     - Rationale: Saving an app state is conceptually similar to saving page content
-     - Most users who need to save states already have this permission
-   - **`pages:view`** - Required to load states from backend
-     - Rationale: Loading a state is like viewing page content
-     - This is typically a basic permission that most users have
-   - **`pages:info:delete`** - Required to delete states (if cleanup is needed)
-     - Rationale: Deleting states is an administrative action similar to deleting pages
-     - This permission is optional and only needed for state cleanup
+   The permission required is:
+   - **`services:url-minify`** - Required for all state operations (save, load, delete)
+     - Rationale: State sharing is conceptually similar to URL shortening/bookmarking
+     - This permission is already granted to most authenticated users
+     - Provides a consistent experience across URL and backend storage modes
 
 2. **Storage**: States are stored in the platform's runtime storage under `/app-states/` folder
    - Each state is saved as a JSON file with a UUID filename
@@ -221,17 +216,14 @@ When using backend storage mode:
 
 If users encounter permission errors when using backend storage mode:
 
-1. **"Permission denied" when saving**: 
-   - Ensure the user has `pages:edit:save` permission
-   - This is typically granted to users who can edit pages/templates
+1. **"Permission denied" for any state operation**: 
+   - Ensure the user has `services:url-minify` permission
+   - This permission is typically available to all authenticated users by default
 
-2. **"Permission denied" when loading**:
-   - Ensure the user has `pages:view` permission
-   - This is usually a basic permission most authenticated users have
-
-3. **Granting permissions**:
+2. **Granting permissions**:
    - Permissions can be granted through the ResearchSpace security administration interface
-   - Add the required permissions to the user's role or directly to the user
+   - Add `services:url-minify` to the user's role or directly to the user
+   - Note: This is the same permission used for the URL shortening service
 
 ## Best Practices
 

@@ -71,7 +71,7 @@ export class SharedStateManager {
       currentState: this.extractSharedState(currentState)
     };
 
-    console.log('SharedStateManager: Registering component', this.componentId);
+    // console.log('SharedStateManager: Registering component', this.componentId);
 
     trigger({
       eventType: APP_STATE_REGISTER_COMPONENT,
@@ -85,7 +85,7 @@ export class SharedStateManager {
    * Unregister this component from AppState
    */
   public unregister() {
-    console.log('SharedStateManager: Unregistering component', this.componentId);
+    // console.log('SharedStateManager: Unregistering component', this.componentId);
 
     trigger({
       eventType: APP_STATE_UNREGISTER_COMPONENT,
@@ -124,7 +124,7 @@ export class SharedStateManager {
    * Request current state from AppState
    */
   public requestCurrentState() {
-    console.log('SharedStateManager: Requesting current state for', this.componentId);
+    // console.log('SharedStateManager: Requesting current state for', this.componentId);
 
     trigger({
       eventType: APP_STATE_REQUEST_CURRENT_STATE,
@@ -141,7 +141,7 @@ export class SharedStateManager {
    */
   private handleStateSyncFromAppState = (event: any) => {
     const syncedState = event.data;
-    console.log('SharedStateManager: Received state sync for', this.componentId, ':', syncedState);
+    // console.log('SharedStateManager: Received state sync for', this.componentId, ':', syncedState);
 
     if (this.onStateSync) {
       this.onStateSync(syncedState);
@@ -216,7 +216,7 @@ export function findParentAppStateId(element: HTMLElement | null): string | unde
     // Check if current element has data-app-state-id attribute
     const appStateId = current.getAttribute('data-app-state-id');
     if (appStateId) {
-      console.log(`SharedStateUtils: Found parent AppState with ID: ${appStateId}`);
+      // console.log(`SharedStateUtils: Found parent AppState with ID: ${appStateId}`);
       return appStateId;
     }
     
@@ -224,7 +224,7 @@ export function findParentAppStateId(element: HTMLElement | null): string | unde
     current = current.parentElement;
   }
   
-  console.log('SharedStateUtils: No parent AppState found in DOM tree');
+  // console.log('SharedStateUtils: No parent AppState found in DOM tree');
   return undefined;
 }
 

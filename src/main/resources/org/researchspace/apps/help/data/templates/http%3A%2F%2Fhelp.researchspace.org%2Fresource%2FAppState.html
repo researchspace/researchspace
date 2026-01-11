@@ -94,6 +94,7 @@
       <li><strong>Selective Sharing:</strong> Components declare which state variables should be shared</li>
       <li><strong>User-Friendly:</strong> Simple save button generates shareable links</li>
       <li><strong>Collaborative:</strong> Share specific views and configurations with colleagues</li>
+      <li><strong>Thinking Frames Integration:</strong> The Thinking Frames page has state management enabled by default using backend storage mode, with a save button available to create shareable URLs and page leave protection to warn users before leaving with unsaved changes</li>
     </ul>
 
     <hr class="divider">
@@ -200,6 +201,7 @@
         <tr>
           <th>Property</th>
           <th>Type</th>
+          <th>Required</th>
           <th>Default</th>
           <th>Description</th>
         </tr>
@@ -208,30 +210,35 @@
         <tr>
           <td><code>id</code></td>
           <td>string</td>
-          <td>required</td>
+          <td><strong>Yes</strong></td>
+          <td>-</td>
           <td>Unique identifier for the AppState instance</td>
         </tr>
         <tr>
           <td><code>save-button-position</code></td>
           <td>string</td>
+          <td>No</td>
           <td>top-right</td>
           <td>Position of the save button. Options: <code>top-right</code>, <code>top-left</code>, <code>bottom-right</code>, <code>bottom-left</code></td>
         </tr>
         <tr>
           <td><code>auto-sync</code></td>
           <td>boolean</td>
+          <td>No</td>
           <td>false</td>
           <td>Enable automatic URL synchronization (URL mode only)</td>
         </tr>
         <tr>
           <td><code>storage-mode</code></td>
           <td>string</td>
+          <td>No</td>
           <td>url</td>
           <td>Storage mode for states. Options: <code>url</code>, <code>backend</code></td>
         </tr>
         <tr>
           <td><code>url-update-delay</code></td>
           <td>number</td>
+          <td>No</td>
           <td>500</td>
           <td>Debounce delay in milliseconds for URL updates (URL mode only)</td>
         </tr>
@@ -245,6 +252,7 @@
         <tr>
           <th>Property</th>
           <th>Type</th>
+          <th>Required</th>
           <th>Description</th>
         </tr>
       </thead>
@@ -252,17 +260,20 @@
         <tr>
           <td><code>id</code></td>
           <td>string</td>
+          <td><strong>Yes</strong></td>
           <td>Unique identifier for the component instance</td>
         </tr>
         <tr>
           <td><code>shared-state-vars</code></td>
           <td>string</td>
-          <td>Comma-separated list of state variable names to share</td>
+          <td><strong>Yes</strong></td>
+          <td>Comma-separated list of state variable names to share. <strong>Required for state sharing to work</strong> - without this attribute, the component will not register with AppState and will not share any state.</td>
         </tr>
         <tr>
           <td><code>app-state-id</code></td>
           <td>string</td>
-          <td>ID of the parent AppState component</td>
+          <td>No</td>
+          <td>ID of the parent AppState component. If not provided, the system will automatically search for a parent AppState in the DOM tree.</td>
         </tr>
       </tbody>
     </table>
@@ -296,21 +307,7 @@
     <hr class="divider">
     <h2 id="rs-doc_examples">Examples</h2>
     
-    <h3>Thinking Frames - Built-in State Management</h3>
-    
-    <p>The <strong>Thinking Frames</strong> page already has state management enabled by default using <strong>backend storage mode</strong>. This means:</p>
-    
-    <ul>
-      <li>The map extent and zoom level are automatically tracked</li>
-      <li>A save button is available to create shareable URLs</li>
-      <li><strong>Page leave protection:</strong> If you have unsaved changes, an alert will warn you before leaving the page</li>
-    </ul>
-    
-    <div class="alert alert-warning">
-      <strong>Note:</strong> When using backend storage mode (like Thinking Frames), remember to save your state before leaving the page. The browser will display a warning dialog if you attempt to navigate away with unsaved changes.
-    </div>
-
-    <h3>Example 1: Basic Map with URL Storage</h3>
+    <h3>Example 1: Basic Map with URL Sync</h3>
     
     <mp-code-block mode="text/html">
 <![CDATA[<app-state id="map-state" auto-sync="true" save-button-position="bottom-right">
@@ -331,21 +328,43 @@
 </app-state>]]>
     </mp-code-block>
 
-    <h3>Example 2: Complex Application with Backend Storage</h3>
+    <h3>Example 2: Multiple Components with Backend Storage</h3>
     
     <mp-code-block mode="text/html">
 <![CDATA[<app-state id="research-workspace" storage-mode="backend" save-button-position="top-right">
   <bs-row>
-    <bs-col md="8">
-      <semantic-map
-        id="main-map"
-        shared-state-vars="currentExtent,currentZoom"
+    <bs-col md="12">
+      <semantic-table
+        id="results-table"
+        shared-state-vars="currentPage,filterValue"
         app-state-id="research-workspace"
-        query="..."
+        query='
+          SELECT ?place ?label ?lat ?lng WHERE {
+            ?place wdt:P625 ?coords ;
+                   rdfs:label ?label .
+            BIND(geof:latitude(?coords) AS ?lat)
+            BIND(geof:longitude(?coords) AS ?lng)
+          }'
+        number-of-displayed-rows="10"
       />
     </bs-col>
-    <bs-col md="4">
-      <!-- Future: Other compatible components -->
+  </bs-row>
+  <bs-row>
+    <bs-col md="12">
+      <div style="width: 100%; height: 400px;">
+        <semantic-map
+          id="main-map"
+          shared-state-vars="currentExtent,currentZoom"
+          app-state-id="research-workspace"
+          query='
+            SELECT ?place ?lat ?lng ?label WHERE {
+              ?place wdt:P625 ?coords ;
+                     rdfs:label ?label .
+              BIND(geof:latitude(?coords) AS ?lat)
+              BIND(geof:longitude(?coords) AS ?lng)
+            }'
+        />
+      </div>
     </bs-col>
   </bs-row>
 </app-state>]]>

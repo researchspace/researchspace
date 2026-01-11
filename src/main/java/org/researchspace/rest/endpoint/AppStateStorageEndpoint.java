@@ -72,9 +72,9 @@ public class AppStateStorageEndpoint {
             logger.trace("Request to save application state");
         }
 
-        // Use PAGES permission since app states are related to page functionality
-        // Most users have permission to save pages
-        assertPermission(Permissions.PAGES.templateOperationDefaultPermission(Permissions.PAGES.Action.EDIT_SAVE));
+        // Use URL_MINIFY permission since app states are similar to URL bookmarking
+        // This is typically available to regular authenticated users
+        assertPermission(Permissions.SERVICES.URL_MINIFY);
 
         try {
             // Generate unique ID for this state
@@ -126,8 +126,8 @@ public class AppStateStorageEndpoint {
             logger.trace("Request to load application state: " + stateId);
         }
 
-        // Use PAGES VIEW permission for reading states
-        assertPermission(Permissions.PAGES.templateOperationDefaultPermission(Permissions.PAGES.Action.VIEW));
+        // Use URL_MINIFY permission for reading states (same as save)
+        assertPermission(Permissions.SERVICES.URL_MINIFY);
 
         try {
             // Validate state ID format
@@ -176,8 +176,8 @@ public class AppStateStorageEndpoint {
             logger.trace("Request to delete application state: " + stateId);
         }
 
-        // Use PAGES DELETE permission for deleting states
-        assertPermission(Permissions.PAGES.templateOperationDefaultPermission(Permissions.PAGES.Action.INFO_DELETE));
+        // Use URL_MINIFY permission for deleting states (same as save)
+        assertPermission(Permissions.SERVICES.URL_MINIFY);
 
         try {
             // Validate state ID format

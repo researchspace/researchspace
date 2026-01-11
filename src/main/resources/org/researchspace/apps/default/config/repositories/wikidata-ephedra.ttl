@@ -1,0 +1,23 @@
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+
+[] a config:Repository;
+  config:rep.id "wikidata-ephedra";
+  rdfs:label "Wikidata Ephedra Federation";
+  config:rep.impl [
+      config:rep.type "researchspace:FederationSailRepository";
+      config:sail.impl [
+          config:sail.type "researchspace:Federation";
+          config:fed.member [
+              ephedra:delegateRepositoryID "osm-nominatim-search";
+              ephedra:serviceReference <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService>
+            ],
+            [
+              ephedra:delegateRepositoryID "wikidata-entity";
+              ephedra:serviceReference <http://www.researchspace.org/resource/system/service/wikidataentity/WikidataEntity>
+            ];
+          ephedra:defaultMember "fedx"
+        ]
+    ] .

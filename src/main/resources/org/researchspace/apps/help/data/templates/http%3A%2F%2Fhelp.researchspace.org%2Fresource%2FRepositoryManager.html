@@ -229,6 +229,124 @@
     </mp-code-block> 
     
     <hr class="divider">
+    <h3>FedX federation repository</h3>
+    <p>
+      FedX provides transparent federation of multiple SPARQL endpoints under a single virtual endpoint.
+      In a federated SPARQL query in FedX, one no longer needs to explicitly address specific endpoints using SERVICE clauses.
+      Instead, FedX automatically selects relevant sources, sends statement patterns to these sources for evaluation, and joins the individual results.
+    </p>
+    <p>
+      FedX can be used as a drop-in component in existing applications. Below is an example configuration that federates the default repository with Wikidata.
+    </p>
+    <mp-code-block mode="text/turtle">
+    <![CDATA[
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fedx: <http://rdf4j.org/config/federation#> .
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+
+[] a config:Repository ;
+    config:rep.id "fedx" ;
+    rdfs:label "FedX Federation" ;
+    config:rep.impl [
+        config:rep.type "fedx:FedXRepository" ;
+        fedx:member [
+            fedx:store "ResolvableRepository" ;
+            fedx:repositoryName "default"
+        ] ;
+        fedx:member [
+            fedx:store "SPARQLEndpoint" ;
+            sd:endpoint "https://query.wikidata.org/sparql"
+        ]
+    ] .
+    ]]>
+    </mp-code-block>
+
+    <p>
+      FedX repositories can also be configured with various options to control query execution and monitoring.
+      For example, you can set the number of worker threads or enforce a maximum query time.
+    </p>
+    <mp-code-block mode="text/turtle">
+    <![CDATA[
+   config:rep.impl [
+      config:rep.type "fedx:FedXRepository" ;
+      # ... members ...
+      fedx:config [
+         fedx:joinWorkerThreads 20 ;
+         fedx:enforceMaxQueryTime 30 ;
+         fedx:enableMonitoring true ;
+         fedx:logQueryPlan true ;
+      ]
+   ] .
+    ]]>
+    </mp-code-block>
+
+    <h4>Using FedX with Ephedra</h4>
+    <p>
+      FedX can be used in conjunction with Ephedra. A common pattern is to use a FedX repository as the default member of an Ephedra federation.
+      This allows Ephedra to handle specific services (like search services) while delegating general SPARQL queries to the FedX federation, which then distributes them across its members.
+    </p>
+    <mp-code-block mode="text/turtle">
+    <![CDATA[
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+
+[] a config:Repository;
+  config:rep.id "wikidata-ephedra";
+  rdfs:label "Wikidata Ephedra Federation";
+  config:rep.impl [
+      config:rep.type "researchspace:FederationSailRepository";
+      config:sail.impl [
+          config:sail.type "researchspace:Federation";
+          # Define Ephedra services
+          config:fed.member [
+              ephedra:delegateRepositoryID "osm-nominatim-search";
+              ephedra:serviceReference <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService>
+            ],
+            [
+              ephedra:delegateRepositoryID "wikidata-entity";
+              ephedra:serviceReference <http://www.researchspace.org/resource/system/service/wikidataentity/WikidataEntity>
+            ];
+          # Use FedX as the default member
+          ephedra:defaultMember "fedx"
+        ]
+    ] .
+    ]]>
+    </mp-code-block>
+
+    <p>
+      This configuration enables complex federated workflows. For example, the "Import from OSM" feature in ResearchSpace typically requires multiple separate queries: one to search Nominatim, and others to fetch details from Wikidata. With the <code>wikidata-ephedra</code> setup, this can be achieved in a <strong>single federated query</strong>:
+    </p>
+
+    <mp-code-block mode="application/sparql-query">
+    <![CDATA[
+PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX schema: <http://schema.org/>
+
+SELECT ?placeName ?wikidataId ?description ?image WHERE {
+  # 1. Search for "Venice" using Nominatim Service (via Ephedra)
+  SERVICE <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService> {
+    ?place osm:q "Venice" ;
+           osm:wikidata ?wikidataId ;
+           osm:display_name ?placeName .
+  }
+
+  # 2. Convert the Wikidata ID string (e.g., "Q641") to an IRI
+  BIND(IRI(CONCAT("http://www.wikidata.org/entity/", ?wikidataId)) AS ?wikidataEntity)
+
+  # 3. Query Wikidata (via FedX default member) for description and image
+  ?wikidataEntity schema:description ?description .
+  FILTER(LANG(?description) = "en")
+  
+  OPTIONAL { ?wikidataEntity wdt:P18 ?image . }
+}
+    ]]>
+    </mp-code-block>
+
+    <hr class="divider">
     <h3>Virtuoso repository</h3>
     <p><a href='https://virtuoso.openlinksw.com/' class="text-link-action" target="_blank">Virtuoso</a> is 
       a popular state of the art triple store used in many use case scenarios. 

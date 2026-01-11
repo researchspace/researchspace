@@ -103,7 +103,6 @@ public class InMemoryStorage implements ObjectStorage {
         return Optional.ofNullable(foundRecord).flatMap(record -> {
             synchronized (record) {
                 if (record.revisions.isEmpty()) {
-                    System.out.println("InMemoryStorage: Record at " + path + " has no revisions!");
                     return Optional.empty();
                 }
                 return Optional.ofNullable(revision == null ? record.revisions.get(record.revisions.lastKey())

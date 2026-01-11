@@ -255,7 +255,7 @@
     <hr class="divider">
     <h2 id="rs-doc_permissions">Permissions</h2>
     
-    <p>When using backend storage mode, the system uses standard ResearchSpace page permissions:</p>
+    <p>When using backend storage mode, the system uses the <code>services:url-minify</code> permission, which is typically available to regular authenticated users:</p>
 
     <table class="table table-striped">
       <thead>
@@ -267,30 +267,34 @@
       </thead>
       <tbody>
         <tr>
-          <td><code>pages:edit:save</code></td>
-          <td>Saving states</td>
-          <td>Required to save application states to backend storage. This permission is typically granted to users who can edit pages.</td>
-        </tr>
-        <tr>
-          <td><code>pages:view</code></td>
-          <td>Loading states</td>
-          <td>Required to load saved states from backend storage. Most authenticated users have this permission.</td>
-        </tr>
-        <tr>
-          <td><code>pages:info:delete</code></td>
-          <td>Deleting states</td>
-          <td>Optional permission for state cleanup operations (administrative function).</td>
+          <td><code>services:url-minify</code></td>
+          <td>All state operations</td>
+          <td>Required for saving, loading, and deleting application states. This permission is also used for URL shortening and is typically available to all authenticated users.</td>
         </tr>
       </tbody>
     </table>
 
     <div class="alert alert-info">
-      <strong>Design Rationale:</strong> The system uses existing page permissions rather than creating new custom permissions. This ensures users who can already work with pages can use backend storage without additional configuration, maintaining consistency with the ResearchSpace security model.
+      <strong>Design Rationale:</strong> The system uses the existing <code>url-minify</code> permission because state sharing is conceptually similar to URL bookmarking - both features enable users to save and share specific application views. This ensures that regular users can use state sharing without requiring administrative permissions.
     </div>
 
     <hr class="divider">
     <h2 id="rs-doc_examples">Examples</h2>
     
+    <h3>Thinking Frames - Built-in State Management</h3>
+    
+    <p>The <strong>Thinking Frames</strong> page already has state management enabled by default using <strong>backend storage mode</strong>. This means:</p>
+    
+    <ul>
+      <li>The map extent and zoom level are automatically tracked</li>
+      <li>A save button is available to create shareable URLs</li>
+      <li><strong>Page leave protection:</strong> If you have unsaved changes, an alert will warn you before leaving the page</li>
+    </ul>
+    
+    <div class="alert alert-warning">
+      <strong>Note:</strong> When using backend storage mode (like Thinking Frames), remember to save your state before leaving the page. The browser will display a warning dialog if you attempt to navigate away with unsaved changes.
+    </div>
+
     <h3>Example 1: Basic Map with URL Storage</h3>
     
     <mp-code-block mode="text/html">

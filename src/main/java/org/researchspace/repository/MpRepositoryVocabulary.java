@@ -50,7 +50,8 @@ public class MpRepositoryVocabulary {
      */
     public static final String FEDERATION_MEMBER_NAMESPACE = "http://www.researchspace.org/resource/system/repository/federation#";
     
-    public static final IRI FEDERATION_MEMBER = VF.createIRI("http://www.openrdf.org/config/sail/federation#member");
+    public static final IRI FEDERATION_MEMBER = VF.createIRI("tag:rdf4j.org,2023:config/fed.member");
+    public static final IRI LEGACY_FEDERATION_MEMBER = VF.createIRI("http://www.openrdf.org/config/sail/federation#member");
     
     public static final IRI LEGACY_REPOSITORY_ID = VF.createIRI("http://www.openrdf.org/config/repository#repositoryID");
 

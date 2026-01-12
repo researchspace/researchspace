@@ -143,9 +143,12 @@ public abstract class AbstractLDPResource implements LDPResource {
         Model m = new LinkedHashModel(model);
         if (isContainer()) {
             for (Value o : ((LDPContainer) this).getContainedResources()) {
-                LDPResource ldpResource = LDPImplManager.getLDPImplementation((IRI) o, Sets.newHashSet(),
-                        this.repositoryProvider);
-                m.addAll(ldpResource.getModelRecursive());
+                // Only process IRI resources, skip BNodes
+                if (o instanceof IRI) {
+                    LDPResource ldpResource = LDPImplManager.getLDPImplementation((IRI) o, Sets.newHashSet(),
+                            this.repositoryProvider);
+                    m.addAll(ldpResource.getModelRecursive());
+                }
             }
         }
         
@@ -219,6 +222,10 @@ public abstract class AbstractLDPResource implements LDPResource {
         deleting.add(this.getResourceIRI());
 
         for (Statement stmt : getReadConnection().getStatements(this.getResourceIRI(), LDP.contains, null)) {
+            // Only process IRI resources, skip BNodes
+            if (!(stmt.getObject() instanceof IRI)) {
+                continue;
+            }
             IRI childResource = (IRI) stmt.getObject();
             LDPResource instance = LDPImplManager.getLDPImplementation(childResource,
                     getLdpApi().getLDPTypesFromRepository(childResource), this.repositoryProvider);

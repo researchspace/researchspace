@@ -60,20 +60,17 @@ interface State {
 export class ResourceLink extends Component<ResourceLinkProps, State> {
   constructor(props: ResourceLinkProps, context: any) {
     super(props, context);
-    if (this.props.resource && this.props.resource.value) {
-      this.state = {
-        url: construcUrlForResourceSync(
-          this.props.resource,
-          this.props.params,
-          this.getRepository(),
-          this.props.fragment
-        ),
-      };
-    } else {
-      this.state = {
-        url: undefined
-      };
-    }
+    this.state = {
+      url:
+        this.props.resource && this.props.resource.value
+          ? construcUrlForResourceSync(
+              this.props.resource,
+              this.props.params,
+              this.getRepository(),
+              this.props.fragment
+            )
+          : undefined,
+    };
   }
 
   static defaultProps = {
@@ -148,9 +145,6 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
 
   private isLinkActive = () => {
     const { resource, params } = this.props;
-    if (!resource || !resource.value) {
-      return false;
-    }
     const urlParams = assign({}, params);
     if (!_.isUndefined(this.props.action)) {
       urlParams['action'] = ResourceLinkAction[this.props.action];

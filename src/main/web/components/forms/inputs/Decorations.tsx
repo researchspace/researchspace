@@ -87,19 +87,12 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
     return (
       <div className={`${DECORATOR_CLASS}__header`}>
         {(definition.label && definition.label.length) || label ? (
-          definition.iri ? (
-            <ResourceLink resource={Rdf.iri(definition.iri)} draggable={false} target='_blank'>
-              <span className={`${DECORATOR_CLASS}__label`}>
-                {label ? label : getPreferredLabel(definition.label)}
-                {isRequired ? <span className={`${DECORATOR_CLASS}__label-required`} title="Required field" />: null}
-              </span>
-            </ResourceLink>
-          ) : (
+          <ResourceLink resource={definition.iri ? Rdf.iri(definition.iri) : undefined} draggable={false} target='_blank'>
             <span className={`${DECORATOR_CLASS}__label`}>
               {label ? label : getPreferredLabel(definition.label)}
               {isRequired ? <span className={`${DECORATOR_CLASS}__label-required`} title="Required field" />: null}
             </span>
-          )
+          </ResourceLink>
         ) : null}
         {/* {definition.description ? (
           <OverlayTrigger

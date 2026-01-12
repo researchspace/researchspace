@@ -20,6 +20,7 @@
 package org.researchspace.data.rdf.container;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -68,7 +69,11 @@ public class DefaultLDPContainer extends AbstractLDPContainer {
             TupleQueryResult result = tq.evaluate();
             while (result.hasNext()) {
                 BindingSet next = result.next();
-                return (IRI) next.getBinding("node").getValue();
+                Value nodeValue = next.getBinding("node").getValue();
+                // Only return if it's an IRI (defensive check)
+                if (nodeValue instanceof IRI) {
+                    return (IRI) nodeValue;
+                }
             }
             return null;
 

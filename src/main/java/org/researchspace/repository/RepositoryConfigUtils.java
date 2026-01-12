@@ -39,17 +39,15 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.vocabulary.CONFIG;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
-import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
-import org.eclipse.rdf4j.repository.sail.config.SailRepositorySchema;
 import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
-import org.eclipse.rdf4j.sail.config.SailConfigSchema;
 
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectMetadata;
@@ -82,10 +80,12 @@ public class RepositoryConfigUtils {
      * @throws RepositoryConfigException If the supplied graph can not be converted
      *                                   into a VALID {@link RepositoryConfig}
      */
-    private static final String CONFIG_NAMESPACE = "tag:rdf4j.org,2023:config/";
-    private static final IRI NEW_REPOSITORY_ID = SimpleValueFactory.getInstance().createIRI(CONFIG_NAMESPACE, "rep.id");
+    private static final String REPOSITORY_NAMESPACE = "http://www.openrdf.org/config/repository#";
+    private static final String SAIL_CONFIG_NAMESPACE = "http://www.openrdf.org/config/sail#";
+    private static final String SAIL_REPOSITORY_NAMESPACE = "http://www.openrdf.org/config/repository/sail#";
+
     private static final IRI LEGACY_REPOSITORY_ID = SimpleValueFactory.getInstance()
-            .createIRI("http://www.openrdf.org/config/repository#repositoryID");
+            .createIRI(REPOSITORY_NAMESPACE, "repositoryID");
 
     /**
      * Tries to convert an RDF graph i.e. the specified {@link Model} into a
@@ -98,12 +98,7 @@ public class RepositoryConfigUtils {
      */
     public static RepositoryConfig createRepositoryConfig(Model model) throws RepositoryConfigException {
         // Try new vocabulary first
-        Model idStmt = model.filter(null, NEW_REPOSITORY_ID, null);
-        
-        // Fallback to deprecated RepositoryConfigSchema (likely old vocabulary)
-        if (idStmt.isEmpty()) {
-             idStmt = model.filter(null, RepositoryConfigSchema.REPOSITORYID, null);
-        }
+        Model idStmt = model.filter(null, CONFIG.Rep.id, null);
         
         // Fallback to explicit legacy vocabulary
         if (idStmt.isEmpty()) {
@@ -282,9 +277,9 @@ public class RepositoryConfigUtils {
 
     private static void writeModelAsPrettyTurtleOutputStream(OutputStream os, Model model) {
         Map<String, String> prefixes = ImmutableMap.<String, String>builder()
-                .put("config", CONFIG_NAMESPACE)
-                .put("rep", RepositoryConfigSchema.NAMESPACE).put("sail", SailConfigSchema.NAMESPACE)
-                .put("sr", SailRepositorySchema.NAMESPACE).put("rdfs", RDFS.NAMESPACE)
+                .put("config", CONFIG.NAMESPACE)
+                .put("rep", REPOSITORY_NAMESPACE).put("sail", SAIL_CONFIG_NAMESPACE)
+                .put("sr", SAIL_REPOSITORY_NAMESPACE).put("rdfs", RDFS.NAMESPACE)
                 .put("mph", MpRepositoryVocabulary.NAMESPACE)
                 .put("ephedra", MpRepositoryVocabulary.FEDERATION_NAMESPACE).put("fedsail", "http://www.openrdf.org/config/sail/federation#")
                 .put("sparqlr", SPARQLRepositoryConfig.NAMESPACE).build();

@@ -57,11 +57,7 @@ public class MpFederationFactory implements SailFactory {
         FedXConfig fedXConfig = new FedXConfig();
         
         // Map legacy config to FedX config
-        fedXConfig.withEnableServiceAsBoundJoin(config.isUseBoundJoin());
-        
-        // Note: useAsyncParallelJoin and useCompetingJoin are not directly mapped as FedX handles these differently.
-        // FedX is async by default. Competing join is replaced by FedX's optimizer.
-        
+        fedXConfig.withEnableServiceAsBoundJoin(config.isUseBoundJoin());        
         MpFederation result = new MpFederation(config.getDefaultMember(), config.getRepositoryIDMappings(), fedXConfig);
         result.setEnableQueryHints(config.isEnableQueryHints());
         

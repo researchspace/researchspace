@@ -212,6 +212,11 @@ public abstract class ConfigurationGroupBase implements ConfigurationGroup {
         return getStringListFromDelegate(configIdInGroup, fallbackValue);
     }
 
+    @Override
+    public <T extends Enum<T>> T getEnum(String paramName, Class<T> enumClass, T fallbackValue) {
+        return getEnumFromDelegate(paramName, enumClass, fallbackValue);
+    }
+
     /**
      * Internal save method of the configuration group base. Serializes the saved
      * value back to the backing file.
@@ -328,6 +333,17 @@ public abstract class ConfigurationGroupBase implements ConfigurationGroup {
         return config.getBoolean(configIdInGroup, fallbackValue);
     }
 
+    private synchronized <T extends Enum<T>> T getEnumFromDelegate(String configIdInGroup, Class<T> enumType, T fallbackValue) {
+        String systemPropertyName = configParamToSystemParam(configIdInGroup);
+        String systemPropertyVal = System.getProperty(systemPropertyName);
+
+        if (StringUtils.isNotEmpty(systemPropertyVal)) {
+            return Enum.valueOf(enumType, systemPropertyVal);
+        }
+        // no or invalid system override for parameter resumes here:
+        return config.getEnum(configIdInGroup, enumType, fallbackValue);
+    }
+
     /**
      * Returns the Integer associated with the given property ID. Internal helper
      * method, not exposed to the outside. All access to system parameters should go
@@ -408,6 +424,8 @@ public abstract class ConfigurationGroupBase implements ConfigurationGroup {
             return ConfigurationParameterType.INTEGER;
         } else if (returnType.isAssignableFrom(List.class)) {
             return ConfigurationParameterType.STRING_LIST;
+        } else if (returnType.isEnum()) {
+            return ConfigurationParameterType.ENUM;
         } else {
             // fallback parameter type
             return ConfigurationParameterType.STRING;

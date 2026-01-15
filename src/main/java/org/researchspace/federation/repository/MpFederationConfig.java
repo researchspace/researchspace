@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.rdf4j.federated.FedXConfig;
+import org.eclipse.rdf4j.federated.repository.FedXRepositoryConfig;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -34,6 +36,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelException;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.sail.config.AbstractSailImplConfig;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
 
@@ -45,9 +48,30 @@ import com.google.common.collect.Lists;
 /**
  * Config for instances of {@link MpFederation}.
  * 
+ * <p>Supports FedX configuration properties using the standard {@code fedx:config} block.
+ * Legacy {@code ephedra:config} is also supported for backwards compatibility.</p>
+ * 
+ * <pre>
+ * sail:sailImpl [
+ *   sail:sailType "researchspace:Federation" ;
+ *   mph:defaultMember "default" ;
+ *   fedx:config [
+ *     fedx:enforceMaxQueryTime 120 ;
+ *     fedx:joinWorkerThreads 20 ;
+ *     fedx:debugQueryPlan false
+ *   ]
+ * ]
+ * </pre>
+ * 
  * @author Andriy Nikolov <an@metaphacts.com>
  */
 public class MpFederationConfig extends AbstractSailImplConfig implements MpDelegatingImplConfig {
+
+    /**
+     * Legacy IRI for the config block within ephedra namespace (deprecated, use fedx:config)
+     */
+    private static final IRI LEGACY_CONFIG = SimpleValueFactory.getInstance()
+            .createIRI(MpRepositoryVocabulary.FEDERATION_NAMESPACE, "config");
 
     /**
      * Sub-config describing one federation member. Contains the IRI, by which the
@@ -113,17 +137,32 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
     }
 
     private static final ValueFactory vf = SimpleValueFactory.getInstance();
+    
+    /** Default query timeout: 120 seconds (2 minutes) */
+    public static final int DEFAULT_QUERY_TIMEOUT = 120;
+    
+    /** Default prefetch size for REST services: 5 parallel HTTP calls */
+    public static final int DEFAULT_REST_SERVICE_PREFETCH_SIZE = 5;
 
     private List<MpFederationMemberConfig> memberConfigs = Lists.newArrayList();
     private String defaultMember = null;
 
+    // Legacy config options (kept for backwards compatibility)
     private boolean useAsyncParallelJoin = true;
     private boolean useCompetingJoin = true;
     private boolean useBoundJoin = true;
     private boolean enableQueryHints = true;
+    
+    // FedX configuration - stores all FedX-specific settings
+    private FedXConfig fedXConfig;
+    
+    // REST service prefetch size for bounded parallelism
+    private int restServicePrefetchSize = DEFAULT_REST_SERVICE_PREFETCH_SIZE;
 
     public MpFederationConfig() {
         super(MpFederationFactory.SAIL_TYPE);
+        // Initialize with default FedXConfig, setting our default timeout
+        this.fedXConfig = new FedXConfig().withEnforceMaxQueryTime(DEFAULT_QUERY_TIMEOUT);
     }
 
     @Override
@@ -182,6 +221,12 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
             model.add(res, MpRepositoryVocabulary.ENABLE_QUERY_HINTS,
                     SimpleValueFactory.getInstance().createLiteral(this.enableQueryHints));
         }
+        
+        // Export FedX config if present
+        if (fedXConfig != null) {
+            exportFedXConfig(model, res);
+        }
+        
         return res;
     }
 
@@ -210,6 +255,104 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
                 .ifPresent(lit -> setUseCompetingJoin(lit.booleanValue()));
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.ENABLE_QUERY_HINTS, null))
                 .ifPresent(lit -> setEnableQueryHints(lit.booleanValue()));
+        
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REST_SERVICE_PREFETCH_SIZE, null))
+                .ifPresent(lit -> setRestServicePrefetchSize(lit.intValue()));
+                
+        // Parse FedX config using delegation to FedXRepositoryConfig
+        parseFedXConfig(model, implNode);
+    }
+    
+    /**
+     * Parse FedX configuration from the model by delegating to FedXRepositoryConfig.
+     * Supports both standard fedx:config and legacy ephedra:config.
+     * 
+     * <p>We use a helper class that extends FedXRepositoryConfig to reuse its 
+     * protected parsing logic, rather than duplicating the code.</p>
+     */
+    private void parseFedXConfig(Model model, Resource implNode) {
+        // Initialize with default timeout
+        if (fedXConfig == null) {
+            fedXConfig = new FedXConfig().withEnforceMaxQueryTime(DEFAULT_QUERY_TIMEOUT);
+        }
+        
+        // Try standard fedx:config first
+        boolean foundConfig = Models.objectResource(model.getStatements(implNode, FedXRepositoryConfig.FEDX_CONFIG, null))
+                .isPresent();
+        
+        // Check for legacy ephedra:config
+        if (!foundConfig) {
+            foundConfig = Models.objectResource(model.getStatements(implNode, LEGACY_CONFIG, null)).isPresent();
+            
+            // If legacy config found, remap it to fedx:config for the helper to parse
+            if (foundConfig) {
+                Model modifiedModel = new org.eclipse.rdf4j.model.impl.TreeModel(model);
+                Resource legacyConfNode = Models.objectResource(model.getStatements(implNode, LEGACY_CONFIG, null)).get();
+                modifiedModel.add(implNode, FedXRepositoryConfig.FEDX_CONFIG, legacyConfNode);
+                model = modifiedModel;
+            }
+        }
+        
+        if (foundConfig) {
+            // Use helper to delegate parsing to FedXRepositoryConfig
+            FedXConfigParserHelper helper = new FedXConfigParserHelper();
+            helper.setConfig(fedXConfig);  // Pass our config so it gets populated
+            helper.parseFedXConfig(model, implNode);
+            fedXConfig = helper.getConfig();  // Get back the populated config
+        }
+    }
+    
+    /**
+     * Helper class to access FedXRepositoryConfig's protected parseFedXConfig method.
+     * This avoids duplicating the FedX config parsing logic.
+     */
+    private static class FedXConfigParserHelper extends FedXRepositoryConfig {
+        @Override
+        public void parseFedXConfig(Model m, Resource implNode) {
+            super.parseFedXConfig(m, implNode);
+        }
+    }
+    
+    /**
+     * Export FedX configuration to the model.
+     */
+    private void exportFedXConfig(Model model, Resource implNode) {
+        BNode confNode = Values.bnode();
+
+        model.add(confNode, FedXRepositoryConfig.CONFIG_JOIN_WORKER_THREADS, 
+                vf.createLiteral(fedXConfig.getJoinWorkerThreads()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_UNION_WORKER_THREADS, 
+                vf.createLiteral(fedXConfig.getUnionWorkerThreads()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_LEFT_JOIN_WORKER_THREADS, 
+                vf.createLiteral(fedXConfig.getLeftJoinWorkerThreads()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_BOUND_JOIN_BLOCK_SIZE, 
+                vf.createLiteral(fedXConfig.getBoundJoinBlockSize()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_ENFORCE_MAX_QUERY_TIME, 
+                vf.createLiteral(fedXConfig.getEnforceMaxQueryTime()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_ENABLE_SERVICE_AS_BOUND_JOIN,
+                vf.createLiteral(fedXConfig.getEnableServiceAsBoundJoin()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_ENABLE_OPTIONAL_AS_BIND_JOIN,
+                vf.createLiteral(fedXConfig.isEnableOptionalAsBindJoin()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_ENABLE_MONITORING, 
+                vf.createLiteral(fedXConfig.isEnableMonitoring()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_LOG_QUERY_PLAN, 
+                vf.createLiteral(fedXConfig.isLogQueryPlan()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_LOG_QUERIES, 
+                vf.createLiteral(fedXConfig.isLogQueries()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_DEBUG_QUERY_PLAN, 
+                vf.createLiteral(fedXConfig.isDebugQueryPlan()));
+        model.add(confNode, FedXRepositoryConfig.CONFIG_INCLUDE_INFERRED_DEFAULT, 
+                vf.createLiteral(fedXConfig.getIncludeInferredDefault()));
+
+        if (fedXConfig.getSourceSelectionCacheSpec() != null) {
+            model.add(confNode, FedXRepositoryConfig.CONFIG_SOURCE_SELECTION_CACHE_SPEC,
+                    vf.createLiteral(fedXConfig.getSourceSelectionCacheSpec()));
+        }
+
+        model.add(confNode, FedXRepositoryConfig.CONFIG_CONSUMING_ITERATION_MAX, 
+                vf.createLiteral(fedXConfig.getConsumingIterationMax()));
+
+        model.add(implNode, FedXRepositoryConfig.FEDX_CONFIG, confNode);
     }
 
     public Map<IRI, String> getRepositoryIDMappings() {
@@ -247,5 +390,44 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
 
     public void setEnableQueryHints(boolean enableQueryHints) {
         this.enableQueryHints = enableQueryHints;
+    }
+    
+    /**
+     * Get the FedX configuration. This is used by MpFederationFactory to configure
+     * the underlying FedX instance.
+     * 
+     * @return the FedX configuration, never null
+     */
+    public FedXConfig getFedXConfig() {
+        return fedXConfig;
+    }
+    
+    /**
+     * Set the FedX configuration.
+     * 
+     * @param config the FedX configuration
+     */
+    public void setFedXConfig(FedXConfig config) {
+        this.fedXConfig = config;
+    }
+    
+    /**
+     * Get the prefetch size for REST services.
+     * This controls how many HTTP calls are made in parallel when evaluating REST services.
+     * Higher values improve performance but may make slightly more calls than strictly needed.
+     * 
+     * @return the prefetch size, default is {@link #DEFAULT_REST_SERVICE_PREFETCH_SIZE}
+     */
+    public int getRestServicePrefetchSize() {
+        return restServicePrefetchSize;
+    }
+    
+    /**
+     * Set the prefetch size for REST services.
+     * 
+     * @param prefetchSize the number of parallel HTTP calls (minimum 1)
+     */
+    public void setRestServicePrefetchSize(int prefetchSize) {
+        this.restServicePrefetchSize = Math.max(1, prefetchSize);
     }
 }

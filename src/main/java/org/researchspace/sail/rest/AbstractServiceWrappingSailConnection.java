@@ -125,7 +125,6 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
         cloned.visit(collector);
         List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
         ServiceParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
-        // limiter goes here
         return executeAndConvertResultsToBindingSet(parametersHolder);
     }
 

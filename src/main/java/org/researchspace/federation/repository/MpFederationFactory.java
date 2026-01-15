@@ -19,7 +19,6 @@
 
 package org.researchspace.federation.repository;
 
-import org.eclipse.rdf4j.federated.FedXConfig;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
 import org.eclipse.rdf4j.sail.config.SailFactory;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
@@ -54,14 +53,9 @@ public class MpFederationFactory implements SailFactory {
             throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
         }
         MpFederationConfig config = (MpFederationConfig) originalConfig;
-        FedXConfig fedXConfig = new FedXConfig();
         
-        // Map legacy config to FedX config
-        fedXConfig.withEnableServiceAsBoundJoin(config.isUseBoundJoin());        
-        MpFederation result = new MpFederation(config.getDefaultMember(), config.getRepositoryIDMappings(), fedXConfig);
-        result.setEnableQueryHints(config.isEnableQueryHints());
-        
-        return result;
+        // Simply pass the full config - MpFederation reads all settings from it
+        return new MpFederation(config);
     }
 
 }

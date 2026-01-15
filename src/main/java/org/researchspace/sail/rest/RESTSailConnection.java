@@ -259,8 +259,15 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
             ServiceParametersHolder parametersHolder) {
         Response response = submit(parametersHolder);
         if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
-            throw new SailException("Request failed with HTTP status code " + response.getStatus() + ": "
-                    + response.getStatusInfo().getReasonPhrase());
+            String errorMessage = "Request failed with HTTP status code " + response.getStatus() + ": "
+                    + response.getStatusInfo().getReasonPhrase();
+            
+            // Check if we should ignore HTTP errors and return empty results
+            if (getSail().getConfig().isIgnoreHttpErrors()) {
+                logger.warn("Ignoring HTTP error: {}", errorMessage);
+                return new CloseableIteratorIteration<BindingSet>(java.util.Collections.emptyIterator());
+            }
+            throw new SailException(errorMessage);
         }
         InputStream resultStream = (InputStream) response.getEntity();
         return new CloseableIteratorIteration<BindingSet>(

@@ -277,5 +277,43 @@ SELECT ?title ?genre WHERE {
       ]]>
     </mp-code-block>
 
+    <hr class="divider">
+    <h2>Performance Considerations</h2>
+
+    <p>When using REST services within federated queries, there are important performance implications to consider:</p>
+
+    <h3>LIMIT Optimization</h3>
+    <p>REST services are evaluated <strong>lazily</strong> when used in federated queries. This means that when you use 
+    <code>LIMIT</code>, only the necessary number of HTTP calls will be made. For example, with <code>LIMIT 20</code>, 
+    approximately 20 HTTP calls will be made to the REST service, even if the first service returns thousands of results.</p>
+
+    <h3>ORDER BY Limitation</h3>
+    <div class="alert alert-warning">
+      <strong>Warning:</strong> When using <code>ORDER BY</code> on a variable that comes from a REST service result, 
+      <strong>all HTTP calls must be made before sorting can occur</strong>. This can result in very slow query execution 
+      if the first service returns many results.
+    </div>
+
+    <p><strong>Example of slow query:</strong></p>
+    <mp-code-block mode='SPARQL'>
+    <![CDATA[
+# This query will be SLOW because ORDER BY requires all titles
+SELECT ?id ?title WHERE {
+  SERVICE <urn:SearchService> { ?x :q "vase"; :objectIDs ?id. }   # Returns 30,000 IDs
+  SERVICE <urn:ObjectService> { ?y :id ?id; :title ?title. }      # 1 HTTP call per ID
+}
+ORDER BY ?title   # ALL 30,000 HTTP calls must complete before sorting!
+LIMIT 20
+      ]]>
+    </mp-code-block>
+
+    <p><strong>Workarounds:</strong></p>
+    <ul>
+      <li><strong>Remove ORDER BY</strong>: If ordering isn't critical, omit it to benefit from lazy evaluation and fast LIMIT</li>
+      <li><strong>Client-side sorting</strong>: Retrieve unordered results with LIMIT, then sort in your application code</li>
+      <li><strong>ORDER BY on search parameters</strong>: If the first service supports sorting (e.g., via a sort parameter), 
+      use that instead of SPARQL ORDER BY</li>
+    </ul>
+
   </div>
 </div>

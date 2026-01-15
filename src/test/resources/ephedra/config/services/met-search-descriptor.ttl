@@ -1,0 +1,46 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+met:METCollectionSearchService a ephedra:Service ;    
+    rdfs:label "A wrapper for the MET museum API search service (test)." ;
+
+    ephedra:hasSPARQLPattern (
+        [
+            sp:subject met:_results ;
+            sp:predicate met:q ;
+            sp:object met:_q
+        ]
+        [
+           sp:subject met:_results ;
+           sp:predicate met:objectIDs ;
+           sp:object met:_objectIDs
+        ]
+    );
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "search term" ;
+        spl:predicate met:_q ;
+        spl:valueType xsd:string ;
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "results" ;
+        spl:predicate met:_results ;
+        spl:valueType rdfs:Resource;
+        ephedra:jsonPath "$.objectIDs.[*]"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Object IDs" ;
+        spl:predicate met:_objectIDs ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$"
+    ] .

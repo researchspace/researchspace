@@ -19,7 +19,6 @@
 
 package org.researchspace.federation.repository;
 
-import org.eclipse.rdf4j.federated.FedXConfig;
 import org.eclipse.rdf4j.federated.endpoint.EndpointClassification;
 import org.eclipse.rdf4j.federated.endpoint.ResolvableEndpoint;
 import org.eclipse.rdf4j.federated.endpoint.provider.ResolvableRepositoryInformation;
@@ -47,7 +46,7 @@ import org.researchspace.repository.RepositoryManager;
 public class MpFederationSailRepository extends FedXRepository {
 
     public MpFederationSailRepository(MpFederation sail) {
-        super(sail, new FedXConfig());
+        super(sail, sail.getFedXConfig());
     }
 
     @Override
@@ -59,7 +58,7 @@ public class MpFederationSailRepository extends FedXRepository {
         SPARQLServiceResolver serviceResolver = new SPARQLServiceResolver();
         serviceResolver.setHttpClientSessionManager(repositoryManager.getClientSessionManager());
         
-        sail.repositoryIDMappings.forEach((refIri, repoId) -> {
+        sail.getRepositoryIDMappings().forEach((refIri, repoId) -> {
             try {
                 Repository repo = repositoryManager.getRepository(repoId);
                 if (repo != null) {
@@ -89,15 +88,16 @@ public class MpFederationSailRepository extends FedXRepository {
         // Add default member to the Sail BEFORE super.initializeInternal()
         // This ensures EndpointManager picks it up
         try {
-            if (repositoryManager.getRepository(sail.defaultRepositoryId) == null) {
-                 throw new SailException("Default repository not found: " + sail.defaultRepositoryId);
+            String defaultRepositoryId = sail.getDefaultRepositoryId();
+            if (repositoryManager.getRepository(defaultRepositoryId) == null) {
+                 throw new SailException("Default repository not found: " + defaultRepositoryId);
             }
             
             ResolvableRepositoryInformation repoInfo = 
-                new ResolvableRepositoryInformation(sail.defaultRepositoryId);
+                new ResolvableRepositoryInformation(defaultRepositoryId);
             repoInfo.setWritable(true);
             ResolvableEndpoint defaultEndpoint = 
-                new ResolvableEndpoint(repoInfo, sail.defaultRepositoryId, EndpointClassification.Remote);
+                new ResolvableEndpoint(repoInfo, defaultRepositoryId, EndpointClassification.Remote);
                         
             sail.addFederationMember(defaultEndpoint);
         } catch (Exception e) {

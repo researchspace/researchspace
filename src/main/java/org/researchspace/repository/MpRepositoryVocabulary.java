@@ -121,6 +121,12 @@ public class MpRepositoryVocabulary {
     public static final IRI VALUE = VF.createIRI(FEDERATION_NAMESPACE, "value");
     public static final IRI INPUT_FORMAT = VF.createIRI(FEDERATION_NAMESPACE, "inputFormat");
     public static final IRI MEDIA_TYPE = VF.createIRI(FEDERATION_NAMESPACE, "mediaType");
+    /**
+     * If set to true, HTTP errors (4xx, 5xx) from REST services will be ignored
+     * and return empty results instead of failing the entire query. Useful for
+     * services where some items may return 403 Forbidden but others succeed.
+     */
+    public static final IRI IGNORE_HTTP_ERRORS = VF.createIRI(FEDERATION_NAMESPACE, "ignoreHttpErrors");
 
     public static final IRI IMPLEMENTS_SERVICE = VF.createIRI(FEDERATION_NAMESPACE, "implementsService");
 
@@ -137,6 +143,13 @@ public class MpRepositoryVocabulary {
     // REST authorization
     public static final IRI AUTHORIZATION_KEY = VF.createIRI(FEDERATION_NAMESPACE, "authKey");
     public static final IRI AUTHORIZATION_VALUE = VF.createIRI(FEDERATION_NAMESPACE, "authValue");
+    
+    /**
+     * Number of HTTP calls to prefetch for REST services.
+     * Higher values improve parallelism but may make slightly more calls than needed when LIMIT is used.
+     * Default is 5.
+     */
+    public static final IRI REST_SERVICE_PREFETCH_SIZE = VF.createIRI(FEDERATION_NAMESPACE, "restServicePrefetchSize");
     public static final IRI AUTHORIZATION_LOCATION = VF.createIRI(FEDERATION_NAMESPACE, "authLocation");
 
     // SQL authorization

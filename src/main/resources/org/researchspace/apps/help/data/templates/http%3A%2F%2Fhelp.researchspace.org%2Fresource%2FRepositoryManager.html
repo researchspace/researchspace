@@ -199,6 +199,7 @@
     Ephedra is a 
     SPARQL query federation architecture that is able to send federated 
     queries over several repositories registered in the Repository Manager.
+    It is built on top of FedX and adds support for REST services and query hints.
     <mp-code-block mode='text/turtle'>
     <![CDATA[
 @prefix config: <tag:rdf4j.org,2023:config/> .
@@ -206,6 +207,8 @@
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
 @prefix mps: <http://www.researchspace.org/resource/system/service#> .
 @prefix mpf: <http://www.researchspace.org/resource/system/repository/federation#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix fedx: <http://rdf4j.org/config/federation#> .
 
 [] a config:Repository ;
     config:rep.id "ephedra" ;
@@ -214,19 +217,79 @@
       config:rep.type "researchspace:FederationSailRepository" ;
       config:sail.impl [
           config:sail.type "researchspace:Federation" ;
-          mph:defaultMember "default" # Repository ID of the default member of the federation
+          mph:defaultMember "default" ; # Repository ID of the default member of the federation
           config:fed.member [
-            mph:delegateRepositoryID "{%Repository ID of the federation member|wikidata-text%}" ;
-            mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:wikidata-text%}
+            ephedra:delegateRepositoryID "{%Repository ID of the federation member|wikidata-text%}" ;
+            ephedra:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:wikidata-text%}
           ] ;
           config:fed.member [
-            mph:delegateRepositoryID "{%Repository ID of the federation member|assets%}" ;
-            mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:assets%}
-          ] 
+            ephedra:delegateRepositoryID "{%Repository ID of the federation member|assets%}" ;
+            ephedra:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:assets%}
+          ] ;
+          
+          # Optional: FedX configuration
+          fedx:config [
+            fedx:enforceMaxQueryTime 120 ;    # Query timeout in seconds (default: 120)
+            fedx:joinWorkerThreads 20 ;       # Parallel join threads (default: 20)
+            fedx:debugQueryPlan false         # Print query plan to stdout (default: false)
+          ]
       ] 
     ] .
       ]]>
-    </mp-code-block> 
+    </mp-code-block>
+    
+    <h4>Ephedra Configuration Properties</h4>
+    <p>Ephedra supports all standard FedX configuration properties via the <code>fedx:config</code> block:</p>
+    <table class="table table-striped">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>fedx:enforceMaxQueryTime</code></td><td><strong>120</strong></td><td>Query timeout in seconds (0 = disabled). ResearchSpace default is 120s.</td></tr>
+        <tr><td><code>fedx:joinWorkerThreads</code></td><td>20</td><td>Thread pool size for parallel join operations</td></tr>
+        <tr><td><code>fedx:unionWorkerThreads</code></td><td>20</td><td>Thread pool size for parallel union operations</td></tr>
+        <tr><td><code>fedx:leftJoinWorkerThreads</code></td><td>10</td><td>Thread pool size for LEFT JOIN operations</td></tr>
+        <tr><td><code>fedx:boundJoinBlockSize</code></td><td>25</td><td>Number of bindings per VALUES clause in bound join</td></tr>
+        <tr><td><code>fedx:enableServiceAsBoundJoin</code></td><td>true</td><td>Use VALUES clause for SERVICE evaluation</td></tr>
+        <tr><td><code>fedx:enableMonitoring</code></td><td>false</td><td>Enable monitoring features</td></tr>
+        <tr><td><code>fedx:debugQueryPlan</code></td><td>false</td><td>Print optimized query plan to stdout</td></tr>
+        <tr><td><code>fedx:logQueryPlan</code></td><td>false</td><td>Log query plan via QueryPlanLog</td></tr>
+        <tr><td><code>fedx:sourceSelectionCacheSpec</code></td><td>-</td><td>Guava CacheBuilderSpec for source selection cache</td></tr>
+      </tbody>
+    </table>
+    
+    <h4>Ephedra-Specific Configuration</h4>
+    <p>In addition to FedX properties, Ephedra supports these configuration options directly on the SAIL:</p>
+    <table class="table table-striped">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ephedra:restServicePrefetchSize</code></td><td>5</td><td>Number of parallel HTTP calls for REST services. Higher values improve performance but may make slightly more calls than needed when LIMIT is used.</td></tr>
+        <tr><td><code>ephedra:enableQueryHints</code></td><td>true</td><td>Enable query hint annotations for join reordering</td></tr>
+      </tbody>
+    </table>
+    
+    <h4>REST Service Handling</h4>
+    <p>Ephedra automatically detects REST-backed services and uses <strong>bounded prefetching</strong> to balance parallelism with LIMIT awareness. 
+    It maintains up to <code>restServicePrefetchSize</code> HTTP calls in-flight at any time. When <code>LIMIT</code> is reached, 
+    pending calls are cancelled. This ensures fast execution while respecting LIMIT clauses.</p>
+    
+    <div class="alert alert-info">
+      <strong>Example:</strong> With <code>ephedra:restServicePrefetchSize 5</code> and <code>LIMIT 20</code>:
+      <ul>
+        <li>Best case: ~20 HTTP calls</li>
+        <li>Worst case: ~25 HTTP calls (20 + 5 prefetched)</li>
+        <li>~5x faster than sequential execution!</li>
+      </ul>
+    </div>
+    
+    <div class="alert alert-warning">
+      <strong>ORDER BY Limitation:</strong> When using <code>ORDER BY</code> on a variable that comes from a REST service result, 
+      all HTTP calls must be made before sorting can occur. This defeats the lazy evaluation optimization. 
+      To benefit from LIMIT optimization with REST services, avoid <code>ORDER BY</code> on REST result variables, 
+      or perform sorting client-side. See the <semantic-link iri="[[resolvePrefix 'Help:RESTSail']]" class="text-link-action">REST Sail documentation</semantic-link> for details.
+    </div>
     
     <hr class="divider">
     <h3>FedX federation repository</h3>

@@ -41,13 +41,16 @@ export interface KeywordSearchConfig {
   tokenizeLuceneQuery?: boolean;
 
   /**
-   * If tokenizeLuceneQuery is true this parameter can be used to
-   * filter out tokens that a shorter then specified lenght.
+   * If tokenizeLuceneQuery is true, this parameter can be used to
+   * filter out tokens shorter than the specified length.
    * 
-   * So if minTokenLength=3, and input string is "an apple",
-   * then only "apple*" will be propagated to the query.
+   * When set, e.g. minTokenLength=3, and the input string is "an apple",
+   * only "apple*" will be propagated to the query.
    * 
-   * @default 3
+   * When undefined (default), no token length filtering is applied,
+   * preserving backward-compatible behavior where all tokens are included.
+   * 
+   * @default undefined (no filtering)
    */
   minTokenLength?: number;
 }
@@ -56,22 +59,18 @@ export const defaultKeywordSearchConfig: KeywordSearchConfig = {
   minSearchTermLength: 3,
   tokenizeLuceneQuery: true,
   escapeLuceneSyntax: true,
-  minTokenLength: 3,
 };
 
 /**
  * Check if text string confirms to KeywoardSearchConfig
  */
 export function textConfirmsToConfig(input: string, searchConfig: KeywordSearchConfig) {
-  const { 
-    tokenizeLuceneQuery, escapeLuceneSyntax, minTokenLength, minSearchTermLength
-  } = { ...defaultKeywordSearchConfig, ...searchConfig };
+  const mergedConfig = { ...defaultKeywordSearchConfig, ...searchConfig };
+  const { tokenizeLuceneQuery, escapeLuceneSyntax, minTokenLength, minSearchTermLength } = mergedConfig;
   if (input && input.length >= minSearchTermLength) {
-    if (tokenizeLuceneQuery) {
-      // we need to check if when we tokenize the query we get at least one token that
-      // confirms to min token lenght 
-      const tokenizedInput = 
-        luceneTokenize(input, tokenizeLuceneQuery, escapeLuceneSyntax, minTokenLength);
+    if (tokenizeLuceneQuery && minTokenLength !== undefined) {
+      // When minTokenLength is set, check if tokenization produces at least one valid token
+      const tokenizedInput = luceneTokenize(input, escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength);
       return tokenizedInput.length > 0;
     } else {
       return true;
@@ -87,12 +86,13 @@ export function textConfirmsToConfig(input: string, searchConfig: KeywordSearchC
 const LUCENE_ESCAPE_REGEX = /([+\-&|!(){}\[\]^"~*?:\\])/g;
 
 export function luceneTokenize(
-  inputText: string, escape = true, tokenize = true, minTokenLength: number
+  inputText: string, escape = true, tokenize = true, minTokenLength?: number
 ): string[] {
   return inputText
     .split(' ')
     .map((w) => w.trim()) // Trim whitespace
-    .filter((w) => w.length >= minTokenLength) // Filter by length after trimming
+    .filter((w) => w.length > 0) // Filter empty strings
+    .filter((w) => minTokenLength === undefined || w.length >= minTokenLength) // Apply length filter only if specified
     .map((w) => {
       let processedWord = w;
       if (escape) {

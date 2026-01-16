@@ -63,23 +63,26 @@ export class ErrorNotification extends Component<ErrorNotificationProps, {}> {
       D.div({className: `${CLASS_NAME}__title`}, title), 
       D.div({className: `${CLASS_NAME}__more`}, 'see more')
     );
-    return Panel(
-      {
-        collapsible: true,
-        header: errorHeader,
+    return createElement(ReactBootstrap.Panel, {
         className,
         defaultExpanded: isTimeout || this.props.defaultExpanded,
       },
-      
-      errorMessage ? 
-      D.div({ className: `${CLASS_NAME}__error`  }, 
-            D.div({className: `${CLASS_NAME}__error-icon`}, 
-              createElement(Icon, {iconType:'rounded', iconName: 'priority_high', symbol: true})
-            ),
-            D.div({}, createElement(ErrorPresenter, { error: errorMessage }) )
-            
-          ) 
-      : this.props.children
+      createElement(ReactBootstrap.Panel.Heading, {},
+        createElement(ReactBootstrap.Panel.Title, { toggle: true }, errorHeader)
+      ),
+      createElement(ReactBootstrap.Panel.Collapse, {},
+        createElement(ReactBootstrap.Panel.Body, {},
+          errorMessage ? 
+          D.div({ className: `${CLASS_NAME}__error`  }, 
+                D.div({className: `${CLASS_NAME}__error-icon`}, 
+                  createElement(Icon, {iconType:'rounded', iconName: 'priority_high', symbol: true})
+                ),
+                D.div({}, createElement(ErrorPresenter, { error: errorMessage }) )
+                
+              ) 
+          : this.props.children
+        )
+      )
     );
   }
 }

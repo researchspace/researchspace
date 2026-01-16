@@ -65,6 +65,8 @@ class URLMinifier extends Component<Props, State> {
     };
   }
 
+  private triggerRef: ReactBootstrap.OverlayTrigger | null = null;
+
   private generateTargetURL(): Kefir.Property<string> {
     if (typeof this.props.iri === 'string') {
       return URLMinifierService.getShortURLForResource(
@@ -100,9 +102,13 @@ class URLMinifier extends Component<Props, State> {
 
   shouldComponentUpdate(nextProps, nextState) {
     if (!this.state.showLink && nextState.showLink) {
-      (this.refs['trigger'] as any).show();
+      if (this.triggerRef) {
+        (this.triggerRef as any).show();
+      }
     } else if (this.state.showLink && !nextState.showLink) {
-      (this.refs['trigger'] as any).hide();
+      if (this.triggerRef) {
+        (this.triggerRef as any).hide();
+      }
     }
     return true;
   }
@@ -111,7 +117,7 @@ class URLMinifier extends Component<Props, State> {
     const child = Children.only(this.props.children) as ReactElement<any>;
     return OverlayTrigger(
       {
-        ref: 'trigger',
+        ref: (node) => { this.triggerRef = node; },
         trigger: [],
         placement: 'bottom',
         rootClose: true,

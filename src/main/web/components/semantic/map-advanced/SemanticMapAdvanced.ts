@@ -218,6 +218,22 @@ export interface SemanticMapAdvancedConfig {
   vectorLevels?: [];
 
   /**
+   * Optional SPARQL query to dynamically load tile layers.
+   * The query should return bindings with: url, identifier, name, level, author, location, year, thumbnail
+   * Example:
+   * ```sparql
+   * SELECT ?url ?identifier ?name ?level ?author ?location ?year ?thumbnail
+   * WHERE {
+   *   ?source a youronto:SourcePrimary ;
+   *     youronto:georeferencedUrl ?url ;
+   *     youronto:identifier ?identifier ;
+   *     ...
+   * }
+   * ```
+   */
+  tilesLayersQuery?: string;
+
+  /**
    * Optional style configuration for selected features.
    * Allows customization of how selected features appear on the map.
    */
@@ -570,12 +586,38 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   /** REACT COMPONENT FUNCTIONS **/
 
   public componentDidMount() {
-    requestAnimationFrame(() => {
-      this.createMap();
-    });
-    this.setState({
-      mapLayers: this.setTilesLayersFromTemplate(),
-    });
+    // If tilesLayersQuery is provided, load tiles from query
+    if (this.props.tilesLayersQuery) {
+      this.loadTilesLayersFromQuery().then((dynamicTiles) => {
+        const templateTiles = this.setTilesLayersFromTemplate();
+        const allTiles = [...dynamicTiles, ...templateTiles];
+        this.setState({
+          mapLayers: allTiles,
+        }, () => {
+          requestAnimationFrame(() => {
+            this.createMap();
+          });
+        });
+      }).catch((error) => {
+        console.error('Error loading tiles from query:', error);
+        // Fallback to template tiles only
+        this.setState({
+          mapLayers: this.setTilesLayersFromTemplate(),
+        }, () => {
+          requestAnimationFrame(() => {
+            this.createMap();
+          });
+        });
+      });
+    } else {
+      // Original behavior: use template tiles
+      requestAnimationFrame(() => {
+        this.createMap();
+      });
+      this.setState({
+        mapLayers: this.setTilesLayersFromTemplate(),
+      });
+    }
   }
 
   public componentWillUnmount() {
@@ -1635,7 +1677,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private setTilesLayersFromTemplate() {
     let tilesLayers = [];
     React.Children.forEach(this.props.children, (child: any) => {
-      if (child.type.name === 'TilesLayer') {
+      // Check for both React component (TilesLayer) and web component (tiles-layer)
+      if (child && child.type && 
+          (child.type.name === 'TilesLayer' || child.type === 'tiles-layer')) {
         const tileslayer = new TileLayer({
           source: new XYZ({ url: child.props.url }),
         });
@@ -1651,6 +1695,56 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     });
     console.log('Map ', this.props.id, ' loaded tileslayers from template: ', tilesLayers);
     return tilesLayers;
+  }
+
+  /**
+   * Loads tiles layers from a SPARQL query
+   * Returns a Promise that resolves to an array of TileLayer instances
+   */
+  private loadTilesLayersFromQuery(): Promise<Array<any>> {
+    return new Promise((resolve, reject) => {
+      if (!this.props.tilesLayersQuery) {
+        resolve([]);
+        return;
+      }
+
+      console.log('[DEBUG] Executing tilesLayersQuery:', this.props.tilesLayersQuery);
+
+      const stream = SparqlClient.select(this.props.tilesLayersQuery, { context: this.context.semanticContext });
+
+      stream.onValue((res) => {
+        if (SparqlUtil.isSelectResultEmpty(res)) {
+          console.warn('[DEBUG] No tiles layers found from query');
+          resolve([]);
+          return;
+        }
+
+        const results = res.results.bindings;
+        console.log(`[DEBUG] Found ${results.length} tiles layers from query`);
+
+        const tilesLayers = results.map((binding) => {
+          const tileslayer = new TileLayer({
+            source: new XYZ({ url: binding.url.value }),
+          });
+          tileslayer.set('level', binding.level.value);
+          tileslayer.set('name', binding.name.value);
+          tileslayer.set('year', binding.year ? binding.year.value : '');
+          tileslayer.set('location', binding.location ? binding.location.value : '');
+          tileslayer.set('author', binding.author ? binding.author.value : '');
+          tileslayer.set('identifier', binding.identifier.value);
+          tileslayer.set('thumbnail', binding.thumbnail ? binding.thumbnail.value : '');
+          return tileslayer;
+        });
+
+        console.log('Map ', this.props.id, ' loaded ', tilesLayers.length, ' tileslayers from query');
+        resolve(tilesLayers);
+      });
+
+      stream.onError((error) => {
+        console.error('[DEBUG] Error executing tilesLayersQuery:', error);
+        reject(error);
+      });
+    });
   }
 
   private renderMap(node, center, markers) {
@@ -1672,8 +1766,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           tileslayer.set('visible', false);
         });
 
-        basemapLayers[0].set('visible', true);
-        basemapLayers[1].set('visible', true);
+        // Add defensive checks before accessing array elements
+        if (basemapLayers.length > 0) {
+          basemapLayers[0].set('visible', true);
+        }
+        if (basemapLayers.length > 1) {
+          basemapLayers[1].set('visible', true);
+        }
 
 
         let mapLayersClone = this.state.mapLayers;

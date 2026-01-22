@@ -13,6 +13,22 @@ declare namespace SemanticMapControlsScssNamespace {
     featuresOptionsContainer: string;
     featuresOptionsTitle: string;
     mapOptionsSectionTitle: string;
+    
+    // Styling panel toggle and options
+    stylingToggleContainer: string;
+    stylingToggleLabel: string;
+    toggleSwitch: string;
+    toggleSwitchOn: string;
+    toggleSwitchHandle: string;
+    stylingOptionsSection: string;
+    stylingOptionGroup: string;
+    stylingOptionTitle: string;
+    labelBackgroundToggle: string;
+    checkboxLabel: string;
+    radioGroup: string;
+    radioLabel: string;
+    paletteControlsContainer: string;
+    paletteButton: string;
     layerThumbnail: string;
     togglesColumn: string;
     togglesColumnLeft: string;

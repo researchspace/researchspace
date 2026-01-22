@@ -74,6 +74,7 @@ import * as Popup from 'ol-popup';
 
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
+import * as basemapStyles from './BasemapControl.scss';
 import {
   SemanticMapBoundingBoxChanged,
   SemanticMapUpdateFeatureColor,
@@ -99,6 +100,7 @@ import {
   SemanticMapControlsSendMapLayersToMap,
   SemanticMapControlsSendMaskIndexToMap,
   SemanticMapControlsSendFeaturesLabelToMap,
+  SemanticMapControlsSendLabelBackgroundToMap,
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
@@ -263,6 +265,7 @@ interface MapState {
   mapLayers?: Array<any>;
   maskIndex?: number;
   featuresLabel: string;
+  labelBackgroundEnabled: boolean;
   featuresColorTaxonomy: string;
   groupColorAssociations: {};
   year: string;
@@ -270,6 +273,10 @@ interface MapState {
   registeredControls: Array<any>;
   selectedFeature: Feature | null;
   vectorLevels: {};
+  // Basemap control state
+  basemapControlExpanded: boolean;
+  selectedBasemapIdentifier: string | null;
+  basemapLayers: Array<any>;
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -289,7 +296,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private draw: Interaction;
   private snap: Interaction;
-  private defaultFeaturesColor = 'rgba(200,80,20,0.3)';
+  private defaultFeaturesColor = 'rgba(128,128,128,0.5)'; // Default gray color
 
   // Performance optimization properties
   private styleCache: { [key: string]: Style } = {};
@@ -318,6 +325,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       mapLayers: [new TileLayer({ source: new OSM() })],
       maskIndex: 1,
       featuresLabel: '',
+      labelBackgroundEnabled: false,
       featuresColorTaxonomy: '',
       groupColorAssociations: {},
       registeredControls: [],
@@ -327,6 +335,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       vectorLevels: this.props.vectorLevels
         ? this.props.vectorLevels.reduce((acc, val, id) => ({ ...acc, [val]: { id, visible: true } }), {})
         : {},
+      // Basemap control state
+      basemapControlExpanded: false,
+      selectedBasemapIdentifier: null,
+      basemapLayers: [],
     };
 
     // this.initEditingModeInteractions();
@@ -405,6 +417,14 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         })
       )
       .onValue(this.setFeaturesLabel);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsSendLabelBackgroundToMap,
+        })
+      )
+      .onValue(this.setLabelBackground);
 
     this.cancelation
       .map(
@@ -507,6 +527,131 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    * Handler for the zoom to feature event
    * Zooms to the feature specified in the event data
    */
+  /** BASEMAP CONTROL METHODS */
+  
+  private toggleBasemapExpanded = () => {
+    this.setState({ basemapControlExpanded: !this.state.basemapControlExpanded });
+  };
+  
+  private selectBasemap = (identifier: string) => {
+    console.log('Selecting basemap:', identifier);
+    
+    // Update all basemap layers visibility
+    const newMapLayers = this.state.mapLayers.map(layer => {
+      if (layer.get('level') === 'basemap') {
+        layer.set('visible', layer.get('identifier') === identifier);
+      }
+      return layer;
+    });
+    
+    this.setState({
+      selectedBasemapIdentifier: identifier,
+      basemapControlExpanded: false,
+      mapLayers: newMapLayers,
+    }, () => {
+      // Re-render map to apply changes
+      if (this.map) {
+        this.map.render();
+      }
+      // Send updated layers to controls
+      this.sendLayersToControls();
+    });
+  };
+  
+  private getBasemapLayers(): Array<any> {
+    return this.state.mapLayers.filter(layer => layer.get('level') === 'basemap');
+  };
+  
+  private getCurrentBasemap(): any {
+    const basemaps = this.getBasemapLayers();
+    // Find the currently visible basemap
+    const visible = basemaps.find(layer => layer.get('visible'));
+    // Return visible basemap or the first one
+    return visible || basemaps[0];
+  };
+  
+  private renderMeasurementToolButton() {
+    const isActive = this.state.overlayVisualization === 'measure';
+    
+    return D.div(
+      { className: basemapStyles.measurementToolContainer },
+      D.button(
+        {
+          className: `${basemapStyles.measurementToolButton} ${isActive ? basemapStyles.active : ''}`,
+          onClick: () => this.toggleMeasurementTool(),
+          title: isActive ? 'Deactivate measurement tool (ESC)' : 'Measure distance',
+        },
+        D.span({ className: 'material-icons-round', style: { fontSize: '18px' } }, 'straighten')
+      )
+    );
+  }
+  
+  private toggleMeasurementTool = () => {
+    if (this.state.overlayVisualization === 'measure') {
+      // Deactivate
+      this.deactivateMeasurementTool();
+      this.setState({ overlayVisualization: 'normal' });
+    } else {
+      // First, clean up any other active visualization mode
+      if (this.state.overlayVisualization !== 'normal') {
+        this.cleanupVisualizationMode(this.state.overlayVisualization);
+      }
+      // Activate measurement tool
+      this.activateMeasurementTool();
+    }
+  };
+
+  private renderBasemapControl() {
+    const basemaps = this.getBasemapLayers();
+    if (basemaps.length === 0) return null;
+    
+    const currentBasemap = this.getCurrentBasemap();
+    const isExpanded = this.state.basemapControlExpanded;
+    
+    return D.div(
+      {
+        className: basemapStyles.basemapControlContainer,
+        onMouseLeave: () => this.setState({ basemapControlExpanded: false }),
+      },
+      D.div(
+        { className: basemapStyles.basemapControlMain },
+        // Current basemap thumbnail (always visible)
+        D.div(
+          {
+            className: basemapStyles.basemapControlCurrent,
+            onClick: this.toggleBasemapExpanded,
+            onMouseEnter: () => this.setState({ basemapControlExpanded: true }),
+          },
+          currentBasemap?.get('thumbnail') 
+            ? D.img({ src: currentBasemap.get('thumbnail'), alt: currentBasemap.get('name') || 'Basemap' })
+            : D.div({ className: basemapStyles.basemapNoThumbnail }, D.i({ className: 'fa fa-map' })),
+          D.div({ className: basemapStyles.basemapCurrentLabel }, currentBasemap?.get('name') || 'Basemap'),
+          D.i({ className: `fa fa-caret-down ${basemapStyles.basemapExpandIcon}` })
+        ),
+        // Expanded grid of options (no header or close button - closes on mouse leave)
+        D.div(
+          { className: `${basemapStyles.basemapControlExpanded} ${isExpanded ? basemapStyles.visible : ''}` },
+          basemaps.map((basemap) => {
+            const identifier = basemap.get('identifier');
+            const isSelected = currentBasemap?.get('identifier') === identifier;
+            return D.div(
+              {
+                key: identifier,
+                className: `${basemapStyles.basemapOption} ${isSelected ? basemapStyles.selected : ''}`,
+                onClick: () => this.selectBasemap(identifier),
+              },
+              basemap.get('thumbnail')
+                ? D.img({ src: basemap.get('thumbnail'), alt: basemap.get('name') || identifier })
+                : D.div({ className: basemapStyles.basemapNoThumbnail }, D.i({ className: 'fa fa-map' })),
+              D.div({ className: basemapStyles.basemapOptionLabel }, basemap.get('name') || identifier),
+              isSelected && D.div({ className: basemapStyles.basemapSelectedCheck }, D.i({ className: 'fa fa-check' }))
+            );
+          })
+        )
+      )
+    );
+  }
+
   private handleZoomToFeature = (event: Event<any>) => {
     console.log('Received zoom to feature event:', event);
     
@@ -701,6 +846,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           style: { display: 'none' },
         })
       ),
+      // Basemap control - Google Maps style selector in bottom-right corner
+      !isMapLoading && this.renderBasemapControl(),
+      // Measurement tool button - above zoom controls
+      !isMapLoading && this.renderMeasurementToolButton(),
       isMapLoading ? this.renderLoadingOverlay() : null
     );
   }
@@ -1086,6 +1235,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     );
   };
 
+  private setLabelBackground = (event: Event<any>) => {
+    this.setState(
+      {
+        labelBackgroundEnabled: event.data,
+      },
+      () => {
+        this.applyFeaturesFilteringFromControls();
+      }
+    );
+  };
+
   // This sets the visualizations mask index correctly
   private setMaskIndex = (event: Event<any>) => {
     this.setState({ maskIndex: event.data });
@@ -1124,25 +1284,27 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
     }
     let color = this.defaultFeaturesColor;
-    //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
-    if (this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy) {
-      let feature_group = feature.get(this.state.featuresColorTaxonomy).value;
-      var group_color = this.state.groupColorAssociations[feature_group];
-      if (
-        this.state.featuresColorTaxonomy &&
-        feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations &&
-        group_color !== this.defaultFeaturesColor
-      ) {
-        if (typeof group_color === 'string') {
-          color = group_color;
-        } else {
-          let color_rgba = group_color.rgb;
-          let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
-          color = rgba_string;
+    // Only apply color taxonomy if it's set and not 'default' or empty
+    if (this.state.registeredControls.length > 0 && 
+        this.state.featuresColorTaxonomy && 
+        this.state.featuresColorTaxonomy !== 'default' && 
+        this.state.featuresColorTaxonomy !== '') {
+      const taxonomyValue = feature.get(this.state.featuresColorTaxonomy);
+      if (taxonomyValue && taxonomyValue.value) {
+        let feature_group = taxonomyValue.value;
+        var group_color = this.state.groupColorAssociations[feature_group];
+        if (feature_group in this.state.groupColorAssociations && group_color !== this.defaultFeaturesColor) {
+          if (typeof group_color === 'string') {
+            color = group_color;
+          } else if (group_color && group_color.rgb) {
+            let color_rgba = group_color.rgb;
+            let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
+            color = rgba_string;
+          }
         }
       }
     }
-    let featureStyle = getFeatureStyle(geometry, color);
+    let featureStyle = getFeatureStyle(geometry, color, this.state.labelBackgroundEnabled);
     if (label) {
       featureStyle.getText().setText(label);
     }
@@ -3613,7 +3775,7 @@ function getMarkerStyle() {
   };
 }
 
-function getFeatureStyle(geometry: Geometry, color: string | undefined): Style {
+function getFeatureStyle(geometry: Geometry, color: string | undefined, labelBackgroundEnabled: boolean = false): Style {
   if (geometry instanceof Point || geometry instanceof MultiPoint) {
     return new Style({
       geometry,
@@ -3628,7 +3790,7 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined): Style {
     // For geometry collections, use the first geometry's style
     const geometries = geometry.getGeometries();
     if (geometries.length > 0) {
-      return getFeatureStyle(geometries[0], color);
+      return getFeatureStyle(geometries[0], color, labelBackgroundEnabled);
     }
     // Fallback if no geometries
     return new Style({
@@ -3636,19 +3798,35 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined): Style {
       stroke: new Stroke({ color: color || 'rgba(202, 255, 36, .3)', width: 1.25 }),
     });
   }
+  
+  // Create text style options
+  const textOptions: any = {
+    font: '12px Calibri,sans-serif',
+    overflow: true,
+    fill: new Fill({
+      color: '#000',
+    }),
+    stroke: new Stroke({
+      color: '#fff',
+      width: 3,
+    }),
+  };
+  
+  // Add background if enabled
+  if (labelBackgroundEnabled) {
+    textOptions.backgroundFill = new Fill({
+      color: 'rgba(255, 255, 255, 0.8)',
+    });
+    textOptions.backgroundStroke = new Stroke({
+      color: 'rgba(0, 0, 0, 0.1)',
+      width: 1,
+    });
+    textOptions.padding = [2, 4, 2, 4];
+  }
+  
   return new Style({
     geometry,
-    text: new Text({
-      font: '12px Calibri,sans-serif',
-      overflow: true,
-      fill: new Fill({
-        color: '#000',
-      }),
-      stroke: new Stroke({
-        color: '#fff',
-        width: 2,
-      }),
-    }),
+    text: new Text(textOptions),
     fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
     stroke: new Stroke({
       color: color || 'rgba(202, 255, 36, .3)',

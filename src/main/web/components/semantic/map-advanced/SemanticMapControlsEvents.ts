@@ -18,6 +18,7 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.SendMapLayersToMap': any[];
   'SemanticMapControls.SendMaskIndexToMap': number;
   'SemanticMapControls.SendFeaturesLabelToMap': string;
+  'SemanticMapControls.SendLabelBackgroundToMap': boolean;
   'SemanticMapControls.SendFeaturesColorTaxonomyToMap': string;
   'SemanticMapControls.SendFeaturesGroupsToControls': string[];
   'SemanticMapControls.SendGroupColorsAssociationsToMap': {};
@@ -44,6 +45,7 @@ export const SemanticMapSendMapLayers = event('SemanticMap.SendMapLayers');
 export const SemanticMapControlsSendMapLayersToMap = event('SemanticMapControls.SendMapLayersToMap');
 export const SemanticMapControlsSendMaskIndexToMap = event('SemanticMapControls.SendMaskIndexToMap');
 export const SemanticMapControlsSendFeaturesLabelToMap = event('SemanticMapControls.SendFeaturesLabelToMap');
+export const SemanticMapControlsSendLabelBackgroundToMap = event('SemanticMapControls.SendLabelBackgroundToMap');
 export const SemanticMapControlsSendFeaturesColorTaxonomyToMap = event('SemanticMapControls.SendFeaturesColorTaxonomyToMap');
 export const SemanticMapControlsSendGroupColorsAssociationsToMap = event('SemanticMapControls.SendGroupColorsAssociationsToMap');
 export const SemanticMapControlsSendToggle3d = event('SemanticMapControls.SendToggle3d');

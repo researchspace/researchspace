@@ -14,6 +14,7 @@ import {
   SemanticMapControlsSendMapLayersToMap,
   SemanticMapControlsSendMaskIndexToMap,
   SemanticMapControlsSendFeaturesLabelToMap,
+  SemanticMapControlsSendLabelBackgroundToMap,
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
@@ -79,6 +80,8 @@ interface State {
   isPlaying?: boolean; // For timeline animation
   animationInterval?: number; // For timeline animation
   generalizedData?: GeneralizedEventData; // For generalized data handling
+  stylingEnabled: boolean; // Controls whether feature styling (coloring/labeling) is enabled
+  labelBackgroundEnabled: boolean; // Controls whether labels have a soft background
 }
 
 interface Props {
@@ -130,16 +133,34 @@ interface Props {
    * Example: { "Person": "{{> person-template}}", "Building": "{{> building-template}}" }
    */
   templateMapping?: { [kind: string]: string };
+  /**
+   * Default color for geometries/features when no specific color is assigned.
+   * Format: rgba string e.g. 'rgba(200,50,50,0.5)'
+   */
+  defaultFeaturesColor?: string;
+  /**
+   * When true, shows the palette control buttons (generate random, restart palette).
+   * Default: false
+   */
+  showPaletteControls?: boolean;
+  /**
+   * Default color taxonomy to use when styling is enabled.
+   * Should match one of the values in featuresColorTaxonomies.
+   * If not specified, defaults to 'default' (no taxonomy coloring).
+   */
+  defaultColorTaxonomy?: string;
 }
 
 export class SemanticMapControls extends Component<Props, State> {
   private cancelation = new Cancellation();
   private featuresTaxonomies = [];
   private featuresColorTaxonomies = [];
-  private defaultFeaturesColor = 'rgba(200,50,50,0.5)';
+  private defaultFeaturesColor: string;
   //TODO: fix optionals
   constructor(props: any, context: ComponentContext) {
     super(props, context);
+    // Use the prop if provided, otherwise use the default gray value
+    this.defaultFeaturesColor = this.props.defaultFeaturesColor || 'rgba(128,128,128,0.5)';
     this.state = {
       overlayOpacity: 1,
       swipeValue: 50,
@@ -153,7 +174,7 @@ export class SemanticMapControls extends Component<Props, State> {
         ? this.props.filtersInitialization
         : { feature: true, overlay: true, basemap: true },
       selectedFeaturesLabel: '',
-      featuresColorTaxonomy: this.props.featuresColorTaxonomies ? this.props.featuresColorTaxonomies.split(',')[0] : '',
+      featuresColorTaxonomy: this.props.defaultColorTaxonomy || '',
       featuresColorGroups: [],
       displayColorPicker: {},
       groupColorAssociations: {},
@@ -161,6 +182,8 @@ export class SemanticMapControls extends Component<Props, State> {
       yearMarks: [],
       registeredMap: '',
       activePanel: null,
+      stylingEnabled: false, // Default to OFF
+      labelBackgroundEnabled: false, // Default to OFF
     };
     this.toggleGroupDisabled = this.toggleGroupDisabled.bind(this);
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
@@ -912,6 +935,48 @@ export class SemanticMapControls extends Component<Props, State> {
   };
   
   /**
+   * Handle label background toggle - sends event to map
+   */
+  private handleLabelBackgroundToggle = () => {
+    const newLabelBackgroundEnabled = !this.state.labelBackgroundEnabled;
+    this.setState({ labelBackgroundEnabled: newLabelBackgroundEnabled }, () => {
+      // Send the label background setting to the map
+      trigger({
+        eventType: SemanticMapControlsSendLabelBackgroundToMap,
+        source: this.props.id,
+        targets: [this.props.targetMapId],
+        data: newLabelBackgroundEnabled,
+      });
+    });
+  };
+  
+  /**
+   * Handle styling toggle - when disabled, reset label by and color by to none/default
+   */
+  private handleStylingToggle = () => {
+    const newStylingEnabled = !this.state.stylingEnabled;
+    
+    if (newStylingEnabled) {
+      // Just enable styling
+      this.setState({ stylingEnabled: true });
+    } else {
+      // Disable styling and reset options to none/default
+      this.setState(
+        {
+          stylingEnabled: false,
+          selectedFeaturesLabel: '', // Reset label by to 'none'
+          featuresColorTaxonomy: '', // Reset color by to 'default'
+        },
+        () => {
+          // Trigger updates to the map
+          this.triggerSendFeaturesLabelToMap();
+          this.triggerSendFeaturesColorTaxonomy();
+        }
+      );
+    }
+  };
+  
+  /**
    * Handle visualization mode changes from the map (e.g., when ESC is pressed)
    */
   private handleVisualizationModeChange = (event: any) => {
@@ -1138,22 +1203,7 @@ export class SemanticMapControls extends Component<Props, State> {
             </button>
           </OverlayTrigger>
           
-          {/* Measurement Tool Button */}
-          <OverlayTrigger
-            placement="right"
-            overlay={<Tooltip id="tooltip-measure">Measurement Tool</Tooltip>}
-          >
-            <button
-              className={`${styles.mapControlsButton} ${
-                this.state.overlayVisualization === 'measure' ? styles.mapControlsButtonActive : ''
-              } map-control-button-measure`}
-              onClick={() => this.toggleVisualizationMode('measure')}
-            >
-              <span className="map-control-icon-measure">
-                <i className="fa fa-arrows" style={{ fontSize: '24px' }}></i>
-              </span>
-            </button>
-          </OverlayTrigger>
+          {/* Measurement Tool moved to SemanticMapAdvanced map component directly */}
         </div>
 
         {/* Panels */}
@@ -1246,7 +1296,8 @@ export class SemanticMapControls extends Component<Props, State> {
                       </div>
                     )}
                     {/* <hr className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></hr> */}
-                    {this.state.mapLayers.map(
+                    {/* Filter out basemap layers - they are managed by the separate basemap control in SemanticMapAdvanced */}
+                    {this.state.mapLayers.filter(layer => layer.get('level') !== 'basemap').map(
                       (mapLayer, index) =>
                         this.state.filters[mapLayer.get('level')] && (
                           <Draggable
@@ -1397,72 +1448,134 @@ export class SemanticMapControls extends Component<Props, State> {
         )}
         {this.state.activePanel === 'buildings' && (
           <div className={`${styles.mapControlsPanel} ${this.getPanelAnimationClass('buildings')}`}>
-            {/* Standalone close button */}
-            <button
-              onClick={() => this.togglePanel('buildings')}
-              className={styles.mapControlsPanelCloseX}
-              title="Close panel"
-            >
-              <i className="fa fa-times"></i>
-            </button>
-
+            {/* Header with title and close button */}
             <div className={styles.mapControlsPanelHeader}>
+              <h3 className={styles.mapControlsPanelTitle}>Geometries Styling</h3>
+              <button
+                onClick={() => this.togglePanel('buildings')}
+                className={styles.mapControlsPanelCloseButton}
+                title="Close panel"
+              >
+                <i className="fa fa-times"></i>
+              </button>
             </div>
 
             {this.props.featuresOptionsEnabled && (
               <div className={styles.featuresOptionsContainer}>
-                <div className={styles.mapLayersFiltersContainer}>
-                  <div className={styles.featuresOptionsDiv}>
-                    <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
-                    <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
-                      <option key={'none'} value={'none'}>
-                        None
-                      </option>
-                      {this.featuresTaxonomies.map((taxonomy) => (
-                        <option key={taxonomy} value={taxonomy}>
-                          {this.capitalizeFirstLetter(taxonomy)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className={styles.featuresOptionsDiv}>
-                    <label style={{ marginRight: '10px', userSelect: 'none' }}>Color by: </label>
-                    <select
-                      name="featuresColorsList"
-                      style={{ width: '100px' }}
-                      id="featuresColorsList"
-                      onChange={this.handleColorTaxonomyChange}
+                {/* Enable Styling Toggle */}
+                <div className={styles.stylingToggleContainer}>
+                  <label className={styles.stylingToggleLabel}>
+                    <span>Enable Feature Styling</span>
+                    <div 
+                      className={`${styles.toggleSwitch} ${this.state.stylingEnabled ? styles.toggleSwitchOn : ''}`}
+                      onClick={() => this.handleStylingToggle()}
                     >
-                      {this.featuresColorTaxonomies.map((taxonomy) => (
-                        <option key={taxonomy} value={taxonomy}>
-                          {this.capitalizeFirstLetter(taxonomy)}
-                        </option>
-                      ))}
-                    </select>
-                    <OverlayTrigger
-                      key={'random'}
-                      placement={'top'}
-                      overlay={<Tooltip id={'tooltip-right'}>Generate a random color palette.</Tooltip>}
-                    >
-                      <i
-                        className={'fa fa-refresh'}
-                        style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
-                        onClick={this.handleGenerateColorPalette}
-                      ></i>
-                    </OverlayTrigger>
-                    <OverlayTrigger
-                      key={'reset'}
-                      placement={'top'}
-                      overlay={<Tooltip id={'tooltip-right'}>Restart palette to a single color.</Tooltip>}
-                    >
-                      <i
-                        className={'fa fa-paint-brush'}
-                        style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
-                        onClick={this.handleRestartColorPalette}
-                      ></i>
-                    </OverlayTrigger>
-                  </div>
+                      <div className={styles.toggleSwitchHandle}></div>
+                    </div>
+                  </label>
                 </div>
+
+                {/* Label and Color options - only shown when styling is enabled */}
+                {this.state.stylingEnabled && (
+                  <div className={styles.stylingOptionsSection}>
+                    {/* Label by section */}
+                    <div className={styles.stylingOptionGroup}>
+                      <label className={styles.stylingOptionTitle}>Label by</label>
+                      {/* Label background toggle - only show when a label is selected */}
+                      {this.state.selectedFeaturesLabel && this.state.selectedFeaturesLabel !== '' && this.state.selectedFeaturesLabel !== 'none' && (
+                        <div className={styles.labelBackgroundToggle}>
+                          <label className={styles.checkboxLabel}>
+                            <input
+                              type="checkbox"
+                              checked={this.state.labelBackgroundEnabled}
+                              onChange={() => this.handleLabelBackgroundToggle()}
+                            />
+                            <span>Show label background</span>
+                          </label>
+                        </div>
+                      )}
+                      <div className={styles.radioGroup}>
+                        <label className={styles.radioLabel}>
+                          <input
+                            type="radio"
+                            name="featuresLabelList"
+                            value="none"
+                            checked={this.state.selectedFeaturesLabel === '' || this.state.selectedFeaturesLabel === 'none'}
+                            onChange={this.handleSelectedLabelChange}
+                          />
+                          <span>None</span>
+                        </label>
+                        {this.featuresTaxonomies.map((taxonomy) => (
+                          <label key={taxonomy} className={styles.radioLabel}>
+                            <input
+                              type="radio"
+                              name="featuresLabelList"
+                              value={taxonomy}
+                              checked={this.state.selectedFeaturesLabel === taxonomy}
+                              onChange={this.handleSelectedLabelChange}
+                            />
+                            <span>{this.capitalizeFirstLetter(taxonomy)}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Color by section */}
+                    <div className={styles.stylingOptionGroup}>
+                      <label className={styles.stylingOptionTitle}>Color by</label>
+                      <div className={styles.radioGroup}>
+                        <label className={styles.radioLabel}>
+                          <input
+                            type="radio"
+                            name="featuresColorsList"
+                            value="default"
+                            checked={this.state.featuresColorTaxonomy === '' || this.state.featuresColorTaxonomy === 'default'}
+                            onChange={this.handleColorTaxonomyChange}
+                          />
+                          <span>Default</span>
+                        </label>
+                        {this.featuresColorTaxonomies.map((taxonomy) => (
+                          <label key={taxonomy} className={styles.radioLabel}>
+                            <input
+                              type="radio"
+                              name="featuresColorsList"
+                              value={taxonomy}
+                              checked={this.state.featuresColorTaxonomy === taxonomy}
+                              onChange={this.handleColorTaxonomyChange}
+                            />
+                            <span>{this.capitalizeFirstLetter(taxonomy)}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Palette controls - only shown when showPaletteControls prop is true */}
+                    {this.props.showPaletteControls && (
+                      <div className={styles.paletteControlsContainer}>
+                        <OverlayTrigger
+                          key={'random'}
+                          placement={'top'}
+                          overlay={<Tooltip id={'tooltip-right'}>Generate a random color palette.</Tooltip>}
+                        >
+                          <button className={styles.paletteButton} onClick={this.handleGenerateColorPalette}>
+                            <i className={'fa fa-refresh'}></i>
+                            <span>Random Palette</span>
+                          </button>
+                        </OverlayTrigger>
+                        <OverlayTrigger
+                          key={'reset'}
+                          placement={'top'}
+                          overlay={<Tooltip id={'tooltip-right'}>Restart palette to a single color.</Tooltip>}
+                        >
+                          <button className={styles.paletteButton} onClick={this.handleRestartColorPalette}>
+                            <i className={'fa fa-paint-brush'}></i>
+                            <span>Reset Palette</span>
+                          </button>
+                        </OverlayTrigger>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1535,8 +1648,12 @@ export class SemanticMapControls extends Component<Props, State> {
         )}
         </div>
 
-        {/* Colors Legend positioned outside the panel */}
-        {this.props.featuresOptionsEnabled && (
+        {/* Colors Legend positioned outside the panel - only visible when styling is enabled AND a taxonomy (not default) is selected */}
+        {this.props.featuresOptionsEnabled && this.state.stylingEnabled && 
+         this.state.featuresColorTaxonomy && 
+         this.state.featuresColorTaxonomy !== '' && 
+         this.state.featuresColorTaxonomy !== 'default' && 
+         this.state.featuresColorGroups.length > 0 && (
           <div className={`${styles.colorsLegend} ${this.state.activePanel === null ? styles.colorsLegendExternal : styles.colorsLegendWithPanel}`}>
             {/* Button container - will be hidden/shown on hover */}
             <div>
@@ -1806,16 +1923,28 @@ export class SemanticMapControls extends Component<Props, State> {
     const defaultColor = this.defaultFeaturesColor;
 
     // Iterate over each label in groupColorAssociations
+    // Only set colors for groups that have the default color (no custom user selection)
     for (let label in groupColorAssociationsClone) {
       let labelLowercased = label.toLowerCase();
-
-      if (featuresColorsPaletteLowercased.hasOwnProperty(labelLowercased)) {
-        // Use the color from featuresColorsPalette
-        groupColorAssociationsClone[label] = featuresColorsPaletteLowercased[labelLowercased];
-      } else {
-        // Assign the default color
-        groupColorAssociationsClone[label] = defaultColor;
+      
+      // Check if this group already has a user-selected custom color
+      // (i.e., not the default color and not a palette-assigned color from props)
+      const existingColor = groupColorAssociationsClone[label];
+      const isDefaultOrEmpty = !existingColor || 
+                              existingColor === this.defaultFeaturesColor || 
+                              existingColor === '';
+      
+      // Only apply palette/default colors to groups that don't have custom colors
+      if (isDefaultOrEmpty) {
+        if (featuresColorsPaletteLowercased.hasOwnProperty(labelLowercased)) {
+          // Use the color from featuresColorsPalette
+          groupColorAssociationsClone[label] = featuresColorsPaletteLowercased[labelLowercased];
+        } else {
+          // Assign the default color
+          groupColorAssociationsClone[label] = defaultColor;
+        }
       }
+      // If not default/empty, preserve the existing user-selected color
     }
 
     // Update the state
@@ -1907,14 +2036,24 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   private initializeGroupColorAssociations(groups: string[]) {
-    let colorGroups = {};
-    let displayColorPickerNew = {};
-    let groupDisabled = {};
+    // Preserve existing color associations for groups that already have custom colors
+    let colorGroups = { ...this.state.groupColorAssociations };
+    let displayColorPickerNew = { ...this.state.displayColorPicker };
+    let groupDisabled = { ...this.state.groupDisabled };
+    
+    // Only initialize NEW groups, preserve existing ones
     groups.forEach((group) => {
-      colorGroups[group] = this.defaultFeaturesColor;
-      displayColorPickerNew[group] = false;
-      groupDisabled[group] = false;
+      if (!(group in colorGroups)) {
+        colorGroups[group] = this.defaultFeaturesColor;
+      }
+      if (!(group in displayColorPickerNew)) {
+        displayColorPickerNew[group] = false;
+      }
+      if (!(group in groupDisabled)) {
+        groupDisabled[group] = false;
+      }
     });
+    
     this.setState(
       {
         groupColorAssociations: colorGroups,
@@ -1922,7 +2061,7 @@ export class SemanticMapControls extends Component<Props, State> {
         groupDisabled: groupDisabled,
       },
       () => {
-        console.log('GroupColorassociations initialized. Here are the associations:');
+        console.log('GroupColorassociations initialized (preserving existing). Here are the associations:');
         console.log(this.state.groupColorAssociations);
         this.generateColorPalette();
       }

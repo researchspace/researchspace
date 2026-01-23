@@ -1141,8 +1141,8 @@ export class SemanticMapControls extends Component<Props, State> {
               } map-control-button-basemap`}
               onClick={() => this.togglePanel('base')}
             >
-              <span className="map-control-icon-basemap">
-                <i className="fa fa-layer-group" style={{ fontSize: '24px' }}></i>
+              <span className="material-icons-round" style={{ fontSize: '24px' }}>
+                layers
               </span>
             </button>
           </OverlayTrigger>

@@ -41,11 +41,6 @@ const sliderbar: CSSProperties = {
   width: '100%',
 };
 
-interface Filters {
-  feature: boolean;
-  overlay: boolean;
-  basemap: boolean;
-}
 
 interface Timeline {
   mode: 'marked' | 'normal';
@@ -65,7 +60,6 @@ interface State {
   setColor: any;
   mapLayers: Array<any>;
   maskIndex: number;
-  filters: Filters;
   selectedFeaturesLabel: string;
   featuresColorTaxonomy: string;
   featuresColorGroups: string[];
@@ -90,8 +84,6 @@ interface Props {
   featuresTaxonomies: string;
   featuresColorTaxonomies: string;
   featuresOptionsEnabled: boolean;
-  filtersInitialization: Filters;
-  showFilters?: boolean;
   timeline: Timeline;
   featuresColorsPalette?: string;
   /**
@@ -149,6 +141,16 @@ interface Props {
    * If not specified, defaults to 'default' (no taxonomy coloring).
    */
   defaultColorTaxonomy?: string;
+  /**
+   * Title for the geometries section in the layers panel.
+   * Default: "Geometries"
+   */
+  geometriesSectionTitle?: string;
+  /**
+   * Title for the maps/tile layers section in the layers panel.
+   * Default: "Maps"
+   */
+  mapsSectionTitle?: string;
 }
 
 export class SemanticMapControls extends Component<Props, State> {
@@ -170,9 +172,6 @@ export class SemanticMapControls extends Component<Props, State> {
       mapLayers: [],
       maskIndex: -1,
       groupDisabled: {},
-      filters: this.props.filtersInitialization
-        ? this.props.filtersInitialization
-        : { feature: true, overlay: true, basemap: true },
       selectedFeaturesLabel: '',
       featuresColorTaxonomy: this.props.defaultColorTaxonomy || '',
       featuresColorGroups: [],
@@ -329,7 +328,6 @@ export class SemanticMapControls extends Component<Props, State> {
     if (this.props.featuresColorTaxonomies) {
       this.featuresColorTaxonomies = this.props.featuresColorTaxonomies.split(',');
     }
-    console.log('Filters initialization: ', this.props.filtersInitialization);
   }
 
   public componentWillUnmount() {
@@ -1132,7 +1130,7 @@ export class SemanticMapControls extends Component<Props, State> {
             </button>
           </OverlayTrigger>
 
-          {/* Base Maps Button */}
+          {/* Layers Button */}
           <OverlayTrigger
             placement="right"
             overlay={<Tooltip id="tooltip-base-maps">Layers</Tooltip>}
@@ -1144,7 +1142,7 @@ export class SemanticMapControls extends Component<Props, State> {
               onClick={() => this.togglePanel('base')}
             >
               <span className="map-control-icon-basemap">
-                <i className="fa fa-globe" style={{ fontSize: '24px' }}></i>
+                <i className="fa fa-layer-group" style={{ fontSize: '24px' }}></i>
               </span>
             </button>
           </OverlayTrigger>
@@ -1246,60 +1244,75 @@ export class SemanticMapControls extends Component<Props, State> {
               
             </div>
 
+            {/* Geometry Layers Section */}
+            {this.getGeometryLayers().length > 0 && (
+              <div className={styles.geometryLayersSection}>
+                <h4 className={styles.layersSectionTitle}>
+                  {this.props.geometriesSectionTitle || 'Geometries'}
+                </h4>
+                <div className={styles.geometryLayersList}>
+                  {this.getGeometryLayers()
+                    .sort((a, b) => {
+                      // Sort by z-index descending (higher z on top)
+                      const zIndexA = a.get('zIndex') || 0;
+                      const zIndexB = b.get('zIndex') || 0;
+                      return zIndexB - zIndexA;
+                    })
+                    .map((layer) => (
+                      <div 
+                        key={layer.get('identifier')} 
+                        className={`${styles.geometryLayerItem} ${layer.get('visible') ? '' : styles.geometryLayerItemHidden}`}
+                      >
+                        <div className={styles.geometryLayerContent}>
+                          <span className={styles.geometryLayerName}>
+                            {layer.get('name') || layer.get('t') || layer.get('identifier')}
+                          </span>
+                          <div className={styles.geometryLayerControls}>
+                            <i
+                              className={`fa ${layer.get('visible') ? 'fa-eye' : 'fa-eye-slash'} ${styles.geometryLayerToggle}`}
+                              onClick={() => this.setMapLayerProperty(layer.get('identifier'), 'visible', !layer.get('visible'))}
+                              title={layer.get('visible') ? 'Hide layer' : 'Show layer'}
+                            ></i>
+                          </div>
+                        </div>
+                        <div className={styles.geometryLayerOpacity}>
+                          <input
+                            type="range"
+                            className={styles.geometryOpacitySlider}
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={layer.get('opacity') ?? 1}
+                            onChange={(event) => {
+                              const opacity = parseFloat((event.target as HTMLInputElement).value);
+                              this.setMapLayerProperty(layer.get('identifier'), 'opacity', opacity);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Separator between geometry and tile layers */}
+            {this.getGeometryLayers().length > 0 && this.getOverlayLayers().length > 0 && (
+              <div className={styles.layersSectionSeparator}>
+                <span className={styles.layersSectionSeparatorLine}></span>
+                <span className={styles.layersSectionSeparatorText}>
+                  {this.props.mapsSectionTitle || 'Maps'}
+                </span>
+                <span className={styles.layersSectionSeparatorLine}></span>
+              </div>
+            )}
+            
+            {/* Tile/Overlay Layers Section (Draggable) */}
             <DragDropContext onDragEnd={this.onDragEnd}>
               <Droppable droppableId="droppable">
                 {(provided, snapshot) => (
                   <div {...provided.droppableProps} ref={provided.innerRef} className={styles.layersContainer}>
-                    {/* <h3 className={'mapLayersTitle'}>Map Layers</h3> */}
-                    {this.props.showFilters && (
-                      <div className={styles.mapLayersFiltersContainer}>
-                        <label>Filter:</label>
-                        <input
-                          className={styles.mapLayersFilters}
-                          name={'overlay-visualization'}
-                          type={'checkbox'}
-                          checked={this.state.filters.feature}
-                          onChange={(event) => {
-                            this.setState(
-                              { filters: { ...this.state.filters, feature: event.target.checked } },
-                              () => {}
-                            );
-                          }}
-                        ></input>
-                        <label className={styles.filtersLabel}>Features</label>
-                        <input
-                          className={styles.mapLayersFilters}
-                          name={'overlay-visualization'}
-                          type={'checkbox'}
-                          checked={this.state.filters.overlay}
-                          onChange={(event) => {
-                            this.setState(
-                              { filters: { ...this.state.filters, overlay: event.target.checked } },
-                              () => {}
-                            );
-                          }}
-                        ></input>
-                        <label className={styles.filtersLabel}>Overlays</label>
-                        <input
-                          className={styles.mapLayersFilters}
-                          name={'overlay-visualization'}
-                          type={'checkbox'}
-                          checked={this.state.filters.basemap}
-                          onChange={(event) => {
-                            this.setState(
-                              { filters: { ...this.state.filters, basemap: event.target.checked } },
-                              () => {}
-                            );
-                          }}
-                        ></input>
-                        <label className={styles.filtersLabel}>Basemaps</label>
-                      </div>
-                    )}
-                    {/* <hr className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></hr> */}
-                    {/* Filter out basemap layers - they are managed by the separate basemap control in SemanticMapAdvanced */}
-                    {this.state.mapLayers.filter(layer => layer.get('level') !== 'basemap').map(
-                      (mapLayer, index) =>
-                        this.state.filters[mapLayer.get('level')] && (
+                    {this.getOverlayLayers().map(
+                      (mapLayer, index) => (
                           <Draggable
                             key={mapLayer.get('identifier')}
                             draggableId={mapLayer.get('identifier')}
@@ -2087,32 +2100,71 @@ export class SemanticMapControls extends Component<Props, State> {
     );
   }
 
-  private setMapLayerProperty(identifier, propertyName, propertyValue) {
-    let mapLayersClone = this.state.mapLayers;
-    mapLayersClone.forEach(function (mapLayer) {
-      if (mapLayer.get('identifier') === identifier) {
-        mapLayer.set(propertyName, propertyValue);
-      }
-    });
+  /**
+   * Get geometry/feature layers from the map layers
+   * These are VectorLayers with level='feature'
+   */
+  private getGeometryLayers(): any[] {
+    return this.state.mapLayers.filter(layer => 
+      layer.get('level') === 'feature' || layer instanceof VectorLayer
+    );
+  }
+  
+  /**
+   * Get overlay/tile layers from the map layers
+   * These are TileLayers with level='overlay'
+   */
+  private getOverlayLayers(): any[] {
+    return this.state.mapLayers.filter(layer => layer.get('level') === 'overlay');
+  }
 
-    // If we're changing visibility, reset visualization mode to normal
+  private setMapLayerProperty(identifier, propertyName, propertyValue) {
+    // Find and update the specific layer using proper OpenLayers methods
+    const layer = this.state.mapLayers.find(l => l.get('identifier') === identifier);
+    
+    if (!layer) {
+      console.warn(`Layer with identifier "${identifier}" not found`);
+      return;
+    }
+    
+    // Use proper OpenLayers methods for visibility and opacity
+    // This ensures the actual layer rendering is updated, not just metadata
     if (propertyName === 'visible') {
-      this.setState(
-        { 
-          mapLayers: mapLayersClone,
-          overlayVisualization: 'normal'
-        }, 
-        () => {
-          this.triggerSendLayers();
-          // Trigger normal visualization mode
-          this.triggerVisualization('normal');
-        }
-      );
+      layer.setVisible(propertyValue);
+      console.log(`[MapControls] Set layer "${identifier}" visible: ${propertyValue}`);
+    } else if (propertyName === 'opacity') {
+      layer.setOpacity(propertyValue);
+      console.log(`[MapControls] Set layer "${identifier}" opacity: ${propertyValue}`);
     } else {
-      // For other property changes, just update layers
-      this.setState({ mapLayers: mapLayersClone }, () => {
+      // For other properties, use the generic set method
+      layer.set(propertyName, propertyValue);
+    }
+    
+    // Check if this is a features/geometry layer vs a tile/overlay layer
+    const isFeatureLayer = layer.get('level') === 'feature' || layer instanceof VectorLayer;
+    
+    // For features layers, don't reset visualization mode - just update the layer directly
+    // Features layers are independent of the tile layer visualization modes
+    if (isFeatureLayer) {
+      // Force re-render without changing any other state
+      this.forceUpdate();
+    } else {
+      // For tile/overlay layers, reset visualization mode when changing visibility
+      if (propertyName === 'visible') {
+        this.setState(
+          { 
+            overlayVisualization: 'normal'
+          }, 
+          () => {
+            this.triggerSendLayers();
+            // Trigger normal visualization mode
+            this.triggerVisualization('normal');
+          }
+        );
+      } else {
+        // For other property changes on tile layers, just sync with map
         this.triggerSendLayers();
-      });
+      }
     }
   }
 

@@ -123,6 +123,27 @@ enum Source {
   OSM = 'osm',
 }
 
+/**
+ * Configuration for a features-layer child component
+ * Features layers allow loading vector data from separate SPARQL queries
+ */
+interface FeaturesLayerConfig {
+  /** Required: Unique identifier for the layer */
+  identifier: string;
+  /** Required: Display name shown in controls */
+  name: string;
+  /** Optional: Type of geometry - 'geometry', 'markers', 'points' (default: 'geometry') */
+  type: string;
+  /** Optional: Stacking order, higher values appear on top (default: 1) */
+  zIndex: number;
+  /** Required: SPARQL query for this layer's data */
+  query: string;
+  /** Optional: Initial visibility state (default: true) */
+  visible: boolean;
+  /** Optional: Initial opacity 0-1 (default: 1) */
+  opacity: number;
+}
+
 interface ProviderOptions {
   endpoint: string;
   crs: string;
@@ -1262,9 +1283,42 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       () => {
         incomingLayers.forEach((value, index) => {
           let layer = this.getMapLayerByIdentifier(value.get('identifier'));
-          //Calculate Z-index reverting the order (i.e. top layer has highest z index)
-          layer.setZIndex(Math.abs(index - event.data.length));
+          if (!layer) {
+            console.warn(`[SemanticMapAdvanced] Layer with identifier "${value.get('identifier')}" not found in map`);
+            return;
+          }
+          
+          // Check if this is a features/geometry layer vs a tile/overlay layer
+          const isFeatureLayer = layer.get('level') === 'feature' || layer instanceof VectorLayer;
+          
+          // Only update z-index for non-feature layers (tile/overlay layers)
+          // Features layers have their own z-index management
+          if (!isFeatureLayer) {
+            // Calculate Z-index reverting the order (i.e. top layer has highest z index)
+            layer.setZIndex(Math.abs(index - event.data.length));
+          }
+          
+          // Ensure layer visibility and opacity are properly synced
+          // The controls now use setVisible() and setOpacity() directly,
+          // but we add this as a safety measure to ensure consistency
+          const visible = value.getVisible();
+          const opacity = value.getOpacity();
+          
+          if (layer.getVisible() !== visible) {
+            layer.setVisible(visible);
+            console.log(`[SemanticMapAdvanced] Synced layer "${value.get('identifier')}" visible: ${visible}`);
+          }
+          
+          if (layer.getOpacity() !== opacity) {
+            layer.setOpacity(opacity);
+            console.log(`[SemanticMapAdvanced] Synced layer "${value.get('identifier')}" opacity: ${opacity}`);
+          }
         });
+        
+        // Force a re-render to apply the changes
+        if (this.map) {
+          this.map.render();
+        }
       }
     );
   };
@@ -1822,17 +1876,38 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       return clusteredLayer;
     }
 
+    // Extract the z-index and type from the first feature for layer properties
+    let layerZIndex = 0;
+    let layerName = 'Geometries';
+    let layerType = type;
+    
+    if (features.length > 0) {
+      const firstFeature = features[0];
+      // Get z-index from feature data (stored as 'z' property)
+      const zProperty = firstFeature.get('z');
+      if (zProperty && zProperty.value) {
+        layerZIndex = parseInt(zProperty.value, 10) || 0;
+      }
+      // Get type/name from feature data (stored as 't' property)
+      const tProperty = firstFeature.get('t');
+      if (tProperty && tProperty.value) {
+        layerName = tProperty.value;
+        layerType = tProperty.value;
+      }
+    }
+    
     const vectorLayer = new VectorLayer({
       source,
       style: (feature: Feature) => this.getFeatureStyleWithFilters(feature),
-      zIndex: 0,
+      zIndex: layerZIndex,
       declutter: true,
     });
     // Set level property to ensure it appears in controls
     vectorLayer.set('level', 'feature');
-    vectorLayer.set('name', 'Buildings');
-    vectorLayer.set('author', 'Buildings');
-    vectorLayer.set('identifier', 'Buildings');
+    vectorLayer.set('name', layerName);
+    vectorLayer.set('author', layerName);
+    vectorLayer.set('identifier', layerType);
+    vectorLayer.set('zIndex', layerZIndex);
     return vectorLayer;
   };
 
@@ -1857,6 +1932,225 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     });
     console.log('Map ', this.props.id, ' loaded tileslayers from template: ', tilesLayers);
     return tilesLayers;
+  }
+
+  /**
+   * Extracts features-layer child components from the template
+   * Returns an array of FeaturesLayerConfig objects
+   */
+  private getFeaturesLayersFromTemplate(): FeaturesLayerConfig[] {
+    console.log('%c[FEATURES-LAYER] === Scanning for features-layer children ===', 'color: orange; font-weight: bold');
+    console.log('[FEATURES-LAYER] this.props.children:', this.props.children);
+    console.log('[FEATURES-LAYER] Children count:', React.Children.count(this.props.children));
+    
+    const featuresLayers: FeaturesLayerConfig[] = [];
+    React.Children.forEach(this.props.children, (child: any, index: number) => {
+      console.log(`[FEATURES-LAYER] Child ${index}:`, child);
+      if (child) {
+        console.log(`[FEATURES-LAYER]   - type:`, child.type);
+        console.log(`[FEATURES-LAYER]   - type.name:`, child.type?.name);
+        console.log(`[FEATURES-LAYER]   - props:`, child.props);
+      }
+      
+      // Check for both React component (FeaturesLayer) and web component (features-layer)
+      const isMatch = child && child.type && 
+          (child.type.name === 'FeaturesLayer' || 
+           child.type === 'features-layer' ||
+           (typeof child.type === 'string' && child.type.toLowerCase() === 'features-layer'));
+      
+      console.log(`[FEATURES-LAYER]   - isMatch:`, isMatch);
+      
+      if (isMatch) {
+        const config: FeaturesLayerConfig = {
+          identifier: child.props.identifier,
+          name: child.props.name,
+          type: child.props.type || 'geometry',
+          zIndex: parseInt(child.props['z-index'] || child.props.zIndex || '1', 10),
+          query: child.props.query,
+          visible: child.props.visible !== 'false' && child.props.visible !== false,
+          opacity: parseFloat(child.props.opacity || '1'),
+        };
+        console.log(`[FEATURES-LAYER]   - Config created:`, config.identifier);
+        featuresLayers.push(config);
+      }
+    });
+    console.log('%c[FEATURES-LAYER] Found features layers:', 'color: orange', featuresLayers.length);
+    console.log('[FEATURES-LAYER] Layer identifiers:', featuresLayers.map(l => l.identifier));
+    return featuresLayers;
+  }
+
+  // Track pending queries for loading state management
+  private pendingFeaturesLayerQueries: Set<string> = new Set();
+
+  /**
+   * Executes a SPARQL query for a specific features layer and creates the vector layer
+   * @param layerConfig The configuration for the features layer
+   */
+  private executeFeaturesLayerQuery(layerConfig: FeaturesLayerConfig): void {
+    console.log(`%c[FEATURES-LAYER] ========== Starting query for layer: ${layerConfig.identifier} ==========`, 'color: blue; font-weight: bold');
+    console.log(`[FEATURES-LAYER] Layer config:`, JSON.stringify({
+      identifier: layerConfig.identifier,
+      name: layerConfig.name,
+      type: layerConfig.type,
+      zIndex: layerConfig.zIndex,
+      visible: layerConfig.visible,
+      opacity: layerConfig.opacity,
+    }, null, 2));
+    console.log(`[FEATURES-LAYER] Query (first 500 chars):`, layerConfig.query.substring(0, 500));
+    console.log(`[FEATURES-LAYER] Full query length: ${layerConfig.query.length} characters`);
+
+    // Track this query as pending
+    this.pendingFeaturesLayerQueries.add(layerConfig.identifier);
+    console.log(`[FEATURES-LAYER] Pending queries:`, Array.from(this.pendingFeaturesLayerQueries));
+
+    const startTime = performance.now();
+    console.log(`[FEATURES-LAYER] Creating SPARQL stream at ${new Date().toISOString()}`);
+    
+    let stream;
+    try {
+      stream = SparqlClient.select(layerConfig.query, { context: this.context.semanticContext });
+      console.log(`[FEATURES-LAYER] Stream created successfully for ${layerConfig.identifier}`);
+    } catch (error) {
+      console.error(`%c[FEATURES-LAYER] ERROR creating stream for ${layerConfig.identifier}:`, 'color: red; font-weight: bold', error);
+      this.markLayerQueryComplete(layerConfig.identifier);
+      return;
+    }
+
+    stream.onValue((res) => {
+      const endTime = performance.now();
+      console.log(`%c[FEATURES-LAYER] ✓ Query COMPLETED for ${layerConfig.identifier} in ${(endTime - startTime).toFixed(2)}ms`, 'color: green; font-weight: bold');
+      console.log(`[FEATURES-LAYER] Response received at ${new Date().toISOString()}`);
+
+      if (SparqlUtil.isSelectResultEmpty(res)) {
+        console.warn(`[FEATURES-LAYER] No results found for layer: ${layerConfig.identifier}`);
+        this.markLayerQueryComplete(layerConfig.identifier);
+        return;
+      }
+
+      const results = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
+      console.log(`[FEATURES-LAYER] Found ${results.length} features for layer: ${layerConfig.identifier}`);
+      
+      // Log first 2 results as sample
+      if (results.length > 0) {
+        console.log(`[FEATURES-LAYER] Sample results (first 2):`, results.slice(0, 2));
+      }
+
+      // Create geometries from the query results
+      console.log(`[FEATURES-LAYER] Creating geometries for ${layerConfig.identifier}...`);
+      const geometries = this.createGeometries(results);
+      console.log(`[FEATURES-LAYER] Geometries created:`, Object.keys(geometries).map(k => `${k}: ${geometries[k].length}`));
+      
+      // Create a vector layer for this features layer
+      console.log(`[FEATURES-LAYER] Creating vector layer for ${layerConfig.identifier}...`);
+      this.createFeaturesLayerFromConfig(geometries, layerConfig);
+      
+      // Mark query as complete
+      this.markLayerQueryComplete(layerConfig.identifier);
+    });
+
+    stream.onError((error) => {
+      console.error(`%c[FEATURES-LAYER] ✗ Query ERROR for ${layerConfig.identifier}:`, 'color: red; font-weight: bold', error);
+      console.error(`[FEATURES-LAYER] Error details:`, error.message || error);
+      this.markLayerQueryComplete(layerConfig.identifier);
+    });
+
+    stream.onEnd(() => {
+      console.log(`[FEATURES-LAYER] Stream ended for ${layerConfig.identifier}`);
+    });
+
+    console.log(`[FEATURES-LAYER] Stream listeners attached for ${layerConfig.identifier}, waiting for response...`);
+  }
+
+  /**
+   * Mark a features layer query as complete and update loading state if all done
+   */
+  private markLayerQueryComplete(identifier: string): void {
+    this.pendingFeaturesLayerQueries.delete(identifier);
+    console.log(`[FEATURES-LAYER] Query complete for ${identifier}. Remaining pending:`, Array.from(this.pendingFeaturesLayerQueries));
+    
+    // If all queries are complete, set loading to false
+    if (this.pendingFeaturesLayerQueries.size === 0) {
+      console.log(`%c[FEATURES-LAYER] All features layer queries complete!`, 'color: green; font-weight: bold');
+      this.setState({ isLoading: false });
+    }
+  }
+
+  /**
+   * Creates a VectorLayer from geometries and layer configuration
+   * @param geometries Object mapping geometry types to features
+   * @param layerConfig The configuration for the features layer
+   */
+  private createFeaturesLayerFromConfig(
+    geometries: { [type: string]: Feature[] },
+    layerConfig: FeaturesLayerConfig
+  ): void {
+    // Combine all features from different geometry types
+    let allFeatures: Feature[] = [];
+    _.forEach(geometries, (features) => {
+      allFeatures = allFeatures.concat(features);
+    });
+
+    if (allFeatures.length === 0) {
+      console.warn(`No features to create layer for: ${layerConfig.identifier}`);
+      return;
+    }
+
+    const source = new Vector({ features: allFeatures });
+
+    const vectorLayer = new VectorLayer({
+      source,
+      style: (feature: Feature) => this.getFeatureStyleWithFilters(feature),
+      zIndex: layerConfig.zIndex,
+      visible: layerConfig.visible,
+      opacity: layerConfig.opacity,
+      declutter: true,
+    });
+
+    // Set metadata for controls
+    vectorLayer.set('level', 'feature');
+    vectorLayer.set('identifier', layerConfig.identifier);
+    vectorLayer.set('name', layerConfig.name);
+    vectorLayer.set('type', layerConfig.type);
+    vectorLayer.set('zIndex', layerConfig.zIndex);
+
+    // Add the layer to the map and update state
+    if (this.map) {
+      this.map.addLayer(vectorLayer);
+      
+      const mapLayersClone = [...this.state.mapLayers];
+      mapLayersClone.push(vectorLayer);
+      
+      this.setState(
+        {
+          mapLayers: mapLayersClone,
+        },
+        () => {
+          console.log(`[DEBUG] Added features layer: ${layerConfig.identifier}`);
+          this.sendLayersToControls();
+          this.updateVisibleFeatures();
+        }
+      );
+    }
+  }
+
+  /**
+   * Loads all features layers from template children
+   * This is an alternative to using the single query prop
+   */
+  private loadFeaturesLayersFromTemplate(): void {
+    const featuresLayers = this.getFeaturesLayersFromTemplate();
+    
+    if (featuresLayers.length === 0) {
+      console.log('[DEBUG] No features-layer children found, will use legacy query prop');
+      return;
+    }
+
+    console.log(`[DEBUG] Loading ${featuresLayers.length} features layers from template`);
+    
+    // Execute each layer's query independently
+    featuresLayers.forEach((layerConfig) => {
+      this.executeFeaturesLayerQuery(layerConfig);
+    });
   }
 
   /**
@@ -2062,8 +2356,20 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             }
           });
 
-          // asynch execute query and add markers
-          this.addMarkersFromQuery(this.props, this.context);
+          // Check if we have features-layer children; if so, use them
+          // Otherwise, fall back to legacy query prop
+          const featuresLayers = this.getFeaturesLayersFromTemplate();
+          if (featuresLayers.length > 0) {
+            console.log('%c[DEBUG] Using features-layer children instead of query prop', 'color: purple; font-weight: bold');
+            console.log(`[DEBUG] Found ${featuresLayers.length} features-layer children`);
+            // Don't set isLoading: false here - markLayerQueryComplete() will handle it
+            // when all pending queries are complete
+            this.loadFeaturesLayersFromTemplate();
+          } else {
+            console.log('[DEBUG] No features-layer children found, using legacy query prop');
+            // asynch execute query and add markers (legacy behavior)
+            this.addMarkersFromQuery(this.props, this.context);
+          }
 
           this.initializeMarkerPopup(map);
           //map.getView().fit(props.mapOptions.extent);

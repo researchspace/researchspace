@@ -1,5 +1,21 @@
 declare namespace SemanticMapControlsScssNamespace {
   export interface ISemanticMapControlsScss {
+    // Geometry layers section
+    geometryLayersSection: string;
+    layersSectionTitle: string;
+    geometryLayersList: string;
+    geometryLayerItem: string;
+    geometryLayerItemHidden: string;
+    geometryLayerContent: string;
+    geometryLayerName: string;
+    geometryLayerControls: string;
+    geometryLayerToggle: string;
+    geometryLayerOpacity: string;
+    geometryOpacitySlider: string;
+    // Separator
+    layersSectionSeparator: string;
+    layersSectionSeparatorLine: string;
+    layersSectionSeparatorText: string;
     mapLayersFiltersContainer: string;
     mapLayersFilters: string;
     draggableLayer: string;

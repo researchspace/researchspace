@@ -697,6 +697,11 @@ export interface PresetFacetValueConfig {
      */
     label?: string;
   }>;
+
+  /**
+   * If true, the facet relation stays hidden in the UI while its presets are applied to the query.
+   */
+  hidden?: boolean;
 }
 
 export type PresetFacetValue =

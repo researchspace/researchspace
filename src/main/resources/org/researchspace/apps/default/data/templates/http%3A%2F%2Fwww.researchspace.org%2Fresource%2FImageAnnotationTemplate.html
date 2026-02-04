@@ -257,9 +257,24 @@
   <mp-event-target-template-render id='{{viewId}}-image-annotation-area' template='{{> annotation}}'>
     <template id='annotation'>
       <div class="imageAnnotation__resourceAnnotation-container">
-
+ 
         <div class="imageAnnotation__resourceAnnotation-header">
-          <h6>Image annotations</h6>
+          <span class="imageAnnotation__resourceAnnotation-result-items-header-title"><h6>Image annotations</h6></span>
+          <bs-dropdown id="[[urlParam 'viewid' escape=false]]-search-actions-dropdown" pull-right=true class="dropdown-no-caret">
+              <bs-dropdown-toggle class="border-none" style="height:30px;width:40px;">
+                <rs-icon icon-type="rounded" icon-name="more_vert" symbol="true"></rs-icon>
+              </bs-dropdown-toggle>
+              <bs-dropdown-menu>
+                  
+                  <mp-selection-action-choice id='action' selection='annotation-selection'>
+                
+                     <rs-iiif-toggle-selection viewer-id='{{viewId}}-image-annotation'></rs-iiif-toggle-selection>
+                    [[#if (hasPermission "forms:ldp:*")]]
+                      <mp-create-set-action></mp-create-set-action>
+                    [[/if]]
+                  </mp-selection-action-choice>                                           
+              </bs-dropdown-menu>
+          </bs-dropdown>
         </div>
         
         <div class="imageAnnotation__resourceAnnotation-result">
@@ -279,7 +294,8 @@
 
               <bs-tab-content animation>
                 {{#each resources}}
-                  {{#bind viewId=../viewId insideForm=../insideForm recordType=../recordType}}
+                  
+                  {{#bind viewId=../viewId insideForm=../insideForm recordType=../recordType regionIris=../regionIris}}
                     <bs-tab-pane event-key="{{viewId}}-resource-tab-{{resourceIri}}">
 
                       [[!-- To not fully refresh rendered list of resources when image annotation is created/updated/removed in the IIIF Viewer,
@@ -331,6 +347,7 @@
                                   <div class="imageAnnotation__resourceAnnotation-result-items-header">
                                     <mp-label iri="{{resourceIri}}" class="imageAnnotation__resourceAnnotation-result-items-header-title"></mp-label>
                                     <div class="imageAnnotation__resourceAnnotation-result-items-header-actions">
+                                      
                                       <mp-event-trigger id='{{viewId}}-image-view-trigger-{{resourceIri}}' 
                                                         type='IIIFViewer.AddImagesForResource' 
                                                         targets='["{{viewId}}-image-annotation"]'
@@ -363,11 +380,13 @@
                                 </div>
                               </template>
           
-                              <template id='imageAnnotations'>
+                              <template id='imageAnnotations'>{{log "update" regionIris}}
                                   <div class="imageAnnotation__resourceAnnotation-result-items">
                                     <div class="imageAnnotation__resourceAnnotation-result-items-header">
                                       <mp-label iri="{{resourceIri}}" class="imageAnnotation__resourceAnnotation-result-items-header-title"></mp-label>
+                                      
                                       <div class="imageAnnotation__resourceAnnotation-result-items-header-actions">
+                                        
                                         <mp-event-trigger id='{{viewId}}-image-view-trigger-{{resourceIri}}' 
                                                           type='IIIFViewer.AddImagesForResource' 
                                                           targets='["{{viewId}}-image-annotation"]'
@@ -385,20 +404,27 @@
                                       </div>
                                     </div>
                                   [[!-- Iterate over all query result bindings that represent image regions --]]
+                                    
                                     {{#each bindings}}
-                                      {{#bind viewId=../viewId}}
-                                        <mp-event-trigger id='{{viewId}}-highlightRegion-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                      {{#bind viewId=../viewId regionIris=../regionIris}}
+                                          
+                                       [[!-- <mp-event-trigger id='{{viewId}}-highlightRegion-event-trigger-{{resourceIri}}-{{region.value}}' 
                                                           type='IIIFViewer.HighlightRegion' 
                                                           targets='["{{viewId}}-image-annotation"]'
                                                           data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' 
                                                           on='["hover"]'
-                                        >
+                                        > --]]
                                         <div class="imageAnnotation__resourceAnnotation-result-item">
 
                                           <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                            
+                                                                                 
+                                            <mp-selection-toggle selection="annotation-selection" tag="{{region.value}}"></mp-selection-toggle>                                         
+                                            
+                                                                                 
                                             <mp-draggable iri='{{region.value}}'>
                                               <div style="cursor: pointer;">
-                                                <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                                  <mp-event-trigger id='{{viewId}}-focus-event-trigger-{{resourceIri}}-{{region.value}}' 
                                                                   type='IIIFViewer.ZoomToRegion' 
                                                                   targets='["{{viewId}}-image-annotation"]'
                                                                   data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
@@ -427,9 +453,19 @@
                                               </mp-draggable>
 
                                               <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">Image annotation</div>
+                                              
+                                            </div>
+                                            <div style="flex: 1;">
+                                              <mp-event-trigger id='{{viewId}}-toggle-event-trigger-{{resourceIri}}-{{region.value}}' 
+                                                                        type='IIIFViewer.ToggleRegion' 
+                                                                        targets='["{{viewId}}-image-annotation"]'
+                                                                        data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>{{log regionIris}}
+                                              {{#if (hasKey regionIris region.value)}}{{log "_off"}}{{else}}{{log region.value}}{{/if}}
+                                                <rs-icon icon-type="rounded"  icon-name="visibility{{#if (hasKey regionIris region.value)}}_off{{else}}{{/if}}" toggled-icon-name="visibility{{#if (hasKey regionIris region.value)}}{{else}}_off{{/if}}" style="color: #10BC7A;" symbol="true"></rs-icon>
+                                                                                            </mp-event-trigger>
                                             </div>
                                           </div>
-
+                                          
                                           <div class='imageAnnotation__resourceAnnotation-result-item-actions'>
 
                                             [[!--                                         
@@ -523,9 +559,10 @@
                                             </mp-overlay-dialog>  --]]
                                           </div>
                                         </div>
-                                        </mp-event-trigger>
+                                      [[!--  </mp-event-trigger> --]]
                                       {{/bind}}
                                     {{/each}}
+                                 
                                   </div>
                               </template>
                             </semantic-query>

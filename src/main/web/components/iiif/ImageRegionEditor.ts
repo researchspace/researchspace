@@ -22,6 +22,7 @@ import * as D from 'react-dom-factories';
 import * as PropTypes from 'prop-types';
 import {
   isEqual, toPairs, some, find, last, size,
+  forEach,
 } from 'lodash';
 import * as Maybe from 'data.maybe';
 import * as Kefir from 'kefir';
@@ -37,7 +38,7 @@ import * as ImageApi from '../../data/iiif/ImageAPI';
 import { queryIIIFImageOrRegion, ImageOrRegionInfo, parseImageSubarea } from '../../data/iiif/ImageAnnotationService';
 import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
-import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestResource, AddResourceImagesEvent, RegionCreatedEvent, RegionUpdatedEvent, RegionRemovedEvent, HighlightRegion, RemoveRegion } from './ImageRegionEditorEvents';
+import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestResource, AddResourceImagesEvent, RegionCreatedEvent, RegionUpdatedEvent, RegionRemovedEvent, HighlightRegion, RemoveRegion, ShowRegionEvent, HideRegionEvent, ToggleRegionEvent, ToggleRegionsEvent } from './ImageRegionEditorEvents';
 
 import { renderMirador, removeMirador, scrollToRegions, scrollToRegion } from './mirador/Mirador';
 import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
@@ -130,11 +131,19 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     this.queryAllImagesInfo();
   }
 
-  private triggerManifestUpdatedEvent = (resources: IiifManifestResource[]) => {
+  private triggerManifestUpdatedEvent = (resources: IiifManifestResource[], regionIris?:string[]) => {
     trigger({
       eventType: ManifestUpdatedEvent,
       source: this.props.id,
-      data: { resources }
+      data: { resources,regionIris }
+    });
+  }
+
+  private triggerToggleAnnotationEvent = (regionIri: string) => {
+    trigger({
+      eventType: ToggleRegionEvent,
+      source: this.props.id,
+      data: { regionIri}
     });
   }
 
@@ -428,6 +437,82 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         }
       });
 
+    this.cancellation
+      .map(
+        listen({
+          eventType: ShowRegionEvent,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => {
+          if (event.data.regionIri) {
+            this.setRegionVisibility(event.data.regionIri, true);
+            this.triggerToggleAnnotationEvent(event.data.regionIri);
+          }
+        }
+      });
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: HideRegionEvent,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => {
+          if (event.data.regionIri) {
+            this.setRegionVisibility(event.data.regionIri, false);
+            this.triggerToggleAnnotationEvent(event.data.regionIri);
+          }
+        }
+      });
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: ToggleRegionEvent,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => { 
+          if (event.data.regionIri) {
+            if (event.data.imageIri) {
+              const windows = this.miradorInstance.viewer.workspace.windows;
+              const window = windows.find(w => w.canvasID === event.data.imageIri);
+              if (window) {
+                this.toggleRegionVisibilityInWindow(window, event.data.regionIri);
+              }
+            } else {
+              this.toggleRegionVisibility(event.data.regionIri);
+            }
+          }
+          
+          this.triggerToggleAnnotationEvent(event.data.regionIri);
+        }
+      });
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: ToggleRegionsEvent,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => { console.log("toggling");
+          if (event.data.regionIris) {
+            event.data.regionIris.forEach((regionIri) => {
+              this.toggleRegionVisibility(regionIri);
+            });
+          }
+          this.triggerManifestUpdatedEvent(this.state.allImages,event.data.regionIris);
+          //this.triggerToggleAnnotationEvent(event.data.regionIris);
+        }
+      });
+
 
     this.cancellation
       .map(
@@ -636,6 +721,128 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     }).onEnd(() => {
       // make observable active (hot)
     });
+  }
+
+  private setRegionVisibility = (regionIri: string, visible: boolean) => {
+    const windows = this.miradorInstance.viewer.workspace.windows;
+    for (const window of windows) {
+      const annotation = window.annotationsList.find(a => a['@id'] === regionIri);
+      if (annotation) {
+        const imageView = window.focusModules.ImageView;
+        if (imageView && imageView.annotationsLayer) {
+           const layer = imageView.annotationsLayer as any;
+           const shapesMap = layer.drawTool ? layer.drawTool.annotationsToShapesMap : (layer.annotationsToShapesMap || null);
+           
+           if (shapesMap) {
+             const shapes = shapesMap[regionIri];
+             if (shapes) {
+               shapes.forEach(shape => {
+                 shape.visible = visible;
+               });
+               const paperScope = (layer.drawTool && layer.drawTool.paperScope) ||
+                 (layer.drawTool && layer.drawTool.svgOverlay && layer.drawTool.svgOverlay.paperScope) ||
+                 (layer.svgOverlay && layer.svgOverlay.paperScope) ||
+                 layer.paperScope;
+               if (paperScope && paperScope.view) {
+                 paperScope.view.draw();
+               }
+             }
+           }
+        }
+      }
+    }
+  }
+
+  private setAllRegionsVisibility = (visible: boolean) => {
+    const windows = this.miradorInstance.viewer.workspace.windows;
+    for (const window of windows) {
+      const imageView = window.focusModules.ImageView;
+      if (imageView && imageView.annotationsLayer) {
+          const layer = imageView.annotationsLayer as any;
+          const shapesMap = layer.drawTool ? layer.drawTool.annotationsToShapesMap : (layer.annotationsToShapesMap || null);
+          
+          if (shapesMap) {
+            Object.keys(shapesMap).forEach(key => {
+              const shapes = shapesMap[key];
+              if (shapes) {
+                shapes.forEach(shape => {
+                  shape.visible = visible;
+                });
+              }
+            });
+            const paperScope = (layer.drawTool && layer.drawTool.paperScope) ||
+              (layer.drawTool && layer.drawTool.svgOverlay && layer.drawTool.svgOverlay.paperScope) ||
+              (layer.svgOverlay && layer.svgOverlay.paperScope) ||
+              layer.paperScope;
+            if (paperScope && paperScope.view) {
+              paperScope.view.draw();
+            }
+          }
+      }
+    }
+  }
+
+  private toggleRegionVisibility = (regionIri: string) => {
+    const windows = this.miradorInstance.viewer.workspace.windows;
+    for (const window of windows) {
+      this.toggleRegionVisibilityInWindow(window, regionIri);
+    }
+  }
+
+  private toggleRegionVisibilityInWindow = (window: Mirador.Window, regionIri: string) => {
+    const annotation = window.annotationsList.find(a => a['@id'] === regionIri);
+    if (annotation) {
+      const imageView = window.focusModules.ImageView;
+      if (imageView && imageView.annotationsLayer) {
+          const layer = imageView.annotationsLayer as any;
+          const shapesMap = layer.drawTool ? layer.drawTool.annotationsToShapesMap : (layer.annotationsToShapesMap || null);
+          
+          if (shapesMap) {
+            const shapes = shapesMap[regionIri];
+            if (shapes) {
+              shapes.forEach(shape => {
+                shape.visible = !shape.visible;
+              });
+              const paperScope = (layer.drawTool && layer.drawTool.paperScope) ||
+                (layer.drawTool && layer.drawTool.svgOverlay && layer.drawTool.svgOverlay.paperScope) ||
+                (layer.svgOverlay && layer.svgOverlay.paperScope) ||
+                layer.paperScope;
+              if (paperScope && paperScope.view) {
+                paperScope.view.draw();
+              }
+            }
+          }
+      }
+    }
+  }
+
+  private toggleAllRegionsVisibility = () => {
+    const windows = this.miradorInstance.viewer.workspace.windows;
+    for (const window of windows) {
+      const imageView = window.focusModules.ImageView;
+      if (imageView && imageView.annotationsLayer) {
+          const layer = imageView.annotationsLayer as any;
+          const shapesMap = layer.drawTool ? layer.drawTool.annotationsToShapesMap : (layer.annotationsToShapesMap || null);
+          
+          if (shapesMap) {
+            Object.keys(shapesMap).forEach(key => {
+              const shapes = shapesMap[key];
+              if (shapes) {
+                shapes.forEach(shape => {
+                  shape.visible = !shape.visible;
+                });
+              }
+            });
+            const paperScope = (layer.drawTool && layer.drawTool.paperScope) ||
+              (layer.drawTool && layer.drawTool.svgOverlay && layer.drawTool.svgOverlay.paperScope) ||
+              (layer.svgOverlay && layer.svgOverlay.paperScope) ||
+              layer.paperScope;
+            if (paperScope && paperScope.view) {
+              paperScope.view.draw();
+            }
+          }
+      }
+    }
   }
 }
 

@@ -26,11 +26,13 @@ export interface IiifManifestResource {
    * List of images associated with the resource
    */
   images?: string[];
+
+  regions?: {"regionIri":string, visibility:boolean} []
 }
 
 export interface ImageRegionEditorEventData {
   // trigger
-  'IIIFViewer.ManifestUpdated': {resources?: IiifManifestResource[]}
+  'IIIFViewer.ManifestUpdated': {resources?: IiifManifestResource[], regionIris?:string[]}
 
   'IIIFViewer.RegionCreated': {resourceIri: string, imageIri: string, regionIri: string, regionLabel: string}
 
@@ -41,6 +43,10 @@ export interface ImageRegionEditorEventData {
   // listen
   'IIIFViewer.ZoomToRegion': {imageIri: string, regionIri: string}
   'IIIFViewer.HighlightRegion': {regionIri: string}
+  'IIIFViewer.ShowRegion': {imageIri?: string, regionIri?: string}
+  'IIIFViewer.HideRegion': {imageIri?: string, regionIri?: string}
+  'IIIFViewer.ToggleRegion': {imageIri?: string, regionIri?: string}
+  'IIIFViewer.ToggleRegions': {regionIris?: string[]}
 
   // TODO, implement RemoveRegion
   'IIIFViewer.RemoveRegion': { resourceIri: string, imageIri: string, regionIri: string }
@@ -58,6 +64,10 @@ export const RegionRemovedEvent = event('IIIFViewer.RegionRemoved');
 
 export const ZoomToRegionEvent = event('IIIFViewer.ZoomToRegion');
 export const HighlightRegion = event('IIIFViewer.HighlightRegion');
+export const ShowRegionEvent = event('IIIFViewer.ShowRegion');
+export const HideRegionEvent = event('IIIFViewer.HideRegion');
+export const ToggleRegionEvent = event('IIIFViewer.ToggleRegion');
+export const ToggleRegionsEvent = event('IIIFViewer.ToggleRegions');
 export const RemoveRegion = event('IIIFViewer.RemoveRegion');
 export const AddResourceImagesEvent = event('IIIFViewer.AddResourceImages');
 export const AddImagesForResourceEvent = event('IIIFViewer.AddImagesForResource');

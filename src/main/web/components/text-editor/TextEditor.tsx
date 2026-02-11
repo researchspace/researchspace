@@ -19,7 +19,7 @@
 
 import * as _ from 'lodash';
 import * as Kefir from 'kefir';
-import { Editor, RenderMarkProps } from 'slate-react';
+import { Editor, RenderMarkProps, RenderBlockProps, RenderInlineProps } from 'slate-react';
 import { FormControl, FormGroup } from 'react-bootstrap';
 import PlaceholderPlugin from 'slate-react-placeholder';
 import * as Slate from 'slate';
@@ -254,7 +254,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
 
   // - drag and drop
 
-  emptyBlock = (props: any) => {
+  emptyBlock = (props: RenderBlockProps) => {
     return (
       <div {...props.attributes}>
       {
@@ -271,12 +271,12 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     );
   }
 
-  renderTextBlock = (tag: string, props: any): any => {
+  renderTextBlock = (tag: string, props: RenderBlockProps) => {
     const attributes = props.node.data.get('attributes', {});
     return React.createElement(tag, { ...props.attributes, ...attributes }, props.children);
   }
 
-  renderBlock = (props: any, editor: Editor, next: () => any): any => {
+  renderBlock = (props: RenderBlockProps, editor: Editor, next: () => any) => {
     const { node: { type }, attributes, children } = props;
     switch (type) {
       case Block.empty: return this.emptyBlock(props);
@@ -297,7 +297,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     }
   }
 
-  renderInline = (props: any, editor: Editor, next: () => any): any => {
+  renderInline = (props: RenderInlineProps, editor: Editor, next: () => any) => {
     const { node: { type } } = props;
     switch (type) {
       case Inline.externalLink:

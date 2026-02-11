@@ -187,6 +187,14 @@ export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> 
           handlers.deleteAnnotation(Rdf.iri(iri));
         }
       }
+    } else {
+      // Clicking the card itself — highlight and focus the annotation in text
+      const card = (e.currentTarget as HTMLElement);
+      const iri = card.getAttribute('data-annotation-iri');
+      if (iri) {
+        handlers.focusAnnotation(Rdf.iri(iri));
+        handlers.highlightAnnotations(new Set([iri]));
+      }
     }
   };
 

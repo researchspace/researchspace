@@ -35,6 +35,7 @@ import { OverlayDialog, getOverlaySystem } from 'platform/components/ui/overlay'
 import { Spinner } from 'platform/components/ui/spinner';
 
 import * as Schema from '../model/AnnotationSchema';
+import * as EditorModel from '../model/EditorModel';
 import { TextEditorState, WorkspaceHandlers, AnnotationBodyType, WorkspacePermissions } from '../model/ComponentModel';
 
 import { AnnotationEditForm } from './AnnotationEditForm';
@@ -209,11 +210,57 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
   };
 
   private onHighlightAnnotations = (highlighted: ReadonlySet<string>) => {
-    this.setState({ highlightedAnnotations: highlighted });
+    this.setState((state): State => {
+      const { editorState } = state;
+      if (!editorState) {
+        return { highlightedAnnotations: highlighted };
+      }
+      // Also update Slate annotation data so AnnotationMark renders with highlight
+      const highlightedAnnotations = EditorModel.highlightAnnotations(
+        editorState.value.annotations, highlighted
+      );
+      const nextEditorState = editorState.set({
+        value: EditorModel.setValueProps(editorState.value, { annotations: highlightedAnnotations }),
+      });
+      return {
+        highlightedAnnotations: highlighted,
+        editorState: nextEditorState,
+      };
+    });
   };
 
   private onFocusAnnotation = (focused: Rdf.Iri | undefined) => {
-    this.setState({ focusedAnnotation: focused });
+    this.setState({ focusedAnnotation: focused }, () => {
+      // Scroll annotation into view within the editor panel (only if not already visible)
+      if (focused) {
+        // Wait a tick for the highlight to render
+        setTimeout(() => {
+          const editorPanel = document.querySelector('.TextAnnotationWorkspace--editorPanel');
+          if (!editorPanel) { return; }
+
+          // Find the first highlighted annotation span (backgroundColor indicates highlight)
+          const allAnnoSpans = editorPanel.querySelectorAll('[data-slate-object="annotation"]');
+          let targetSpan: HTMLElement | null = null;
+          for (let i = 0; i < allAnnoSpans.length; i++) {
+            const span = allAnnoSpans[i] as HTMLElement;
+            if (span.style.backgroundColor && span.style.backgroundColor !== '') {
+              targetSpan = span;
+              break;
+            }
+          }
+
+          if (!targetSpan) { return; }
+
+          // Check if already visible within the editor panel scroll container
+          const panelRect = editorPanel.getBoundingClientRect();
+          const spanRect = targetSpan.getBoundingClientRect();
+          const isVisible = spanRect.top >= panelRect.top && spanRect.bottom <= panelRect.bottom;
+          if (!isVisible) {
+            targetSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 50);
+      }
+    });
   };
 
   private onBeginAddingAnnotation = () => {

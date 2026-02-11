@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import * as _ from 'lodash';
-import { RenderNodeProps } from 'slate-react';
+import { RenderBlockProps } from 'slate-react';
 import { Well } from 'react-bootstrap';
 import * as classNames from 'classnames';
 
@@ -31,7 +31,7 @@ import { ResourceTemplateConfig } from './Config';
 import * as styles from './TextEditor.scss';
 
 
-export interface ResourceBlockProps extends RenderNodeProps {
+export interface ResourceBlockProps extends RenderBlockProps {
   resourceTemplates: Array<ResourceTemplateConfig>
 }
 

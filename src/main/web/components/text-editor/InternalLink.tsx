@@ -19,7 +19,7 @@
 import * as React from 'react';
 import { findDOMNode } from 'react-dom';
 import * as Slate from 'slate';
-import { RenderNodeProps } from 'slate-react';
+import { RenderInlineProps } from 'slate-react';
 import { Overlay, Popover, Button } from 'react-bootstrap';
 
 import { ResourceLinkComponent } from 'platform/api/navigation/components';
@@ -33,8 +33,7 @@ import { Inline, RESOURCE_MIME_TYPE } from './EditorSchema';
 import * as styles from './TextEditor.scss';
 import Icon from '../ui/icon/Icon';
 
-export interface InternalLinkProps extends RenderNodeProps {
-  editor: Slate.Editor
+export interface InternalLinkProps extends RenderInlineProps {
 }
 
 interface InternalLinkState {

@@ -106,95 +106,23 @@ public class RESTSail extends AbstractServiceWrappingSail<RESTSailConfig> {
   private void resolveHttpHeaderSecrets(RESTSailConfig config) {
     Map<String, String> resolvedHeaders = new HashMap<>();
 
-    logger.debug("=== Starting HTTP header secret resolution ===");
-    logger.debug("SecretResolver available: {}", secretResolver != null && secretResolver.get() != null);
-
-    // Debug: Log some system properties to verify they're set
-    if (logger.isDebugEnabled()) {
-      logger.debug("Sample system properties:");
-      System.getProperties().stringPropertyNames().stream()
-          .filter(name -> name.startsWith("secret."))
-          .forEach(name -> logger.debug("  {} = {}", name,
-              System.getProperty(name).length() > 20 ? System.getProperty(name).substring(0, 20) + "..."
-                  : System.getProperty(name)));
-    }
-
     for (Map.Entry<String, String> entry : config.getUnResolvedHttpHeaders().entrySet()) {
       String headerName = entry.getKey();
       String headerValue = entry.getValue();
 
-      logger.debug("Header '{}' - Unresolved value: '{}'", headerName, headerValue);
-
-      // Resolve the header value - handles both standalone and embedded secrets
-      String resolvedValue = resolveEmbeddedSecrets(headerValue);
-
-      logger.debug("Header '{}' - Resolved value: '{}'", headerName,
-          resolvedValue != null ? (resolvedValue.length() > 20 ? resolvedValue.substring(0, 20) + "..." : resolvedValue)
-              : "null");
-
+      String resolvedValue = SecretsHelper.resolveEmbeddedSecrets(secretResolver.get(), headerValue);
       resolvedHeaders.put(headerName, resolvedValue);
     }
 
-    logger.debug("Resolved {} HTTP headers", resolvedHeaders.size());
-    logger.debug("=== Finished HTTP header secret resolution ===");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Resolved {} HTTP header(s). Headers with secrets resolved: {}", resolvedHeaders.size(),
+          resolvedHeaders.entrySet().stream()
+              .filter(e -> !e.getValue().equals(config.getUnResolvedHttpHeaders().get(e.getKey())))
+              .map(Map.Entry::getKey)
+              .collect(java.util.stream.Collectors.joining(", ")));
+    }
+
     config.setHttpHeaders(resolvedHeaders);
-  }
-
-  /**
-   * Resolve secrets that may be embedded within a string.
-   * Handles both cases:
-   * - Entire string is a secret: "${secret.key}" or "${secret.key:fallback}"
-   * - Secret embedded in string: "Bearer ${secret.key}" or "prefix
-   * ${secret.key:fallback} suffix"
-   *
-   * @param value the string that may contain secret placeholders
-   * @return the string with all secrets resolved
-   */
-  private String resolveEmbeddedSecrets(String value) {
-    if (value == null) {
-      return null;
-    }
-
-    logger.debug("Resolving embedded secrets in: '{}'", value);
-
-    // Pattern to find ${...} placeholders anywhere in the string
-    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\$\\{([^:}]+):?([^}]*)\\}");
-    java.util.regex.Matcher matcher = pattern.matcher(value);
-
-    StringBuffer result = new StringBuffer();
-    while (matcher.find()) {
-      String key = matcher.group(1);
-      String fallback = matcher.group(2);
-
-      String secretPlaceholder = fallback.isEmpty() ? "${" + key + "}" : "${" + key + ":" + fallback + "}";
-      logger.debug("Found placeholder: '{}', key: '{}', fallback: '{}'",
-          matcher.group(0), key, fallback.isEmpty() ? "(none)" : fallback);
-
-      // Resolve the secret
-      String resolvedSecret = SecretsHelper.resolveSecretOrFallback(
-          secretResolver.get(),
-          secretPlaceholder);
-
-      logger.debug("Resolved '{}' to: '{}'", secretPlaceholder,
-          resolvedSecret != null
-              ? (resolvedSecret.length() > 20 ? resolvedSecret.substring(0, 20) + "..." : resolvedSecret)
-              : "null");
-
-      // Replace the placeholder with the resolved value
-      // If resolution returns null, keep the original placeholder
-      if (resolvedSecret != null) {
-        matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(resolvedSecret));
-      } else {
-        // Keep original placeholder if secret couldn't be resolved
-        logger.debug("Secret not resolved, keeping placeholder");
-        matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(matcher.group(0)));
-      }
-    }
-    matcher.appendTail(result);
-
-    String finalResult = result.toString();
-    logger.debug("Final resolved value: '{}'", finalResult);
-    return finalResult;
   }
 
   protected Client getClient() {

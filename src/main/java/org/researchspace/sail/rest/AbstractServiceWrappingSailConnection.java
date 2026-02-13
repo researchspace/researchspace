@@ -59,171 +59,171 @@ import com.google.common.collect.Maps;
  *
  */
 public abstract class AbstractServiceWrappingSailConnection<C extends AbstractServiceWrappingSailConfig>
-    extends AbstractSailConnection {
+        extends AbstractSailConnection {
 
-  /**
-   * A class holding the mappings for the API inputs (parameter name->value as
-   * string) and outputs (IRI->variable name)
-   * 
-   * @author Andriy Nikolov an@metaphacts.com
-   *
-   */
-  protected static class ServiceParametersHolder {
-    private String subjVarName = null;
-    private Map<String, String> inputParameters = Maps.newHashMap();
-    private Map<IRI, String> outputVariables = Maps.newHashMap();
+    /**
+     * A class holding the mappings for the API inputs (parameter name->value as
+     * string) and outputs (IRI->variable name)
+     * 
+     * @author Andriy Nikolov an@metaphacts.com
+     *
+     */
+    protected static class ServiceParametersHolder {
+        private String subjVarName = null;
+        private Map<String, String> inputParameters = Maps.newHashMap();
+        private Map<IRI, String> outputVariables = Maps.newHashMap();
 
-    public ServiceParametersHolder() {
+        public ServiceParametersHolder() {
+
+        }
+
+        public String getSubjVarName() {
+            return subjVarName;
+        }
+
+        public void setSubjVarName(String subjVarName) {
+            this.subjVarName = subjVarName;
+        }
+
+        public Map<String, String> getInputParameters() {
+            return inputParameters;
+        }
+
+        public Map<IRI, String> getOutputVariables() {
+            return outputVariables;
+        }
+    }
+
+    private final AbstractServiceWrappingSail<C> sail;
+
+    public AbstractServiceWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
+        super(sailBase);
+        this.sail = sailBase;
+    }
+
+    @Override
+    protected void closeInternal() throws SailException {
+    }
+
+    /**
+     * Follows the following workflow:
+     * <ul>
+     * <li>Extract input/output parameters and store them in a
+     * {@link ServiceParametersHolder} object.</li>
+     * <li>Submit an HTTP request (by default, an HTTP GET request passing
+     * parameters via URL)</li>
+     * <li>Process the response and assign the outputs to the output variables.</li>
+     * </ul>
+     * 
+     */
+    @Override
+    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(TupleExpr tupleExpr,
+            Dataset dataset, BindingSet bindings, boolean includeInferred) throws SailException {
+        TupleExpr cloned = tupleExpr.clone();
+        new BindingAssigner().optimize(cloned, dataset, bindings);
+        StatementPatternCollector collector = new StatementPatternCollector();
+        cloned.visit(collector);
+        List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
+        ServiceParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
+        // limiter goes here
+        return executeAndConvertResultsToBindingSet(parametersHolder);
+    }
+
+    /**
+     * Given the list of input parameters collected in
+     * <code>parametersHolder</code>, executes the wrapped service and converts the
+     * returned results into {@link BindingSet}s.
+     * 
+     * @param parametersHolder {@link ServiceParametersHolder} containing input
+     *                         parameters to be submitted to the service
+     * @return iteration over binding sets
+     */
+    protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
+            ServiceParametersHolder parametersHolder);
+
+    @Override
+    protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal() throws SailException {
+        return new CollectionIteration<Resource, SailException>(Lists.<Resource>newArrayList());
+    }
+
+    @Override
+    protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj, IRI pred,
+            Value obj, boolean includeInferred, Resource... contexts) throws SailException {
+        return new CollectionIteration<Statement, SailException>(Lists.<Statement>newArrayList());
+    }
+
+    @Override
+    protected long sizeInternal(Resource... contexts) throws SailException {
+        return 0;
+    }
+
+    @Override
+    protected void startTransactionInternal() throws SailException {
 
     }
 
-    public String getSubjVarName() {
-      return subjVarName;
+    @Override
+    protected void commitInternal() throws SailException {
+
     }
 
-    public void setSubjVarName(String subjVarName) {
-      this.subjVarName = subjVarName;
+    @Override
+    protected void rollbackInternal() throws SailException {
+
     }
 
-    public Map<String, String> getInputParameters() {
-      return inputParameters;
+    @Override
+    protected void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts) throws SailException {
+        throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
     }
 
-    public Map<IRI, String> getOutputVariables() {
-      return outputVariables;
+    @Override
+    protected void removeStatementsInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
+            throws SailException {
+        throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
     }
-  }
 
-  private final AbstractServiceWrappingSail<C> sail;
+    @Override
+    protected void clearInternal(Resource... contexts) throws SailException {
+        throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
 
-  public AbstractServiceWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
-    super(sailBase);
-    this.sail = sailBase;
-  }
+    }
 
-  @Override
-  protected void closeInternal() throws SailException {
-  }
+    @Override
+    protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal() throws SailException {
+        return new CollectionIteration<Namespace, SailException>(Lists.<Namespace>newArrayList());
+    }
 
-  /**
-   * Follows the following workflow:
-   * <ul>
-   * <li>Extract input/output parameters and store them in a
-   * {@link ServiceParametersHolder} object.</li>
-   * <li>Submit an HTTP request (by default, an HTTP GET request passing
-   * parameters via URL)</li>
-   * <li>Process the response and assign the outputs to the output variables.</li>
-   * </ul>
-   * 
-   */
-  @Override
-  protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(TupleExpr tupleExpr,
-      Dataset dataset, BindingSet bindings, boolean includeInferred) throws SailException {
-    TupleExpr cloned = tupleExpr.clone();
-    new BindingAssigner().optimize(cloned, dataset, bindings);
-    StatementPatternCollector collector = new StatementPatternCollector();
-    cloned.visit(collector);
-    List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
-    ServiceParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
-    // limiter goes here
-    return executeAndConvertResultsToBindingSet(parametersHolder);
-  }
+    @Override
+    protected String getNamespaceInternal(String prefix) throws SailException {
+        return null;
+    }
 
-  /**
-   * Given the list of input parameters collected in
-   * <code>parametersHolder</code>, executes the wrapped service and converts the
-   * returned results into {@link BindingSet}s.
-   * 
-   * @param parametersHolder {@link ServiceParametersHolder} containing input
-   *                         parameters to be submitted to the service
-   * @return iteration over binding sets
-   */
-  protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
-      ServiceParametersHolder parametersHolder);
+    @Override
+    protected void setNamespaceInternal(String prefix, String name) throws SailException {
 
-  @Override
-  protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal() throws SailException {
-    return new CollectionIteration<Resource, SailException>(Lists.<Resource>newArrayList());
-  }
+    }
 
-  @Override
-  protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj, IRI pred,
-      Value obj, boolean includeInferred, Resource... contexts) throws SailException {
-    return new CollectionIteration<Statement, SailException>(Lists.<Statement>newArrayList());
-  }
+    @Override
+    protected void removeNamespaceInternal(String prefix) throws SailException {
 
-  @Override
-  protected long sizeInternal(Resource... contexts) throws SailException {
-    return 0;
-  }
+    }
 
-  @Override
-  protected void startTransactionInternal() throws SailException {
+    @Override
+    protected void clearNamespacesInternal() throws SailException {
 
-  }
+    }
 
-  @Override
-  protected void commitInternal() throws SailException {
+    public AbstractServiceWrappingSail<C> getSail() {
+        return sail;
+    }
 
-  }
+    protected abstract ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
+            throws SailException;
 
-  @Override
-  protected void rollbackInternal() throws SailException {
+    protected abstract Collection<BindingSet> convertResult2BindingSets(InputStream result,
+            ServiceParametersHolder parametersHolder) throws SailException;
 
-  }
-
-  @Override
-  protected void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts) throws SailException {
-    throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
-  }
-
-  @Override
-  protected void removeStatementsInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
-      throws SailException {
-    throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
-  }
-
-  @Override
-  protected void clearInternal(Resource... contexts) throws SailException {
-    throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
-
-  }
-
-  @Override
-  protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal() throws SailException {
-    return new CollectionIteration<Namespace, SailException>(Lists.<Namespace>newArrayList());
-  }
-
-  @Override
-  protected String getNamespaceInternal(String prefix) throws SailException {
-    return null;
-  }
-
-  @Override
-  protected void setNamespaceInternal(String prefix, String name) throws SailException {
-
-  }
-
-  @Override
-  protected void removeNamespaceInternal(String prefix) throws SailException {
-
-  }
-
-  @Override
-  protected void clearNamespacesInternal() throws SailException {
-
-  }
-
-  public AbstractServiceWrappingSail<C> getSail() {
-    return sail;
-  }
-
-  protected abstract ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
-      throws SailException;
-
-  protected abstract Collection<BindingSet> convertResult2BindingSets(InputStream result,
-      ServiceParametersHolder parametersHolder) throws SailException;
-
-  protected abstract Collection<BindingSet> convertResult2BindingSets(ResultSet result,
-      ServiceParametersHolder parametersHolder) throws SailException;
+    protected abstract Collection<BindingSet> convertResult2BindingSets(ResultSet result,
+            ServiceParametersHolder parametersHolder) throws SailException;
 }

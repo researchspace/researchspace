@@ -31,24 +31,24 @@ import org.eclipse.rdf4j.sail.config.SailImplConfig;
 
 public class RESTSailFactory implements SailFactory {
 
-  public static final String SAIL_TYPE = "researchspace:RESTSail";
+    public static final String SAIL_TYPE = "researchspace:RESTSail";
 
-  @Override
-  public String getSailType() {
-    return SAIL_TYPE;
-  }
-
-  @Override
-  public SailImplConfig getConfig() {
-    return new RESTSailConfig();
-  }
-
-  @Override
-  public Sail getSail(SailImplConfig originalConfig) throws SailConfigException {
-    if (!(originalConfig instanceof RESTSailConfig)) {
-      throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
+    @Override
+    public String getSailType() {
+        return SAIL_TYPE;
     }
-    return new RESTSail((RESTSailConfig) originalConfig);
-  }
+
+    @Override
+    public SailImplConfig getConfig() {
+        return new RESTSailConfig();
+    }
+
+    @Override
+    public Sail getSail(SailImplConfig originalConfig) throws SailConfigException {
+        if (!(originalConfig instanceof RESTSailConfig)) {
+            throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
+        }
+        return new RESTSail((RESTSailConfig) originalConfig);
+    }
 
 }

@@ -36,7 +36,7 @@ import org.researchspace.repository.MpRepositoryVocabulary;
  * 
  * @author Andriy Nikolov <an@metaphacts.com>
  * 
- *         Update for generic purpose
+ * Update for generic purpose
  * 
  * @modifier Janmaruko Hōrensō <@gspinaci>
  * 
@@ -44,113 +44,113 @@ import org.researchspace.repository.MpRepositoryVocabulary;
  */
 public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImplConfig {
 
-  private String url;
-  private IRI serviceID;
+    private String url;
+    private IRI serviceID;
 
-  // password and username that are already resolved through SecretResolver
-  private String username;
-  private String password;
+    // password and username that are already resolved through SecretResolver
+    private String username;
+    private String password;
 
-  private String unResolvedUsername;
-  private String unResolvedPassword;
+    private String unResolvedUsername;
+    private String unResolvedPassword;
 
-  protected AbstractServiceWrappingSailConfig() {
+    protected AbstractServiceWrappingSailConfig() {
 
-  }
-
-  protected AbstractServiceWrappingSailConfig(String type) {
-    super(type);
-  }
-
-  @Override
-  public void validate() throws SailConfigException {
-    super.validate();
-    if (StringUtils.isEmpty(url)) {
-      throw new SailConfigException("SAIL service URL is not provided");
-    }
-  }
-
-  @Override
-  public Resource export(Model model) {
-    Resource implNode = super.export(model);
-    var vf = SimpleValueFactory.getInstance();
-    if (!StringUtils.isEmpty(url)) {
-      model.add(implNode, MpRepositoryVocabulary.SERVICE_URL, vf.createLiteral(url));
     }
 
-    if (getServiceID() != null) {
-      model.add(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, getServiceID());
+    protected AbstractServiceWrappingSailConfig(String type) {
+        super(type);
     }
 
-    if (getUnResolvedUsername() != null) {
-      model.add(implNode, MpRepositoryVocabulary.USERNAME, vf.createLiteral(getUnResolvedUsername()));
+    @Override
+    public void validate() throws SailConfigException {
+        super.validate();
+        if (StringUtils.isEmpty(url)) {
+            throw new SailConfigException("SAIL service URL is not provided");
+        }
     }
 
-    if (getUnResolvedPassword() != null) {
-      model.add(implNode, MpRepositoryVocabulary.PASSWORD, vf.createLiteral(getUnResolvedPassword()));
+    @Override
+    public Resource export(Model model) {
+        Resource implNode = super.export(model);
+        var vf = SimpleValueFactory.getInstance();
+        if (!StringUtils.isEmpty(url)) {
+            model.add(implNode, MpRepositoryVocabulary.SERVICE_URL, vf.createLiteral(url));
+        }
+
+        if (getServiceID() != null) {
+            model.add(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, getServiceID());
+        }
+
+        if (getUnResolvedUsername() != null) {
+            model.add(implNode, MpRepositoryVocabulary.USERNAME, vf.createLiteral(getUnResolvedUsername()));
+        }
+
+        if (getUnResolvedPassword() != null) {
+            model.add(implNode, MpRepositoryVocabulary.PASSWORD, vf.createLiteral(getUnResolvedPassword()));
+        }
+        return implNode;
     }
-    return implNode;
-  }
 
-  @Override
-  public void parse(Model model, Resource implNode) throws SailConfigException {
-    super.parse(model, implNode);
-    Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SERVICE_URL, null))
-        .ifPresent(lit -> setUrl(lit.stringValue()));
-    Models.objectIRI(model.filter(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, null))
-        .ifPresent(iri -> setServiceID(iri));
-    Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USERNAME, null))
-        .ifPresent(iri -> setUnResolvedUsername(iri.stringValue()));
-    Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.PASSWORD, null))
-        .ifPresent(iri -> setUnResolvedPassword(iri.stringValue()));
+    @Override
+    public void parse(Model model, Resource implNode) throws SailConfigException {
+        super.parse(model, implNode);
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SERVICE_URL, null))
+                .ifPresent(lit -> setUrl(lit.stringValue()));
+        Models.objectIRI(model.filter(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, null))
+                .ifPresent(iri -> setServiceID(iri));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USERNAME, null))
+                .ifPresent(iri -> setUnResolvedUsername(iri.stringValue()));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.PASSWORD, null))
+                .ifPresent(iri -> setUnResolvedPassword(iri.stringValue()));
 
-  }
+    }
 
-  public String getUrl() {
-    return url;
-  }
+    public String getUrl() {
+        return url;
+    }
 
-  protected void setUrl(String url) {
-    this.url = url;
-  }
+    protected void setUrl(String url) {
+        this.url = url;
+    }
 
-  public IRI getServiceID() {
-    return serviceID;
-  }
+    public IRI getServiceID() {
+        return serviceID;
+    }
 
-  protected void setServiceID(IRI serviceID) {
-    this.serviceID = serviceID;
-  }
+    protected void setServiceID(IRI serviceID) {
+        this.serviceID = serviceID;
+    }
 
-  public String getUsername() {
-    return username;
-  }
+    public String getUsername() {
+        return username;
+    }
 
-  protected void setUsername(String username) {
-    this.username = username;
-  }
+    protected void setUsername(String username) {
+        this.username = username;
+    }
 
-  public String getPassword() {
-    return password;
-  }
+    public String getPassword() {
+        return password;
+    }
 
-  protected void setPassword(String password) {
-    this.password = password;
-  }
+    protected void setPassword(String password) {
+        this.password = password;
+    }
 
-  String getUnResolvedUsername() {
-    return unResolvedUsername;
-  }
+    String getUnResolvedUsername() {
+        return unResolvedUsername;
+    }
 
-  void setUnResolvedUsername(String unResolvedUsername) {
-    this.unResolvedUsername = unResolvedUsername;
-  }
+    void setUnResolvedUsername(String unResolvedUsername) {
+        this.unResolvedUsername = unResolvedUsername;
+    }
 
-  String getUnResolvedPassword() {
-    return unResolvedPassword;
-  }
+    String getUnResolvedPassword() {
+        return unResolvedPassword;
+    }
 
-  void setUnResolvedPassword(String unResolvedPassword) {
-    this.unResolvedPassword = unResolvedPassword;
-  }
+    void setUnResolvedPassword(String unResolvedPassword) {
+        this.unResolvedPassword = unResolvedPassword;
+    }
 }

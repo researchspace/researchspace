@@ -288,36 +288,6 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
       WebTarget targetResource = this.client.target(url)
           .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
 
-      // 1. Print information about the WebTarget
-      logger.trace("=== WebTarget ===");
-      if (targetResource != null) {
-        logger.trace("URI: " + targetResource.getUri().toString());
-      } else {
-        logger.trace("WebTarget is null.");
-      }
-
-      // 2. Print values from the ServiceParametersHolder
-      logger.trace("\n=== ServiceParametersHolder ===");
-
-      // 2a. Input Parameters
-      if (parametersHolder != null && parametersHolder.getInputParameters() != null) {
-        logger.trace("Input Parameters:");
-        for (Map.Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
-          logger.trace(" - " + entry.getKey() + " => " + entry.getValue());
-        }
-      } else {
-        logger.trace("No input parameters found.");
-      }
-
-      // 2b. Output Variables
-      if (parametersHolder != null && parametersHolder.getOutputVariables() != null) {
-        logger.trace("\nOutput Variables:");
-        for (Entry<IRI, String> entry : parametersHolder.getOutputVariables().entrySet()) {
-          logger.trace(" - " + entry.getKey() + " => " + entry.getValue());
-        }
-      } else {
-        logger.trace("No output variables found.");
-      }
       // Case with POST
       if (HttpMethod.POST.equals(httpMethod)) {
         return submitPost(targetResource, parametersHolder);
@@ -387,14 +357,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
   private Invocation.Builder addHTTPHeaders(Invocation.Builder request) {
     request.accept(getSail().getConfig().getMediaType());
 
-    // Add additional HTTP headers if found
-    Map<String, String> httpHeaders = this.getSail().getConfig().getHttpHeaders();
-    if (httpHeaders != null && httpHeaders.size() > 0) {
-      logger.trace("Found {} custom HTTP headers.", httpHeaders.size());
-
-      for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
-        request.header(header.getKey(), header.getValue());
-      }
+    for (Map.Entry<String, String> header : this.getSail().getConfig().getHttpHeaders().entrySet()) {
+      request.header(header.getKey(), header.getValue());
     }
     return request;
   }

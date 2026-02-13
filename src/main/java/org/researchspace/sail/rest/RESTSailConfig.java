@@ -158,10 +158,6 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
     Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USER_AGENT, null))
         .ifPresent(lit -> setUserAgent(lit.stringValue()));
 
-    model.filter(implNode, MpRepositoryVocabulary.AUTHORIZATION_KEY, null).forEach(data -> {
-      data.getObject();
-    });
-
     // Set Authorization
     Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.AUTHORIZATION_KEY, null))
         .ifPresent(lit -> setAuthKey(lit.stringValue()));

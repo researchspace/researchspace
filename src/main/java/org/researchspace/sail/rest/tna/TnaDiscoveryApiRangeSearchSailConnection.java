@@ -28,7 +28,7 @@ import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
 import org.researchspace.sail.rest.RESTSail;
 import org.researchspace.sail.rest.RESTSailConnection;
@@ -155,7 +155,7 @@ public class TnaDiscoveryApiRangeSearchSailConnection extends RESTSailConnection
     }
 
     @Override
-    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
+    protected CloseableIteration<? extends BindingSet> executeAndConvertResultsToBindingSet(
             ServiceParametersHolder parametersHolder) {
 
         try {
@@ -198,7 +198,7 @@ public class TnaDiscoveryApiRangeSearchSailConnection extends RESTSailConnection
                         return mapBindingSet;
                     }).collect(Collectors.toList());
 
-            return new CollectionIteration<BindingSet, QueryEvaluationException>(bindings);
+            return new CloseableIteratorIteration<>(bindings.iterator());
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);

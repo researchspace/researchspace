@@ -20,34 +20,25 @@
 package org.researchspace.federation.repository;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.federated.FedX;
+import org.eclipse.rdf4j.federated.FedXConfig;
+import org.eclipse.rdf4j.federated.endpoint.Endpoint;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.query.Dataset;
-import org.eclipse.rdf4j.query.algebra.evaluation.TripleSource;
-import org.eclipse.rdf4j.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.eclipse.rdf4j.repository.sparql.federation.RepositoryFederatedService;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.filters.RepositoryBloomFilter;
-import org.eclipse.rdf4j.repository.sparql.federation.SPARQLServiceResolver;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.SailException;
-import org.eclipse.rdf4j.sail.federation.MpFederationConnection;
-import org.researchspace.federation.repository.evaluation.MedianAggregateService;
-import org.researchspace.federation.repository.evaluation.MpFederationStrategy;
 import org.researchspace.repository.RepositoryManager;
-import org.eclipse.rdf4j.sail.federation.Federation;
+import org.researchspace.sail.rest.AbstractServiceWrappingSail;
+import org.researchspace.federation.repository.evaluation.QueryHintAwareFederationEvaluationStrategyFactory;
 
-import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
@@ -57,231 +48,174 @@ import com.google.inject.Provider;
  * Configuration properties are defined by {@link MpFederationConfig}, instances
  * are created by {@link MpFederationFactory}.
  * 
+ * Adapted to extend FedX for RDF4J 5.x compatibility.
+ * 
  * @author Andriy Nikolov <an@metaphacts.com>
  *
  */
-public class MpFederation extends Federation {
+public class MpFederation extends FedX {
 
     private static final Logger logger = LogManager.getLogger(MpFederation.class);
 
-    protected Map<IRI, String> repositoryIDMappings;
-
-    protected final String defaultRepositoryId;
-
-    protected final int numThreads = 20;
-
-    @Inject
-    protected Provider<MpSparqlServiceRegistry> serviceRegistryProvider;
-
-    protected Map<IRI, AggregateService> aggregateServiceRegistry = Maps.newHashMap();
-
-    protected ExecutorService rankedExecutor = Executors
-            .newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("mp-rdf4j-federation-%d").build());
-
-    /*
-     * TODO: re-enable for top-k "depth-first" optimization protected
-     * ExecutorService rankedExecutor = new MpPriorityThreadPoolExecutor(numThreads,
-     * numThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>(),
-     * new ThreadFactoryBuilder().setNameFormat("mp-federation-%d").build());
-     */
-
-    // Repository manager is injected via Guice
     @Inject
     protected Provider<RepositoryManager> repositoryManagerProvider;
 
-    protected boolean isServiceResolverInitialized = false;
-
-    protected boolean useAsyncParallelJoin = true;
-    protected boolean useCompetingJoin = true;
-    protected boolean useBoundJoin = true;
-    protected boolean enableQueryHints = true;
-
-    public MpFederation(String defaultRepositoryId, Map<IRI, String> repositoryIDMappings) {
-        this.defaultRepositoryId = defaultRepositoryId;
-        this.repositoryIDMappings = repositoryIDMappings;
-
-        aggregateServiceRegistry.put(MedianAggregateService.SERVICE_ID, new MedianAggregateService());
-    }
-
-    @Override
-    public synchronized MpFederationConnection getConnection() throws SailException {
-        if (!isServiceResolverInitialized) {
-            this.initServiceResolver();
-        }
-        List<Repository> members = getMembers();
-        List<RepositoryConnection> connections = new ArrayList<RepositoryConnection>(members.size());
-        try {
-            for (Repository member : members) {
-                connections.add(member.getConnection());
-            }
-            return new MpFederationConnection(this, connections);
-        } catch (RepositoryException e) {
-            closeAll(connections);
-            throw new SailException(e);
-        } catch (RuntimeException e) {
-            closeAll(connections);
-            throw e;
-        }
-    }
-
-    private void closeAll(Iterable<RepositoryConnection> connections) {
-        for (RepositoryConnection con : connections) {
-            try {
-                con.close();
-            } catch (RepositoryException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-    }
-
-    @Override
-    public Map<Repository, RepositoryBloomFilter> getBloomFilters() {
-        return super.getBloomFilters();
-    }
-
-    @Override
-    protected MpFederationStrategy createEvaluationStrategy(TripleSource tripleSource, Dataset dataset,
-            FederatedServiceResolver resolver) {
-        MpFederationStrategy strategy = new MpFederationStrategy(this, tripleSource, dataset, resolver);
-        strategy.setUseAsyncParallelJoin(useAsyncParallelJoin);
-        strategy.setUseBoundJoin(useBoundJoin);
-        strategy.setUseCompetingJoin(useCompetingJoin);
-        return strategy;
-    }
-
-    public MpFederationStrategy createEvaluationStrategy(TripleSource tripleSource, Dataset dataset) {
-        return createEvaluationStrategy(tripleSource, dataset, getFederatedServiceResolver());
-    }
-
-    @Override
-    public List<Repository> getMembers() {
-        return super.getMembers();
-    }
+    /**
+     * The configuration for this federation.
+     * All settings are retrieved from here rather than stored as separate fields.
+     */
+    private final MpFederationConfig config;
+    
+    /**
+     * Shared executor service for REST service prefetching.
+     * Size is 3x prefetchSize to handle multiple concurrent queries.
+     * Created lazily on first access.
+     */
+    private volatile ExecutorService restServiceExecutor;
 
     /**
-     * Gets the mappings (service IRI->Repository) for repositories accessible as
-     * federation members.
+     * Create a new MpFederation with the given configuration.
      * 
-     * @return
+     * @param config the federation configuration containing all settings
      */
-    public Map<IRI, Repository> getServiceMappings() {
-        RepositoryManager repositoryManager = repositoryManagerProvider.get();
-        return repositoryIDMappings.entrySet().stream().collect(
-                Collectors.toMap(entry -> entry.getKey(), entry -> repositoryManager.getRepository(entry.getValue())));
+    public MpFederation(MpFederationConfig config) {
+        super(new ArrayList<>());
+        this.config = config;
+        
+        // Apply FedX configuration - apply legacy config options for backwards compatibility
+        FedXConfig fedXConfig = config.getFedXConfig();
+        fedXConfig.withEnableServiceAsBoundJoin(config.isUseBoundJoin());
+        
+        this.setFederationEvaluationStrategy(new QueryHintAwareFederationEvaluationStrategyFactory());
+        
+        logger.debug("MpFederation initialized with restServicePrefetchSize={}", 
+                config.getRestServicePrefetchSize());
     }
-
+    
     /**
-     * Federation service resolver is initialized from {@link RepositoryManager}
+     * Get the configuration for this federation.
+     * 
+     * @return the MpFederationConfig
      */
-    protected synchronized void initServiceResolver() {
-        RepositoryManager repositoryManager = repositoryManagerProvider.get();
-        super.addMember(repositoryManager.getRepository(this.defaultRepositoryId));
-
-        Map<IRI, Repository> serviceMappings = getServiceMappings();
-        SPARQLServiceResolver serviceResolver = new SPARQLServiceResolver();
-        serviceResolver.setHttpClientSessionManager(repositoryManager.getClientSessionManager());
-        serviceMappings.forEach((refIri, repo) -> {
-            serviceResolver.registerService(refIri.stringValue(), new RepositoryFederatedService(repo, false));
-        });
-
-        super.setFederatedServiceResolver(serviceResolver);
-        isServiceResolverInitialized = true;
+    public MpFederationConfig getConfig() {
+        return config;
     }
-
+    
+    /**
+     * Get the default member repository ID.
+     */
+    public String getDefaultRepositoryId() {
+        return config.getDefaultMember();
+    }
+    
+    /**
+     * Get the repository ID mappings (SERVICE URI -> repository ID).
+     */
+    public Map<IRI, String> getRepositoryIDMappings() {
+        return config.getRepositoryIDMappings();
+    }
+    
     @Override
-    public void addMember(Repository member) {
-        throw new UnsupportedOperationException("The federation assumes only one default federation member. "
-                + "Others must be referenced as services.");
-    }
-
-    @Override
-    public synchronized void setFederatedServiceResolver(FederatedServiceResolver resolver) {
-        throw new UnsupportedOperationException("Resolvable federated services are passed via the RepositoryManager.");
-    }
-
-    @Override
-    public void initialize() throws SailException {
-        // No-op: initialization of members processed separately by the
-        // RepositoryManager.
-    }
-
-    public ExecutorService getRankedExecutor() {
-        return rankedExecutor;
-    }
-
-    @Override
-    public void execute(Runnable command) {
-        this.rankedExecutor.execute(command);
-    }
-
-    public MpSparqlServiceRegistry getServiceRegistry() throws Exception {
-        if (this.serviceRegistryProvider != null) {
-            return serviceRegistryProvider.get();
-        } else {
-            throw new IllegalStateException("Service registry provider is not available");
-        }
-    }
-
-    public AggregateService getAggregateService(IRI uri) {
-        return this.aggregateServiceRegistry.get(uri);
-    }
-
-    public boolean isUseAsyncParallelJoin() {
-        return useAsyncParallelJoin;
-    }
-
-    public void setUseAsyncParallelJoin(boolean useAsyncParallelJoin) {
-        this.useAsyncParallelJoin = useAsyncParallelJoin;
-    }
-
-    public boolean isUseCompetingJoin() {
-        return useCompetingJoin;
-    }
-
-    public void setUseCompetingJoin(boolean useCompetingJoin) {
-        this.useCompetingJoin = useCompetingJoin;
-    }
-
-    public boolean isUseBoundJoin() {
-        return useBoundJoin;
-    }
-
-    public void setUseBoundJoin(boolean useBoundJoin) {
-        this.useBoundJoin = useBoundJoin;
-    }
-
-    public boolean isEnableQueryHints() {
-        return enableQueryHints;
-    }
-
-    public void setEnableQueryHints(boolean queryHintsEnabled) {
-        this.enableQueryHints = queryHintsEnabled;
-    }
-
-    @Override
-    public void shutDown() throws SailException {
-        List<SailException> toThrowExceptions = new ArrayList<>();
-        try {
-            SPARQLServiceResolver toCloseServiceResolver = (SPARQLServiceResolver) getFederatedServiceResolver();
-            super.setFederatedServiceResolver(null);
-            if (toCloseServiceResolver != null) {
-                toCloseServiceResolver.shutDown();
-            }
-        } finally {
+    protected void shutDownInternal() throws SailException {
+        logger.debug("Shutting down MpFederation, stopping REST service executor");
+        if (restServiceExecutor != null) {
+            restServiceExecutor.shutdown();
             try {
-                this.rankedExecutor.shutdown();
-                this.rankedExecutor.awaitTermination(10, TimeUnit.SECONDS);
+                if (!restServiceExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    restServiceExecutor.shutdownNow();
+                }
             } catch (InterruptedException e) {
+                restServiceExecutor.shutdownNow();
                 Thread.currentThread().interrupt();
-            } finally {
-                if (!this.rankedExecutor.isShutdown()) {
-                    this.rankedExecutor.shutdownNow();
+            }
+        }
+        super.shutDownInternal();
+    }
+    
+    /**
+     * Get the FedX configuration for this federation.
+     * 
+     * @return the FedXConfig
+     */
+    public FedXConfig getFedXConfig() {
+        return config.getFedXConfig();
+    }
+    
+    /**
+     * Get the prefetch size for REST services.
+     * This controls how many HTTP calls are made in parallel when evaluating REST services.
+     * 
+     * @return the prefetch size (default 5)
+     */
+    public int getRestServicePrefetchSize() {
+        return config.getRestServicePrefetchSize();
+    }
+    
+    /**
+     * Get the shared executor service for REST service prefetching.
+     * This executor is shared across all queries to avoid creating new thread pools per query.
+     * Created lazily on first access.
+     * 
+     * @return the shared executor service
+     */
+    public ExecutorService getRestServiceExecutor() {
+        // Double-checked locking for lazy initialization
+        if (restServiceExecutor == null) {
+            synchronized (this) {
+                if (restServiceExecutor == null) {
+                    int prefetchSize = config.getRestServicePrefetchSize();
+                    int poolSize = prefetchSize * 3;
+                    restServiceExecutor = Executors.newFixedThreadPool(poolSize);
+                    logger.debug("Created REST service executor with pool size {}", poolSize);
                 }
             }
         }
-        if (!toThrowExceptions.isEmpty()) {
-            throw toThrowExceptions.get(0);
-        }
+        return restServiceExecutor;
     }
 
+    public boolean isEnableQueryHints() {
+        return config.isEnableQueryHints();
+    }
+
+    public void addFederationMember(Endpoint endpoint) {
+        this.addMember(endpoint);
+    }
+
+    /**
+     * Checks if the given service URI maps to a REST-backed repository.
+     * REST services should not use vectored (bound join) evaluation because
+     * REST APIs cannot process VALUES clauses - they need to be called one-at-a-time.
+     * 
+     * @param serviceUri the SERVICE clause URI
+     * @return true if the service maps to a repository backed by AbstractServiceWrappingSail
+     */
+    public boolean isRestBackedService(String serviceUri) {
+        try {
+            IRI serviceIri = SimpleValueFactory.getInstance().createIRI(serviceUri);
+            Map<IRI, String> mappings = config.getRepositoryIDMappings();
+            String repoId = mappings.get(serviceIri);
+            
+            if (logger.isTraceEnabled()) {
+                logger.trace("isRestBackedService: uri={}, mappedRepoId={}, mappingsSize={}", 
+                    serviceUri, repoId, mappings.size());
+            }
+            
+            if (repoId != null && repositoryManagerProvider != null) {
+                Repository repo = repositoryManagerProvider.get().getRepository(repoId);
+                
+                if (repo instanceof SailRepository) {
+                    var sail = ((SailRepository) repo).getSail();
+                    boolean isRest = sail instanceof AbstractServiceWrappingSail;
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("isRestBackedService: repoId={}, sailType={}, isRest={}", 
+                            repoId, sail.getClass().getSimpleName(), isRest);
+                    }
+                    return isRest;
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("Error checking if service is REST-backed: {}", serviceUri, e);
+        }
+        return false;
+    }
 }

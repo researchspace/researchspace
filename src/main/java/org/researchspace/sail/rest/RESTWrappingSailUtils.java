@@ -67,8 +67,10 @@ public class RESTWrappingSailUtils {
     public static List<Value> getObjectInputParameters(Collection<StatementPattern> statementPatterns,
             Var subjectVariable, IRI propertyIri) {
         return statementPatterns.stream()
-                .filter(stmtPattern -> (predicateAndSubjectVarMatch(stmtPattern, subjectVariable, propertyIri)
-                        && stmtPattern.getObjectVar().hasValue()))
+                .filter(stmtPattern -> {
+                    boolean match = predicateAndSubjectVarMatch(stmtPattern, subjectVariable, propertyIri);
+                    return match && stmtPattern.getObjectVar().hasValue();
+                })
                 .map(stmtPattern -> stmtPattern.getObjectVar().getValue()).collect(Collectors.toList());
     }
 

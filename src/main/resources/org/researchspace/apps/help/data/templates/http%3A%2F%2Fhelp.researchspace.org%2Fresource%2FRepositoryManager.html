@@ -21,18 +21,18 @@
       string ID and its type and configuration parameters are described as an RDF graph 
       using the RDF4J repository configuration 
       format (see example below). Each 
-      configuration RDF graph must include an instance of type <i>rep:Repository</i> 
+      configuration RDF graph must include an instance of type <i>config:Repository</i> 
       with the following mandatory properties:</p> 
     <ul>
-      <li><code>rep:repositoryID</code>: the ID of the repository.</li>
+      <li><code>config:rep.id</code>: the ID of the repository.</li>
       <li><code>rdfs:label</code>: a human-readable description of the repository. </li>
-      <li><code>rep:repositoryImpl</code>: a link to the <i>repository 
+      <li><code>config:rep.impl</code>: a link to the <i>repository 
         implementation resource</i> defining the specific implementation of the 
         concrete repository type.</li>
     </ul>
     <p>The repository implementation resource, in turn, must have one mandatory property:</p>
     <ul>
-      <li><code>rep:repositoryType</code>: A string identifier of the specific 
+      <li><code>config:rep.type</code>: A string identifier of the specific 
         implementation type of the repository (e.g., a SPARQL endpoint or a native 
         RDF4J repository storing data locally on disk).</li>
     </ul>
@@ -40,19 +40,26 @@
       are required: for example, for a SPARQL endpoint one has to specify 
       the URL of the query endpoint, for a native RDF4J repository one has to 
       include the types of statement indices, etc.</p>
+    
+    <div class="alert alert-info">
+      <strong>Note:</strong> Starting with RDF4J 5.0, the configuration vocabulary has changed. 
+      The old vocabulary (<code>http://www.openrdf.org/config/repository#</code>) is still supported 
+      for backward compatibility but is deprecated. New configurations should use the new vocabulary 
+      (<code>tag:rdf4j.org,2023:config/repository#</code>).
+    </div>
+
     <mp-code-block mode="text/turtle">
     <![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
 
-[] a rep:Repository ;
-  rep:repositoryID "default" ;
+[] a config:Repository ;
+  config:rep.id "default" ;
 	rdfs:label "Default HTTP SPARQL Repository" ;
-	rep:repositoryImpl [
-		rep:repositoryType "researchspace:SPARQLRepository" ;
-		sparqlr:query-endpoint <http://example.org/sparql> ;
+	config:rep.impl [
+		config:rep.type "researchspace:SPARQLRepository" ;
+		config:sparql.queryEndpoint <http://example.org/sparql> ;
 	] .
 ]]>
     </mp-code-block>
@@ -92,18 +99,17 @@
     <h3>SPARQL repository</h3>
     <p>This is probably the most common type of the repository representing a SPARQL endpoint running separately from the platform. The platform communicates with such repositories via the HTTP protocol. In the ResearchSpace platform, such repositories are described using repository type <code>researchspace:SPARQLRepository</code>.</p>
     <mp-code-block mode="text/turtle"><![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
 
-[] a rep:Repository ;
-	rep:repositoryID "default" ;
+[] a config:Repository ;
+	config:rep.id "default" ;
 	rdfs:label "Default HTTP SPARQL Repository" ;
-	rep:repositoryImpl [
-		rep:repositoryType "researchspace:SPARQLRepository" ;
-		sparqlr:query-endpoint <http://example.org/sparql> ; # Endpoint to send SPARQL queries to.
-		sparqlr:update-endpoint <http://example.org/update> ; # Update endpoint (optional - only if different from the query endpoint)
+	config:rep.impl [
+		config:rep.type "researchspace:SPARQLRepository" ;
+		config:sparql.queryEndpoint <http://example.org/sparql> ; # Endpoint to send SPARQL queries to.
+		config:sparql.updateEndpoint <http://example.org/update> ; # Update endpoint (optional - only if different from the query endpoint)
 		mph:quadMode true ; # Flag determining whether the requests for statements should retrieve triples <subj, pred, obj> or quads <subj, pred, obj, named_graph>
 	] .
 ]]>
@@ -143,20 +149,17 @@
     
     <mp-code-block mode="text/turtle"><![CDATA[
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-@prefix rep: <http://www.openrdf.org/config/repository#>.
-@prefix sr: <http://www.openrdf.org/config/repository/sail#>.
-@prefix sail: <http://www.openrdf.org/config/sail#>.
-@prefix ns: <http://www.openrdf.org/config/sail/native#>.
+@prefix config: <tag:rdf4j.org,2023:config/> .
 
-[] a rep:Repository ;
-  rep:repositoryID "default" ; # Replace with your repository ID
+[] a config:Repository ;
+  config:rep.id "default" ; # Replace with your repository ID
   rdfs:label "Native store" ; 
-  rep:repositoryImpl [
-    rep:repositoryType "openrdf:SailRepository" ;
-    sr:sailImpl [
-      sail:sailType "openrdf:NativeStore" ;
-      sail:iterationCacheSyncThreshold "0"; # Threshold for syncing query evaluation iteration caches to disk
-      ns:tripleIndexes "spoc,posc" # Triple indices
+  config:rep.impl [
+    config:rep.type "openrdf:SailRepository" ;
+    config:sail.impl [
+      config:sail.type "openrdf:NativeStore" ;
+      config:native.iterationCacheSyncThreshold "0"; # Threshold for syncing query evaluation iteration caches to disk
+      config:native.tripleIndexes "spoc,posc" # Triple indices
     ]
   ].
 ]]>
@@ -175,17 +178,16 @@
       While it is a special case of a SPARQL repository, it requires its own special 
       handling for data loading operations. </p>
     <mp-code-block mode="text/turtle"><![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
 
-[] a rep:Repository ;
-  rep:repositoryID "default" ; # Replace with your repository ID
+[] a config:Repository ;
+  config:rep.id "default" ; # Replace with your repository ID
   rdfs:label "Amazon Neptune repository" ;
-  rep:repositoryImpl [
-    rep:repositoryType "researchspace:NeptuneSPARQLRepository" ;
-    sparqlr:query-endpoint <http://example.org/query> ;
+  config:rep.impl [
+    config:rep.type "researchspace:NeptuneSPARQLRepository" ;
+    config:sparql.queryEndpoint <http://example.org/query> ;
     mph:neptuneDataLoaderUrl <http://example.org/loader>; # Data loader endpoint to be used for bulk loading of the data from an S3 bucket.
     mph:quadMode "true"
   ].
@@ -197,39 +199,230 @@
     Ephedra is a 
     SPARQL query federation architecture that is able to send federated 
     queries over several repositories registered in the Repository Manager.
+    It is built on top of FedX and adds support for REST services and query hints.
     <mp-code-block mode='text/turtle'>
     <![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
-@prefix sail: <http://www.openrdf.org/config/sail#> .
-@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
 @prefix mps: <http://www.researchspace.org/resource/system/service#> .
 @prefix mpf: <http://www.researchspace.org/resource/system/repository/federation#> .
-@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix fedx: <http://rdf4j.org/config/federation#> .
 
-[] a rep:Repository ;
-    rep:repositoryID "ephedra" ;
+[] a config:Repository ;
+    config:rep.id "ephedra" ;
     rdfs:label "Local Ephedra federation" ;
-    rep:repositoryImpl [
-      rep:repositoryType "researchspace:FederationSailRepository" ;
-      sr:sailImpl [
-          sail:sailType "researchspace:Federation" ;
-          mph:defaultMember "default" # Repository ID of the default member of the federation
-          fedsail:member [
-            mph:delegateRepositoryID "{%Repository ID of the federation member|wikidata-text%}" ;
-            mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:wikidata-text%}
+    config:rep.impl [
+      config:rep.type "researchspace:FederationSailRepository" ;
+      config:sail.impl [
+          config:sail.type "researchspace:Federation" ;
+          mph:defaultMember "default" ; # Repository ID of the default member of the federation
+          config:fed.member [
+            ephedra:delegateRepositoryID "{%Repository ID of the federation member|wikidata-text%}" ;
+            ephedra:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:wikidata-text%}
           ] ;
-          fedsail:member [
-            mph:delegateRepositoryID "{%Repository ID of the federation member|assets%}" ;
-            mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:assets%}
-          ] 
+          config:fed.member [
+            ephedra:delegateRepositoryID "{%Repository ID of the federation member|assets%}" ;
+            ephedra:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:assets%}
+          ] ;
+          
+          # Optional: FedX configuration
+          fedx:config [
+            fedx:enforceMaxQueryTime 120 ;    # Query timeout in seconds (default: 120)
+            fedx:joinWorkerThreads 20 ;       # Parallel join threads (default: 20)
+            fedx:debugQueryPlan false         # Print query plan to stdout (default: false)
+          ]
       ] 
     ] .
       ]]>
-    </mp-code-block> 
+    </mp-code-block>
     
+    <h4>Ephedra Configuration Properties</h4>
+    <p>Ephedra supports all standard FedX configuration properties via the <code>fedx:config</code> block:</p>
+    <table class="table table-striped">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>fedx:enforceMaxQueryTime</code></td><td><strong>120</strong></td><td>Query timeout in seconds (0 = disabled). ResearchSpace default is 120s.</td></tr>
+        <tr><td><code>fedx:joinWorkerThreads</code></td><td>20</td><td>Thread pool size for parallel join operations</td></tr>
+        <tr><td><code>fedx:unionWorkerThreads</code></td><td>20</td><td>Thread pool size for parallel union operations</td></tr>
+        <tr><td><code>fedx:leftJoinWorkerThreads</code></td><td>10</td><td>Thread pool size for LEFT JOIN operations</td></tr>
+        <tr><td><code>fedx:boundJoinBlockSize</code></td><td>25</td><td>Number of bindings per VALUES clause in bound join</td></tr>
+        <tr><td><code>fedx:enableServiceAsBoundJoin</code></td><td>true</td><td>Use VALUES clause for SERVICE evaluation</td></tr>
+        <tr><td><code>fedx:enableMonitoring</code></td><td>false</td><td>Enable monitoring features</td></tr>
+        <tr><td><code>fedx:debugQueryPlan</code></td><td>false</td><td>Print optimized query plan to stdout</td></tr>
+        <tr><td><code>fedx:logQueryPlan</code></td><td>false</td><td>Log query plan via QueryPlanLog</td></tr>
+        <tr><td><code>fedx:sourceSelectionCacheSpec</code></td><td>-</td><td>Guava CacheBuilderSpec for source selection cache</td></tr>
+      </tbody>
+    </table>
+    
+    <h4>Ephedra-Specific Configuration</h4>
+    <p>In addition to FedX properties, Ephedra supports these configuration options directly on the SAIL:</p>
+    <table class="table table-striped">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ephedra:restServicePrefetchSize</code></td><td>5</td><td>Number of parallel HTTP calls for REST services. Higher values improve performance but may make slightly more calls than needed when LIMIT is used.</td></tr>
+        <tr><td><code>ephedra:enableQueryHints</code></td><td>true</td><td>Enable query hint annotations for join reordering</td></tr>
+      </tbody>
+    </table>
+    
+    <h4>REST Service Handling</h4>
+    <p>Ephedra automatically detects REST-backed services and uses <strong>bounded prefetching</strong> to balance parallelism with LIMIT awareness. 
+    It maintains up to <code>restServicePrefetchSize</code> HTTP calls in-flight at any time. When <code>LIMIT</code> is reached, 
+    pending calls are cancelled. This ensures fast execution while respecting LIMIT clauses.</p>
+    
+    <div class="alert alert-info">
+      <strong>Example:</strong> With <code>ephedra:restServicePrefetchSize 5</code> and <code>LIMIT 20</code>:
+      <ul>
+        <li>Best case: ~20 HTTP calls</li>
+        <li>Worst case: ~25 HTTP calls (20 + 5 prefetched)</li>
+        <li>~5x faster than sequential execution!</li>
+      </ul>
+    </div>
+    
+    <div class="alert alert-warning">
+      <strong>ORDER BY Limitation:</strong> When using <code>ORDER BY</code> on a variable that comes from a REST service result, 
+      all HTTP calls must be made before sorting can occur. This defeats the lazy evaluation optimization. 
+      To benefit from LIMIT optimization with REST services, avoid <code>ORDER BY</code> on REST result variables, 
+      or perform sorting client-side. See the <semantic-link iri="[[resolvePrefix 'Help:RESTSail']]" class="text-link-action">REST Sail documentation</semantic-link> for details.
+    </div>
+    
+    <hr class="divider">
+    <h3>FedX federation repository</h3>
+    <p>
+      FedX provides transparent federation of multiple SPARQL endpoints under a single virtual endpoint.
+      In a federated SPARQL query in FedX, one no longer needs to explicitly address specific endpoints using SERVICE clauses.
+      Instead, FedX automatically selects relevant sources, sends statement patterns to these sources for evaluation, and joins the individual results.
+    </p>
+    <p>
+      FedX can be used as a drop-in component in existing applications. Below is an example configuration that federates the default repository with Wikidata.
+    </p>
+    <mp-code-block mode="text/turtle">
+    <![CDATA[
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fedx: <http://rdf4j.org/config/federation#> .
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+
+[] a config:Repository ;
+    config:rep.id "fedx" ;
+    rdfs:label "FedX Federation" ;
+    config:rep.impl [
+        config:rep.type "fedx:FedXRepository" ;
+        fedx:member [
+            fedx:store "ResolvableRepository" ;
+            fedx:repositoryName "default"
+        ] ;
+        fedx:member [
+            fedx:store "SPARQLEndpoint" ;
+            sd:endpoint "https://query.wikidata.org/sparql"
+        ] ;
+        fedx:member [
+            fedx:store "SPARQLEndpoint" ;
+            sd:endpoint "https://artresearch.net/sparql"
+        ]
+    ] .
+    ]]>
+    </mp-code-block>
+
+    <p>
+      FedX repositories can also be configured with various options to control query execution and monitoring.
+      For example, you can set the number of worker threads or enforce a maximum query time.
+    </p>
+    <mp-code-block mode="text/turtle">
+    <![CDATA[
+   config:rep.impl [
+      config:rep.type "fedx:FedXRepository" ;
+      # ... members ...
+      fedx:config [
+         fedx:joinWorkerThreads 20 ;
+         fedx:enforceMaxQueryTime 30 ;
+         fedx:enableMonitoring true ;
+         fedx:logQueryPlan true ;
+      ]
+   ] .
+    ]]>
+    </mp-code-block>
+
+    <h4>Using FedX with Ephedra</h4>
+    <p>
+      FedX can be used in conjunction with Ephedra. A common pattern is to use a FedX repository as the default member of an Ephedra federation.
+      This allows Ephedra to handle specific services (like search services) while delegating general SPARQL queries to the FedX federation, which then distributes them across its members.
+    </p>
+    <mp-code-block mode="text/turtle">
+    <![CDATA[
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+
+[] a config:Repository;
+  config:rep.id "wikidata-ephedra";
+  rdfs:label "Wikidata Ephedra Federation";
+  config:rep.impl [
+      config:rep.type "researchspace:FederationSailRepository";
+      config:sail.impl [
+          config:sail.type "researchspace:Federation";
+          # Define Ephedra services
+          config:fed.member [
+              ephedra:delegateRepositoryID "osm-nominatim-search";
+              ephedra:serviceReference <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService>
+            ],
+            [
+              ephedra:delegateRepositoryID "wikidata-entity";
+              ephedra:serviceReference <http://www.researchspace.org/resource/system/service/wikidataentity/WikidataEntity>
+            ];
+          # Use FedX as the default member
+          ephedra:defaultMember "fedx"
+        ]
+    ] .
+    ]]>
+    </mp-code-block>
+
+    <p>
+      This configuration enables complex federated workflows. For example, you can search for a place using Nominatim, get its details from Wikidata, and then find artworks located in that place from ArtResearch.net (which uses CIDOC-CRM) - all in a <strong>single federated query</strong>:
+    </p>
+
+    <mp-code-block mode="application/sparql-query">
+    <![CDATA[
+PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX schema: <http://schema.org/>
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+
+SELECT ?placeName ?wikidataId ?description ?pharosPlaceLabel WHERE {
+  # 1. Search for "Venice" using Nominatim Service (via Ephedra)
+  SERVICE <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService> {
+    ?place osm:q "Venice" ;
+           osm:wikidata ?wikidataId ;
+           osm:display_name ?placeName .
+  }
+
+  # 2. Convert the Wikidata ID string (e.g., "Q641") to an IRI
+  BIND(IRI(CONCAT("http://www.wikidata.org/entity/", ?wikidataId)) AS ?wikidataEntity)
+
+  # 3. Query Wikidata (via FedX) for description and TGN ID (P1667)
+  ?wikidataEntity schema:description ?description ;
+                  wdt:P1667 ?tgnId .
+  FILTER(LANG(?description) = "en")
+
+  # 4. Construct TGN URI
+  BIND(IRI(CONCAT("http://vocab.getty.edu/tgn/", ?tgnId)) AS ?tgnUri)
+  
+  # 5. Query ArtResearch.net (via FedX) for label that is used there for Venice
+  {
+    ?tgnUri <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?id. 
+    ?id <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <https://artresearch.net/resource/pharos/vocab/meta/pharos_preferred_name> . 
+    ?id <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?pharosPlaceLabel .
+  }
+} LIMIT 10
+    ]]>
+    </mp-code-block>
+
     <hr class="divider">
     <h3>Virtuoso repository</h3>
     <p><a href='https://virtuoso.openlinksw.com/' class="text-link-action" target="_blank">Virtuoso</a> is 
@@ -249,16 +442,15 @@
     
     <mp-code-block mode="text/turtle">
     <![CDATA[
-@prefix rep: <http://www.openrdf.org/config/repository#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
 
-[] a rep:Repository ;
-  rep:repositoryID "default" ;
+[] a config:Repository ;
+  config:rep.id "default" ;
   rdfs:label "Test Virtuoso SPARQL repository wrapper" ;
-  rep:repositoryImpl [ 
-    rep:repositoryType "researchspace:VirtuosoWrapperRepository" ;
+  config:rep.impl [ 
+    config:rep.type "researchspace:VirtuosoWrapperRepository" ;
     mph:delegateRepositoryID "{Virtuoso Repository ID}" ;
   ] .
       ]]>

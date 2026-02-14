@@ -29,8 +29,8 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
-import org.eclipse.rdf4j.query.algebra.evaluation.impl.BindingAssigner;
-import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
+import org.eclipse.rdf4j.query.algebra.evaluation.optimizer.BindingAssignerOptimizer;
+import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.sail.SailConnection;
@@ -74,11 +74,11 @@ public class VirtuosoKeywordSearchSailConnection extends AbstractSailConnection 
     }
 
     @Override
-    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(TupleExpr tupleExpr,
+    protected CloseableIteration<? extends BindingSet> evaluateInternal(TupleExpr tupleExpr,
             Dataset dataset, BindingSet bindings, boolean includeInferred) throws SailException {
         TupleExpr cloned = tupleExpr.clone();
         // Apply the provided binding sets
-        new BindingAssigner().optimize(cloned, dataset, bindings);
+        new BindingAssignerOptimizer().optimize(cloned, dataset, bindings);
 
         VirtuosoKeywordSearchGroupExtractor extractor = new VirtuosoKeywordSearchGroupExtractor();
 
@@ -91,7 +91,7 @@ public class VirtuosoKeywordSearchSailConnection extends AbstractSailConnection 
         }
     }
 
-    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateAtTarget(TupleExpr tupleExpr,
+    protected CloseableIteration<? extends BindingSet> evaluateAtTarget(TupleExpr tupleExpr,
             Dataset dataset, BindingSet bindings, boolean includeInferred) throws SailException {
         RepositoryConnection connection = theSail.getVirtuosoRepository().getConnection();
         VirtuosoKeywordSearchHandler handler = new VirtuosoKeywordSearchHandler();
@@ -103,12 +103,12 @@ public class VirtuosoKeywordSearchSailConnection extends AbstractSailConnection 
     }
 
     @Override
-    protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal() throws SailException {
-        return new CollectionIteration<Resource, SailException>(Lists.<Resource>newArrayList());
+    protected CloseableIteration<? extends Resource> getContextIDsInternal() throws SailException {
+        return new CloseableIteratorIteration<>(Lists.<Resource>newArrayList().iterator());
     }
 
     @Override
-    protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj, IRI pred,
+    protected CloseableIteration<? extends Statement> getStatementsInternal(Resource subj, IRI pred,
             Value obj, boolean includeInferred, Resource... contexts) throws SailException {
         throw new UnsupportedOperationException("Cannot retrieve statements by the pattern [" + subj + "," + pred + ","
                 + obj + "]: only complete full text search clauses are accepted");
@@ -149,8 +149,8 @@ public class VirtuosoKeywordSearchSailConnection extends AbstractSailConnection 
     }
 
     @Override
-    protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal() throws SailException {
-        return new CollectionIteration<Namespace, SailException>(Lists.<Namespace>newArrayList());
+    protected CloseableIteration<? extends Namespace> getNamespacesInternal() throws SailException {
+        return new CloseableIteratorIteration<>(Lists.<Namespace>newArrayList().iterator());
     }
 
     @Override
@@ -172,9 +172,6 @@ public class VirtuosoKeywordSearchSailConnection extends AbstractSailConnection 
     protected void clearNamespacesInternal() throws SailException {
     }
 
-    @Override
-    public boolean pendingRemovals() {
-        return false;
-    }
+
 
 }

@@ -44,7 +44,7 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.algebra.evaluation.impl.BindingAssigner;
+import org.eclipse.rdf4j.query.algebra.evaluation.optimizer.BindingAssignerOptimizer;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
@@ -319,7 +319,7 @@ class ShaclPatternInstantiator {
     protected String replaceParametersInQuery(BindingSet bs, String queryBody) throws Exception {
         SPARQLParser parser = new SPARQLParser();
         ParsedQuery parsedQuery = parser.parseQuery(queryBody, null);
-        new BindingAssigner().optimize(parsedQuery.getTupleExpr(), null, bs);
+        new BindingAssignerOptimizer().optimize(parsedQuery.getTupleExpr(), null, bs);
 
         MpSparqlQueryRenderer renderer = new MpSparqlQueryRenderer();
 

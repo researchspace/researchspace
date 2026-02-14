@@ -116,6 +116,12 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
 
     private RestAuthorization auth;
 
+    /**
+     * If true, HTTP errors (4xx, 5xx) will be ignored and return empty results
+     * instead of failing the query. Default is true.
+     */
+    private boolean ignoreHttpErrors = true;
+
     public RESTSailConfig() {
         super(RESTSailFactory.SAIL_TYPE);
         httpHeaders = Maps.newHashMap();
@@ -164,6 +170,10 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
 
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.AUTHORIZATION_LOCATION, null))
                 .ifPresent(lit -> setAuthLocation(lit.stringValue()));
+
+        // Parse ignoreHttpErrors
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.IGNORE_HTTP_ERRORS, null))
+                .ifPresent(lit -> setIgnoreHttpErrors(lit.booleanValue()));
     }
 
     @Override
@@ -218,6 +228,11 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
                 model.add(implNode, MpRepositoryVocabulary.AUTHORIZATION_LOCATION,
                         vf.createLiteral(this.getAuth().getLocation().toString()));
             }
+        }
+
+        // Export ignoreHttpErrors
+        if (isIgnoreHttpErrors() == false) {
+            model.add(implNode, MpRepositoryVocabulary.IGNORE_HTTP_ERRORS, vf.createLiteral(false));
         }
 
         return implNode;
@@ -289,5 +304,13 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
     public void setAuthLocation(String location) {
         initAuth();
         this.auth.setLocation(location);
+    }
+
+    public boolean isIgnoreHttpErrors() {
+        return ignoreHttpErrors;
+    }
+
+    public void setIgnoreHttpErrors(boolean ignoreHttpErrors) {
+        this.ignoreHttpErrors = ignoreHttpErrors;
     }
 }

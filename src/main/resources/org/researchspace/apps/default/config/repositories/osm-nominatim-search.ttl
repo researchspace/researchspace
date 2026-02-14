@@ -1,20 +1,16 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rep: <http://www.openrdf.org/config/repository#> .
-@prefix sail: <http://www.openrdf.org/config/sail#> .
-@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
 @prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
-@prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
-@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
 
-[] a rep:Repository;
-  rep:repositoryID "osm-nominatim-search";
+[] a config:Repository;
+  config:rep.id "osm-nominatim-search";
   rdfs:label "A wrapper for OSM using RESTSail repository";
-  rep:repositoryImpl [
-      rep:repositoryType "openrdf:SailRepository";
-      sr:sailImpl [
-          sail:sailType "researchspace:RESTSail";
+  config:rep.impl [
+      config:rep.type "openrdf:SailRepository";
+      config:sail.impl [
+          config:sail.type "researchspace:RESTSail";
           ephedra:serviceURL "https://nominatim.openstreetmap.org/search";
           ephedra:implementsService <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService>;
           ephedra:requestRateLimit "1"^^xsd:int;

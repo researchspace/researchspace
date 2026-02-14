@@ -213,30 +213,37 @@ public class UIConfiguration extends ConfigurationGroupBase {
     @ConfigurationParameterHook
     public void onUpdateTemplateIncludeQuery(String configIdInGroup, List<String> configValues,
             PropertiesConfiguration targetConfig) throws ConfigurationException {
-        if (configValues.size() != 1) {
-            throw new ConfigurationException(
-                    "The parameter \"templateIncludeQuery\" must point to a single valid query.");
-        }
-
-        String queryString = configValues.get(0);
-
-        SparqlOperationBuilder<TupleQuery> builder = SparqlOperationBuilder.create(queryString, TupleQuery.class);
-        Repository db = new SailRepository(new MemoryStore());
-        db.init();
-
-        try (RepositoryConnection con = db.getConnection()) {
-
-            TupleQueryResult tqr = builder.resolveThis(researchspaceURI).build(con).evaluate();
-            if (!tqr.getBindingNames().contains("type")) {
+        try {
+            if (configValues.size() != 1) {
                 throw new ConfigurationException(
-                        "Query as specified in \"templateIncludeQuery\" config for extracting the wiki include types must return a binding with name \"type\"");
+                        "The parameter \"templateIncludeQuery\" must point to a single valid query.");
             }
-        } catch (MalformedQueryException e) {
-            throw new ConfigurationException(
-                    "The query that you have entered is invalid. Please add a valid query. \n Details: "
-                            + e.getMessage());
-        } finally {
-            db.shutDown();
+
+            String queryString = configValues.get(0);
+
+            SparqlOperationBuilder<TupleQuery> builder = SparqlOperationBuilder.create(queryString, TupleQuery.class);
+            Repository db = new SailRepository(new MemoryStore());
+            db.init();
+
+            try (RepositoryConnection con = db.getConnection()) {
+                try (TupleQueryResult tqr = builder.resolveThis(researchspaceURI).build(con).evaluate()) {
+                    if (!tqr.getBindingNames().contains("type")) {
+                        throw new ConfigurationException(
+                                "Query as specified in \"templateIncludeQuery\" config for extracting the wiki include types must return a binding with name \"type\"");
+                    }
+                }
+            } catch (MalformedQueryException e) {
+                throw new ConfigurationException(
+                        "The query that you have entered is invalid. Please add a valid query. \n Details: "
+                                + e.getMessage());
+            } finally {
+                db.shutDown();
+            }
+        } catch (Exception e) {
+            if (e instanceof ConfigurationException) {
+                throw (ConfigurationException) e;
+            }
+            throw new RuntimeException("Validation Failed", e);
         }
     }
 }

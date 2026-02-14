@@ -1,0 +1,34 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix fed: <http://www.openrdf.org/config/sail/federation#> .
+
+[] a config:Repository ;
+   config:rep.id "ephedra" ;
+   rdfs:label "Ephedra Federation" ;
+   config:rep.impl [
+      config:rep.type "researchspace:FederationSailRepository" ;
+      config:sail.impl [
+         config:sail.type "researchspace:Federation" ;
+         ephedra:defaultMember "default" ;
+         ephedra:enableQueryHints "true"^^xsd:boolean ;
+         config:fed.member [
+            ephedra:delegateRepositoryID "service-a" ;
+            ephedra:serviceReference <http://example.org/ns#ServiceA>
+         ] ;
+         config:fed.member [
+            ephedra:delegateRepositoryID "service-b" ;
+            ephedra:serviceReference <http://example.org/ns#ServiceB>
+         ] ;
+         config:fed.member [
+            ephedra:delegateRepositoryID "met-search" ;
+            ephedra:serviceReference <http://www.researchspace.org/resource/system/services/metcollectiononline/METCollectionSearchService>
+         ] ;
+         config:fed.member [
+            ephedra:delegateRepositoryID "met-object" ;
+            ephedra:serviceReference <http://www.researchspace.org/resource/system/services/metcollectiononline/METObjectDescriptionService>
+         ]
+      ]
+   ] .

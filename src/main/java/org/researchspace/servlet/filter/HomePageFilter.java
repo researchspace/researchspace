@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.sail.federation.MpFederationConnection;
+
 import org.researchspace.config.Configuration;
 import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.config.NamespaceRegistry.RuntimeNamespace;

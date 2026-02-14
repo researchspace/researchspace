@@ -1,0 +1,19 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> .
+
+[] a config:Repository ;
+   config:rep.id "met-object" ;
+   rdfs:label "MET Object Description Service" ;
+   config:rep.impl [
+      config:rep.type "openrdf:SailRepository" ;
+      config:sail.impl [
+         config:sail.type "researchspace:RESTSail" ;
+         ephedra:serviceURL "http://localhost:18089/public/collection/v1/objects/{objectid}" ;
+         ephedra:httpMethod "GET" ;
+         ephedra:implementsService met:METObjectDescriptionService
+      ]
+   ] .

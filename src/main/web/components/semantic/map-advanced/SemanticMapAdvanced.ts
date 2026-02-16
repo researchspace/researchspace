@@ -62,6 +62,13 @@ import { easeOut } from 'ol/easing';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 import XYZ from 'ol/source/XYZ';
 
+// Cesium Ion proxy path — the platform proxy appends the access token server-side.
+// Configured in proxy.prop as config.proxy.cesium.*
+const CESIUM_ION_PROXY_PATH = '/proxy/cesium';
+
+// OLCesium is loaded lazily to ensure window.Cesium is set before the import
+// See initOlCesium() method
+
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { Component, ComponentContext } from 'platform/api/components';
@@ -104,6 +111,8 @@ import {
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
+  SemanticMapControlsSendSunHeight,
+  SemanticMapControlsSendSunDirection,
   SemanticMapControlsSendYear,
   SemanticMapControlsRegister,
   SemanticMapControlsUnregister,
@@ -271,6 +280,26 @@ export interface SemanticMapAdvancedConfig {
     labelStrokeColor?: string; // Text outline color (e.g., '#fff')
     labelStrokeWidth?: number; // Text outline width (e.g., 3)
   };
+
+  /**
+   * Optional comma-separated list of Cesium Ion asset IDs to load as 3D tilesets
+   * when 3D mode is enabled. The assets are fetched through the platform's proxy
+   * system (configured in proxy.prop as config.proxy.cesium.*), so the Cesium Ion
+   * access token never leaves the server.
+   *
+   * Example (single asset):
+   * ```html
+   * <semantic-map-advanced cesium-asset-ids="4422272" ...>
+   * ```
+   *
+   * Example (multiple assets):
+   * ```html
+   * <semantic-map-advanced cesium-asset-ids="4422272,5533383" ...>
+   * ```
+   *
+   * If omitted, no 3D tilesets are loaded (the 3D globe view still works).
+   */
+  cesiumAssetIds?: string;
 }
 
 export type SemanticMapAdvancedProps = SemanticMapAdvancedConfig & Props<any>;
@@ -298,6 +327,8 @@ interface MapState {
   basemapControlExpanded: boolean;
   selectedBasemapIdentifier: string | null;
   basemapLayers: Array<any>;
+  // Sun control state
+  sunControlExpanded: boolean;
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -318,6 +349,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private draw: Interaction;
   private snap: Interaction;
   private defaultFeaturesColor = 'rgba(128,128,128,0.5)'; // Default gray color
+
+  // OLCesium 3D view properties (lazily loaded)
+  private ol3d: any = null;
+  private cesium3dTileset: any = null;
+  private is3dEnabled: boolean = false;
+  private cesiumLib: any = null;
+  private readonly tilesetMinAmbient: number = 0.18;
+  private readonly tilesetLightContrast: number = 1.0;
+  private readonly tilesetDebugHighContrast: boolean = false;
+  private sunHeightDeg: number = 45;
+  private sunDirectionDeg: number = 180;
 
   // Performance optimization properties
   private styleCache: { [key: string]: Style } = {};
@@ -360,6 +402,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       basemapControlExpanded: false,
       selectedBasemapIdentifier: null,
       basemapLayers: [],
+      sunControlExpanded: false,
     };
 
     // this.initEditingModeInteractions();
@@ -470,6 +513,22 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         })
       )
       .onValue(this.toggle3d);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsSendSunHeight,
+        })
+      )
+      .onValue(this.setSunHeightFromEvent);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsSendSunDirection,
+        })
+      )
+      .onValue(this.setSunDirectionFromEvent);
 
     this.cancelation
       .map(
@@ -607,6 +666,148 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     );
   }
   
+  /**
+   * Render the sun control panel on the right side of the map, above the ruler button.
+   * Height = vertical slider, Direction = circular compass dial.
+   */
+  private renderSunControlPanel() {
+    const self = this;
+    const isExpanded = this.state.sunControlExpanded;
+    const compassSize = 30;
+
+    return D.div(
+      {
+        className: basemapStyles.sunControlContainer,
+        onMouseEnter: () => this.setState({ sunControlExpanded: true }),
+        onMouseLeave: () => this.setState({ sunControlExpanded: false }),
+      },
+      // Collapsed: just a sun button (same size as measurement button)
+      !isExpanded && D.button(
+        {
+          className: basemapStyles.sunControlButton,
+          title: 'Sun position controls',
+        },
+        '☀'
+      ),
+      // Expanded panel
+      D.div(
+        { className: `${basemapStyles.sunControlExpanded} ${isExpanded ? basemapStyles.visible : ''}` },
+        // Sun icon at top
+        D.div({ className: basemapStyles.sunControlIcon, title: 'Sun controls' }, '☀'),
+        // Height: vertical slider
+        D.div({ className: basemapStyles.sunHeightWrapper, style: { width: '30px', height: '160px', overflow: 'visible' } },
+          D.input({
+            type: 'range', min: '0', max: '90',
+            value: String(Math.round(this.sunHeightDeg)),
+            className: basemapStyles.sunHeightSlider,
+            style: { width: '150px', height: '20px', transform: 'rotate(-90deg)', transformOrigin: 'center center', cursor: 'pointer', margin: '0' },
+            title: 'Sun height: ' + Math.round(this.sunHeightDeg) + '°',
+            onChange: function (e: any) {
+              const v = parseInt(e.target.value, 10);
+              self.applySunLighting(v, self.sunDirectionDeg);
+              trigger({ eventType: SemanticMapControlsSendSunHeight, source: self.props.id, data: v });
+              self.forceUpdate();
+            },
+          }),
+        ),
+        // Degree label BELOW the slider wrapper (not inside it, so it won't be clipped)
+        D.div({ className: basemapStyles.sunDegreeLabel }, Math.round(this.sunHeightDeg) + '°'),
+        // Direction: circular compass
+        D.div({
+          className: basemapStyles.sunCompassWrapper,
+          ref: (el: any) => { if (el && !el._compassInit) { this.initCompassDial(el, compassSize); el._compassInit = true; } },
+        }),
+        D.div({ className: basemapStyles.sunDegreeLabel }, Math.round(this.sunDirectionDeg) + '°')
+      )
+    );
+  }
+
+  /**
+   * Initialize a canvas-based circular compass dial for sun direction.
+   * Attaches mouse/touch drag to rotate the needle.
+   */
+  private initCompassDial(container: HTMLElement, size: number) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size * 2; // retina
+    canvas.height = size * 2;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    canvas.style.borderRadius = '50%';
+    canvas.style.cursor = 'pointer';
+    container.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    const self = this;
+    const r = size; // half of canvas pixel size (retina)
+
+    const draw = () => {
+      const angleDeg = self.sunDirectionDeg;
+      const angleRad = (angleDeg - 90) * Math.PI / 180; // 0°=North=top
+      ctx.clearRect(0, 0, size * 2, size * 2);
+
+      // Outer ring
+      ctx.beginPath();
+      ctx.arc(r, r, r - 2, 0, Math.PI * 2);
+      ctx.strokeStyle = '#ccc';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Fill
+      ctx.beginPath();
+      ctx.arc(r, r, r - 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#f9f9f9';
+      ctx.fill();
+
+      // N marker
+      ctx.fillStyle = '#999';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('N', r, 12);
+
+      // Needle line
+      const needleLen = r - 8;
+      ctx.beginPath();
+      ctx.moveTo(r, r);
+      ctx.lineTo(r + Math.cos(angleRad) * needleLen, r + Math.sin(angleRad) * needleLen);
+      ctx.strokeStyle = '#e67e22';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Center dot
+      ctx.beginPath();
+      ctx.arc(r, r, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#e67e22';
+      ctx.fill();
+    };
+
+    draw();
+
+    const updateFromEvent = (clientX: number, clientY: number) => {
+      const rect = canvas.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      let angle = Math.atan2(clientX - cx, -(clientY - cy)) * 180 / Math.PI;
+      if (angle < 0) angle += 360;
+      angle = Math.round(angle);
+      if (angle === 0) angle = 360;
+      self.applySunLighting(self.sunHeightDeg, angle);
+      trigger({ eventType: SemanticMapControlsSendSunDirection, source: self.props.id, data: angle });
+      draw();
+      self.forceUpdate();
+    };
+
+    let dragging = false;
+    canvas.addEventListener('mousedown', (e) => { dragging = true; updateFromEvent(e.clientX, e.clientY); });
+    document.addEventListener('mousemove', (e) => { if (dragging) updateFromEvent(e.clientX, e.clientY); });
+    document.addEventListener('mouseup', () => { dragging = false; });
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); dragging = true; updateFromEvent(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { if (dragging) { e.preventDefault(); updateFromEvent(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: false });
+    canvas.addEventListener('touchend', () => { dragging = false; });
+
+    // Store draw fn so we can redraw on external updates
+    (container as any)._redrawCompass = draw;
+  }
+
   private toggleMeasurementTool = () => {
     if (this.state.overlayVisualization === 'measure') {
       // Deactivate
@@ -870,7 +1071,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       // Basemap control - Google Maps style selector in bottom-right corner
       !isMapLoading && this.renderBasemapControl(),
       // Measurement tool button - above zoom controls
-      !isMapLoading && this.renderMeasurementToolButton(),
+      !isMapLoading && !this.is3dEnabled && this.renderMeasurementToolButton(),
+      // Sun controls panel - shown on the right when 3D is enabled
+      !isMapLoading && this.is3dEnabled && this.renderSunControlPanel(),
       isMapLoading ? this.renderLoadingOverlay() : null
     );
   }
@@ -2270,6 +2473,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           this.layers = layers;
           this.map = map;
 
+          // Initialize OLCesium for 3D view lazily (after map is created)
+          this.initOlCesium().catch(err => console.error('Failed to init OLCesium:', err));
+
           // Set up viewport change listeners
           map.on('moveend', () => {
             if (this.debouncedUpdateVisibleFeatures) {
@@ -2867,7 +3073,251 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   /*** VISUALIZATIONS  */
 
-  private toggle3d = (event: Event<any>) => {};
+  /**
+   * Initialize OLCesium for 3D view
+   * This must be called lazily AFTER the map is created to ensure window.Cesium is set first
+   */
+  private async initOlCesium(): Promise<void> {
+    try {
+      // Set up Cesium globals FIRST, before importing OLCesium
+      const Cesium = await import('cesium');
+      this.cesiumLib = Cesium;
+      (window as any).Cesium = Cesium;
+      (window as any).CESIUM_BASE_URL = '/assets/no_auth/';
+
+      // NOTE: We do NOT set Cesium.Ion.defaultAccessToken here.
+      // All Cesium Ion API calls go through the platform proxy (/proxy/cesium)
+      // which appends the access token server-side. See proxy.prop.
+
+      // Enable ModelExperimental globally — required for CustomShader to work
+      // with 3DTiles 1.0 content (b3dm). The per-tileset flag alone may not be
+      // sufficient because the content loader checks the global flag.
+      if (Cesium.ExperimentalFeatures) {
+        Cesium.ExperimentalFeatures.enableModelExperimental = true;
+      }
+
+      // NOW import OLCesium (after Cesium is on window)
+      const { default: OLCesium } = await import('olcs/OLCesium');
+
+      // Create the OLCesium instance
+      const resolutionScale =
+        typeof window !== 'undefined' && window.devicePixelRatio
+          ? Math.max(1, window.devicePixelRatio)
+          : 1.0;
+      this.ol3d = new OLCesium({ map: this.map, resolutionScale });
+      console.log('OLCesium initialized successfully');
+
+      // Configure scene for better 3D visualization
+      const scene = this.ol3d.getCesiumScene();
+      
+      // Enable lighting on the globe (shades polygon faces based on light direction)
+      // This gives darker/lighter faces without cast shadows
+      scene.globe.enableLighting = true;
+      scene.shadows = false;
+      
+      // Prefer MSAA when available
+      if (scene.msaaSupported) {
+        scene.msaaSamples = 4;
+      }
+
+      // Keep dynamic lighting, but disable shadow rendering
+      scene.shadowMap.enabled = false;
+
+      // Keep FXAA optional; avoid forcing it when MSAA is active
+      if (scene.postProcessStages && scene.postProcessStages.fxaa) {
+        scene.postProcessStages.fxaa.enabled = !(scene.msaaSupported && scene.msaaSamples > 1);
+      }
+
+      // Apply initial user-controlled sun light values
+      this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
+      
+      console.log('Cesium scene configured with lighting');
+
+      // Load the 3D Tiles asset from Cesium Ion
+      await this.load3DTileset(Cesium);
+    } catch (err) {
+      console.error('Failed to initialize OLCesium:', err);
+    }
+  }
+
+  /**
+   * Parse the cesiumAssetIds prop into an array of numeric IDs.
+   * Returns an empty array if the prop is not set or invalid.
+   */
+  private parseCesiumAssetIds(): number[] {
+    if (!this.props.cesiumAssetIds) return [];
+    return String(this.props.cesiumAssetIds)
+      .split(',')
+      .map(s => parseInt(s.trim(), 10))
+      .filter(n => !Number.isNaN(n));
+  }
+
+  /**
+   * Load 3D Tilesets from Cesium Ion via the platform proxy.
+   * Iterates over every asset ID specified in the `cesium-asset-ids` prop.
+   * Each asset is resolved through /proxy/cesium (server-side token injection),
+   * then loaded as a Cesium3DTileset with a per-session access token.
+   */
+  private async load3DTileset(Cesium: any): Promise<void> {
+    const assetIds = this.parseCesiumAssetIds();
+    if (assetIds.length === 0) {
+      console.log('[Cesium] No cesium-asset-ids specified — skipping 3D tileset loading');
+      return;
+    }
+
+    const scene = this.ol3d.getCesiumScene();
+
+    for (const assetId of assetIds) {
+      try {
+        // Resolve the asset endpoint through the platform proxy.
+        // The proxy appends `?access_token=<token>` server-side.
+        const endpointUrl = `${CESIUM_ION_PROXY_PATH}/v1/assets/${assetId}/endpoint`;
+        console.log(`[Cesium] Resolving asset ${assetId} via proxy: ${endpointUrl}`);
+        const response = await fetch(endpointUrl);
+        if (!response.ok) {
+          throw new Error(`Proxy returned ${response.status} for asset ${assetId}`);
+        }
+        const endpointData = await response.json();
+        // endpointData: { type, url, accessToken, attributions[] }
+
+        // Build a Cesium.Resource that carries the per-session Bearer token
+        // returned by the Ion endpoint (NOT the main API key).
+        const resource = new Cesium.Resource({
+          url: endpointData.url,
+          headers: { Authorization: `Bearer ${endpointData.accessToken}` },
+        });
+
+        // Cesium 1.90-compatible: use the constructor, NOT Cesium3DTileset.fromUrl
+        const tileset = new Cesium.Cesium3DTileset({
+          url: resource,
+          enableModelExperimental: true,
+        });
+
+        scene.primitives.add(tileset);
+        await tileset.readyPromise;
+
+        // Disable cast/receive shadows
+        tileset.shadows = Cesium.ShadowMode.DISABLED;
+
+        // Custom shader for IFC-converted tilesets that lack vertex normals
+        if (Cesium.CustomShader && Cesium.LightingModel) {
+          tileset.customShader = new Cesium.CustomShader({
+            mode: Cesium.CustomShaderMode ? Cesium.CustomShaderMode.MODIFY_MATERIAL : undefined,
+            lightingModel: Cesium.LightingModel.UNLIT,
+            fragmentShaderText: `
+              void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material)
+              {
+                vec3 dpdx = dFdx(fsInput.attributes.positionEC);
+                vec3 dpdy = dFdy(fsInput.attributes.positionEC);
+                vec3 n = normalize(cross(dpdx, dpdy));
+                float ndotl = max(dot(n, czm_lightDirectionEC), 0.0);
+                float lit = 0.15 + 0.85 * ndotl;
+                material.diffuse *= lit;
+              }
+            `,
+          });
+        }
+
+        // Store reference (last loaded tileset wins for single-tileset compat)
+        this.cesium3dTileset = tileset;
+
+        // Apply sun lighting immediately
+        this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
+
+        console.log(`[Cesium] 3D Tileset loaded successfully from Ion asset ${assetId} via proxy`);
+      } catch (err) {
+        console.error(`[Cesium] Failed to load 3D Tileset for asset ${assetId}:`, err);
+      }
+    }
+  }
+
+  /**
+   * Toggle 3D view using OLCesium
+   */
+  private toggle3d = (event: Event<any>) => {
+    if (!this.ol3d) {
+      console.warn('OLCesium not initialized yet');
+      return;
+    }
+    this.ol3d.setEnabled(!this.ol3d.getEnabled());
+    this.is3dEnabled = this.ol3d.getEnabled();
+
+    if (this.is3dEnabled) {
+      if (this.state.overlayVisualization === 'measure') {
+        this.deactivateMeasurementTool();
+        this.setState({ overlayVisualization: 'normal' });
+      }
+      this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
+    }
+    // Force re-render so the sun control panel appears/disappears
+    this.forceUpdate();
+  };
+
+  private setSunHeightFromEvent = (event: Event<any>) => {
+    const value = Number(event.data);
+    if (Number.isNaN(value)) return;
+    this.applySunLighting(Math.max(0, Math.min(90, value)), this.sunDirectionDeg);
+  };
+
+  private setSunDirectionFromEvent = (event: Event<any>) => {
+    const value = Number(event.data);
+    if (Number.isNaN(value)) return;
+    const normalized = ((value % 360) + 360) % 360;
+    this.applySunLighting(this.sunHeightDeg, normalized === 0 ? 360 : normalized);
+  };
+
+  private getCesiumSceneSafely(): any {
+    if (!this.ol3d) return null;
+    try {
+      return this.ol3d.getCesiumScene();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  private applySunLighting(heightDeg: number, dirDeg: number): void {
+    this.sunHeightDeg = heightDeg;
+    this.sunDirectionDeg = dirDeg;
+
+    const scene = this.getCesiumSceneSafely();
+    const Cesium = this.cesiumLib || (window as any).Cesium;
+
+    if (!scene || !Cesium || !scene.camera || !scene.camera.positionWC) {
+      return;
+    }
+
+    this.applySunFromSliders(scene, heightDeg, dirDeg, Cesium);
+  }
+
+  private applySunFromSliders(scene: any, heightDeg: number, dirDeg: number, Cesium: any): void {
+    const alt = Cesium.Math.toRadians(heightDeg);
+    const az = Cesium.Math.toRadians(dirDeg % 360);
+
+    const sunLocalEnu = new Cesium.Cartesian3(
+      Math.sin(az) * Math.cos(alt),
+      Math.cos(az) * Math.cos(alt),
+      Math.sin(alt)
+    );
+
+    const origin = scene.camera.positionWC;
+    const enuToFixed = Cesium.Transforms.eastNorthUpToFixedFrame(origin);
+    const sunWorld = Cesium.Matrix4.multiplyByPointAsVector(
+      enuToFixed,
+      sunLocalEnu,
+      new Cesium.Cartesian3()
+    );
+
+    Cesium.Cartesian3.normalize(sunWorld, sunWorld);
+    const lightDir = Cesium.Cartesian3.negate(sunWorld, new Cesium.Cartesian3());
+    scene.light = new Cesium.DirectionalLight({ direction: lightDir });
+
+    // No custom uniform updates needed — Cesium's built-in PBR lighting
+    // automatically uses czm_lightDirectionEC which syncs from scene.light.
+
+    if (scene.requestRender) {
+      scene.requestRender();
+    }
+  }
   
   /**
    * Handler for the measurement tool toggle event

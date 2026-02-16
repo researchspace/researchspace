@@ -104,6 +104,9 @@ declare namespace SemanticMapControlsScssNamespace {
     featureTemplateContainer: string;
     featureTemplateCloseButton: string;
     
+    // Default details container
+    defaultDetailsContainer: string;
+    
     // Visualization mode notification
     visualizationModeNotification: string;
     

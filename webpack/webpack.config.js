@@ -27,6 +27,9 @@ const defaults = require('./defaults')();
 
 const CopyPlugin = require("copy-webpack-plugin");
 
+// Cesium source path for browser build
+const cesiumSource = 'node_modules/cesium/Build/Cesium/';
+
 /**
  * @param {ReturnType<import('./defaults')>} defaults
  * @returns {import('webpack').Configuration}
@@ -68,9 +71,9 @@ module.exports = function(isProd) {
         },
         optimization: {
             runtimeChunk: 'single',
-            moduleIds: 'named',
-            chunkIds: 'named',
-            emitOnErrors: true,
+            providedExports: false,
+            usedExports: false,
+            concatenateModules: false,
             splitChunks: {
                 chunks: 'all',
                 maxInitialRequests: Infinity,
@@ -83,7 +86,7 @@ module.exports = function(isProd) {
                         name: 'api',
                         enforce: true
                     },
-                    defaultVendors: {
+                    vendor: {
                         test: /[\\/]node_modules[\\/]/,
                         enforce: true,
                         name(module) {
@@ -250,6 +253,13 @@ module.exports = function(isProd) {
                     }
                 },
                 {
+                    test: path.join(ROOT_DIR, 'node_modules/cesium/Build/Cesium/Cesium.js'),
+                    loader: "expose-loader",
+                    options: {
+                        exposes: ["Cesium"]
+                    }
+                },
+                {
                     test: /\.ttl$/,
                     type: 'asset/source',
                 },
@@ -282,6 +292,8 @@ module.exports = function(isProd) {
                     'basil.js': 'basil.js/src/basil.js',
                     'handlebars': 'handlebars/dist/handlebars.js',
                     'jsonld': path.join(ROOT_DIR, 'node_modules/jsonld/dist/jsonld.js'),
+                    // Cesium must point to the browser build, not the CommonJS entry
+                    'cesium': path.join(ROOT_DIR, 'node_modules/cesium/Build/Cesium/Cesium.js'),
                 },
             ),
             extensions: ['.ts', '.tsx', '.js', '.scss'],
@@ -324,7 +336,12 @@ module.exports = function(isProd) {
             new webpack.ProvidePlugin({
                 'cytoscape': 'cytoscape',
                 '$': 'jquery',
-                'jQuery': 'jquery'
+                'jQuery': 'jquery',
+            }),
+            
+            // Define CESIUM_BASE_URL at build time
+            new webpack.DefinePlugin({
+                'CESIUM_BASE_URL': JSON.stringify('/assets/no_auth/')
             }),
 
             //do not bundle mirador images
@@ -351,8 +368,17 @@ module.exports = function(isProd) {
             new webpack.NormalModuleReplacementPlugin(
                 /^punycode$/,
                 path.join(ROOT_DIR, 'webpack/punycode-module.js')
-            )
-
+            ),
+            // Copy Cesium Assets, Widgets, Workers, Scene, and ThirdParty to the static directory
+            new CopyPlugin({
+                patterns: [
+                    { from: path.join(ROOT_DIR, cesiumSource, 'Workers'), to: 'Workers' },
+                    { from: path.join(ROOT_DIR, cesiumSource, 'Scene'), to: 'Scene' },
+                    { from: path.join(ROOT_DIR, cesiumSource, 'Assets'), to: 'Assets' },
+                    { from: path.join(ROOT_DIR, cesiumSource, 'Widgets'), to: 'Widgets' },
+                    { from: path.join(ROOT_DIR, cesiumSource, 'ThirdParty'), to: 'ThirdParty' },
+                ]
+            })
         ]
     };
 

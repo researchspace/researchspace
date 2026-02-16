@@ -13,6 +13,16 @@ declare const styles: {
   readonly basemapSelectedCheck: string;
   readonly basemapNoThumbnail: string;
   readonly basemapRipple: string;
+  // Sun control panel
+  readonly sunControlContainer: string;
+  readonly sunControlButton: string;
+  readonly sunControlExpanded: string;
+  readonly sunControlIcon: string;
+  readonly sunHeightWrapper: string;
+  readonly sunHeightSlider: string;
+  readonly sunDegreeLabel: string;
+  readonly sunCompassWrapper: string;
+  // Measurement tool
   readonly measurementToolContainer: string;
   readonly measurementToolButton: string;
   readonly active: string;

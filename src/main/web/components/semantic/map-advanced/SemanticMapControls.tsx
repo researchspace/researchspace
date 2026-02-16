@@ -18,6 +18,8 @@ import {
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
+  SemanticMapControlsSendSunHeight,
+  SemanticMapControlsSendSunDirection,
   SemanticMapControlsSendYear,
   SemanticMapControlsSendVectorLevels,
   SemanticMapControlsRegister,
@@ -76,6 +78,9 @@ interface State {
   generalizedData?: GeneralizedEventData; // For generalized data handling
   stylingEnabled: boolean; // Controls whether feature styling (coloring/labeling) is enabled
   labelBackgroundEnabled: boolean; // Controls whether labels have a soft background
+  sunHeightDeg: number;
+  sunDirectionDeg: number;
+  is3dEnabled: boolean;
 }
 
 interface Props {
@@ -125,6 +130,12 @@ interface Props {
    * Example: { "Person": "{{> person-template}}", "Building": "{{> building-template}}" }
    */
   templateMapping?: { [kind: string]: string };
+  /**
+   * Template to render inside the details panel when no feature or
+   * generalized data is selected (i.e. the "default" / idle content).
+   * Accepts a handlebars template string.
+   */
+  defaultDetailsTemplate?: string;
   /**
    * Default color for geometries/features when no specific color is assigned.
    * Format: rgba string e.g. 'rgba(200,50,50,0.5)'
@@ -183,6 +194,9 @@ export class SemanticMapControls extends Component<Props, State> {
       activePanel: null,
       stylingEnabled: false, // Default to OFF
       labelBackgroundEnabled: false, // Default to OFF
+      sunHeightDeg: 45,
+      sunDirectionDeg: 180,
+      is3dEnabled: false,
     };
     this.toggleGroupDisabled = this.toggleGroupDisabled.bind(this);
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
@@ -509,13 +523,52 @@ export class SemanticMapControls extends Component<Props, State> {
 
   private triggerSendToggle3d() {
     console.log('fired 3d');
+    this.setState(
+      (prevState) => ({ is3dEnabled: !prevState.is3dEnabled }),
+      () => {
+        trigger({
+          eventType: SemanticMapControlsSendToggle3d,
+          source: this.props.id,
+          targets: [this.props.targetMapId],
+          data: 'toggle',
+        });
+
+        // Re-send current sun controls after enabling 3D so Cesium receives the latest values.
+        if (this.state.is3dEnabled) {
+          this.triggerSendSunHeight();
+          this.triggerSendSunDirection();
+        }
+      }
+    );
+  }
+
+  private triggerSendSunHeight() {
     trigger({
-      eventType: SemanticMapControlsSendToggle3d,
+      eventType: SemanticMapControlsSendSunHeight,
       source: this.props.id,
       targets: [this.props.targetMapId],
-      data: 'toggle',
+      data: this.state.sunHeightDeg,
     });
   }
+
+  private triggerSendSunDirection() {
+    trigger({
+      eventType: SemanticMapControlsSendSunDirection,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: this.state.sunDirectionDeg,
+    });
+  }
+
+  private handleSunHeightChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const sunHeightDeg = parseInt(event.target.value, 10);
+    this.setState({ sunHeightDeg }, () => this.triggerSendSunHeight());
+  };
+
+  private handleSunDirectionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const sunDirectionDeg = parseInt(event.target.value, 10);
+    this.setState({ sunDirectionDeg }, () => this.triggerSendSunDirection());
+  };
 
   private triggerSendFeaturesColorsAssociationsToMap() {
     // Construct a new object with updated alpha values based on disabled state
@@ -1201,6 +1254,22 @@ export class SemanticMapControls extends Component<Props, State> {
             </button>
           </OverlayTrigger>
           
+          {/* 3D View Toggle Button */}
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip-3d">Toggle 3D View</Tooltip>}
+          >
+            <button
+              className={`${styles.mapControlsButton} map-control-button-3d`}
+              onClick={() => this.triggerSendToggle3d()}
+            >
+              <span className="map-control-icon-3d">
+                <i className="fa fa-cube" style={{ fontSize: '24px' }}></i>
+              </span>
+            </button>
+          </OverlayTrigger>
+
+          
           {/* Measurement Tool moved to SemanticMapAdvanced map component directly */}
         </div>
 
@@ -1219,11 +1288,19 @@ export class SemanticMapControls extends Component<Props, State> {
             <div className={styles.mapControlsPanelHeader}>
               
             </div>
-            {/* {this.renderTemplate(detailsMapTemplate, '<div>No details map template specified</div>')} */}
-            {/* Feature or generalized data template positioned to appear on the map */}
+            {/* Feature / generalized-data template, or default idle template */}
             {(this.state.selectedFeature || this.state.generalizedData) ? (
               <div className={styles['featureTemplateContainer']}>
                 {templateElement}
+              </div>
+            ) : this.props.defaultDetailsTemplate ? (
+              <div className={styles['defaultDetailsContainer']}>
+                {createElement(TemplateItem, {
+                  template: {
+                    source: this.props.defaultDetailsTemplate,
+                    options: this.getTemplateContext(),
+                  },
+                })}
               </div>
             ) : null}
           </div>

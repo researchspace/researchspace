@@ -334,6 +334,15 @@ interface MapState {
 const MAP_REF = 'researchspace-map-widget';
 
 export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, MapState> {
+  /**
+   * Deterministic layer bands (lower value = below):
+   * basemaps < overlays/historical maps < vectors/features
+   */
+  private readonly BASEMAP_ZINDEX_START = 0;
+  private readonly OVERLAY_ZINDEX_START = 100;
+  private readonly VECTOR_ZINDEX_START = 1000;
+  private readonly GEOMETRY_OPACITY_BOOST = 1.8;
+
   private layers: { [id: string]: VectorLayer<any> };
   private map: Map;
   private cancelation = new Cancellation();
@@ -629,6 +638,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       basemapControlExpanded: false,
       mapLayers: newMapLayers,
     }, () => {
+      this.enforceLayerStackingOrder();
       // Re-render map to apply changes
       if (this.map) {
         this.map.render();
@@ -1484,21 +1494,11 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         mapLayers: incomingLayers,
       },
       () => {
-        incomingLayers.forEach((value, index) => {
+        incomingLayers.forEach((value) => {
           let layer = this.getMapLayerByIdentifier(value.get('identifier'));
           if (!layer) {
             console.warn(`[SemanticMapAdvanced] Layer with identifier "${value.get('identifier')}" not found in map`);
             return;
-          }
-          
-          // Check if this is a features/geometry layer vs a tile/overlay layer
-          const isFeatureLayer = layer.get('level') === 'feature' || layer instanceof VectorLayer;
-          
-          // Only update z-index for non-feature layers (tile/overlay layers)
-          // Features layers have their own z-index management
-          if (!isFeatureLayer) {
-            // Calculate Z-index reverting the order (i.e. top layer has highest z index)
-            layer.setZIndex(Math.abs(index - event.data.length));
           }
           
           // Ensure layer visibility and opacity are properly synced
@@ -1517,6 +1517,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             console.log(`[SemanticMapAdvanced] Synced layer "${value.get('identifier')}" opacity: ${opacity}`);
           }
         });
+
+        // Enforce deterministic ordering bands:
+        // vectors (buildings, islands) > historical maps > basemaps
+        this.enforceLayerStackingOrder();
         
         // Force a re-render to apply the changes
         if (this.map) {
@@ -1528,8 +1532,106 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   // Local functions
 
+  private toNumericZIndex(value: any): number {
+    const parsed = parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  /**
+   * Explicit vector precedence required by product rules:
+   * buildings must be above islands.
+   */
+  private getVectorLayerPriority(layer: any): number {
+    const identifier = String(layer?.get('identifier') || '').toLowerCase();
+    const name = String(layer?.get('name') || '').toLowerCase();
+    const token = `${identifier} ${name}`;
+
+    if (token.includes('building')) return 2000;
+    if (token.includes('island')) return 1000;
+    return 0;
+  }
+
+  private isFeatureLayer(layer: any): boolean {
+    return layer && (layer.get('level') === 'feature' || layer instanceof VectorLayer);
+  }
+
+  /**
+   * Enforces deterministic layer stacking regardless of drag order or template order:
+   * 1) vectors/features at top (respecting vector zIndex, e.g. buildings above islands)
+   * 2) overlay/historical maps in the middle (respecting overlay UI order)
+   * 3) basemaps always at the bottom
+   */
+  private enforceLayerStackingOrder(): void {
+    if (!this.state.mapLayers || this.state.mapLayers.length === 0) return;
+
+    const allManagedLayers = this.state.mapLayers;
+
+    const basemapLayers = allManagedLayers.filter((layer) => layer.get('level') === 'basemap');
+    const overlayLayers = allManagedLayers.filter((layer) => layer.get('level') === 'overlay');
+    const featureLayers = allManagedLayers.filter((layer) => this.isFeatureLayer(layer));
+
+    // Basemaps: keep them at the very bottom
+    basemapLayers.forEach((layer, idx) => {
+      layer.setZIndex(this.BASEMAP_ZINDEX_START + idx);
+    });
+
+    // Overlays/historical maps: middle band, preserving current array order
+    // (first overlay in array is treated as visually above the following ones)
+    overlayLayers.forEach((layer, idx) => {
+      const rankFromTop = overlayLayers.length - idx;
+      layer.setZIndex(this.OVERLAY_ZINDEX_START + rankFromTop);
+    });
+
+    // Vectors/features: top band.
+    // First enforce explicit business precedence (buildings > islands),
+    // then use configured zIndex, then stable layer order.
+    const vectorLayersSorted = [...featureLayers].sort((a, b) => {
+      const ap = this.getVectorLayerPriority(a);
+      const bp = this.getVectorLayerPriority(b);
+      if (ap !== bp) return ap - bp;
+
+      const az = this.toNumericZIndex(a.get('zIndex'));
+      const bz = this.toNumericZIndex(b.get('zIndex'));
+      if (az !== bz) return az - bz;
+      return allManagedLayers.indexOf(a) - allManagedLayers.indexOf(b);
+    });
+
+    vectorLayersSorted.forEach((layer, idx) => {
+      layer.setZIndex(this.VECTOR_ZINDEX_START + idx + 1);
+    });
+  }
+
   private createHiddenFeatureStyle() {
     return new Style({});
+  }
+
+  /**
+   * Increases color alpha channel by a factor (clamped to 1).
+   * Used to make geometry maximum opacity visually stronger.
+   */
+  private boostColorOpacity(color: string, factor: number = this.GEOMETRY_OPACITY_BOOST): string {
+    if (!color || typeof color !== 'string') return color;
+
+    const rgbaMatch = color.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/i);
+    if (rgbaMatch) {
+      const r = parseInt(rgbaMatch[1], 10);
+      const g = parseInt(rgbaMatch[2], 10);
+      const b = parseInt(rgbaMatch[3], 10);
+      const a = parseFloat(rgbaMatch[4]);
+      const boostedAlpha = Math.min(1, Math.max(0, a * factor));
+      return `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`;
+    }
+
+    const rgbMatch = color.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i);
+    if (rgbMatch) {
+      const r = parseInt(rgbMatch[1], 10);
+      const g = parseInt(rgbMatch[2], 10);
+      const b = parseInt(rgbMatch[3], 10);
+      const boostedAlpha = Math.min(1, Math.max(0, 1 * factor));
+      return `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`;
+    }
+
+    return color;
   }
 
   private createFeatureStyle(feature) {
@@ -1561,6 +1663,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         }
       }
     }
+    color = this.boostColorOpacity(color);
     let featureStyle = getFeatureStyle(geometry, color, this.state.labelBackgroundEnabled);
     if (label) {
       featureStyle.getText().setText(label);
@@ -2328,6 +2431,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           mapLayers: mapLayersClone,
         },
         () => {
+          this.enforceLayerStackingOrder();
           console.log(`[DEBUG] Added features layer: ${layerConfig.identifier}`);
           this.sendLayersToControls();
           this.updateVisibleFeatures();
@@ -2472,6 +2576,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           console.log('Map ', this.props.id, ' setting layers', layers, ' and map ', map);
           this.layers = layers;
           this.map = map;
+
+          // Enforce deterministic layering as soon as map is created.
+          this.enforceLayerStackingOrder();
 
           // Initialize OLCesium for 3D view lazily (after map is created)
           this.initOlCesium().catch(err => console.error('Failed to init OLCesium:', err));
@@ -2747,6 +2854,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           mapLayers: newMapLayers,
         },
         () => {
+          this.enforceLayerStackingOrder();
           let vectorLayers = this.getVectorLayersFromMap();
           let combinedExtents = this.combineExtentsFromLayers(vectorLayers);
           console.log('Calculated extents for fitting: ', combinedExtents);

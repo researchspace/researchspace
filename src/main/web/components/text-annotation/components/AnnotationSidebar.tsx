@@ -22,6 +22,7 @@ import { Badge, Nav, NavItem, Tab } from 'react-bootstrap';
 
 import { Component, ComponentProps } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
+import * as TemplateService from 'platform/api/services/template';
 
 import { TemplateItem } from 'platform/components/ui/template';
 
@@ -31,6 +32,7 @@ import {
   WorkspaceHandlers,
   AnnotationBodyType,
   TextAnnotationTemplateBindings,
+  SidebarTab,
 } from '../model/ComponentModel';
 
 import * as styles from './AnnotationSidebar.scss';
@@ -44,13 +46,19 @@ export interface AnnotationSidebarProps {
   highlightedAnnotations: ReadonlySet<string>;
   permissions: WorkspacePermissions;
   handlers: WorkspaceHandlers;
+  customTabs?: ReadonlyArray<SidebarTab>;
+  documentIri?: Rdf.Iri;
+  templateScope?: TemplateService.TemplateScope;
 }
 
 interface State {
-  selectedTab?: string;
+  selectedTopTab?: string;
+  selectedTypeTab?: string;
 }
 
+const ANNOTATIONS_TAB = 'annotations';
 const ALL_TYPES_TAB = 'all';
+const CUSTOM_TAB_PREFIX = 'custom-';
 
 export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> {
   private annotationList: HTMLElement | null;
@@ -58,7 +66,8 @@ export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> 
   constructor(props: AnnotationSidebarProps, context: any) {
     super(props, context);
     this.state = {
-      selectedTab: ALL_TYPES_TAB,
+      selectedTopTab: ANNOTATIONS_TAB,
+      selectedTypeTab: ALL_TYPES_TAB,
     };
   }
 
@@ -69,42 +78,91 @@ export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> 
     }
   }
 
+  private hasCustomTabs() {
+    const { customTabs } = this.props;
+    return customTabs && customTabs.length > 0;
+  }
+
   render() {
-    const { className, annotationTypes, annotations, focusedAnnotation, highlightedAnnotations } = this.props;
-    const { selectedTab } = this.state;
+    const {
+      className, annotationTypes, annotations, focusedAnnotation,
+      highlightedAnnotations, customTabs = [], documentIri, templateScope,
+    } = this.props;
+    const { selectedTopTab, selectedTypeTab } = this.state;
+
+    const showAnnotations = !this.hasCustomTabs() || selectedTopTab === ANNOTATIONS_TAB;
+    const activeCustomTab = !showAnnotations
+      ? customTabs.find((tab) => CUSTOM_TAB_PREFIX + tab.key === selectedTopTab)
+      : undefined;
+
     return (
       <div className={classnames(styles.component, className)}>
-        <Tab.Container
-          id="rs-text-annotation-types"
-          activeKey={selectedTab}
-          // type cast as workaround to wrong React Bootstrap typings
-          onSelect={this.onSelectTab as (e: any) => void}
-        >
-          <Nav bsStyle="tabs">
-            <NavItem eventKey={ALL_TYPES_TAB} title="All annotations">
-              all
-            </NavItem>
-            {Array.from(annotationTypes.values(), (type) => {
-              const count = countAnnotationForTab(annotations, type.iri.value);
-              return (
-                <NavItem key={type.iri.value} eventKey={type.iri.value} disabled={count === 0} title={type.label}>
+        {this.hasCustomTabs() ? (
+          <Tab.Container
+            id="rs-text-annotation-sidebar"
+            activeKey={selectedTopTab}
+            onSelect={this.onSelectTopTab as (e: any) => void}
+          >
+            <Nav bsStyle="tabs" className={styles.topNav}>
+              <NavItem eventKey={ANNOTATIONS_TAB} title="Annotations">
+                <span>Annotations</span>
+              </NavItem>
+              {customTabs.map((tab) => (
+                <NavItem key={CUSTOM_TAB_PREFIX + tab.key} eventKey={CUSTOM_TAB_PREFIX + tab.key} title={tab.label}>
                   <div className={styles.tabHeader}>
-                    {type.iconUrl ? <img className={styles.tabIcon} src={type.iconUrl} /> : <span>{type.label}</span>}
+                    {tab.iconUrl ? <img className={styles.tabIcon} src={tab.iconUrl} alt={tab.label} /> : <span>{tab.label}</span>}
                   </div>
                 </NavItem>
-              );
-            })}
-          </Nav>
-        </Tab.Container>
-        <div className={styles.annotationList} ref={this.onAnnotationListMount}>
-          {annotations.map((anno) => {
-            return this.renderAnnotation(anno, {
-              hidden: !shouldRenderInTab(anno, selectedTab),
-              focused: Schema.sameIri(anno.iri, focusedAnnotation),
-              highlighted: highlightedAnnotations.size === 0 || highlightedAnnotations.has(anno.iri.value),
-            });
-          })}
-        </div>
+              ))}
+            </Nav>
+          </Tab.Container>
+        ) : null}
+        {showAnnotations ? (
+          <>
+            <Tab.Container
+              id="rs-text-annotation-types"
+              activeKey={selectedTypeTab}
+              onSelect={this.onSelectTypeTab as (e: any) => void}
+            >
+              <Nav bsStyle="tabs">
+                <NavItem eventKey={ALL_TYPES_TAB} title="All annotations">
+                  all
+                </NavItem>
+                {Array.from(annotationTypes.values(), (type) => {
+                  const count = countAnnotationForTab(annotations, type.iri.value);
+                  return (
+                    <NavItem key={type.iri.value} eventKey={type.iri.value} disabled={count === 0} title={type.label}>
+                      <div className={styles.tabHeader}>
+                        {type.iconUrl ? <img className={styles.tabIcon} src={type.iconUrl} /> : <span>{type.label}</span>}
+                      </div>
+                    </NavItem>
+                  );
+                })}
+              </Nav>
+            </Tab.Container>
+            <div className={styles.annotationList} ref={this.onAnnotationListMount}>
+              {annotations.map((anno) => {
+                return this.renderAnnotation(anno, {
+                  hidden: !shouldRenderInTab(anno, selectedTypeTab),
+                  focused: Schema.sameIri(anno.iri, focusedAnnotation),
+                  highlighted: highlightedAnnotations.size === 0 || highlightedAnnotations.has(anno.iri.value),
+                });
+              })}
+            </div>
+          </>
+        ) : null}
+        {activeCustomTab ? (
+          <div className={styles.customTabContent}>
+            <TemplateScopeProvider markupTemplateScope={templateScope}>
+              <TemplateItem
+                template={{
+                  source: activeCustomTab.template,
+                  options: documentIri ? { iri: documentIri } : {},
+                }}
+              />
+            </TemplateScopeProvider>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -113,8 +171,12 @@ export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> 
     this.annotationList = annotationList;
   };
 
-  private onSelectTab = (tabKey: string) => {
-    this.setState({ selectedTab: tabKey });
+  private onSelectTopTab = (tabKey: string) => {
+    this.setState({ selectedTopTab: tabKey });
+  };
+
+  private onSelectTypeTab = (tabKey: string) => {
+    this.setState({ selectedTypeTab: tabKey });
   };
 
   private renderAnnotation(

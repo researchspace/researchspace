@@ -354,8 +354,10 @@ function mapAnnotations(doc: Slate.Document, mapper: (data: AnnotationData) => A
 
   function mapNode(node: Slate.Node): Slate.Node | null {
     if (node.object === 'text') {
-      const mappedLeaves = node.getLeaves().map(mapLeaf);
-      return node.setLeaves(mappedLeaves);
+      const leaf = node.getLeaves().first();
+      const mappedLeaf = mapLeaf(leaf);
+      if (mappedLeaf === leaf) return node;
+      return node.set('marks', mappedLeaf.marks) as Slate.Node;
     } else if (node.object === 'inline' && node.type === ANNOTATION_POINT_TYPE) {
       const mappedData = mapper(node.data);
       if (mappedData === null) {

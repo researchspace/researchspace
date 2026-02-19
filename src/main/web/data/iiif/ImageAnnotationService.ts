@@ -110,7 +110,7 @@ export function queryIIIFImageOrRegion(
           imageId: imageID.value,
           isRegion: false,
           imageIRI: imageIRI,
-          carrierImageIRI: carrierImageIRI.value
+          carrierImageIRI: carrierImageIRI ? carrierImageIRI.value : undefined
         });
       } else if (type.value === 'region') {
         const viewport = maybe.fromNullable(binding['viewport']).chain((b) => parseImageSubarea(b.value));

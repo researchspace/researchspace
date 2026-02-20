@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Editor, findDOMNode } from 'slate-react';
+import { Editor } from 'slate-react';
 import * as Slate from 'slate';
 
 import * as React from 'react';
@@ -54,7 +54,8 @@ export class Sidebar extends React.Component<SidebarProps, any> {
     if (anchorBlock) {
       // some strange bug with typescript, so we need to convert immutable list to js array
       // also problem in slate-react definition with findDOMNode
-      const node = findDOMNode(anchorBlock) as HTMLElement;
+      const blockPath = this.props.editor.current?.value.document.getPath(anchorBlock.key);
+      const node = blockPath ? this.props.editor.current?.findDOMNode(blockPath as any) as HTMLElement : null;
       const sidebarStyle = {
         height: node.offsetHeight,
         transform: `translateY(${node.offsetTop}px)`,

@@ -20,6 +20,8 @@
 package org.researchspace.secrets;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import javax.annotation.Nullable;
 
@@ -199,12 +201,52 @@ public class SecretsHelper {
 
     /**
      * Determine whether a provided string is a key for a resolvable key.
-     * 
+     *
      * @param value key to check
      * @return <code>true</code> if the provided string is a key for a resolvable
      *         key, <code>false</code> otherwise
      */
     public static boolean isResolvableSecret(String value) {
         return SecretLookup.forValue(value).isPresent();
+    }
+
+    /**
+     * Resolve secrets that may be embedded within a string.
+     * Handles both cases:
+     * <ul>
+     * <li>Entire string is a secret: "${secret.key}" or "${secret.key:fallback}"</li>
+     * <li>Secret embedded in string: "Bearer ${secret.key}" or "prefix ${secret.key:fallback} suffix"</li>
+     * </ul>
+     *
+     * @param secretResolver secrets resolver (must not be null)
+     * @param value          the string that may contain secret placeholders
+     * @return the string with all secrets resolved, or null if value is null
+     */
+    public static String resolveEmbeddedSecrets(@Nullable SecretResolver secretResolver, @Nullable String value) {
+        if (value == null) {
+            return null;
+        }
+        Pattern secretPlaceholderPattern = Pattern.compile("\\$\\{([^:}]+):?([^}]*)\\}");
+        Matcher matcher = secretPlaceholderPattern.matcher(value);
+
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            String fallback = matcher.group(2);
+
+            String secretPlaceholder = fallback.isEmpty() ? "${" + key + "}" : "${" + key + ":" + fallback + "}";
+
+            String resolvedSecret = resolveSecretOrFallback(secretResolver, secretPlaceholder);
+
+            if (resolvedSecret != null) {
+                matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(resolvedSecret));
+            } else {
+                logger.warn("Secret not resolved for key '{}', keeping placeholder", key);
+                matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(matcher.group(0)));
+            }
+        }
+        matcher.appendTail(result);
+
+        return result.toString();
     }
 }

@@ -68,16 +68,16 @@ export class ExistingBeliefView extends Component<ExistingBeliefViewProps, {}> {
         return this.renderCustomBeliefTemplate(belief, assertionBasedBeliefTemplate);
       }
       return (
-        <Panel
-          header={
+        <Panel className={`form-horizontal ${styles.evidence}`}>
+          <Panel.Heading>
             <div>
               <span>Assertion based belief</span>
               {close}
             </div>
-          }
-          className={`form-horizontal ${styles.evidence}`}
-        >
-          {...ExistingBeliefContentView(belief)}
+          </Panel.Heading>
+          <Panel.Body>
+            {ExistingBeliefContentView(belief)}
+          </Panel.Body>
         </Panel>
       );
     }
@@ -86,16 +86,16 @@ export class ExistingBeliefView extends Component<ExistingBeliefViewProps, {}> {
         return this.renderCustomBeliefTemplate(belief, fieldBasedBeliefTemplate);
       }
       return (
-        <Panel
-          header={
+        <Panel className={`form-horizontal ${styles.evidence}`}>
+          <Panel.Heading>
             <div>
               <span>Field based belief</span>
               {close}
             </div>
-          }
-          className={`form-horizontal ${styles.evidence}`}
-        >
-          {...ExistingBeliefContentView(belief)}
+          </Panel.Heading>
+          <Panel.Body>
+            {ExistingBeliefContentView(belief)}
+          </Panel.Body>
         </Panel>
       );
     }

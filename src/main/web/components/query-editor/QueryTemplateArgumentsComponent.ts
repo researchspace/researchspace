@@ -136,26 +136,30 @@ export class QueryTemplateArgumentsComponent extends Component<Props, State> {
       );
     });
 
-    return Panel(
-      {
+    return createElement(ReactBootstrap.Panel, {
         key: index,
-        header: argument.label.length ? argument.label : 'No Label',
         eventKey: index,
         onSelect: (key) => this.setState({ activeKey: key }),
- /*        bsStyle: isValid ? 'default' : 'danger', */
       },
-      createElement(QueryTemplateEditArgument, {
-        argument,
-        variables,
-        notAvailableLabels,
-        notAvailableVariables,
-        onDelete: () => {
-          this.handleDeleteArgument(index);
-        },
-        onChange: (arg, flag) => {
-          this.handleChangeArgument(arg, index, flag);
-        },
-      })
+      createElement(ReactBootstrap.Panel.Heading, {},
+        createElement(ReactBootstrap.Panel.Title, { toggle: true }, argument.label.length ? argument.label : 'No Label')
+      ),
+      createElement(ReactBootstrap.Panel.Collapse, {},
+        createElement(ReactBootstrap.Panel.Body, {},
+          createElement(QueryTemplateEditArgument, {
+            argument,
+            variables,
+            notAvailableLabels,
+            notAvailableVariables,
+            onDelete: () => {
+              this.handleDeleteArgument(index);
+            },
+            onChange: (arg, flag) => {
+              this.handleChangeArgument(arg, index, flag);
+            },
+          })
+        )
+      )
     );
   };
 

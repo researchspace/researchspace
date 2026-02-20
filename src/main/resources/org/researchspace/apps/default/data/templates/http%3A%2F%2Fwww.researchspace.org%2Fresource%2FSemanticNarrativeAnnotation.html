@@ -1,0 +1,293 @@
+<style>
+  .text-annotation-page {
+    padding: 20px 20px 0 20px;
+    width: 100%;
+    height: calc(100vh - 100px);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .text-annotation-page__content {
+    height: 100%;
+  }
+
+  /* Main workspace flex container */
+  .text-annotation-page .TextAnnotationWorkspace--component {
+    gap: 20px;
+  }
+
+  /* Editor panel — just the scroll container */
+  .text-annotation-page .TextAnnotationWorkspace--editorPanel {
+    /* no card styling here */
+  }
+
+  /* Center the editor + sideline together */
+  .text-annotation-page .TextAnnotationEditor--textEditor {
+    max-width: 750px;
+    margin: 0 auto;
+  }
+
+  /* White card on the actual Slate editor (not the sideline) */
+  .text-annotation-page .TextAnnotationEditor--textEditor [data-slate-editor] {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 30px 40px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Annotations panel */
+  .text-annotation-page .TextAnnotationWorkspace--annotationsPanel {
+    margin-left: 0;
+  }
+
+  /* Editor typography */
+  .text-annotation-page .TextAnnotationEditor--textEditor [data-slate-editor] {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #333;
+  }
+
+  .text-annotation-page .TextAnnotationEditor--textEditor [data-slate-editor] p {
+    margin-bottom: 0.8em;
+  }
+
+  /* Sidebar tabs */
+  .text-annotation-page .AnnotationSidebar--component .nav-tabs {
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 10px;
+  }
+
+  .text-annotation-page .AnnotationSidebar--component .nav-tabs > li > a {
+    font-size: 13px;
+    color: #666;
+    padding: 8px 16px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+
+  .text-annotation-page .AnnotationSidebar--component .nav-tabs > li.active > a {
+    color: #333;
+    border-bottom-color: #333;
+    background: none;
+  }
+
+  /* Annotation cards */
+  .text-annotation-page .AnnotationSidebar--annotation {
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 8px 0 8px 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    background: #fff;
+    opacity: 0.5;
+    transition: opacity 200ms ease-out, margin-left 200ms ease-in-out,
+                margin-right 200ms ease-in-out, border-color 200ms ease, box-shadow 200ms ease;
+  }
+
+  .text-annotation-page .AnnotationSidebar--annotation.AnnotationSidebar--focused {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .text-annotation-page .AnnotationSidebar--annotation.AnnotationSidebar--highlighted {
+    opacity: 1;
+  }
+
+  .text-annotation-page .AnnotationSidebar--annotation.AnnotationSidebar--focused,
+  .text-annotation-page .AnnotationSidebar--annotation:hover {
+    border-color: #c0c0c0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .text-annotation-page .AnnotationSidebar--annotation:last-child {
+    margin-bottom: 40px;
+  }
+
+  /* Annotation card content */
+  .text-annotation-page .AnnotationSidebar--annotation > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: #444;
+  }
+
+  .text-annotation-page .AnnotationSidebar--annotation a {
+    color: #666;
+    text-decoration: none;
+    font-size: 12px;
+    padding: 2px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    transition: background 150ms ease;
+  }
+
+  .text-annotation-page .AnnotationSidebar--annotation a:hover {
+    background: #f5f5f5;
+    text-decoration: none;
+  }
+
+  /* Action buttons */
+  .text-annotation-page .AnnotationSidebar--annotation .btn-group {
+    margin-left: auto;
+  }
+
+  .text-annotation-page .AnnotationSidebar--annotation .btn-group .btn {
+    font-size: 12px;
+    line-height: 1;
+    padding: 4px 6px;
+  }
+
+  .text-annotation-page .AnnotationSidebar--annotation .btn-group .btn i {
+    font-size: 14px;
+    vertical-align: middle;
+  }
+
+  /* Add annotation sideline — sits just outside the card */
+  .text-annotation-page .TextAnnotationEditor--addAnnotationSideline {
+    min-width: 24px;
+    margin: 0 2px;
+  }
+
+  /* Add annotation button — icon only, no border/background */
+  .text-annotation-page .TextAnnotationEditor--addAnnotationButton {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    width: 24px;
+    height: 24px;
+    opacity: 0.4;
+    transition: opacity 150ms ease;
+  }
+
+  .text-annotation-page .TextAnnotationEditor--addAnnotationButton:hover {
+    opacity: 0.8;
+    box-shadow: none;
+  }
+
+  .text-annotation-page .TextAnnotationEditor--addAnnotationIcon {
+    background-size: 18px 18px;
+    width: 18px;
+    height: 18px;
+  }
+</style>
+{{log "this" this}}
+<div class="text-annotation-page">
+  <div class="text-annotation-page__content">
+    <semantic-context repository='default'>
+      <rs-text-annotation-workspace
+        document-iri='{{iri}}'
+        storage='runtime'
+        annotation-subject-template='http://example.com/data/annotation/{{UUID}}'
+        fallback-template='{{> fallback-template}}'
+        annotation-tooltip='{{> annotation-tooltip}}'>
+
+        <template id='fallback-template'>
+          <div>
+            Missing type for annotation <semantic-link iri='{{iri.value}}'></semantic-link>
+          </div>
+        </template>
+
+        <template id='annotation-tooltip'>
+          <div>
+            {{#if allowEdit}}
+              <button name='edit' class='btn btn-xs btn-default'
+                data-annotation='{{iri.value}}'
+                title='Edit annotation'>
+                <rs-icon icon-type="rounded" icon-name="edit" style='pointer-events: none;' symbol="true"></rs-icon>
+              </button>
+            {{else}}
+              <button name='edit' class='btn btn-xs btn-default' disabled
+                title='Edit annotation'>
+                <rs-icon icon-type="rounded" icon-name="edit" style='pointer-events: none;' symbol="true"></rs-icon>
+              </button>
+            {{/if}}
+            {{#if allowDelete}}
+              <button name='delete' class='btn btn-xs btn-default'
+                data-annotation='{{iri.value}}'
+                title='Delete annotation'>
+                <rs-icon icon-type="rounded" icon-name="delete" style='pointer-events: none;' symbol="true"></rs-icon>
+              </button>
+            {{else}}
+              <button name='delete' class='btn btn-xs btn-default' disabled
+                title='Delete annotation'>
+                <rs-icon icon-type="rounded" icon-name="delete" style='pointer-events: none;' symbol="true"></rs-icon>
+              </button>
+            {{/if}}
+          </div>
+        </template>
+
+        <rs-text-annotation-type label="Note"
+          rdf-type='https://example.com/schema/Note'
+          icon-url='/assets/images/icons/argument.svg'>
+
+          <template id='annotation'>
+            <semantic-query query='
+              SELECT ?iri ?text WHERE {
+                BIND({{iri}} as ?iri)
+                ?iri <http://www.w3.org/ns/oa#hasBody>/<https://example.com/schema/noteText> ?text
+              }' template='{{> display-note}}'>
+              <template id='display-note'>
+                <div>
+                  {{bindings.0.text.value}}
+                  <semantic-link iri='{{iri.value}}'>Open</semantic-link>
+                  <div class='btn-group'>
+                    {{#if allowEdit}}
+                    <button name='edit'
+                      class='btn btn-xs btn-default dpub-ctrl-buttons-style'
+                      data-annotation='{{iri.value}}'
+                      title='Edit annotation'>
+                      <rs-icon icon-type="rounded" icon-name="edit" style='pointer-events: none;' symbol="true"></rs-icon>
+                    </button>
+                    {{/if}}
+                    {{#if allowDelete}}
+                    <button name='delete'
+                      class='btn btn-xs btn-default dpub-ctrl-buttons-style'
+                      data-annotation='{{iri.value}}'
+                      title='Delete annotation'>
+                      <rs-icon icon-type="rounded" icon-name="delete" style='pointer-events: none;' symbol="true"></rs-icon>
+                    </button>
+                    {{/if}}
+                  </div>
+                </div>
+              </template>
+            </semantic-query>
+          </template>
+
+          <semantic-form-composite-input for='oaHasBody'
+            new-subject-template='body'
+            fields='[
+              {
+                "id": "type",
+                "label": "Type",
+                "xsdDatatype": "xsd:anyURI",
+                "selectPattern": "SELECT $value WHERE { $subject rdf:type $value }",
+                "insertPattern": "INSERT { $subject rdf:type $value } WHERE {}",
+                "deletePattern": "DELETE { $subject rdf:type $value } WHERE {}"
+              },
+              {
+                "id": "text",
+                "label": "Note Text",
+                "xsdDatatype": "xsd:string",
+                "maxOccurs": "1",
+                "selectPattern": "SELECT $value WHERE { $subject <https://example.com/schema/noteText> $value }",
+                "insertPattern": "INSERT { $subject <https://example.com/schema/noteText> $value } WHERE {}",
+                "deletePattern": "DELETE { $subject <https://example.com/schema/noteText> $value } WHERE {}"
+              }
+            ]'>
+            <semantic-form-hidden-input for='type'
+              default-value='https://example.com/schema/Note'>
+            </semantic-form-hidden-input>
+            <semantic-form-text-input for='text'></semantic-form-text-input>
+          </semantic-form-composite-input>
+        </rs-text-annotation-type>
+
+      </rs-text-annotation-workspace>
+    </semantic-context>
+  </div>
+</div>

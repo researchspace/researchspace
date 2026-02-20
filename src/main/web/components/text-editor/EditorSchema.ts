@@ -107,7 +107,6 @@ export const schema: Slate.SchemaProperties = {
           match: [
             {
               object: 'text',
-              //text: (s: string) => s !== '',
             } as any,
             {
               object: 'inline',

@@ -219,9 +219,9 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   onInternalLinkClick = (event: React.MouseEvent<Button>) => {
     event.preventDefault();
     const { editor, value } = this.props;
-    console.log("to be inserted");console.dir(this.props,{"depth":null})
+    
     if (value.selection.isCollapsed) {
-      const linkText = Slate.Text.create({ text: 'link' }); console.log("link text"+linkText);
+      const linkText = Slate.Text.create({ text: 'link' }); 
       editor.current
         .insertInline({
           type: Inline.internalLink,

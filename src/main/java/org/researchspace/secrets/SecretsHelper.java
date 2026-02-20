@@ -20,6 +20,8 @@
 package org.researchspace.secrets;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import javax.annotation.Nullable;
 
@@ -33,8 +35,6 @@ import org.apache.logging.log4j.Logger;
  */
 public class SecretsHelper {
     private static final Logger logger = LogManager.getLogger(SecretsHelper.class);
-    private static final java.util.regex.Pattern SECRET_PLACEHOLDER_PATTERN = java.util.regex.Pattern
-            .compile("\\$\\{([^:}]+):?([^}]*)\\}");
 
     /**
      * Resolve secret or return the original value. Secrets are only resolved if a
@@ -226,8 +226,8 @@ public class SecretsHelper {
         if (value == null) {
             return null;
         }
-
-        java.util.regex.Matcher matcher = SECRET_PLACEHOLDER_PATTERN.matcher(value);
+        Pattern secretPlaceholderPattern = Pattern.compile("\\$\\{([^:}]+):?([^}]*)\\}");
+        Matcher matcher = secretPlaceholderPattern.matcher(value);
 
         StringBuffer result = new StringBuffer();
         while (matcher.find()) {

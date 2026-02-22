@@ -23,9 +23,18 @@
             "description": "A flag determining whether any special Lucene syntax will be escaped.\nWhen `false` lucene syntax in the user input is not escaped.",
             "type": "boolean"
         },
+        "initialInput": {
+            "description": "Initial input to be shown in the input field.",
+            "type": "string"
+        },
         "minSearchTermLength": {
             "default": 3,
             "description": "Minimum number of input characters that triggers the search.",
+            "type": "number"
+        },
+        "minTokenLength": {
+            "default": "undefined (no filtering)",
+            "description": "If tokenizeLuceneQuery is true, this parameter can be used to\nfilter out tokens shorter than the specified length.\n\nWhen set, e.g. minTokenLength=3, and the input string is \"an apple\",\nonly \"apple*\" will be propagated to the query.\n\nWhen undefined (default), no token length filtering is applied,\npreserving backward-compatible behavior where all tokens are included.",
             "type": "number"
         },
         "placeholder": {
@@ -59,10 +68,12 @@
         "query",
         "defaultQuery",
         "searchTermVariable",
-        "minSearchTermLength",
         "placeholder",
+        "initialInput",
         "escapeLuceneSyntax",
-        "tokenizeLuceneQuery"
+        "minSearchTermLength",
+        "tokenizeLuceneQuery",
+        "minTokenLength"
     ],
     "required": [
         "query"

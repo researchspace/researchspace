@@ -31,6 +31,7 @@ import { Rdf } from 'platform/api/rdf';
 import * as LabelsService from 'platform/api/services/resource-label';
 import { Cancellation } from 'platform/api/async';
 
+import { KeywordSearchConfig, defaultKeywordSearchConfig, textConfirmsToConfig } from "platform/components/shared/KeywordSearchConfig";
 import { TemplateItem } from 'platform/components/ui/template';
 
 declare module 'react-select' {
@@ -44,7 +45,7 @@ declare module 'react-select' {
   }
 }
 
-export interface BaseProps {
+export interface BaseProps extends KeywordSearchConfig {
   disabled?: boolean;
   className?: string;
   autofocus?: boolean;
@@ -90,8 +91,6 @@ export class AbstractAutoCompletionInput extends Component<AbstractAutoCompletio
   static defaultProps: Partial<AbstractAutoCompletionInputProps> = {
     autofocus: true,
   };
-
-  private static MIN_LENGTH = 3;
 
   refs: {
     input: ReactSelect;
@@ -145,14 +144,14 @@ export class AbstractAutoCompletionInput extends Component<AbstractAutoCompletio
       this.keyPressStream
         .map((query) => {
           this.setState({ query: query });
-          if (query.length >= this.state.minimumInput) {
+          if (textConfirmsToConfig(query, this.state)) {
             this.setState({ loading: true });
           } else {
             this.setState({ loading: false, options: undefined });
           }
           return query;
         })
-        .filter((query) => query.length >= this.state.minimumInput)
+        .filter((query) => textConfirmsToConfig(query, this.state))
         .debounce(300),
     ]).flatMapLatest(this.executeSuggestionQuery);
 
@@ -278,8 +277,12 @@ export class AbstractAutoCompletionInput extends Component<AbstractAutoCompletio
         labelBindingName: 'label',
         searchTermVariable: 'token',
         name: 'search-input',
-        minimumInput: AbstractAutoCompletionInput.MIN_LENGTH,
         datatype: 'xsd:string',
+        ...defaultKeywordSearchConfig,
+
+        // to maintain backward compatibility
+        // in the past minSearchTermLength was called minimumInput
+        minimumInput: defaultKeywordSearchConfig.minSearchTermLength
       },
       props,
       {

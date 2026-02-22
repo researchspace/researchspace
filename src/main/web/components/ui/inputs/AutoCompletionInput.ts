@@ -30,8 +30,6 @@ import { BaseProps, AbstractAutoCompletionInput } from './AbstractAutoCompletion
 
 export interface AutoCompletionInputProps extends Props<AutoCompletionInput>, BaseProps {
   query: string | SparqlJs.SparqlQuery;
-  escapeLuceneSyntax?: boolean;
-  tokenizeLuceneQuery?: boolean;
   droppable?: {
     query: string;
     styles?: {
@@ -109,8 +107,8 @@ export class AutoCompletionInput extends Component<AutoCompletionInputProps, {}>
       typeof query === 'string'
         ? this.replaceTokenAndParseQuery(query as string, tokenVariable, token)
         : (query as SparqlJs.SparqlQuery);
-    const { escapeLuceneSyntax, tokenizeLuceneQuery } = this.props;
-    const queryParam = SparqlUtil.makeLuceneQuery(token, escapeLuceneSyntax, tokenizeLuceneQuery);
+    const { escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength } = this.props;
+    const queryParam = SparqlUtil.makeLuceneQuery(token, escapeLuceneSyntax, tokenizeLuceneQuery, minTokenLength);
     const queryWithToken = SparqlClient.setBindings(parsedQuery, { [SEARCH_INPUT_VARIABLE]: queryParam });
     const context = this.context.semanticContext;
     return SparqlClient.select(queryWithToken, { context: context }).map((res) => res.results.bindings);

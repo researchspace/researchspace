@@ -22,7 +22,7 @@ import * as React from 'react';
 import { Button } from 'react-bootstrap';
 import * as Immutable from 'immutable';
 import * as Slate from 'slate';
-import { Editor, RenderNodeProps, RenderMarkProps, RenderAttributes, findDOMRange } from 'slate-react';
+import { Editor, RenderBlockProps, RenderInlineProps, RenderMarkProps, RenderAnnotationProps } from 'slate-react';
 
 import { Cancellation } from 'platform/api/async';
 import { Component } from 'platform/api/components';
@@ -64,6 +64,7 @@ const EMPTY_SET = new Set<string>();
 
 export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, State> {
   editor: Editor;
+  private editorRef: Editor | null = null;
 
   private debounceTooltip: Cancellation = new Cancellation();
   private sideline: HTMLElement | null | undefined;
@@ -101,8 +102,10 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
             onCut={this.ignoreIfReadonly}
             onPaste={this.ignoreIfReadonly}
             onSelect={this.onSelect}
-            renderNode={this.renderNode}
+            renderBlock={this.renderBlock}
+            renderInline={this.renderInline}
             renderMark={this.renderMark}
+            renderAnnotation={this.renderAnnotation}
           />
           <div className={styles.addAnnotationSideline} ref={this.onSidelineMount}>
             {permissions.create && selectionTopOffset > 0 ? (
@@ -158,8 +161,8 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
     );
   }
 
-  private onKeyDown = (event: Event, editor: Slate.Editor, next: () => void) => {
-    const keyboarEvent = event as KeyboardEvent;
+  private onKeyDown = (event: React.KeyboardEvent, editor: Editor, next: () => void) => {
+    const keyboarEvent = event;
     const isCopyKeyCombination =
       (keyboarEvent.ctrlKey || keyboarEvent.metaKey) && keyboarEvent.keyCode === 67 /* "C" key */;
     if (!isCopyKeyCombination) {
@@ -169,12 +172,12 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
     }
   };
 
-  private onTextClick = (event: Event, editor: Slate.Editor, next: () => void) => {
+  private onTextClick = (event: React.MouseEvent, editor: Editor, next: () => void) => {
     // click events on annotated text will be handled before and won't propagate here
     this.props.handlers.focusAnnotation(undefined);
   };
 
-  private ignoreIfReadonly = (event: Event, editor: Slate.Editor, next: () => void) => {
+  private ignoreIfReadonly = (event: React.SyntheticEvent, editor: Editor, next: () => void) => {
     // ignore event
     event.preventDefault();
     return true;
@@ -182,39 +185,43 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
 
   private onEditorMount = (editor: Editor) => {
     this.editor = editor;
+    this.editorRef = editor;
   };
 
-  private renderNode = (props: RenderNodeProps, editor: Slate.Editor, next: () => any) => {
+  private renderBlock = (props: RenderBlockProps, editor: Editor, next: () => any) => {
     const { node, attributes, children } = props;
-    if (BLOCK_TAGS[node.type] || INLINE_TAGS[node.type]) {
+    if (BLOCK_TAGS[node.type]) {
       return React.createElement(node.type, { ...NodeData.get(node.data, 'attributes'), ...attributes }, children);
-    } else if (node.object === 'inline' && node.type === AnnotationInline.TAG_NAME) {
-      return (
-        <AnnotationInline
-          inline={node}
-          attributes={attributes}
-          getAnnotationType={this.getAnnotationType}
-          onClick={this.onClickAnnotation}
-          onStartHovering={this.onStartHoveringAnnotation}
-          onStopHovering={this.onStopHoveringAnnotation}
-        >
-          {children}
-        </AnnotationInline>
-      );
     } else {
       return next();
     }
   };
 
-  private renderMark = (props: RenderMarkProps, editor: Slate.Editor, next: () => any) => {
-    const { mark, marks, attributes, children } = props;
+  private renderInline = (props: RenderInlineProps, editor: Editor, next: () => any) => {
+    const { node, attributes, children } = props;
+    if (INLINE_TAGS[node.type]) {
+      return React.createElement(node.type, { ...NodeData.get(node.data, 'attributes'), ...attributes }, children);
+    } else {
+      return next();
+    }
+  };
+
+  private renderMark = (props: RenderMarkProps, editor: Editor, next: () => any) => {
+    const { mark, attributes, children } = props;
     if (MARK_TAGS[mark.type]) {
       return React.createElement(mark.type, { ...NodeData.get(mark.data, 'attributes'), ...attributes }, children);
-    } else if (mark.type === AnnotationMark.TAG_NAME) {
+    } else {
+      return next();
+    }
+  };
+
+  private renderAnnotation = (props: RenderAnnotationProps, editor: Editor, next: () => any) => {
+    const { annotation, attributes, children } = props;
+    if (annotation.type === ANNOTATION_RANGE_TYPE) {
       return (
         <AnnotationMark
-          mark={mark}
-          marks={marks}
+          annotation={annotation}
+          allAnnotations={editor.value.annotations}
           attributes={attributes}
           getAnnotationType={this.getAnnotationType}
           onClick={this.onClickAnnotation}
@@ -224,12 +231,25 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
           {children}
         </AnnotationMark>
       );
+    } else if (annotation.type === ANNOTATION_POINT_TYPE) {
+      return (
+        <AnnotationPoint
+          annotation={annotation}
+          attributes={attributes}
+          getAnnotationType={this.getAnnotationType}
+          onClick={this.onClickAnnotation}
+          onStartHovering={this.onStartHoveringAnnotation}
+          onStopHovering={this.onStopHoveringAnnotation}
+        >
+          {children}
+        </AnnotationPoint>
+      );
     } else {
       return next();
     }
   };
 
-  private onSelect = (event: Event, editor: Slate.Editor, next: () => void) => {
+  private onSelect = (event: React.SyntheticEvent, editor: Editor, next: () => void) => {
     next();
 
     const state = this.props.editorState as EditorState;
@@ -245,15 +265,20 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
     }
   };
 
-  private updateSelectionOffset(editor: Slate.Editor) {
+  private updateSelectionOffset(editor: Editor) {
     if (!this.sideline) {
       return;
     }
     const { start, end } = editor.value.selection;
     const range = Slate.Range.create({ anchor: start, focus: end });
-    // Return type in typings is wrong and should be Range, not Slate.Range:
-    // https://docs.slatejs.org/slate-react/utils
-    const domRange = (findDOMRange(range) as any) as Range;
+    // Use editor ref to find DOM range in slate-react 0.22
+    if (!this.editorRef) {
+      return;
+    }
+    const domRange = this.editorRef.findDOMRange(range) as Range;
+    if (!domRange) {
+      return;
+    }
     const rect = domRange.getBoundingClientRect();
     const selectionTop = rect.top + rect.height / 2;
     const sidelineTop = this.sideline.getBoundingClientRect().top;
@@ -287,9 +312,9 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
     handlers.highlightAnnotations(hovered);
 
     const annotations = editorState.annotations.filter((anno) => hovered.has(anno.iri.value));
-    const highlightedDoc = EditorModel.highlightAnnotations(editorState.value.document, hovered);
+    const highlightedAnnotations = EditorModel.highlightAnnotations(editorState.value.annotations, hovered);
     const nextState = EditorState.set(editorState, {
-      value: EditorModel.setValueProps(editorState.value, { document: highlightedDoc }),
+      value: EditorModel.setValueProps(editorState.value, { annotations: highlightedAnnotations }),
       tooltip: { ...hoverState, annotations },
     });
     onEditorStateChange(nextState);
@@ -299,11 +324,11 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
     const { editorState, onEditorStateChange, handlers } = this.props;
 
     handlers.highlightAnnotations(EMPTY_SET);
-    const unhighlightedDoc = EditorModel.highlightAnnotations(editorState.value.document, EMPTY_SET);
+    const unhighlightedAnnotations = EditorModel.highlightAnnotations(editorState.value.annotations, EMPTY_SET);
     const previousState = editorState as EditorState;
     if (previousState.tooltip) {
       const nextState = EditorState.set(previousState, {
-        value: EditorModel.setValueProps(editorState.value, { document: unhighlightedDoc }),
+        value: EditorModel.setValueProps(editorState.value, { annotations: unhighlightedAnnotations }),
         tooltip: { ...previousState.tooltip, hovering: false },
       });
       onEditorStateChange(nextState);
@@ -390,23 +415,29 @@ class EditorState implements TextEditorState, AdditionalEditorState {
     const { document, selection } = this.value;
     const { start, end } = selection;
 
-    let nextDocument: Slate.Document;
     let selector: Schema.AnnotationSelector;
     let selectedText: string | undefined;
+    let slateAnnotations = this.value.annotations;
+
+    // Slate 0.47 requires a non-empty key; generate one for placeholder annotations
+    const annotationKey = annotationIri.value || `placeholder-${Date.now()}`;
 
     if (selection.isExpanded) {
-      const nodeKeyToPath = document.getKeysToPathsTable() as { [key: string]: Slate.Path };
       const range = Slate.Range.create({
         anchor: selection.start,
         focus: selection.end,
       });
-      nextDocument = EditorModel.addMarksAtRange(
-        document,
-        nodeKeyToPath,
-        range,
-        ANNOTATION_RANGE_TYPE,
-        AnnotationData.create({ iri: annotationIri, bodyType: undefined })
-      );
+
+      // Create a native Slate annotation for the selected range
+      const slateAnnotation = Slate.Annotation.create({
+        key: annotationKey,
+        type: ANNOTATION_RANGE_TYPE,
+        data: AnnotationData.create({ iri: annotationIri, bodyType: undefined }),
+        anchor: range.anchor,
+        focus: range.focus,
+      });
+      slateAnnotations = slateAnnotations.set(annotationKey, slateAnnotation);
+
       selector = {
         type: 'range',
         start: {
@@ -422,12 +453,16 @@ class EditorState implements TextEditorState, AdditionalEditorState {
       };
       selectedText = EditorModel.extractTextFragment(document, range);
     } else {
-      nextDocument = EditorModel.insertInlineAtPoint(
-        document,
-        selection.start,
-        ANNOTATION_POINT_TYPE,
-        AnnotationData.create({ iri: annotationIri, bodyType: undefined })
-      );
+      // Create a collapsed Slate annotation at the cursor position
+      const slateAnnotation = Slate.Annotation.create({
+        key: annotationKey,
+        type: ANNOTATION_POINT_TYPE,
+        data: AnnotationData.create({ iri: annotationIri, bodyType: undefined }),
+        anchor: selection.start,
+        focus: selection.start,
+      });
+      slateAnnotations = slateAnnotations.set(annotationKey, slateAnnotation);
+
       selector = {
         type: 'point',
         xPath: findXPathAt(document, start.path),
@@ -436,13 +471,19 @@ class EditorState implements TextEditorState, AdditionalEditorState {
     }
 
     const annotation: Schema.Annotation = { iri: annotationIri, selector, selectedText };
-    const annotations = EditorModel.sortAnnotationsByFirstOccurence(nextDocument, [...this.annotations, annotation]);
+    const schemaAnnotations = EditorModel.sortAnnotationsByFirstOccurence(
+      slateAnnotations,
+      [...this.annotations, annotation]
+    );
+
+    // Update levels for newly added annotation
+    const leveledAnnotations = EditorModel.updateAnnotationLevels(slateAnnotations);
 
     return EditorState.set(this, {
       value: EditorModel.setValueProps(this.value, {
-        document: nextDocument,
+        annotations: leveledAnnotations,
       }),
-      annotations,
+      annotations: schemaAnnotations,
     });
   }
 
@@ -460,16 +501,18 @@ class EditorState implements TextEditorState, AdditionalEditorState {
     if (!changed) {
       return this;
     }
+    const updatedSlateAnnotations = EditorModel.updateAnnotation(this.value.annotations, target, changed);
     const value = EditorModel.setValueProps(this.value, {
-      document: EditorModel.updateAnnotation(this.value.document, target, changed),
+      annotations: updatedSlateAnnotations,
     });
     return EditorState.set(this, { value, annotations });
   }
 
   deleteAnnotation(annotationIri: Rdf.Iri): EditorState {
     if (this.annotations.find((anno) => anno.iri.equals(annotationIri))) {
+      const updatedSlateAnnotations = EditorModel.deleteAnnotation(this.value.annotations, annotationIri);
       const value = EditorModel.setValueProps(this.value, {
-        document: EditorModel.deleteAnnotation(this.value.document, annotationIri),
+        annotations: updatedSlateAnnotations,
       });
       const annotations = this.annotations.filter((anno) => !anno.iri.equals(annotationIri));
       return EditorState.set(this, { value, annotations, tooltip: undefined });
@@ -497,21 +540,23 @@ export function makeIntitialEditorState(params: {
   const rawValue = SLATE_HTML.deserialize(params.sourceHtml);
   let { document } = rawValue;
   document = EditorModel.assignXPaths(document);
-  document = EditorModel.mergeInAnnotations(document, params.annotations);
-  document = EditorModel.updateAnnotationLevels(document);
 
-  const annotations = EditorModel.sortAnnotationsByFirstOccurence(document, params.annotations);
+  // Create native Slate annotations from Schema annotations
+  let slateAnnotations = EditorModel.mergeInAnnotations(document, params.annotations);
+  slateAnnotations = EditorModel.updateAnnotationLevels(slateAnnotations);
+
+  const sortedAnnotations = EditorModel.sortAnnotationsByFirstOccurence(slateAnnotations, params.annotations);
 
   return EditorState.create({
-    value: Slate.Value.create({ document }),
-    annotations,
+    value: Slate.Value.create({ document, annotations: slateAnnotations }),
+    annotations: sortedAnnotations,
   });
 }
 
 interface AnnotationMarkProps {
-  mark: Slate.Mark;
-  marks: Immutable.Set<Slate.Mark>;
-  attributes: RenderAttributes;
+  annotation: Slate.Annotation;
+  allAnnotations: Immutable.Map<string, Slate.Annotation>;
+  attributes: any;
   getAnnotationType: (bodyType: Rdf.Iri | undefined) => AnnotationBodyType | undefined;
   onClick: (data: AnnotationData) => void;
   onStartHovering: (tooltip: HoverState) => void;
@@ -519,13 +564,12 @@ interface AnnotationMarkProps {
 }
 
 class AnnotationMark extends React.Component<AnnotationMarkProps, {}> {
-  static readonly TAG_NAME = 'rs-annotation-range';
-
   render() {
-    const { mark, children, attributes, getAnnotationType } = this.props;
-    const { iri, bodyType, level, highlighted } = AnnotationData.asProps(mark.data);
+    const { annotation, children, attributes, getAnnotationType } = this.props;
+    const { iri, bodyType, level, highlighted } = AnnotationData.asProps(annotation.data);
     const type = getAnnotationType(bodyType);
     const BORDER_OFFSET = 3;
+    const extraPadding = 1 + (typeof level === 'number' ? level : 0) * BORDER_OFFSET;
     return (
       <span
         {...attributes}
@@ -533,10 +577,12 @@ class AnnotationMark extends React.Component<AnnotationMarkProps, {}> {
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
         style={{
-          paddingBottom: 1 + (typeof level === 'number' ? level : 0) * BORDER_OFFSET,
+          paddingBottom: extraPadding,
           borderBottom: '2px solid',
           borderColor: TextAnnotationTemplateBindings.getAccentColor(type),
           backgroundColor: highlighted ? TextAnnotationTemplateBindings.getAccentColor(type, 0.3) : undefined,
+          // Dynamically expand line height to accommodate stacked underlines
+          lineHeight: `calc(1.5em + ${extraPadding + 2}px)`,
         }}
       >
         {children}
@@ -547,20 +593,19 @@ class AnnotationMark extends React.Component<AnnotationMarkProps, {}> {
   private onClick = (e: React.MouseEvent<{}>) => {
     // prevent event bubbling to handle click on non-annotated text
     e.stopPropagation();
-    this.props.onClick(this.props.mark.data);
+    this.props.onClick(this.props.annotation.data);
   };
 
   private onMouseEnter = (event: React.MouseEvent<HTMLSpanElement>) => {
     const target = event.currentTarget;
     const rect = target.getBoundingClientRect();
+    // Collect all range annotations that overlap at this text position
+    const iris: Rdf.Iri[] = [AnnotationData.get(this.props.annotation.data, 'iri')];
     this.props.onStartHovering({
       left: (rect.left + rect.right) / 2,
       top: rect.top,
       hovering: true,
-      iris: this.props.marks
-        .filter((mark) => mark.type === ANNOTATION_RANGE_TYPE)
-        .map((mark) => AnnotationData.get(mark.data, 'iri'))
-        .toArray(),
+      iris,
     });
   };
 
@@ -569,21 +614,19 @@ class AnnotationMark extends React.Component<AnnotationMarkProps, {}> {
   };
 }
 
-interface AnnotationInlineProps {
-  inline: Slate.Inline;
-  attributes: RenderAttributes;
+interface AnnotationPointProps {
+  annotation: Slate.Annotation;
+  attributes: any;
   getAnnotationType: (bodyType: Rdf.Iri | undefined) => AnnotationBodyType | undefined;
   onClick: (data: AnnotationData) => void;
   onStartHovering: (tooltip: HoverState) => void;
   onStopHovering: () => void;
 }
 
-class AnnotationInline extends React.Component<AnnotationInlineProps, {}> {
-  static readonly TAG_NAME = 'rs-annotation-point';
-
+class AnnotationPoint extends React.Component<AnnotationPointProps, {}> {
   render() {
-    const { inline, children, attributes, getAnnotationType } = this.props;
-    const { iri, highlighted, bodyType } = AnnotationData.asProps(inline.data);
+    const { annotation, children, attributes, getAnnotationType } = this.props;
+    const { highlighted, bodyType } = AnnotationData.asProps(annotation.data);
     const type = getAnnotationType(bodyType);
     const backgroundColor = TextAnnotationTemplateBindings.getAccentColor(type, highlighted ? 1 : 0.5);
     const className = attributes.className
@@ -606,7 +649,7 @@ class AnnotationInline extends React.Component<AnnotationInlineProps, {}> {
   private onClick = (e: React.MouseEvent<{}>) => {
     // prevent event bubbling to handle click on non-annotated text
     e.stopPropagation();
-    this.props.onClick(this.props.inline.data);
+    this.props.onClick(this.props.annotation.data);
   };
 
   private onMouseEnter = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -616,7 +659,7 @@ class AnnotationInline extends React.Component<AnnotationInlineProps, {}> {
       left: (rect.left + rect.right) / 2,
       top: rect.top,
       hovering: true,
-      iris: [AnnotationData.get(this.props.inline.data, 'iri')],
+      iris: [AnnotationData.get(this.props.annotation.data, 'iri')],
     });
   };
 

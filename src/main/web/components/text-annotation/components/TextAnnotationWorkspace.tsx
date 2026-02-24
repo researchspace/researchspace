@@ -35,7 +35,8 @@ import { OverlayDialog, getOverlaySystem } from 'platform/components/ui/overlay'
 import { Spinner } from 'platform/components/ui/spinner';
 
 import * as Schema from '../model/AnnotationSchema';
-import { TextEditorState, WorkspaceHandlers, AnnotationBodyType, WorkspacePermissions } from '../model/ComponentModel';
+import * as EditorModel from '../model/EditorModel';
+import { TextEditorState, WorkspaceHandlers, AnnotationBodyType, WorkspacePermissions, SidebarTab } from '../model/ComponentModel';
 
 import { AnnotationEditForm } from './AnnotationEditForm';
 import { AnnotationSidebar } from './AnnotationSidebar';
@@ -74,10 +75,20 @@ export interface TextAnnotationWorkspaceProps {
    * See `AnnotationTemplateBindings` for template bindings.
    */
   fallbackTemplate?: string;
+  /**
+   * JSON array of custom sidebar tab definitions. Each tab references a
+   * <code>&lt;template id="sidebar-{key}"&gt;</code> child for its content.
+   *
+   * Example: <code>[{"key": "iiif", "label": "IIIF"}, {"key": "metadata", "label": "Metadata"}]</code>
+   *
+   * Templates receive <code>{{iri}}</code> binding set to the document IRI.
+   */
+  sidebarTabs?: string | Array<{ key: string; label: string; iconUrl?: string }>;
 }
 
 interface State {
   annotationTypes?: ReadonlyMap<string, AnnotationBodyType>;
+  customTabs?: ReadonlyArray<SidebarTab>;
   loadingDocument?: boolean;
   loadingError?: any;
   permissions?: WorkspacePermissions;
@@ -125,7 +136,8 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
     }
 
     const annotationTypes = extractAnnotationTypes(this.props.children);
-    this.setState({ annotationTypes });
+    const customTabs = this.parseSidebarTabs();
+    this.setState({ annotationTypes, customTabs });
 
     const documentIri = Rdf.iri(this.props.documentIri);
 
@@ -178,7 +190,7 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
       return <ErrorNotification title={`Error loading document ${documentIri}`} errorMessage={loadingError} />;
     }
 
-    const { permissions, editorState, highlightedAnnotations, focusedAnnotation } = this.state;
+    const { permissions, editorState, highlightedAnnotations, focusedAnnotation, customTabs } = this.state;
     return (
       <div className={styles.component}>
         <TextAnnotationEditor
@@ -199,6 +211,9 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
           focusedAnnotation={focusedAnnotation}
           permissions={permissions}
           handlers={this.handlers}
+          customTabs={customTabs || []}
+          documentIri={documentIri}
+          templateScope={this.appliedTemplateScope}
         />
       </div>
     );
@@ -209,11 +224,57 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
   };
 
   private onHighlightAnnotations = (highlighted: ReadonlySet<string>) => {
-    this.setState({ highlightedAnnotations: highlighted });
+    this.setState((state): State => {
+      const { editorState } = state;
+      if (!editorState) {
+        return { highlightedAnnotations: highlighted };
+      }
+      // Also update Slate annotation data so AnnotationMark renders with highlight
+      const highlightedAnnotations = EditorModel.highlightAnnotations(
+        editorState.value.annotations, highlighted
+      );
+      const nextEditorState = editorState.set({
+        value: EditorModel.setValueProps(editorState.value, { annotations: highlightedAnnotations }),
+      });
+      return {
+        highlightedAnnotations: highlighted,
+        editorState: nextEditorState,
+      };
+    });
   };
 
   private onFocusAnnotation = (focused: Rdf.Iri | undefined) => {
-    this.setState({ focusedAnnotation: focused });
+    this.setState({ focusedAnnotation: focused }, () => {
+      // Scroll annotation into view within the editor panel (only if not already visible)
+      if (focused) {
+        // Wait a tick for the highlight to render
+        setTimeout(() => {
+          const editorPanel = document.querySelector('.TextAnnotationWorkspace--editorPanel');
+          if (!editorPanel) { return; }
+
+          // Find the first highlighted annotation span (backgroundColor indicates highlight)
+          const allAnnoSpans = editorPanel.querySelectorAll('[data-slate-object="annotation"]');
+          let targetSpan: HTMLElement | null = null;
+          for (let i = 0; i < allAnnoSpans.length; i++) {
+            const span = allAnnoSpans[i] as HTMLElement;
+            if (span.style.backgroundColor && span.style.backgroundColor !== '') {
+              targetSpan = span;
+              break;
+            }
+          }
+
+          if (!targetSpan) { return; }
+
+          // Check if already visible within the editor panel scroll container
+          const panelRect = editorPanel.getBoundingClientRect();
+          const spanRect = targetSpan.getBoundingClientRect();
+          const isVisible = spanRect.top >= panelRect.top && spanRect.bottom <= panelRect.bottom;
+          if (!isVisible) {
+            targetSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 50);
+      }
+    });
   };
 
   private onBeginAddingAnnotation = () => {
@@ -402,6 +463,31 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
     });
     return task;
   };
+
+  private parseSidebarTabs(): ReadonlyArray<SidebarTab> {
+    if (!this.props.sidebarTabs) {
+      return [];
+    }
+    const scope = this.appliedTemplateScope;
+    const tabDefs: Array<{ key: string; label: string; iconUrl?: string }> =
+      typeof this.props.sidebarTabs === 'string'
+        ? JSON.parse(this.props.sidebarTabs)
+        : this.props.sidebarTabs;
+    return tabDefs.map((def) => {
+      const partial = scope ? scope.getPartial(`sidebar-${def.key}`) : undefined;
+      if (!partial) {
+        throw new Error(
+          `Missing <template id="sidebar-${def.key}"> for sidebar tab "${def.label}"`
+        );
+      }
+      return {
+        key: def.key,
+        label: def.label,
+        iconUrl: def.iconUrl,
+        template: partial.source,
+      };
+    });
+  }
 
   private getPersistence() {
     const { semanticContext } = this.context;

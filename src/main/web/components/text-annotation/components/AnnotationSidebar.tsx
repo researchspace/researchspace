@@ -49,6 +49,7 @@ export interface AnnotationSidebarProps {
   customTabs?: ReadonlyArray<SidebarTab>;
   documentIri?: Rdf.Iri;
   templateScope?: TemplateService.TemplateScope;
+  defaultTab?: string;
 }
 
 interface State {
@@ -65,8 +66,10 @@ export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> 
 
   constructor(props: AnnotationSidebarProps, context: any) {
     super(props, context);
+    const customTabMatch = props.defaultTab &&
+      props.customTabs && props.customTabs.find(t => t.key === props.defaultTab);
     this.state = {
-      selectedTopTab: ANNOTATIONS_TAB,
+      selectedTopTab: customTabMatch ? CUSTOM_TAB_PREFIX + props.defaultTab : ANNOTATIONS_TAB,
       selectedTypeTab: ALL_TYPES_TAB,
     };
   }

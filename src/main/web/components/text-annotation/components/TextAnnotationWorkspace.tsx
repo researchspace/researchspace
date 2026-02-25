@@ -84,6 +84,11 @@ export interface TextAnnotationWorkspaceProps {
    * Templates receive <code>{{iri}}</code> binding set to the document IRI.
    */
   sidebarTabs?: string | Array<{ key: string; label: string; iconUrl?: string }>;
+  /**
+   * Key of the custom sidebar tab to select by default (e.g. <code>"iiif"</code>).
+   * If not set, the Annotations tab is selected.
+   */
+  defaultSidebarTab?: string;
 }
 
 interface State {
@@ -214,6 +219,7 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
           customTabs={customTabs || []}
           documentIri={documentIri}
           templateScope={this.appliedTemplateScope}
+          defaultTab={this.props.defaultSidebarTab}
         />
       </div>
     );

@@ -667,5 +667,228 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         assertTrue("With prefetching, should NOT make all 20 HTTP calls (should be <= LIMIT + prefetchSize + buffer)", 
             objectDetailCalls <= 12); // Allow some extra for thread timing
     }
+
+    /**
+     * Tests that OPTIONAL + SERVICE produces a proportional blow-up of queries to the default repo.
+     * <p>
+     * This reproduces the TNA Discovery query pattern where:
+     * - A SERVICE clause returns N results from a REST API
+     * - An OPTIONAL clause joins those N results against the default (local) repository
+     * <p>
+     * With FedX's ControlledWorkerLeftJoin, each of the N left bindings spawns a separate
+     * ParallelLeftJoinTask, each of which evaluates the OPTIONAL's right side against the
+     * default repo. This means N queries to the default repo — the "parallel query storm"
+     * that overwhelms Blazegraph in production.
+     * <p>
+     * This test verifies:
+     * - The query completes (correctness)
+     * - endpointEvalCount grows proportionally to N (proving the N-query blow-up)
+     */
+    @Test
+    public void testOptionalWithServiceResults() throws Exception {
+        int N = 10; // Number of results from the SERVICE
+
+        // 1. Setup WireMock for MET Search API - returns N object IDs
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("optional-blowup-test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": " + N + ", \"objectIDs\": [1,2,3,4,5,6,7,8,9,10] }")));
+
+        // 2. Add local data to the default repo that matches SOME of the objectIDs
+        // Only add matches for IDs 1, 2, 3 — so we can verify partial OPTIONAL matching
+        Repository defaultRepo = repositoryManager.getDefault();
+        var vf = SimpleValueFactory.getInstance();
+        try (var conn = defaultRepo.getConnection()) {
+            for (int id : new int[]{1, 2, 3}) {
+                conn.add(vf.createStatement(
+                    vf.createIRI("http://example.org/record/" + id),
+                    vf.createIRI("http://example.org/ns#hasObjectId"),
+                    vf.createLiteral(String.valueOf(id))
+                ));
+                conn.add(vf.createStatement(
+                    vf.createIRI("http://example.org/record/" + id),
+                    vf.createIRI("http://example.org/ns#hasLabel"),
+                    vf.createLiteral("Record " + id)
+                ));
+            }
+        }
+
+        // 3. Get Federation Repository
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        // 4. Enable debug counters and record baseline
+        org.researchspace.federation.repository.evaluation.QueryHintAwareSparqlFederationEvalStrategy
+            .enableDebugCounters();
+
+        try {
+            // 5. Execute query: SERVICE returns N results → OPTIONAL joins against default repo
+            // Using 2 triple patterns in OPTIONAL to ensure ExclusiveGroup formation
+            String query = 
+                "PREFIX ex: <http://example.org/ns#> " +
+                "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+                "SELECT ?objectid ?existingRecord ?label ?exists WHERE { " +
+                "  SERVICE met:METCollectionSearchService { " +
+                "    ?x met:q \"optional-blowup-test\"; " +
+                "       met:objectIDs ?objectid. " +
+                "  } " +
+                "  OPTIONAL { " +
+                "    ?existingRecord ex:hasObjectId ?objectid . " +
+                "    ?existingRecord ex:hasLabel ?label . " +
+                "  } " +
+                "  BIND(BOUND(?existingRecord) AS ?exists) " +
+                "}";
+
+            int resultCount = 0;
+            int matchCount = 0;
+            try (var conn = ephedraRepo.getConnection()) {
+                TupleQuery tq = conn.prepareTupleQuery(query);
+                try (TupleQueryResult tqr = tq.evaluate()) {
+                    while (tqr.hasNext()) {
+                        var bs = tqr.next();
+                        resultCount++;
+                        if (bs.getValue("existingRecord") != null) {
+                            matchCount++;
+                        }
+                    }
+                }
+            }
+
+            // 6. Verify results
+            assertEquals("Should get N results (one per objectID from SERVICE)", N, resultCount);
+            assertEquals("Should match 3 records from default repo (IDs 1,2,3)", 3, matchCount);
+
+            // 7. Verify the blow-up via debug counters
+            int leftJoinCalls = org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.getLeftJoinCallCount();
+            int endpointEvals = org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.getEndpointEvalCount();
+            int joinCalls = org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.getJoinCallCount();
+            
+            System.out.println("OPTIONAL+SERVICE blow-up test (N=" + N + "): " +
+                "leftJoinCalls=" + leftJoinCalls + 
+                ", endpointEvals=" + endpointEvals + 
+                ", joinCalls=" + joinCalls);
+
+            // executeLeftJoin is called ONCE (creates ControlledWorkerLeftJoin)
+            assertEquals("executeLeftJoin should be called exactly once", 1, leftJoinCalls);
+
+            // VALUES-based bind left join bypasses evaluateExclusiveGroup entirely —
+            // all N bindings are batched into a single SPARQL query with VALUES clause,
+            // so endpointEvalCount stays at 0 (no individual per-binding queries)
+            assertEquals("Endpoint evaluations should be 0 — VALUES batching eliminates the blow-up", 
+                0, endpointEvals);
+        } finally {
+            org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.disableDebugCounters();
+        }
+        
+        // Verify the search SERVICE was called
+        verify(getRequestedFor(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("optional-blowup-test")));
+    }
+
+    /**
+     * Tests that regular JOIN + SERVICE with ExclusiveGroup uses VALUES batching.
+     * <p>
+     * Same pattern as the OPTIONAL test, but with a required (inner) join instead
+     * of OPTIONAL. Without VALUES batching, FedX would use ControlledWorkerJoin
+     * (N parallel queries to the default repo). With our fix, it uses
+     * ControlledWorkerBindJoin + evaluateBoundJoinStatementPattern → single VALUES query.
+     * </p>
+     * <p>
+     * Inner join semantics: only matching rows are returned (3 out of 10).
+     * </p>
+     */
+    @Test
+    public void testJoinWithServiceResults() throws Exception {
+        int N = 10;
+
+        // 1. Setup WireMock for MET Search API
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("join-blowup-test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": " + N + ", \"objectIDs\": [1,2,3,4,5,6,7,8,9,10] }")));
+
+        // 2. Add local data — only IDs 1, 2, 3 have records
+        Repository defaultRepo = repositoryManager.getDefault();
+        var vf = SimpleValueFactory.getInstance();
+        try (var conn = defaultRepo.getConnection()) {
+            for (int id : new int[]{1, 2, 3}) {
+                conn.add(vf.createStatement(
+                    vf.createIRI("http://example.org/record/" + id),
+                    vf.createIRI("http://example.org/ns#hasObjectId"),
+                    vf.createLiteral(String.valueOf(id))
+                ));
+                conn.add(vf.createStatement(
+                    vf.createIRI("http://example.org/record/" + id),
+                    vf.createIRI("http://example.org/ns#hasLabel"),
+                    vf.createLiteral("Record " + id)
+                ));
+            }
+        }
+
+        // 3. Get Federation Repository
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        // 4. Enable debug counters
+        org.researchspace.federation.repository.evaluation.QueryHintAwareSparqlFederationEvalStrategy
+            .enableDebugCounters();
+
+        try {
+            // 5. Execute query: SERVICE returns N results → required JOIN against default repo
+            // Two triple patterns ensure ExclusiveGroup formation (not just StatementPattern)
+            String query = 
+                "PREFIX ex: <http://example.org/ns#> " +
+                "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+                "SELECT ?objectid ?existingRecord ?label WHERE { " +
+                "  SERVICE met:METCollectionSearchService { " +
+                "    ?x met:q \"join-blowup-test\"; " +
+                "       met:objectIDs ?objectid. " +
+                "  } " +
+                "  ?existingRecord ex:hasObjectId ?objectid . " +
+                "  ?existingRecord ex:hasLabel ?label . " +
+                "}";
+
+            int resultCount = 0;
+            try (var conn = ephedraRepo.getConnection()) {
+                TupleQuery tq = conn.prepareTupleQuery(query);
+                try (TupleQueryResult tqr = tq.evaluate()) {
+                    while (tqr.hasNext()) {
+                        var bs = tqr.next();
+                        resultCount++;
+                    }
+                }
+            }
+
+            // 6. Verify results — inner join: only 3 matches (IDs 1,2,3)
+            assertEquals("Should get 3 results (inner join — only matching IDs)", 3, resultCount);
+
+            // 7. Verify VALUES batching
+            int endpointEvals = org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.getEndpointEvalCount();
+            int joinCalls = org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.getJoinCallCount();
+
+            System.out.println("JOIN+SERVICE test (N=" + N + "): " +
+                "endpointEvals=" + endpointEvals + ", joinCalls=" + joinCalls);
+
+            // VALUES batching bypasses evaluateExclusiveGroup — endpointEvals stays 0
+            assertEquals("Endpoint evaluations should be 0 — VALUES batching for regular JOIN",
+                0, endpointEvals);
+        } finally {
+            org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.disableDebugCounters();
+        }
+
+        verify(getRequestedFor(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("join-blowup-test")));
+    }
 }
 

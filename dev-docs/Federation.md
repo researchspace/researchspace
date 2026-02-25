@@ -229,9 +229,10 @@ Location: `src/main/java/org/researchspace/federation/`
 | Class | Purpose |
 |-------|---------|
 | `QueryHintAwareFederationEvaluationStrategyFactory.java` | Creates our custom strategy |
-| `QueryHintAwareSparqlFederationEvalStrategy.java` | **Core** - query hints + REST detection |
+| `QueryHintAwareSparqlFederationEvalStrategy.java` | **Core** - query hints + REST detection + ExclusiveGroup bind join |
 | `QueryHintAwareJoinOptimizer.java` | Join ordering with query hints |
 | `SynchronousRestServiceJoin.java` | **Key** - Lazy evaluation for REST services |
+| `ExclusiveGroupQueryBuilder.java` | Builds VALUES-based SPARQL queries for ExclusiveGroup bind joins |
 
 #### Optimizers
 
@@ -240,6 +241,8 @@ Location: `src/main/java/org/researchspace/federation/`
 | `QueryHintsExtractor.java` | Extracts `executeFirst`/`executeLast` hints |
 | `QueryHintsSetup.java` | Stores extracted hints |
 | `MpQueryHintsSyncOptimizer.java` | Syncs hints after tree restructuring |
+| `BoundJoinExclusiveGroupOptimizer.java` | Replaces `ExclusiveGroup` → `BoundJoinExclusiveGroup` in query plan |
+| `BoundJoinExclusiveGroup.java` | `extends ExclusiveGroup implements BoundJoinTupleExpr` marker |
 
 ### Key Features
 
@@ -459,6 +462,41 @@ LIMIT 20
 
 > [!WARNING]
 > Queries combining `ORDER BY` on a REST service variable with `LIMIT` will be slow because all HTTP calls must complete before sorting and limiting can occur.
+
+### Issue 5: ExclusiveGroup N-Query Blow-Up (JOIN/OPTIONAL + SERVICE)
+
+**Problem**: When a `SERVICE` returns N results and those results are joined against the default repository via multiple triple patterns (creating an `ExclusiveGroup`), FedX sends **N individual queries** — one per left binding — instead of batching them.
+
+**Example**:
+```sparql
+SELECT * WHERE {
+  SERVICE :SearchService { ?x :q "vase"; :objectIDs ?id. }  # Returns 40 IDs
+  ?record :hasObjectId ?id .  # These form an ExclusiveGroup
+  ?record :hasLabel ?label .  # (multiple patterns, same endpoint)
+}
+```
+
+With 40 SERVICE results → 40 separate queries to the default repository.
+
+**Root Cause**: FedX's `ExclusiveGroup` does not implement `BoundJoinTupleExpr`. The bind join check in `executeJoin()`/`executeLeftJoin()` (`rightArg instanceof BoundJoinTupleExpr`) always fails, so FedX falls back to `ControlledWorkerJoin`/`ControlledWorkerLeftJoin` which evaluates each binding individually. Additionally, `evaluateBoundJoinStatementPattern` casts to `(StatementPattern)` — no ExclusiveGroup support.
+
+**Solution**: Three components:
+
+1. **`BoundJoinExclusiveGroup`** (`org.eclipse.rdf4j.federated.algebra`) — Marker subclass: `extends ExclusiveGroup implements BoundJoinTupleExpr`. Uses same-package access to copy protected fields from the original.
+
+2. **`BoundJoinExclusiveGroupOptimizer`** — Runs after other optimizers, walks the query plan, replaces `ExclusiveGroup` → `BoundJoinExclusiveGroup` via `parent.replaceChildNode()`. This makes FedX's existing routing choose `ControlledWorkerBindJoin`/`ControlledWorkerBindLeftJoin`.
+
+3. **`evaluateBoundJoinStatementPattern` + `evaluateLeftBoundJoinStatementPattern` overrides** — Detect `ExclusiveGroup` and build a VALUES-based SPARQL query using `ExclusiveGroupQueryBuilder` (in `org.eclipse.rdf4j.federated.util` for same-package access to `QueryStringUtil.constructJoinArg()`).
+
+**Result**: N queries → 1 query (or ⌈N/25⌉ for large N, batched by `boundJoinBlockSize`).
+
+```
+# Before fix:
+JOIN+SERVICE (N=10): endpointEvals=10  (one query per binding)
+
+# After fix:
+JOIN+SERVICE (N=10): endpointEvals=0   (one VALUES query)
+```
 
 ---
 

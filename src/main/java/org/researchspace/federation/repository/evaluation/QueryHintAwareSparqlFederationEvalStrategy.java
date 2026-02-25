@@ -6,15 +6,25 @@
 
 package org.researchspace.federation.repository.evaluation;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.EmptyIteration;
 import org.eclipse.rdf4j.federated.FederationContext;
 import org.eclipse.rdf4j.federated.algebra.BoundJoinTupleExpr;
+import org.eclipse.rdf4j.federated.algebra.ExclusiveGroup;
+import org.eclipse.rdf4j.federated.algebra.ExclusiveTupleExpr;
 import org.eclipse.rdf4j.federated.algebra.FedXService;
+import org.eclipse.rdf4j.federated.algebra.FilterTuple;
+import org.eclipse.rdf4j.federated.algebra.FilterValueExpr;
+import org.eclipse.rdf4j.federated.algebra.StatementTupleExpr;
 import org.eclipse.rdf4j.federated.evaluation.SparqlFederationEvalStrategy;
 import org.eclipse.rdf4j.federated.evaluation.concurrent.ControlledWorkerScheduler;
+import org.eclipse.rdf4j.federated.evaluation.iterator.BindLeftJoinIteration;
+import org.eclipse.rdf4j.federated.evaluation.iterator.FilteringIteration;
 import org.eclipse.rdf4j.federated.evaluation.join.ControlledWorkerBindJoin;
 import org.eclipse.rdf4j.federated.evaluation.join.ControlledWorkerJoin;
 import org.eclipse.rdf4j.federated.evaluation.join.JoinExecutorBase;
@@ -23,9 +33,11 @@ import org.eclipse.rdf4j.federated.optimizer.GenericInfoOptimizer;
 import org.eclipse.rdf4j.federated.structures.QueryInfo;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.algebra.LeftJoin;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.Var;
 import org.researchspace.federation.repository.MpFederation;
+import org.researchspace.federation.repository.optimizers.BoundJoinExclusiveGroupOptimizer;
 import org.researchspace.federation.repository.optimizers.MpQueryHintsSyncOptimizer;
 import org.researchspace.federation.repository.optimizers.QueryHintsExtractor;
 import org.researchspace.federation.repository.optimizers.QueryHintsSetup;
@@ -39,6 +51,43 @@ import org.slf4j.LoggerFactory;
 public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederationEvalStrategy {
     
     private static final Logger log = LoggerFactory.getLogger(QueryHintAwareSparqlFederationEvalStrategy.class);
+
+    // Debug counters — gated behind a volatile flag so there is zero overhead at runtime.
+    // Only enabled explicitly in tests via enableDebugCounters().
+    private static volatile boolean debugCountersEnabled = false;
+    private static final AtomicInteger leftJoinCallCount = new AtomicInteger(0);
+    private static final AtomicInteger joinCallCount = new AtomicInteger(0);
+    private static final AtomicInteger endpointEvalCount = new AtomicInteger(0);
+
+    /** Enable debug counters (for tests only). */
+    public static void enableDebugCounters() {
+        debugCountersEnabled = true;
+        leftJoinCallCount.set(0);
+        joinCallCount.set(0);
+        endpointEvalCount.set(0);
+    }
+
+    /** Disable debug counters and reset to zero. */
+    public static void disableDebugCounters() {
+        debugCountersEnabled = false;
+        leftJoinCallCount.set(0);
+        joinCallCount.set(0);
+        endpointEvalCount.set(0);
+    }
+
+    /** Number of times executeLeftJoin was called (only tracked when debug counters are enabled). */
+    public static int getLeftJoinCallCount() { return leftJoinCallCount.get(); }
+
+    /** Number of times executeJoin was called (only tracked when debug counters are enabled). */
+    public static int getJoinCallCount() { return joinCallCount.get(); }
+
+    /**
+     * Number of times a query was sent to any federation endpoint (evaluateExclusiveGroup
+     * or evaluateExclusiveTupleExpr). This counts actual SPARQL queries dispatched to endpoints,
+     * including the default repository. Directly measures the N-queries blow-up from
+     * ControlledWorkerLeftJoin creating N ParallelLeftJoinTasks.
+     */
+    public static int getEndpointEvalCount() { return endpointEvalCount.get(); }
     
     public QueryHintAwareSparqlFederationEvalStrategy(FederationContext federationContext) {
         super(federationContext);
@@ -59,6 +108,10 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
             CloseableIteration<BindingSet> leftIter,
             TupleExpr rightArg, Set<String> joinVars, BindingSet bindings, QueryInfo queryInfo)
             throws QueryEvaluationException {
+
+        if (debugCountersEnabled) {
+            joinCallCount.incrementAndGet();
+        }
 
         // Debug logging to understand join execution
         if (log.isTraceEnabled()) {
@@ -147,6 +200,198 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         return java.util.concurrent.Executors.newSingleThreadExecutor();
     }
 
+    /**
+     * Override to count left join calls for testing/debugging.
+     */
+    @Override
+    protected CloseableIteration<BindingSet> executeLeftJoin(
+            ControlledWorkerScheduler<BindingSet> joinScheduler,
+            CloseableIteration<BindingSet> leftIter, LeftJoin leftJoin,
+            BindingSet bindings, QueryInfo queryInfo)
+            throws QueryEvaluationException {
+        if (debugCountersEnabled) {
+            leftJoinCallCount.incrementAndGet();
+        }
+        return super.executeLeftJoin(joinScheduler, leftIter, leftJoin, bindings, queryInfo);
+    }
+
+    /**
+     * Override to count endpoint evaluations for grouped triple patterns.
+     */
+    @Override
+    public CloseableIteration<BindingSet> evaluateExclusiveGroup(
+            ExclusiveGroup group, BindingSet bindings)
+            throws org.eclipse.rdf4j.repository.RepositoryException,
+                   org.eclipse.rdf4j.query.MalformedQueryException,
+                   QueryEvaluationException {
+        if (debugCountersEnabled) {
+            endpointEvalCount.incrementAndGet();
+        }
+        return super.evaluateExclusiveGroup(group, bindings);
+    }
+
+    /**
+     * Override to count endpoint evaluations for single triple patterns.
+     */
+    @Override
+    protected CloseableIteration<BindingSet> evaluateExclusiveTupleExpr(
+            ExclusiveTupleExpr expr, BindingSet bindings)
+            throws org.eclipse.rdf4j.repository.RepositoryException,
+                   org.eclipse.rdf4j.query.MalformedQueryException,
+                   QueryEvaluationException {
+        if (debugCountersEnabled) {
+            endpointEvalCount.incrementAndGet();
+        }
+        return super.evaluateExclusiveTupleExpr(expr, bindings);
+    }
+
+    /**
+     * Override to handle ExclusiveGroup in bind left joins.
+     * <p>
+     * The base FedX implementation casts to {@code (StatementPattern)} which crashes for
+     * {@link ExclusiveGroup} (multi-pattern OPTIONALs). This override detects ExclusiveGroup
+     * and builds a VALUES-based SPARQL query that batches all bindings into a single query,
+     * reducing N individual queries to 1.
+     * </p>
+     * <p>
+     * For example, with 10 left bindings and an OPTIONAL body of:
+     * <pre>
+     *   ?rec ex:hasObjectId ?objectid .
+     *   ?rec ex:hasLabel ?label .
+     * </pre>
+     * Instead of sending 10 separate queries, we send ONE:
+     * <pre>
+     * SELECT ?rec ?objectid ?label ?__index WHERE {
+     *   VALUES (?objectid ?__index) { ("1" "0") ("2" "1") ... ("10" "9") }
+     *   ?rec ex:hasObjectId ?objectid .
+     *   ?rec ex:hasLabel ?label .
+     * }
+     * </pre>
+     * </p>
+     */
+    @Override
+    public CloseableIteration<BindingSet> evaluateLeftBoundJoinStatementPattern(
+            StatementTupleExpr stmt, List<BindingSet> bindings) throws QueryEvaluationException {
+        
+        if (!(stmt instanceof ExclusiveGroup)) {
+            // For regular StatementPattern, use the base implementation
+            return super.evaluateLeftBoundJoinStatementPattern(stmt, bindings);
+        }
+
+        ExclusiveGroup group = (ExclusiveGroup) stmt;
+
+        // Optimization: single binding doesn't need VALUES batching
+        if (bindings.size() == 1) {
+            return stmt.evaluate(bindings.get(0));
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Evaluating ExclusiveGroup left bind join with {} bindings", bindings.size());
+        }
+
+        FilterValueExpr filterExpr = null;
+        if (group instanceof FilterTuple) {
+            filterExpr = ((FilterTuple) group).getFilterExpr();
+        }
+
+        // Build the VALUES-based SPARQL query for ExclusiveGroup using same-package helper
+        String preparedQuery = org.eclipse.rdf4j.federated.util.ExclusiveGroupQueryBuilder
+                .buildBoundJoinVALUES(group, bindings);
+
+        CloseableIteration<BindingSet> result = null;
+        try {
+            result = evaluateAtStatementSources(preparedQuery, group.getStatementSources(),
+                    group.getQueryInfo());
+
+            // Apply filter and/or convert to left join semantics
+            if (filterExpr != null) {
+                result = new BindLeftJoinIteration(result, bindings);
+                result = new FilteringIteration(filterExpr, result, this);
+                if (!result.hasNext()) {
+                    result.close();
+                    return new EmptyIteration<>();
+                }
+            } else {
+                result = new BindLeftJoinIteration(result, bindings);
+            }
+
+            return result;
+        } catch (Throwable t) {
+            if (result != null) {
+                result.close();
+            }
+            if (t instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new QueryEvaluationException(t);
+        }
+    }
+
+    /**
+     * Override to handle ExclusiveGroup in regular bind joins (inner join).
+     * <p>
+     * Same VALUES-based batching as {@link #evaluateLeftBoundJoinStatementPattern},
+     * but uses {@code BoundJoinVALUESConversionIteration} (inner join semantics —
+     * only returns rows that match, no NULL-filling).
+     * </p>
+     */
+    @Override
+    public CloseableIteration<BindingSet> evaluateBoundJoinStatementPattern(
+            StatementTupleExpr stmt, List<BindingSet> bindings) throws QueryEvaluationException {
+
+        if (!(stmt instanceof ExclusiveGroup)) {
+            return super.evaluateBoundJoinStatementPattern(stmt, bindings);
+        }
+
+        ExclusiveGroup group = (ExclusiveGroup) stmt;
+
+        if (bindings.size() == 1) {
+            return stmt.evaluate(bindings.get(0));
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Evaluating ExclusiveGroup bind join with {} bindings", bindings.size());
+        }
+
+        FilterValueExpr filterExpr = null;
+        if (group instanceof FilterTuple) {
+            filterExpr = ((FilterTuple) group).getFilterExpr();
+        }
+
+        String preparedQuery = org.eclipse.rdf4j.federated.util.ExclusiveGroupQueryBuilder
+                .buildBoundJoinVALUES(group, bindings);
+
+        CloseableIteration<BindingSet> result = null;
+        try {
+            result = evaluateAtStatementSources(preparedQuery, group.getStatementSources(),
+                    group.getQueryInfo());
+
+            // Apply filter and/or convert to original bindings (inner join semantics)
+            if (filterExpr != null) {
+                result = new org.eclipse.rdf4j.federated.evaluation.iterator
+                        .BoundJoinVALUESConversionIteration(result, bindings);
+                result = new FilteringIteration(filterExpr, result, this);
+                if (!result.hasNext()) {
+                    result.close();
+                    return new EmptyIteration<>();
+                }
+            } else {
+                result = new org.eclipse.rdf4j.federated.evaluation.iterator
+                        .BoundJoinVALUESConversionIteration(result, bindings);
+            }
+
+            return result;
+        } catch (Throwable t) {
+            if (result != null) {
+                result.close();
+            }
+            if (t instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new QueryEvaluationException(t);
+        }
+    }
+
     @Override
     protected void optimizeJoinOrder(TupleExpr query, QueryInfo queryInfo, GenericInfoOptimizer info) {
         boolean hintsEnabled = true;
@@ -168,5 +413,10 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         } else {
             super.optimizeJoinOrder(query, queryInfo, info);
         }
+
+        // Replace ExclusiveGroup nodes with BoundJoinExclusiveGroup so that
+        // FedX's ControlledWorkerBindLeftJoin is used instead of ControlledWorkerLeftJoin,
+        // preventing the N-query blow-up for OPTIONAL clauses
+        new BoundJoinExclusiveGroupOptimizer().optimize(query, null, null);
     }
 }

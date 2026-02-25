@@ -475,11 +475,47 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
       return [];
     }
     const scope = this.appliedTemplateScope;
-    const tabDefs: Array<{ key: string; label: string; iconUrl?: string }> =
-      typeof this.props.sidebarTabs === 'string'
+
+    let tabDefs: Array<{ key: string; label: string; iconUrl?: string }>;
+    try {
+      tabDefs = typeof this.props.sidebarTabs === 'string'
         ? JSON.parse(this.props.sidebarTabs)
         : this.props.sidebarTabs;
-    return tabDefs.map((def) => {
+    } catch (e) {
+      throw new Error(`sidebarTabs prop contains invalid JSON: ${e instanceof Error ? e.message : String(e)}`);
+    }
+
+    if (!Array.isArray(tabDefs)) {
+      throw new TypeError(`sidebarTabs prop must be a JSON array`);
+    }
+
+    return tabDefs.map((def, index) => {
+      if (typeof def !== 'object' || def === null) {
+        throw new Error(`sidebarTabs[${index}] must be an object`);
+      }
+
+      // Restrict key to safe identifier characters to prevent template-ID injection
+      if (typeof def.key !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(def.key)) {
+        throw new Error(
+          `sidebarTabs[${index}].key must be a non-empty string containing only` +
+          ` alphanumeric characters, hyphens, or underscores`
+        );
+      }
+
+      if (typeof def.label !== 'string' || def.label.length === 0) {
+        throw new Error(`sidebarTabs[${index}].label must be a non-empty string`);
+      }
+
+      // Only allow relative paths and http/https absolute URLs in iconUrl
+      if (def.iconUrl !== undefined) {
+        if (typeof def.iconUrl !== 'string' || !isSafeUrl(def.iconUrl)) {
+          throw new Error(
+            `sidebarTabs[${index}].iconUrl is not a safe URL — only http, https,` +
+            ` and relative URLs are permitted`
+          );
+        }
+      }
+
       const partial = scope ? scope.getPartial(`sidebar-${def.key}`) : undefined;
       if (!partial) {
         throw new Error(
@@ -502,6 +538,24 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
       repository: semanticContext.repository,
     });
   }
+}
+
+/**
+ * Returns true for relative URLs and absolute http/https URLs.
+ * Blocks dangerous schemes such as javascript:, data:, vbscript:, etc.
+ * 
+ * Trim whitespace first — browsers strip it from src attributes, so
+ * " javascript:..." would otherwise bypass the scheme check below.
+ */
+function isSafeUrl(url: string): boolean {
+
+  const trimmed = url.trim();
+  // Relative paths (no URI scheme present) are safe.
+  if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) {
+    return true;
+  }
+  const lower = trimmed.toLowerCase();
+  return lower.startsWith('http://') || lower.startsWith('https://');
 }
 
 function extractAnnotationTypes(children: React.ReactNode): ReadonlyMap<string, AnnotationBodyType> {

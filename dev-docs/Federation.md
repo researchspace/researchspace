@@ -505,25 +505,36 @@ JOIN+SERVICE (N=10): endpointEvals=0   (one VALUES query)
 ### Ephedra Federation Configuration
 
 ```turtle
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rep: <http://www.openrdf.org/config/repository#> .
-@prefix sail: <http://www.openrdf.org/config/sail#> .
-@prefix mph: <http://www.researchspace.org/resource/system/> .
 @prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix mpf: <http://www.researchspace.org/resource/system/repository/federation#> .
 @prefix fedx: <http://rdf4j.org/config/federation#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-[] a rep:Repository ;
-   rep:repositoryID "ephedra" ;
+[] a config:Repository ;
+   config:rep.id "ephedra" ;
    rdfs:label "Ephedra Federation" ;
-   rep:repositoryImpl [
-      rep:repositoryType "openrdf:SailRepository" ;
-      sail:sailImpl [
-         sail:sailType "researchspace:Federation" ;
-         mph:defaultMember "default" ;
-         ephedra:serviceReference <http://example.org/Service1> ;
-         ephedra:serviceReference <http://example.org/Service2> ;
+   config:rep.impl [
+      config:rep.type "researchspace:FederationSailRepository" ;
+      config:sail.impl [
+         config:sail.type "researchspace:Federation" ;
+         ephedra:defaultMember "default" ;
+         ephedra:enableQueryHints "true"^^xsd:boolean ;
          
-         # FedX configuration (optional)
+         # Federation members: each maps a delegateRepositoryID to a serviceReference URI.
+         # The serviceReference is the IRI used in SERVICE clauses to query this member.
+         # Convention: use the mpf: namespace (http://www.researchspace.org/resource/system/repository/federation#)
+         config:fed.member [
+            ephedra:delegateRepositoryID "wikidata-text" ;
+            ephedra:serviceReference mpf:wikidata-text
+         ] ;
+         config:fed.member [
+            ephedra:delegateRepositoryID "assets" ;
+            ephedra:serviceReference mpf:assets
+         ] ;
+         
+         # Optional: FedX configuration
          fedx:config [
             fedx:enforceMaxQueryTime 120 ;
             fedx:joinWorkerThreads 20 ;

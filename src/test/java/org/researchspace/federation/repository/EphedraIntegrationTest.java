@@ -62,7 +62,7 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         repositoryManager.reinitializeRepositories(java.util.Arrays.asList(
             "service-a", "service-b", "ephedra", 
             "service-old", "ephedra-old",
-            "met-search", "met-object"));
+            "met-search", "met-object", "sparql-repo"));
     }
 
     /**
@@ -890,5 +890,84 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         verify(getRequestedFor(urlPathEqualTo("/public/collection/v1/search"))
             .withQueryParam("q", equalTo("join-blowup-test")));
     }
-}
 
+    /**
+     * Tests that a plain SPARQL HTTP repository can be added as a federation member
+     * and queried via SERVICE clause using the serviceReference IRI.
+     * <p>
+     * This is the backward compatibility scenario where users define a repository like:
+     * <pre>
+     * [] a config:Repository ;
+     *    config:rep.id "graceful17" ;
+     *    config:rep.impl [
+     *       config:rep.type "researchspace:SPARQLRepository" ;
+     *       config:sparql.queryEndpoint <https://example.org/sparql>
+     *    ] .
+     * </pre>
+     * And add it to the federation with:
+     * <pre>
+     * config:fed.member [
+     *    ephedra:delegateRepositoryID "graceful17" ;
+     *    ephedra:serviceReference <http://www.researchspace.org/resource/system/repository/federation#graceful17>
+     * ]
+     * </pre>
+     * Then query via:
+     * <pre>
+     * SERVICE <http://www.researchspace.org/resource/system/repository/federation#graceful17> {
+     *   ?subject rdf:type <https://example.org/Person> .
+     * }
+     * </pre>
+     */
+    @Test
+    public void testSparqlRepositoryAsFederationMember() throws Exception {
+        // 1. Setup WireMock to act as a SPARQL endpoint
+        // The SPARQL repo sends HTTP GET with "query" parameter
+        String sparqlJsonResponse = 
+            "{" +
+            "  \"head\": { \"vars\": [\"subject\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"subject\": { \"type\": \"uri\", \"value\": \"http://example.org/person/1\" } }," +
+            "      { \"subject\": { \"type\": \"uri\", \"value\": \"http://example.org/person/2\" } }," +
+            "      { \"subject\": { \"type\": \"uri\", \"value\": \"http://example.org/person/3\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(sparqlJsonResponse)));
+
+        // 2. Get Federation Repository
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        // 3. Execute query using SERVICE with the old-style serviceReference URI
+        String query = 
+            "SELECT DISTINCT ?subject WHERE { " +
+            "  SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "    ?subject a <http://example.org/Person> . " +
+            "  } " +
+            "} LIMIT 100";
+
+        int resultCount = 0;
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                assertTrue("Query should return results from SPARQL repo", tqr.hasNext());
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    assertNotNull("subject should be bound", bs.getValue("subject"));
+                    resultCount++;
+                }
+            }
+        }
+        
+        assertEquals("Should get 3 results from the SPARQL endpoint", 3, resultCount);
+        
+        // Verify the SPARQL endpoint was called
+        verify(anyRequestedFor(urlPathEqualTo("/sparql")));
+    }
+}

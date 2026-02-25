@@ -88,11 +88,17 @@ export class ImportResourceComponent extends Component<Props, State> {
     };
   }
 
+  private triggerRef: OverlayTrigger | null = null;
+
   shouldComponentUpdate(nextProps, nextState) {
     if (!this.state.show && nextState.show) {
-      (this.refs['trigger'] as any).show();
+      if (this.triggerRef) {
+        (this.triggerRef as any).show();
+      }
     } else if (this.state.show && !nextState.show) {
-      (this.refs['trigger'] as any).hide();
+      if (this.triggerRef) {
+        (this.triggerRef as any).hide();
+      }
     }
     return true;
   }
@@ -333,7 +339,7 @@ export class ImportResourceComponent extends Component<Props, State> {
 
     return (
       <OverlayTrigger
-        ref="trigger"
+        ref={(node) => { this.triggerRef = node; }}
         trigger={[]}
         placement="bottom"
         rootClose={true}

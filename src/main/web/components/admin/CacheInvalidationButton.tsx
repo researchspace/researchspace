@@ -51,6 +51,8 @@ const PopupContent = (
 
 
 class InvalidateCacheButton extends Component<{}, State> {
+  private triggerRef: ReactBootstrap.OverlayTrigger | null = null;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -72,7 +74,7 @@ class InvalidateCacheButton extends Component<{}, State> {
         ),
         OverlayTrigger(
           {
-            ref: 'trigger',
+            ref: (node) => { this.triggerRef = node; },
             trigger: ['click', 'hover', 'focus'],
             placement: 'top',
             rootClose: true,

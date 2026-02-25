@@ -20,9 +20,12 @@
 import * as React from 'react';
 import { Button } from 'react-bootstrap';
 import * as _ from 'lodash';
+import * as classNames from 'classnames';
 
 import { Rdf } from 'platform/api/rdf';
 import { AutoCompletionInput } from 'platform/components/ui/inputs';
+import { AutoCompletionInputProps } from 'platform/components/ui/inputs/AutoCompletionInput';
+import { BaseProps } from 'platform/components/ui/inputs/AbstractAutoCompletionInput';
 import {getResourceConfigurationEditForm} from './ResourceConfigHelper';
 
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
@@ -50,11 +53,12 @@ type nestedFormEl = {
   passValuesFor?: string[]
 }
 
-export interface AutocompleteInputProps extends AtomicValueInputProps {
+export interface AutocompleteInputProps
+  extends AtomicValueInputProps,
+    Omit<BaseProps, 'value' | 'actions' | 'templates'> {
   template?: string;
   placeholder?: string;
   nestedFormTemplate?: string;
-  minimumInput?: number;
   nestedFormTemplates?: nestedFormEl[];
   /**
    * @default false
@@ -66,6 +70,11 @@ export interface AutocompleteInputProps extends AtomicValueInputProps {
    * @default true
    */
   showDropdownFilter?: boolean;
+  /**
+   * Droppable configuration for drag-and-drop support.
+   * Note: droppable.query is always set internally and cannot be overridden.
+   */
+  droppable?: AutoCompletionInputProps['droppable'];
 }
 
 interface SelectValue {
@@ -87,7 +96,6 @@ interface State {
 }
 
 const CLASS_NAME = 'autocomplete-text-field';
-const MINIMUM_LIMIT = 3;
 const DEFAULT_TEMPLATE = `<span title="{{label.value}}">{{label.value}}</span>`;
 
 export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, State> {
@@ -122,9 +130,9 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           .then(binding=>{
             if (binding.resourceFormIri) {
               if (binding.scheme)
-                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" subject="${rdfNode.value}" scheme="${binding.scheme.value}"}}`});
               else  
-                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" subject="${rdfNode.value}"}}`});
             }
             else
                 {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})
@@ -235,7 +243,14 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
       typeof this.props.placeholder === 'undefined'
         ? this.createDefaultPlaceholder(definition)
         : this.props.placeholder;
-    
+
+    // Runtime: warn if user tries to override droppable.query
+    if (this.props.droppable?.query) {
+      console.warn(
+        'AutocompleteInput: droppable.query cannot be overridden, it is set internally.'
+      );
+    }
+
     const current_value = FieldValue.isAtomic(this.props.value)
       ? (this.props.value.value as Rdf.Iri).value: undefined;
     const isFieldValueEmpty = FieldValue.isEmpty(this.props.value)
@@ -248,23 +263,28 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
     return (
       <div className={`${CLASS_NAME}__main-row`}>
         <AutoCompletionInput
+          {...this.props}
           key={definition.id}
-          className={`${CLASS_NAME}__select`}
-          autofocus={false}
+          className={classNames(`${CLASS_NAME}__select`, this.props.className)}
+          autofocus={this.props.autofocus ?? false}
           query={this.props.definition.autosuggestionPattern}
           placeholder={placeholder}
           droppable={{
-            // enable droppable for autocomplete input
+            // query is always set internally — not overridable
             query: createDropAskQueryForField(definition),
             styles: {
               enabled: {
-                outline: '2px dashed var(--color-dark)'
+                outline: '2px dashed var(--color-dark)',
+                ...this.props.droppable?.styles?.enabled,
               },
               enabledHover: {
-                outline: '4px dashed var(--color-dark)'
+                outline: '4px dashed var(--color-dark)',
+                ...this.props.droppable?.styles?.enabledHover,
               },
-              disabled: {}
-            }
+              disabled: {
+                ...this.props.droppable?.styles?.disabled,
+              },
+            },
           }}
           value={value}
           templates={{ suggestion: this.tupleTemplate }}
@@ -273,7 +293,6 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             // however, what will be passed in is a SelectValue
             onSelected: this.onChange as (val: any) => void,
           }}
-          minimumInput={this.props.minimumInput || MINIMUM_LIMIT}
         />
         { showCreateNewButton && (
           <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} onClick={() => this.onDropdownSelectHandler(this.state.nestedFormTemplates[0].label)}>

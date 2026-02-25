@@ -26,6 +26,7 @@ import { getCurrentResource } from '../navigation/CurrentResource';
 import { namespaceService } from 'platform/api/services/NamespaceService';
 
 import { isQuery, isTerm, isIri } from './TypeGuards';
+import { luceneTokenize } from 'platform/components/shared/KeywordSearchConfig';
 
 // by default we initialized parser without prefixes so we don't need
 // to initialize it explicitly in all tests, but the expectation is that
@@ -201,29 +202,13 @@ export function randomVariableName(): string {
 }
 
 /**
- * @see https://lucene.apache.org/core/2_9_4/queryparsersyntax.html
- */
-const LUCENE_ESCAPE_REGEX = /([+\-&|!(){}\[\]^"~*?:\\])/g;
-
-/**
  * Create a Lucene full text search query from a user input by
  * splitting it on whitespaces and escaping any special characters.
  */
-export function makeLuceneQuery(inputText: string, escape = true, tokenize = true): Rdf.Literal {
-  const words = inputText
-    .split(' ')
-    .map((w) => w.trim())
-    .filter((w) => w.length > 0)
-    .map((w) => {
-      if (escape) {
-        w = w.replace(LUCENE_ESCAPE_REGEX, '\\$1');
-      }
-      if (tokenize) {
-        w += '*';
-      }
-      return w;
-    })
-    .join(' ');
+export function makeLuceneQuery(
+  inputText: string, escape = true, tokenize = true, minTokenLength?: number
+): Rdf.Literal {
+  const words = luceneTokenize(inputText, escape, tokenize, minTokenLength).join(' ');
   return Rdf.literal(words);
 }
 

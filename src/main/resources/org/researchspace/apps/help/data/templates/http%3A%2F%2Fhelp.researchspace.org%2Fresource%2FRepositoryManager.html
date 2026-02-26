@@ -196,17 +196,18 @@
     
     <hr class="divider">
     <h3>Ephedra federation repository</h3>
-    Ephedra is a 
+    <p>Ephedra is a 
     SPARQL query federation architecture that is able to send federated 
     queries over several repositories registered in the Repository Manager.
-    It is built on top of FedX and adds support for REST services and query hints.
+    It is built on top of FedX and supports two types of federation members:</p>
+    <ul>
+      <li><strong>Ephedra service members</strong> (<code>config:fed.member</code>): REST and custom services, accessed via <code>SERVICE</code> clauses</li>
+      <li><strong>SPARQL endpoint members</strong> (<code>fedx:member</code>): external SPARQL endpoints, where FedX auto-selects relevant sources without needing <code>SERVICE</code> clauses</li>
+    </ul>
     <mp-code-block mode='text/turtle'>
     <![CDATA[
 @prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
-@prefix mps: <http://www.researchspace.org/resource/system/service#> .
-@prefix mpf: <http://www.researchspace.org/resource/system/repository/federation#> .
 @prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
 @prefix fedx: <http://rdf4j.org/config/federation#> .
 
@@ -217,14 +218,16 @@
       config:rep.type "researchspace:FederationSailRepository" ;
       config:sail.impl [
           config:sail.type "researchspace:Federation" ;
-          mph:defaultMember "default" ; # Repository ID of the default member of the federation
+          ephedra:defaultMember "default" ; # Repository ID of the default member
+          # Ephedra service members (accessed via SERVICE clauses)
           config:fed.member [
             ephedra:delegateRepositoryID "{%Repository ID of the federation member|wikidata-text%}" ;
-            ephedra:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:wikidata-text%}
+            ephedra:serviceReference {%URI to reference this federation member in a SERVICE clause|<http://www.researchspace.org/resource/system/repository/federation#wikidata-text>%}
           ] ;
-          config:fed.member [
-            ephedra:delegateRepositoryID "{%Repository ID of the federation member|assets%}" ;
-            ephedra:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:assets%}
+          # SPARQL endpoint members (FedX auto-selects sources)
+          fedx:member [
+            fedx:store "ResolvableRepository" ;
+            fedx:repositoryName "{%Repository ID of a SPARQL repo config|wikidata-sparql%}"
           ] ;
           
           # Optional: FedX configuration
@@ -304,90 +307,26 @@
        In production (<code>log4j2.xml</code>), all federation query logging is silent.</p>
     
     <hr class="divider">
-    <h3>FedX federation repository</h3>
+    <h3>Adding SPARQL Endpoints as Federation Members</h3>
     <p>
-      FedX provides transparent federation of multiple SPARQL endpoints under a single virtual endpoint.
-      In a federated SPARQL query in FedX, one no longer needs to explicitly address specific endpoints using SERVICE clauses.
-      Instead, FedX automatically selects relevant sources, sends statement patterns to these sources for evaluation, and joins the individual results.
+      Ephedra federations can include external SPARQL endpoints as direct federation members using <code>fedx:member</code> entries.
+      FedX automatically selects relevant sources, sends statement patterns to these sources for evaluation, and joins the individual results —
+      no explicit <code>SERVICE</code> clauses are needed for these members.
     </p>
     <p>
-      FedX can be used as a drop-in component in existing applications. 
-      The recommended configuration uses <code>researchspace:FederationSailRepository</code> which provides
-      the platform's outgoing query logging, bind join optimizations, and proper <code>httpUserAgent</code> configuration.
+      Each external SPARQL endpoint must first be defined as a standalone repository config
+      (e.g. <code>wikidata-sparql.ttl</code>) and then referenced by ID within the federation using <code>fedx:member</code>.
     </p>
     <p>
-      Below is an example that federates the default repository with Wikidata and ArtResearch.
-      Each external SPARQL endpoint must be defined as a standalone repository config (e.g. <code>wikidata-sparql.ttl</code>) 
-      and referenced by ID using <code>fedx:member</code>.
+      Below is a complete example combining Ephedra services, SPARQL federation members, and a default member
+      into a single unified federation:
     </p>
     <mp-code-block mode="text/turtle">
     <![CDATA[
 @prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
 @prefix fedx: <http://rdf4j.org/config/federation#> .
-@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
-
-[] a config:Repository ;
-    config:rep.id "fedx" ;
-    rdfs:label "FedX Federation" ;
-    config:rep.impl [
-        config:rep.type "researchspace:FederationSailRepository" ;
-        config:sail.impl [
-            config:sail.type "researchspace:Federation" ;
-            fedx:enableMonitoring true ;
-            fedx:logQueries true ;
-            fedx:member [
-                fedx:store "ResolvableRepository" ;
-                fedx:repositoryName "wikidata-sparql"
-            ] ;
-            fedx:member [
-                fedx:store "ResolvableRepository" ;
-                fedx:repositoryName "artresearch-sparql"
-            ] ;
-            ephedra:defaultMember "default"
-        ]
-    ] .
-    ]]>
-    </mp-code-block>
-
-    <div class="alert alert-warning">
-      <strong>Always use <code>ResolvableRepository</code></strong> to reference SPARQL endpoints as federation members.
-      Do <strong>not</strong> use <code>fedx:store "SPARQLEndpoint"</code> or <code>config:rep.type "fedx:FedXRepository"</code> directly — 
-      these bypass the platform's connection pooling, <code>httpUserAgent</code>, outgoing query logging, and bind join optimizations.
-      Instead, create a standalone SPARQL repository config (e.g. <code>wikidata-sparql.ttl</code>) 
-      and reference it by ID within a <code>researchspace:FederationSailRepository</code>.
-    </div>
-
-    <p>
-      FedX repositories can also be configured with various options to control query execution and monitoring.
-      For example, you can set the number of worker threads or enforce a maximum query time.
-    </p>
-    <mp-code-block mode="text/turtle">
-    <![CDATA[
-   config:rep.impl [
-      config:rep.type "fedx:FedXRepository" ;
-      # ... members ...
-      fedx:config [
-         fedx:joinWorkerThreads 20 ;
-         fedx:enforceMaxQueryTime 30 ;
-         fedx:enableMonitoring true ;
-         fedx:logQueryPlan true ;
-      ]
-   ] .
-    ]]>
-    </mp-code-block>
-
-    <h4>Using FedX with Ephedra</h4>
-    <p>
-      FedX can be used in conjunction with Ephedra. A common pattern is to use a FedX repository as the default member of an Ephedra federation.
-      This allows Ephedra to handle specific services (like search services) while delegating general SPARQL queries to the FedX federation, which then distributes them across its members.
-    </p>
-    <mp-code-block mode="text/turtle">
-    <![CDATA[
-@prefix config: <tag:rdf4j.org,2023:config/> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
-@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
 
 [] a config:Repository;
   config:rep.id "wikidata-ephedra";
@@ -396,7 +335,12 @@
       config:rep.type "researchspace:FederationSailRepository";
       config:sail.impl [
           config:sail.type "researchspace:Federation";
-          # Define Ephedra services
+          fedx:config [
+              fedx:enforceMaxQueryTime 120 ;
+              fedx:enableMonitoring true ;
+              fedx:logQueries true
+          ] ;
+          # Ephedra service members (accessed via SERVICE clauses)
           config:fed.member [
               ephedra:delegateRepositoryID "osm-nominatim-search";
               ephedra:serviceReference <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService>
@@ -405,15 +349,33 @@
               ephedra:delegateRepositoryID "wikidata-entity";
               ephedra:serviceReference <http://www.researchspace.org/resource/system/service/wikidataentity/WikidataEntity>
             ];
-          # Use FedX as the default member
-          ephedra:defaultMember "fedx"
+          # SPARQL endpoint members (FedX auto-selects sources, no SERVICE needed)
+          fedx:member [
+              fedx:store "ResolvableRepository" ;
+              fedx:repositoryName "wikidata-sparql"
+          ] ;
+          fedx:member [
+              fedx:store "ResolvableRepository" ;
+              fedx:repositoryName "artresearch-sparql"
+          ] ;
+          # Default member: the local triplestore
+          ephedra:defaultMember "default"
         ]
     ] .
     ]]>
     </mp-code-block>
 
+    <div class="alert alert-warning">
+      <strong>Always use <code>ResolvableRepository</code></strong> to reference SPARQL endpoints as federation members.
+      Do <strong>not</strong> use <code>fedx:store "SPARQLEndpoint"</code> or <code>config:rep.type "fedx:FedXRepository"</code> directly &mdash;
+      these bypass the platform's connection pooling, <code>httpUserAgent</code>, outgoing query logging, and bind join optimizations.
+      Instead, create a standalone SPARQL repository config (e.g. <code>wikidata-sparql.ttl</code>)
+      and reference it by ID within a <code>researchspace:FederationSailRepository</code>.
+    </div>
+
     <p>
-      This configuration enables complex federated workflows. For example, you can search for a place using Nominatim, get its details from Wikidata, and then find artworks located in that place from ArtResearch.net (which uses CIDOC-CRM) - all in a <strong>single federated query</strong>:
+      With this configuration, you can write a single federated query that combines Nominatim search (Ephedra service),
+      Wikidata facts (FedX member), and ArtResearch CIDOC-CRM data (FedX member):
     </p>
 
     <mp-code-block mode="application/sparql-query">
@@ -434,7 +396,7 @@ SELECT ?placeName ?wikidataId ?description ?pharosPlaceLabel WHERE {
   # 2. Convert the Wikidata ID string (e.g., "Q641") to an IRI
   BIND(IRI(CONCAT("http://www.wikidata.org/entity/", ?wikidataId)) AS ?wikidataEntity)
 
-  # 3. Query Wikidata (via FedX) for description and TGN ID (P1667)
+  # 3. Query Wikidata (via FedX auto-selection) for description and TGN ID (P1667)
   ?wikidataEntity schema:description ?description ;
                   wdt:P1667 ?tgnId .
   FILTER(LANG(?description) = "en")
@@ -442,7 +404,7 @@ SELECT ?placeName ?wikidataId ?description ?pharosPlaceLabel WHERE {
   # 4. Construct TGN URI
   BIND(IRI(CONCAT("http://vocab.getty.edu/tgn/", ?tgnId)) AS ?tgnUri)
   
-  # 5. Query ArtResearch.net (via FedX) for label that is used there for Venice
+  # 5. Query ArtResearch.net (via FedX auto-selection) for the preferred place label
   {
     ?tgnUri <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?id. 
     ?id <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <https://artresearch.net/resource/pharos/vocab/meta/pharos_preferred_name> . 

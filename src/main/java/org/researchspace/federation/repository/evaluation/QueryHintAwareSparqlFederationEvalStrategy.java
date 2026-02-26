@@ -260,17 +260,56 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
      * Override to log outgoing sub-queries dispatched to federation endpoints.
      * This is the central dispatch point for bound joins, grouped checks,
      * and left bind joins.
+     *
+     * Logs full query on send (DEBUG) and result count on close (DEBUG).
      */
     @Override
     protected CloseableIteration<BindingSet> evaluateAtStatementSources(String preparedQuery,
             List<StatementSource> statementSources, QueryInfo queryInfo) throws QueryEvaluationException {
-        if (log.isDebugEnabled()) {
-            String endpoints = statementSources.stream()
-                    .map(StatementSource::getEndpointID)
-                    .collect(Collectors.joining(", "));
-            log.debug("FedX outgoing query to [{}]: {}", endpoints, preparedQuery);
+        if (!log.isDebugEnabled()) {
+            return super.evaluateAtStatementSources(preparedQuery, statementSources, queryInfo);
         }
-        return super.evaluateAtStatementSources(preparedQuery, statementSources, queryInfo);
+
+        final String endpoints = statementSources.stream()
+                .map(StatementSource::getEndpointID)
+                .collect(Collectors.joining(", "));
+        log.debug("FedX outgoing query to [{}]: {}", endpoints, preparedQuery);
+
+        CloseableIteration<BindingSet> result;
+        try {
+            result = super.evaluateAtStatementSources(preparedQuery, statementSources, queryInfo);
+        } catch (Exception e) {
+            log.warn("FedX query to [{}] FAILED: {}", endpoints, e.getMessage(), e);
+            throw e;
+        }
+
+        // Wrap to count results
+        final AtomicInteger count = new AtomicInteger(0);
+        final CloseableIteration<BindingSet> delegate = result;
+        return new CloseableIteration<BindingSet>() {
+            @Override
+            public boolean hasNext() throws QueryEvaluationException {
+                return delegate.hasNext();
+            }
+
+            @Override
+            public BindingSet next() throws QueryEvaluationException {
+                BindingSet bs = delegate.next();
+                count.incrementAndGet();
+                return bs;
+            }
+
+            @Override
+            public void remove() throws QueryEvaluationException {
+                delegate.remove();
+            }
+
+            @Override
+            public void close() throws QueryEvaluationException {
+                log.debug("FedX query to [{}] completed with {} results", endpoints, count.get());
+                delegate.close();
+            }
+        };
     }
 
     /**

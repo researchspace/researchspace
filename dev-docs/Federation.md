@@ -412,14 +412,20 @@ Production `log4j2.xml` intentionally does NOT include this logger.
          config:sparql.queryEndpoint <https://query.wikidata.org/sparql>
       ] .
    ```
-2. Use `researchspace:FederationSailRepository` with `fedx:member` entries:
+2. Use `researchspace:FederationSailRepository` with both `config:fed.member` (Ephedra services) and `fedx:member` (SPARQL endpoints) as direct members:
    ```turtle
    [] a config:Repository ;
-       config:rep.id "fedx" ;
+       config:rep.id "ephedra" ;
        config:rep.impl [
            config:rep.type "researchspace:FederationSailRepository" ;
            config:sail.impl [
                config:sail.type "researchspace:Federation" ;
+               # Ephedra services
+               config:fed.member [
+                   ephedra:delegateRepositoryID "nominatim-search" ;
+                   ephedra:serviceReference <http://.../NominatimSearchService>
+               ] ;
+               # SPARQL endpoint members (FedX auto-selects sources)
                fedx:member [
                    fedx:store "ResolvableRepository" ;
                    fedx:repositoryName "wikidata-sparql"
@@ -429,7 +435,7 @@ Production `log4j2.xml` intentionally does NOT include this logger.
        ] .
    ```
 
-`MpFederationConfig` parses `fedx:member` entries and `MpFederationSailRepository` adds them as real FedX federation members (with source selection). All HTTP traffic flows through `MpSharedHttpClientSessionManager` (User-Agent) and all outgoing queries are logged by our evaluation strategy.
+`MpFederationConfig` parses both `config:fed.member` and `fedx:member` entries. `MpFederationSailRepository` adds SPARQL endpoints as real FedX federation members (with source selection). All HTTP traffic flows through `MpSharedHttpClientSessionManager` (User-Agent) and all outgoing queries are logged by our evaluation strategy.
 
 ---
 
@@ -586,11 +592,13 @@ JOIN+SERVICE (N=10): endpointEvals=0   (one VALUES query)
 
 ### Ephedra Federation Configuration
 
+The federation uses a single `researchspace:FederationSailRepository` that combines both Ephedra services
+(`config:fed.member`) and SPARQL endpoint members (`fedx:member`) as direct members.
+
 ```turtle
 @prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
-@prefix mpf: <http://www.researchspace.org/resource/system/repository/federation#> .
 @prefix fedx: <http://rdf4j.org/config/federation#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -604,16 +612,24 @@ JOIN+SERVICE (N=10): endpointEvals=0   (one VALUES query)
          ephedra:defaultMember "default" ;
          ephedra:enableQueryHints "true"^^xsd:boolean ;
          
-         # Federation members: each maps a delegateRepositoryID to a serviceReference URI.
-         # The serviceReference is the IRI used in SERVICE clauses to query this member.
-         # Convention: use the mpf: namespace (http://www.researchspace.org/resource/system/repository/federation#)
+         # Ephedra service members (accessed via SERVICE clauses)
          config:fed.member [
             ephedra:delegateRepositoryID "wikidata-text" ;
-            ephedra:serviceReference mpf:wikidata-text
+            ephedra:serviceReference <http://www.researchspace.org/resource/system/repository/federation#wikidata-text>
          ] ;
          config:fed.member [
             ephedra:delegateRepositoryID "assets" ;
-            ephedra:serviceReference mpf:assets
+            ephedra:serviceReference <http://www.researchspace.org/resource/system/repository/federation#assets>
+         ] ;
+         
+         # SPARQL endpoint members (FedX auto-selects sources, no SERVICE needed)
+         fedx:member [
+            fedx:store "ResolvableRepository" ;
+            fedx:repositoryName "wikidata-sparql"
+         ] ;
+         fedx:member [
+            fedx:store "ResolvableRepository" ;
+            fedx:repositoryName "artresearch-sparql"
          ] ;
          
          # Optional: FedX configuration

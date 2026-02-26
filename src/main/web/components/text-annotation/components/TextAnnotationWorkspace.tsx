@@ -22,6 +22,7 @@ import * as React from 'react';
 
 import { Cancellation, requestAsProperty } from 'platform/api/async';
 import { Component } from 'platform/api/components';
+import { listen, trigger } from 'platform/api/events';
 import * as http from 'platform/api/http';
 import { Rdf } from 'platform/api/rdf';
 import { VocabPlatform } from 'platform/api/rdf/vocabularies';
@@ -41,11 +42,20 @@ import { TextEditorState, WorkspaceHandlers, AnnotationBodyType, WorkspacePermis
 import { AnnotationEditForm } from './AnnotationEditForm';
 import { AnnotationSidebar } from './AnnotationSidebar';
 import { TextAnnotationEditor, makeIntitialEditorState } from './TextAnnotationEditor';
-import { extractAnnotationType } from './TextAnnotationType';
+import { TextAnnotationType, extractAnnotationType } from './TextAnnotationType';
+import { FocusAnnotation, AnnotationFocused } from '../TextAnnotationEvents';
+
+import { componentHasType } from 'platform/components/utils';
 
 import * as styles from './TextAnnotationWorkspace.scss';
 
 export interface TextAnnotationWorkspaceProps {
+  /**
+   * Unique identifier for the workspace instance. Required for event bus
+   * integration — used as `target` for incoming events and `source` for
+   * outgoing events. When omitted, no events are listened to or emitted.
+   */
+  id?: string;
   /**
    * Text document IRI to load in the annotation editor.
    * All annotations attached to this document are loaded as well.
@@ -138,6 +148,21 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
   componentDidMount() {
     if (typeof this.props.annotationTooltip !== 'string') {
       throw new Error(`Missing required property 'annotation-tooltip'`);
+    }
+
+    // Subscribe to incoming FocusAnnotation events when id is provided
+    if (this.props.id) {
+      this.cancellation
+        .map(listen({ eventType: FocusAnnotation, target: this.props.id }))
+        .observe({
+          value: (event) => {
+            if (event.data && event.data.annotationIri) {
+              const iri = Rdf.iri(event.data.annotationIri);
+              this.onFocusAnnotation(iri);
+              this.onHighlightAnnotations(new Set([iri.value]));
+            }
+          },
+        });
     }
 
     const annotationTypes = extractAnnotationTypes(this.props.children);
@@ -251,6 +276,15 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
 
   private onFocusAnnotation = (focused: Rdf.Iri | undefined) => {
     this.setState({ focusedAnnotation: focused }, () => {
+      // Emit outgoing event so custom sidebar templates can react
+      if (this.props.id) {
+        trigger({
+          eventType: AnnotationFocused,
+          source: this.props.id,
+          data: focused ? { annotationIri: focused.value } : {},
+        });
+      }
+
       // Scroll annotation into view within the editor panel (only if not already visible)
       if (focused) {
         // Wait a tick for the highlight to render
@@ -561,6 +595,9 @@ function isSafeUrl(url: string): boolean {
 function extractAnnotationTypes(children: React.ReactNode): ReadonlyMap<string, AnnotationBodyType> {
   const types = new Map<string, AnnotationBodyType>();
   React.Children.forEach(children, (child) => {
+    if (!componentHasType(child, TextAnnotationType)) {
+      return; // skip non-annotation-type children (e.g. sidebar tab templates)
+    }
     const type = extractAnnotationType(child);
     types.set(type.iri.value, type);
   });

@@ -573,6 +573,7 @@ class AnnotationMark extends React.Component<AnnotationMarkProps, {}> {
     return (
       <span
         {...attributes}
+        data-annotation-iri={iri.value}
         onClick={this.onClick}
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
@@ -626,7 +627,7 @@ interface AnnotationPointProps {
 class AnnotationPoint extends React.Component<AnnotationPointProps, {}> {
   render() {
     const { annotation, children, attributes, getAnnotationType } = this.props;
-    const { highlighted, bodyType } = AnnotationData.asProps(annotation.data);
+    const { highlighted, bodyType, iri } = AnnotationData.asProps(annotation.data);
     const type = getAnnotationType(bodyType);
     const backgroundColor = TextAnnotationTemplateBindings.getAccentColor(type, highlighted ? 1 : 0.5);
     const className = attributes.className
@@ -636,6 +637,7 @@ class AnnotationPoint extends React.Component<AnnotationPointProps, {}> {
       <span
         {...attributes}
         className={className}
+        data-annotation-iri={iri.value}
         onClick={this.onClick}
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}

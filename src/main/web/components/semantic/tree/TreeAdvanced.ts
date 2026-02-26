@@ -227,8 +227,11 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
     const hasLazyChildren = this.props.onNodeExpand && this.nodeHasLazyChildren(node);
     const needsToLoadChildren = hasLazyChildren && !this.state.expandedChildren.has(nodeKey);
     
-    // If expanding and we need to load children
-    if (isCurrentlyCollapsed && needsToLoadChildren) {
+    // If we need to load children, always trigger lazy loading regardless of bookkeeping state.
+    // This handles the case where search highlighting marks a node as "open" in keysOpened
+    // but children haven't been loaded yet — without this, the first click just toggles
+    // the bookkeeping state and the actual lazy load only happens on the second click.
+    if (needsToLoadChildren) {
       try {
         const children = await this.props.onNodeExpand(node);
         const newBookkeeping = { ...this.state.collapsedBookkeeping };
@@ -294,6 +297,14 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
       isCollapsed = hasLazyChildren && !this.state.expandedChildren.has(nodeKey);
     }
     
+    // FIX: If node has lazy children but no children loaded/rendered yet,
+    // force collapsed state to avoid showing a misleading "expanded" arrow.
+    // This happens when search highlights a folder node: it gets added to keysOpened
+    // but its children haven't been lazy-loaded yet, causing arrow ↓ with no content.
+    if (!isCollapsed && childrenToRender.length === 0 && hasLazyChildren && !this.state.expandedChildren.has(nodeKey)) {
+      isCollapsed = true;
+    }
+
     // For nodes with lazy children, we should show them even if no children are loaded yet
     // This ensures the collapse arrow appears correctly
     const shouldShowChildren = !isCollapsed && childrenToRender.length > 0;

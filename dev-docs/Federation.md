@@ -11,7 +11,8 @@ Comprehensive documentation of the federation system: FedX core, old MpFederatio
 3. [FedX Core](#fedx-core)
 4. [Our Customizations](#our-customizations)
 5. [Old MpFederation (Archived)](#old-mpfederation-archived)
-6. [Known Issues & Solutions](#known-issues--solutions)
+6. [Monitoring & Logging](#monitoring--logging)
+7. [Known Issues & Solutions](#known-issues--solutions)
 
 ---
 
@@ -348,6 +349,87 @@ The old federation was a custom implementation based on RDF4J's deprecated Feder
 16. MpPostJoinReorderingLocalJoinOptimizer
 17. MpPrepareOwnedTupleExpr
 ```
+
+---
+
+## Monitoring & Logging
+
+FedX supports two levels of query logging, both at DEBUG level in the platform log.
+
+### 1. Incoming Query Logging (FedX built-in)
+
+FedX's `QueryLog` logs the top-level incoming query via SLF4J logger `"QueryLog"` at INFO level.
+
+**Requirements:**
+- Set `fedx:enableMonitoring true` and `fedx:logQueries true` in the federation config
+- Use `log4j2-debug.xml` or `log4j2-trace.xml` logging profile (the `QueryLog` logger is configured there)
+
+### 2. Outgoing Sub-query Logging (our customization)
+
+`QueryHintAwareSparqlFederationEvalStrategy` overrides 4 dispatch methods to log every SPARQL query sent to federation endpoints at DEBUG level:
+
+| Method | What it captures |
+|--------|------------------|
+| `evaluateAtStatementSources(String, ...)` | Bound joins (VALUES), grouped checks, left bind joins |
+| `evaluateExclusiveGroup(...)` | Grouped triple patterns to a single endpoint |
+| `evaluateExclusiveTupleExpr(...)` | Individual exclusive expressions |
+| `evaluateSingleSourceQuery(...)` | Entire query routed to a single source |
+
+Each log entry includes the target endpoint ID and the full SPARQL query string.
+
+**Requirements:**
+- Use `log4j2-debug.xml` or `log4j2-trace.xml` (the `org.researchspace` logger is set to DEBUG/TRACE)
+- No config flags needed — logging is gated behind `logger.isDebugEnabled()` with zero overhead in production
+
+### Log4j2 Configuration
+
+The `QueryLog` logger is defined in `log4j2-debug.xml` and `log4j2-trace.xml`:
+```xml
+<Logger name="QueryLog" level="DEBUG" additivity="false">
+  <AppenderRef ref="LOGFILE"/>
+  <AppenderRef ref="STDOUT"/>
+</Logger>
+```
+
+Production `log4j2.xml` intentionally does NOT include this logger.
+
+---
+
+## Important Conventions
+
+### Always use `researchspace:FederationSailRepository` for FedX federations
+
+> [!CAUTION]
+> **Never** use `fedx:FedXRepository` or `fedx:store "SPARQLEndpoint"` directly. Standard FedX bypasses the platform's `MpSharedHttpClientSessionManager` (no User-Agent), our `QueryHintAwareSparqlFederationEvalStrategy` (no outgoing query logging), and `BoundJoinExclusiveGroup` optimization.
+
+**Correct pattern:**
+1. Create standalone SPARQL repo configs for external endpoints (e.g. `wikidata-sparql.ttl`):
+   ```turtle
+   [] a config:Repository ;
+      config:rep.id "wikidata-sparql" ;
+      config:rep.impl [
+         config:rep.type "researchspace:SPARQLRepository" ;
+         config:sparql.queryEndpoint <https://query.wikidata.org/sparql>
+      ] .
+   ```
+2. Use `researchspace:FederationSailRepository` with `fedx:member` entries:
+   ```turtle
+   [] a config:Repository ;
+       config:rep.id "fedx" ;
+       config:rep.impl [
+           config:rep.type "researchspace:FederationSailRepository" ;
+           config:sail.impl [
+               config:sail.type "researchspace:Federation" ;
+               fedx:member [
+                   fedx:store "ResolvableRepository" ;
+                   fedx:repositoryName "wikidata-sparql"
+               ] ;
+               ephedra:defaultMember "default"
+           ]
+       ] .
+   ```
+
+`MpFederationConfig` parses `fedx:member` entries and `MpFederationSailRepository` adds them as real FedX federation members (with source selection). All HTTP traffic flows through `MpSharedHttpClientSessionManager` (User-Agent) and all outgoing queries are logged by our evaluation strategy.
 
 ---
 

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.common.iteration.EmptyIteration;
@@ -20,6 +21,8 @@ import org.eclipse.rdf4j.federated.algebra.ExclusiveTupleExpr;
 import org.eclipse.rdf4j.federated.algebra.FedXService;
 import org.eclipse.rdf4j.federated.algebra.FilterTuple;
 import org.eclipse.rdf4j.federated.algebra.FilterValueExpr;
+import org.eclipse.rdf4j.federated.algebra.SingleSourceQuery;
+import org.eclipse.rdf4j.federated.algebra.StatementSource;
 import org.eclipse.rdf4j.federated.algebra.StatementTupleExpr;
 import org.eclipse.rdf4j.federated.evaluation.SparqlFederationEvalStrategy;
 import org.eclipse.rdf4j.federated.evaluation.concurrent.ControlledWorkerScheduler;
@@ -227,6 +230,10 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         if (debugCountersEnabled) {
             endpointEvalCount.incrementAndGet();
         }
+        if (log.isDebugEnabled()) {
+            log.debug("FedX evaluateExclusiveGroup to [{}]: {}",
+                    group.getOwnedEndpoint().getName(), group);
+        }
         return super.evaluateExclusiveGroup(group, bindings);
     }
 
@@ -242,7 +249,41 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         if (debugCountersEnabled) {
             endpointEvalCount.incrementAndGet();
         }
+        if (log.isDebugEnabled()) {
+            log.debug("FedX evaluateExclusiveTupleExpr to [{}]: {}",
+                    expr.getOwner().getEndpointID(), expr);
+        }
         return super.evaluateExclusiveTupleExpr(expr, bindings);
+    }
+
+    /**
+     * Override to log outgoing sub-queries dispatched to federation endpoints.
+     * This is the central dispatch point for bound joins, grouped checks,
+     * and left bind joins.
+     */
+    @Override
+    protected CloseableIteration<BindingSet> evaluateAtStatementSources(String preparedQuery,
+            List<StatementSource> statementSources, QueryInfo queryInfo) throws QueryEvaluationException {
+        if (log.isDebugEnabled()) {
+            String endpoints = statementSources.stream()
+                    .map(StatementSource::getEndpointID)
+                    .collect(Collectors.joining(", "));
+            log.debug("FedX outgoing query to [{}]: {}", endpoints, preparedQuery);
+        }
+        return super.evaluateAtStatementSources(preparedQuery, statementSources, queryInfo);
+    }
+
+    /**
+     * Override to log single-source queries (entire query routed to one endpoint).
+     */
+    @Override
+    public CloseableIteration<BindingSet> evaluateSingleSourceQuery(
+            SingleSourceQuery query, BindingSet bindings) throws QueryEvaluationException {
+        if (log.isDebugEnabled()) {
+            log.debug("FedX single-source query to [{}]: {}",
+                    query.getSource().getName(), query.getQueryString());
+        }
+        return super.evaluateSingleSourceQuery(query, bindings);
     }
 
     /**

@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.federated.FedXConfig;
 import org.eclipse.rdf4j.federated.repository.FedXRepositoryConfig;
+import org.eclipse.rdf4j.federated.util.Vocabulary;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -145,6 +146,7 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
     public static final int DEFAULT_REST_SERVICE_PREFETCH_SIZE = 5;
 
     private List<MpFederationMemberConfig> memberConfigs = Lists.newArrayList();
+    private List<String> fedxMemberRepositoryIds = Lists.newArrayList();
     private String defaultMember = null;
 
     // Legacy config options (kept for backwards compatibility)
@@ -170,6 +172,7 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
         Set<String> res = memberConfigs.stream().map(repoConfig -> repoConfig.getDelegateRepositoryId())
                 .collect(Collectors.toSet());
         res.add(this.defaultMember);
+        res.addAll(fedxMemberRepositoryIds);
         return res;
     }
 
@@ -258,6 +261,12 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
         
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REST_SERVICE_PREFETCH_SIZE, null))
                 .ifPresent(lit -> setRestServicePrefetchSize(lit.intValue()));
+
+        // Parse fedx:member entries (ResolvableRepository members for FedX source selection)
+        Models.objectResources(model.filter(implNode, FedXRepositoryConfig.MEMBER, null)).forEach(memberNode -> {
+            Models.objectLiteral(model.filter(memberNode, Vocabulary.FEDX.REPOSITORY_NAME, null))
+                    .ifPresent(lit -> fedxMemberRepositoryIds.add(lit.stringValue()));
+        });
                 
         // Parse FedX config using delegation to FedXRepositoryConfig
         parseFedXConfig(model, implNode);
@@ -429,5 +438,14 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
      */
     public void setRestServicePrefetchSize(int prefetchSize) {
         this.restServicePrefetchSize = Math.max(1, prefetchSize);
+    }
+
+    /**
+     * Get the list of FedX member repository IDs parsed from fedx:member entries.
+     * These are real FedX federation members that participate in source selection,
+     * distinct from the Ephedra SERVICE members (config:fed.member).
+     */
+    public List<String> getFedxMemberRepositoryIds() {
+        return fedxMemberRepositoryIds;
     }
 }

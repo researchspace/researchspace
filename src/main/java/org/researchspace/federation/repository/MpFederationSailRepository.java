@@ -103,6 +103,23 @@ public class MpFederationSailRepository extends FedXRepository {
         } catch (Exception e) {
              throw new SailException(e);
         }
+        
+        // Add fedx:member repositories as federation members
+        // These participate in FedX source selection and use our evaluation strategy
+        for (String memberId : sail.getConfig().getFedxMemberRepositoryIds()) {
+            try {
+                if (repositoryManager.getRepository(memberId) == null) {
+                    throw new SailException("FedX member repository not found: " + memberId);
+                }
+                ResolvableRepositoryInformation memberInfo = 
+                    new ResolvableRepositoryInformation(memberId);
+                ResolvableEndpoint memberEndpoint = 
+                    new ResolvableEndpoint(memberInfo, memberId, EndpointClassification.Remote);
+                sail.addFederationMember(memberEndpoint);
+            } catch (Exception e) {
+                throw new SailException("Failed to add FedX member '" + memberId + "': " + e.getMessage(), e);
+            }
+        }
 
         super.initializeInternal();
     }

@@ -96,8 +96,12 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
   }
 
   public componentWillReceiveProps(nextProps: TreeAdvancedProps) {
-    // Re-initialize collapsed state when keysOpened changes
-    if (nextProps.keysOpened !== this.props.keysOpened || 
+    // Re-initialize collapsed state when keysOpened changes.
+    // Use deep equality for keysOpened because SemanticTreeAdvanced recreates
+    // the array on every render (when highlightedTreeData is active).
+    // Without this, any parent re-render (e.g. selecting a node) would reset
+    // collapsed bookkeeping, causing expanded folders to collapse unexpectedly.
+    if (!_.isEqual(nextProps.keysOpened, this.props.keysOpened) || 
         nextProps.collapsed !== this.props.collapsed ||
         nextProps.nodeData !== this.props.nodeData) {
       this.initializeCollapsedState(nextProps);
@@ -214,6 +218,9 @@ export class TreeAdvanced extends Component<TreeAdvancedProps, State> {
   };
 
   private handleClick = (node: any, e: MouseEvent<HTMLSpanElement>) => {
+    // Stop propagation to prevent ReactTreeView from interpreting
+    // a label click as a collapse/expand toggle
+    e.stopPropagation();
     if (this.props.onNodeClick) {
       this.props.onNodeClick(node);
     }

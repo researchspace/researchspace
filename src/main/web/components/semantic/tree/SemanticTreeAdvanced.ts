@@ -540,6 +540,16 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
 
   private expandedKeysForHighlighting: string[] = [];
 
+  // Memoization fields for cacheToUse to avoid recreating a new Map on every render.
+  // Without this, every parent re-render (e.g. selecting a node) would create a new Map
+  // reference, causing TreeAdvanced to reset its expandedChildren state.
+  private _lastHighlightedTreeData: ReadonlyArray<TreeNode> | undefined;
+  private _cachedFilteredCache: Map<string, ReadonlyArray<TreeNode>> | undefined;
+  // Memoization for allKeysOpened to avoid creating a new array every render
+  private _lastKeysOpenedInput: string[] | undefined;
+  private _lastExpandedKeysInput: string[] | undefined;
+  private _cachedAllKeysOpened: string[] | undefined;
+
   /**
    * Batch expand multiple nodes in a single SPARQL query
    * This dramatically reduces the number of queries needed during search expansion
@@ -1210,19 +1220,41 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     // Use filtered data if filters are active, otherwise use highlighted or normal data
     const dataToShow = this.state.filteredData || this.state.highlightedTreeData || data;
 
-    // Combine original keysOpened with keys that should be expanded for highlighting
-    const allKeysOpened = this.state.highlightedTreeData 
-      ? [...this.props.keysOpened, ...this.expandedKeysForHighlighting]
-      : this.props.keysOpened;
+    // Combine original keysOpened with keys that should be expanded for highlighting.
+    // CRITICAL: Memoize to avoid creating a new array every render.
+    // Without this, TreeAdvanced.componentWillReceiveProps sees a new reference every time
+    // and re-initializes collapsed state, causing expanded folders to collapse on any click.
+    let allKeysOpened: string[];
+    if (this.state.highlightedTreeData) {
+      if (this.props.keysOpened !== this._lastKeysOpenedInput || 
+          this.expandedKeysForHighlighting !== this._lastExpandedKeysInput) {
+        this._cachedAllKeysOpened = [...this.props.keysOpened, ...this.expandedKeysForHighlighting];
+        this._lastKeysOpenedInput = this.props.keysOpened;
+        this._lastExpandedKeysInput = this.expandedKeysForHighlighting;
+      }
+      allKeysOpened = this._cachedAllKeysOpened;
+    } else {
+      allKeysOpened = this.props.keysOpened;
+    }
 
     // When highlighting is active, don't collapse nodes by default
     const shouldCollapseNodes = this.state.highlightedTreeData ? false : this.props.collapsed;
 
-    // Build a filtered cache from the highlighted tree data
-    // This is CRITICAL for showing expand siblings buttons instead of all children
-    const cacheToUse = this.state.highlightedTreeData 
-      ? this.buildFilteredCacheFromTree(this.state.highlightedTreeData)
-      : this.state.expandedNodes;
+    // Build a filtered cache from the highlighted tree data.
+    // CRITICAL: Memoize this to avoid creating a new Map reference on every render.
+    // Without memoization, every setState (e.g. selecting a node) creates a new Map,
+    // which triggers TreeAdvanced.componentWillReceiveProps to reset expandedChildren
+    // and collapsedBookkeeping, causing expanded folders to collapse unexpectedly.
+    let cacheToUse: Map<string, ReadonlyArray<TreeNode>>;
+    if (this.state.highlightedTreeData) {
+      if (this.state.highlightedTreeData !== this._lastHighlightedTreeData) {
+        this._cachedFilteredCache = this.buildFilteredCacheFromTree(this.state.highlightedTreeData);
+        this._lastHighlightedTreeData = this.state.highlightedTreeData;
+      }
+      cacheToUse = this._cachedFilteredCache;
+    } else {
+      cacheToUse = this.state.expandedNodes;
+    }
 
     const providerProps: ProviderPropsAdvanced = {
       tupleTemplate: this.props.tupleTemplate,

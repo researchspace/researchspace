@@ -104,49 +104,57 @@ export function assignXPaths(document: Slate.Document): Slate.Document {
   return Slate.Document.create({ nodes: resultNodes });
 }
 
-export function mergeInAnnotations(doc: Slate.Document, annotations: ReadonlyArray<Schema.Annotation>): Slate.Document {
-  const { xpathToNode, xpathOrder } = findNodeXPaths(doc);
+/**
+ * Create native Slate Annotations from schema annotations.
+ * Returns an Immutable.Map<string, Slate.Annotation> for use on Value.annotations.
+ */
+export function mergeInAnnotations(
+  doc: Slate.Document,
+  annotations: ReadonlyArray<Schema.Annotation>
+): Immutable.Map<string, Slate.Annotation> {
+  const { xpathToNode } = findNodeXPaths(doc);
   const nodeKeyToPath = doc.getKeysToPathsTable() as { [key: string]: Slate.Path };
 
-  let annotatedDoc = annotations.reduce((acc: Slate.Document, { iri, selector, bodyType }) => {
+  const result: { [key: string]: Slate.Annotation } = {};
+  let keyCounter = 0;
+
+  for (const { iri, selector, bodyType } of annotations) {
     if (selector.type === 'range') {
       const range = getRangeFromSelector(selector, xpathToNode, nodeKeyToPath);
       if (range) {
-        return addMarksAtRange(
-          acc,
-          nodeKeyToPath,
-          range,
-          ANNOTATION_RANGE_TYPE,
-          AnnotationData.create({ iri, bodyType })
-        );
+        const annotationKey = `annotation-${keyCounter++}`;
+        result[annotationKey] = Slate.Annotation.create({
+          key: annotationKey,
+          type: ANNOTATION_RANGE_TYPE,
+          data: AnnotationData.create({ iri, bodyType }),
+          anchor: range.anchor,
+          focus: range.focus,
+        });
+      } else {
+        console.warn(`Cannot find annotation target in the document: `, selector);
+      }
+    } else if (selector.type === 'point') {
+      const { xPath, offset } = selector as Schema.PointSelector;
+      const node = xpathToNode.get(xPath);
+      if (node) {
+        const point = getPointFromNodeOffset(node, offset, nodeKeyToPath);
+        if (point) {
+          const annotationKey = `annotation-${keyCounter++}`;
+          result[annotationKey] = Slate.Annotation.create({
+            key: annotationKey,
+            type: ANNOTATION_POINT_TYPE,
+            data: AnnotationData.create({ iri, bodyType }),
+            anchor: point,
+            focus: point,
+          });
+        }
       } else {
         console.warn(`Cannot find annotation target in the document: `, selector);
       }
     }
-    return acc;
-  }, doc);
+  }
 
-  // sort point annotation in backwards order of appearance in the document
-  const pointAnnotations = sortBy(
-    annotations.filter(({ selector }) => selector.type === 'point'),
-    (annotation) => {
-      const { xPath } = annotation.selector as Schema.PointSelector;
-      const orderInDocument = xpathOrder.get(xPath);
-      return -orderInDocument;
-    }
-  );
-  annotatedDoc = pointAnnotations.reduce((acc: Slate.Document, { iri, selector, bodyType }) => {
-    const { xPath, offset } = selector as Schema.PointSelector;
-    const node = xpathToNode.get(xPath);
-    if (node) {
-      const point = getPointFromNodeOffset(node, offset, nodeKeyToPath);
-      return insertInlineAtPoint(acc, point, ANNOTATION_POINT_TYPE, AnnotationData.create({ iri, bodyType }));
-    }
-    console.warn(`Cannot find annotation target in the document: `, selector);
-    return acc;
-  }, annotatedDoc);
-
-  return annotatedDoc;
+  return Slate.Annotation.createMap(result);
 }
 
 function findNodeXPaths(
@@ -211,67 +219,32 @@ function getPointFromNodeOffset(
   return text
     ? Slate.Point.create({
         key: text.key,
-        path: nodeKeyToPath[text.key],
+        path: nodeKeyToPath[text.key] as Immutable.List<number>,
         offset: offset - length + text.text.length,
       })
     : undefined;
 }
 
-function incrementLastPathIndex(path: Immutable.List<number>) {
-  const index = path.size - 1;
-  return path.set(index, path.get(index) + 1);
-}
-
-export function addMarksAtRange(
-  doc: Slate.Document,
-  nodeKeyToPath: { [key: string]: Slate.Path },
-  range: Slate.Range,
-  markType: string,
-  markData: object
-): Slate.Document {
-  return doc.getTextsAtRange(range).reduce((acc: Slate.Document, text) => {
-    const path = nodeKeyToPath[text.key];
-    if (range.start.isInNode(text) || range.end.isInNode(text)) {
-      const startOffset = range.start.isInNode(text) ? range.start.offset : 0;
-      const endOffset = range.end.isInNode(text) ? range.end.offset : text.text.length;
-      return acc.addMark(
-        path,
-        startOffset,
-        endOffset - startOffset,
-        Slate.Mark.create({ type: markType, data: markData })
-      ) as Slate.Document;
-    } else {
-      const start = Slate.Point.create({ path, offset: 0 });
-      return acc.addMark(
-        path,
-        start.offset,
-        start.moveToEndOfNode(text).offset - start.offset,
-        Slate.Mark.create({ type: markType, data: markData })
-      ) as Slate.Document;
-    }
-  }, doc);
-}
-
-export function insertInlineAtPoint(
-  doc: Slate.Document,
-  point: Slate.Point,
-  inlineType: string,
-  inlineData: object
-): Slate.Document {
-  let changed = doc.splitNode(point.path, point.offset, undefined) as Slate.Document;
-  const splitPoint = incrementLastPathIndex(point.path as Immutable.List<number>);
-  return changed.insertNode(splitPoint, Slate.Inline.create({ type: inlineType, data: inlineData })) as Slate.Document;
-}
-
-export function updateAnnotationLevels(doc: Slate.Document): Slate.Document {
-  const levels = findAnnotationLevels(doc);
-  return mapAnnotations(doc, (data) => {
+/**
+ * Compute annotation stacking levels and return updated annotations map.
+ */
+export function updateAnnotationLevels(
+  annotations: Immutable.Map<string, Slate.Annotation>
+): Immutable.Map<string, Slate.Annotation> {
+  const levels = findAnnotationLevels(annotations);
+  return annotations.map((annotation) => {
+    const data = annotation.data as AnnotationData;
     const iri = AnnotationData.get(data, 'iri');
-    const annotation = levels.get(iri.value);
-    return annotation && typeof annotation.level === 'number'
-      ? AnnotationData.set(data, { level: annotation.level })
-      : data;
-  });
+    const computed = levels.get(iri.value);
+    if (computed && typeof computed.level === 'number') {
+      return annotation.setProperties({
+        key: annotation.key,
+        type: annotation.type,
+        data: AnnotationData.set(data, { level: computed.level }),
+      }) as Slate.Annotation;
+    }
+    return annotation;
+  }) as Immutable.Map<string, Slate.Annotation>;
 }
 
 interface ComputedAnnotation {
@@ -279,62 +252,77 @@ interface ComputedAnnotation {
   level: number | undefined;
 }
 
-function findAnnotationLevels(doc: Slate.Document): Map<string, ComputedAnnotation> {
+/**
+ * Compute stacking levels for overlapping annotations based on their positions.
+ * Two annotations overlap if their ranges intersect.
+ */
+function findAnnotationLevels(
+  annotations: Immutable.Map<string, Slate.Annotation>
+): Map<string, ComputedAnnotation> {
   const map = new Map<string, ComputedAnnotation>();
 
-  function walkNode(node: Slate.Node) {
-    if (node.object === 'text') {
-      node.getLeaves().forEach(walkLeaf);
-    } else if (node.object === 'inline' && node.type === ANNOTATION_POINT_TYPE) {
-      const iri = AnnotationData.get(node.data, 'iri');
-      map.set(iri.value, { iri, level: undefined });
-    } else {
-      walkNodes(node.nodes as Immutable.List<Slate.Node>);
+  // Convert annotations to a sortable list with computed anchors
+  type AnnotationEntry = {
+    iri: Rdf.Iri;
+    isCollapsed: boolean;
+    anchorKey: string;
+    anchorOffset: number;
+    focusKey: string;
+    focusOffset: number;
+  };
+
+  const entries: AnnotationEntry[] = [];
+  annotations.forEach((annotation) => {
+    const data = annotation.data as AnnotationData;
+    const iri = AnnotationData.get(data, 'iri');
+    entries.push({
+      iri,
+      isCollapsed: annotation.isCollapsed,
+      anchorKey: annotation.anchor.key,
+      anchorOffset: annotation.anchor.offset,
+      focusKey: annotation.focus.key,
+      focusOffset: annotation.focus.offset,
+    });
+  });
+
+  // Point annotations don't need levels
+  for (const entry of entries) {
+    if (entry.isCollapsed) {
+      map.set(entry.iri.value, { iri: entry.iri, level: undefined });
     }
   }
 
-  function walkLeaf(leaf: Slate.Leaf) {
-    const occupiedLevels: boolean[] = [];
-    leaf.marks.forEach((mark) => {
-      if (mark.type === ANNOTATION_RANGE_TYPE) {
-        const iri = AnnotationData.get(mark.data, 'iri');
-        const annotation = map.get(iri.value);
-        if (annotation) {
-          occupiedLevels[annotation.level] = true;
-        }
-      }
-    });
-    leaf.marks.forEach((mark) => {
-      if (mark.type === ANNOTATION_RANGE_TYPE) {
-        const iri = AnnotationData.get(mark.data, 'iri');
-        if (!map.has(iri.value)) {
-          const level = findUnoccupiedLevel(occupiedLevels);
-          occupiedLevels[level] = true;
-          map.set(iri.value, { iri, level });
-        }
-      }
-    });
-  }
+  // For range annotations, assign levels greedily
+  // Sort by anchor position to process in document order
+  const rangeEntries = entries.filter((e) => !e.isCollapsed);
+  const occupiedLevels: Map<string, number> = new Map(); // iri -> level
 
-  function walkNodes(nodes: Immutable.List<Slate.Node>) {
-    nodes.forEach(walkNode);
-  }
-
-  function findUnoccupiedLevel(occupied: boolean[]): number {
-    for (let i = 0; i < occupied.length; i++) {
-      if (!occupied[i]) {
-        return i;
+  for (const entry of rangeEntries) {
+    if (!map.has(entry.iri.value)) {
+      // Find the lowest unoccupied level
+      const usedLevels = new Set(
+        Array.from(occupiedLevels.values())
+      );
+      let level = 0;
+      while (usedLevels.has(level)) {
+        level++;
       }
+      occupiedLevels.set(entry.iri.value, level);
+      map.set(entry.iri.value, { iri: entry.iri, level });
     }
-    return occupied.length;
   }
 
-  walkNode(doc);
   return map;
 }
 
-export function highlightAnnotations(doc: Slate.Document, annotationIris: ReadonlySet<string>): Slate.Document {
-  return mapAnnotations(doc, (data) => {
+/**
+ * Update annotation data to mark specific annotations as highlighted.
+ */
+export function highlightAnnotations(
+  annotations: Immutable.Map<string, Slate.Annotation>,
+  annotationIris: ReadonlySet<string>
+): Immutable.Map<string, Slate.Annotation> {
+  return mapAnnotations(annotations, (data) => {
     const iri = AnnotationData.get(data, 'iri');
     const highlighted = AnnotationData.get(data, 'highlighted');
     const isTarget = annotationIris.has(iri.value);
@@ -342,56 +330,41 @@ export function highlightAnnotations(doc: Slate.Document, annotationIris: Readon
   });
 }
 
-export function deleteAnnotation(doc: Slate.Document, annotationIri: Rdf.Iri): Slate.Document {
-  return mapAnnotations(doc, (data) => {
+/**
+ * Remove an annotation from the annotations map.
+ */
+export function deleteAnnotation(
+  annotations: Immutable.Map<string, Slate.Annotation>,
+  annotationIri: Rdf.Iri
+): Immutable.Map<string, Slate.Annotation> {
+  return annotations.filter((annotation) => {
+    const data = annotation.data as AnnotationData;
     const iri = AnnotationData.get(data, 'iri');
-    return iri.equals(annotationIri) ? null : data;
-  });
+    return !iri.equals(annotationIri);
+  }) as Immutable.Map<string, Slate.Annotation>;
 }
 
-function mapAnnotations(doc: Slate.Document, mapper: (data: AnnotationData) => AnnotationData | null): Slate.Document {
-  const levels = findAnnotationLevels(doc);
-
-  function mapNode(node: Slate.Node): Slate.Node | null {
-    if (node.object === 'text') {
-      const mappedLeaves = node.getLeaves().map(mapLeaf);
-      return node.setLeaves(mappedLeaves);
-    } else if (node.object === 'inline' && node.type === ANNOTATION_POINT_TYPE) {
-      const mappedData = mapper(node.data);
+/**
+ * Map over annotation data in the annotations map.
+ * If mapper returns null, the annotation is removed.
+ */
+function mapAnnotations(
+  annotations: Immutable.Map<string, Slate.Annotation>,
+  mapper: (data: AnnotationData) => AnnotationData | null
+): Immutable.Map<string, Slate.Annotation> {
+  return annotations
+    .map((annotation) => {
+      const data = annotation.data as AnnotationData;
+      const mappedData = mapper(data);
       if (mappedData === null) {
         return null;
-      } else {
-        return mappedData === node.data ? node : (node.set('data', mappedData) as Slate.Inline);
       }
-    } else if (node.nodes.size > 0) {
-      const mappedNodes = (node.nodes as Immutable.List<Slate.Node>).map(mapNode).filter((node) => node !== null);
-      return node.set('nodes', mappedNodes) as Slate.Node;
-    }
-    return node;
-  }
-
-  function mapLeaf(leaf: Slate.Leaf) {
-    let updated = leaf;
-    leaf.marks.forEach((mark) => {
-      if (mark.type === ANNOTATION_RANGE_TYPE) {
-        const mappedData = mapper(mark.data);
-        if (mappedData === null) {
-          updated = updated.removeMark(mark);
-        } else if (mappedData !== mark.data) {
-          updated = updated.updateMark(
-            mark,
-            Slate.Mark.create({
-              type: ANNOTATION_RANGE_TYPE,
-              data: mappedData,
-            })
-          );
-        }
+      if (mappedData === data) {
+        return annotation;
       }
-    });
-    return updated;
-  }
-
-  return mapNode(doc) as Slate.Document;
+      return annotation.setProperties({ key: annotation.key, type: annotation.type, data: mappedData }) as Slate.Annotation;
+    })
+    .filter((annotation) => annotation !== null) as Immutable.Map<string, Slate.Annotation>;
 }
 
 export function createDecorationsForRange(
@@ -399,22 +372,22 @@ export function createDecorationsForRange(
   range: Slate.Range,
   markType: string
 ): Immutable.List<Slate.Decoration> {
-  // split range into separate decoration fro each text to avoid
+  // split range into separate decoration for each text to avoid
   // marking the whole block when selection crosses block boundaries
   return doc.getTextsAtRange(range).map((text) => {
     if (range.start.isInNode(text) || range.end.isInNode(text)) {
       return Slate.Decoration.create({
         anchor: range.start.isInNode(text) ? range.start : range.start.moveToStartOfNode(text).normalize(doc),
         focus: range.end.isInNode(text) ? range.end : range.end.moveToEndOfNode(text).normalize(doc),
-        mark: Slate.Mark.create({ type: markType }),
+        type: markType,
       });
     } else {
-      const path = doc.getPath(text.key);
+      const path = doc.getPath(text.key) as Immutable.List<number>;
       const start = Slate.Point.create({ key: text.key, path, offset: 0 });
       return Slate.Decoration.create({
         anchor: start,
         focus: start.moveToEndOfNode(text).normalize(doc),
-        mark: Slate.Mark.create({ type: markType }),
+        type: markType,
       });
     }
   });
@@ -425,23 +398,35 @@ export function setValueProps(
   props: {
     document?: Slate.Document;
     selection?: Slate.Selection;
-    decorations?: Immutable.List<Slate.Decoration>;
+    annotations?: Immutable.Map<string, Slate.Annotation>;
   }
 ) {
-  const { document = value.document, selection = value.selection, decorations = value.decorations } = props;
-  return Slate.Value.create({ document, selection, decorations });
+  const {
+    document = value.document,
+    selection = value.selection,
+    annotations = value.annotations,
+  } = props;
+  return Slate.Value.create({ document, selection, annotations });
 }
 
+/**
+ * Sort schema annotations by the order they first appear in the annotations map.
+ */
 export function sortAnnotationsByFirstOccurence(
-  doc: Slate.Document,
-  annotations: ReadonlyArray<Schema.Annotation>
+  slateAnnotations: Immutable.Map<string, Slate.Annotation>,
+  schemaAnnotations: ReadonlyArray<Schema.Annotation>
 ): Schema.Annotation[] {
+  // Build order map from slate annotations (first key wins for each iri)
   const order = new Map<string, number>();
-  mapAnnotations(doc, (data) => {
-    order.set(AnnotationData.get(data, 'iri').value, order.size);
-    return data;
+  let counter = 0;
+  slateAnnotations.forEach((annotation) => {
+    const data = annotation.data as AnnotationData;
+    const iri = AnnotationData.get(data, 'iri');
+    if (!order.has(iri.value)) {
+      order.set(iri.value, counter++);
+    }
   });
-  const result = [...annotations];
+  const result = [...schemaAnnotations];
   result.sort((a, b) => {
     const i = order.get(a.iri.value);
     const j = order.get(b.iri.value);
@@ -450,8 +435,15 @@ export function sortAnnotationsByFirstOccurence(
   return result;
 }
 
-export function updateAnnotation(doc: Slate.Document, target: Rdf.Iri, annotation: Schema.Annotation): Slate.Document {
-  return mapAnnotations(doc, (data) => {
+/**
+ * Update annotation data for a specific annotation IRI.
+ */
+export function updateAnnotation(
+  annotations: Immutable.Map<string, Slate.Annotation>,
+  target: Rdf.Iri,
+  annotation: Schema.Annotation
+): Immutable.Map<string, Slate.Annotation> {
+  return mapAnnotations(annotations, (data) => {
     const iri = AnnotationData.get(data, 'iri');
     return iri.equals(target) ? AnnotationData.set(data, { iri: annotation.iri, bodyType: annotation.bodyType }) : data;
   });

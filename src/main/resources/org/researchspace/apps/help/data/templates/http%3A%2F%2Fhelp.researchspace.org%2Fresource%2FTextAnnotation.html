@@ -152,5 +152,179 @@
 </semantic-context>
       ]]>
     </mp-code-block>
+
+    <h2>Custom Sidebar Tabs</h2>
+    <p>The workspace sidebar can be extended with custom tabs alongside the default Annotations tab. This is useful for embedding additional context such as IIIF viewers, metadata panels, or any other template-driven content next to the annotated document.</p>
+
+    <h3>Configuration</h3>
+    <p>Two optional attributes on <code>&lt;rs-text-annotation-workspace&gt;</code> control custom tabs:</p>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>sidebar-tabs</code></td>
+          <td>JSON string</td>
+          <td>
+            A JSON array of tab definitions. Each element is an object with the following properties:
+            <ul>
+              <li><code>key</code> — unique identifier (restricted to <code>[a-zA-Z0-9_-]</code>)</li>
+              <li><code>label</code> — display text for the tab (non-empty string)</li>
+              <li><code>iconUrl</code> — (optional) URL for the tab icon; only <code>http://</code>, <code>https://</code>, and relative paths are permitted</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><code>default-sidebar-tab</code></td>
+          <td>string</td>
+          <td>The <code>key</code> of the custom tab to pre-select on mount. When absent or unmatched, the Annotations tab is selected by default.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Tab Content Templates</h3>
+    <p>Each custom tab's content is provided as a child <code>&lt;template&gt;</code> element inside the workspace. The template <code>id</code> must follow the pattern <code>sidebar-{key}</code>, where <code>{key}</code> matches the tab definition's <code>key</code>.</p>
+    <p>Inside the template, the variable <code>{{iri}}</code> is bound to the document IRI, allowing queries and components to reference the current document.</p>
+
+    <h3>Input Validation</h3>
+    <p>The component validates <code>sidebar-tabs</code> input to prevent malformed or unsafe configuration:</p>
+    <ul>
+      <li>JSON parse errors produce a descriptive error message.</li>
+      <li>The parsed value must be an array; each element must be an object.</li>
+      <li><code>key</code> is restricted to <code>[a-zA-Z0-9_-]</code> to prevent template-ID injection.</li>
+      <li><code>label</code> must be a non-empty string.</li>
+      <li><code>iconUrl</code> is validated via <code>isSafeUrl()</code> — only <code>http://</code>, <code>https://</code>, and relative paths are permitted; schemes such as <code>javascript:</code>, <code>data:</code>, and <code>vbscript:</code> are rejected.</li>
+    </ul>
+
+    <h3>Backward Compatibility</h3>
+    <p>When <code>sidebar-tabs</code> is not provided, the component behaves identically to before — no custom tabs appear and the annotation list renders as the only sidebar content.</p>
+
+    <br>
+    <h3>Example with Custom Sidebar Tabs</h3>
+    <mp-code-block mode='text/html'>
+    <![CDATA[
+<rs-text-annotation-workspace
+  document-iri='[[{{documentation}}]][[this]][[{{/documentation}}]]'
+  storage='runtime'
+  annotation-subject-template='http://example.com/data/annotation/{{UUID}}'
+  sidebar-tabs='[{"key": "iiif", "label": "IIIF"}, {"key": "metadata", "label": "Metadata"}]'
+  default-sidebar-tab="iiif"
+  fallback-template='{{> fallback-template}}'
+  annotation-tooltip='{{> annotation-tooltip}}'>
+
+  <!-- Custom sidebar tab: IIIF viewer -->
+  <template id="sidebar-iiif">
+    <div style="height: 700px">
+      <semantic-query
+        query='SELECT ?representation WHERE {
+          ?page crm:P129i_is_subject_of <{{iri.value}}> .
+          ?page crm:P183i_has_representation ?representation
+        }'
+        template="{{> iiif-viewer}}">
+        <template id="iiif-viewer">
+          <rs-iiif-mirador
+            image-or-region="{{bindings.0.representation.value}}"
+            image-id-pattern='BIND(REPLACE(str(?imageIRI),"^.*/iiif/([0-9]+)/.*$", "$1") AS ?imageID)'
+            iiif-server-url='https://ids.lib.harvard.edu/ids/iiif'>
+          </rs-iiif-mirador>
+        </template>
+      </semantic-query>
+    </div>
+  </template>
+
+  <!-- Custom sidebar tab: Metadata -->
+  <template id="sidebar-metadata">
+    <semantic-query query='SELECT ?p ?o WHERE { <{{iri.value}}> ?p ?o }'>
+      <template id="metadata-results">
+        <table>
+          {{#each bindings}}
+          <tr><td>{{p.value}}</td><td>{{o.value}}</td></tr>
+          {{/each}}
+        </table>
+      </template>
+    </semantic-query>
+  </template>
+
+  <!-- Annotation types, tooltips, etc. remain unchanged -->
+  <template id='fallback-template'>
+    <div>
+      Missing type for annotation <semantic-link iri='{{iri.value}}'></semantic-link>
+    </div>
+  </template>
+
+  <rs-text-annotation-type label="Note"
+    rdf-type='https://example.com/schema/Note'
+    icon-url='/assets/images/icons/argument.svg'>
+    <!-- annotation type body as usual -->
+  </rs-text-annotation-type>
+
+</rs-text-annotation-workspace>
+      ]]>
+    </mp-code-block>
+
+    <h2>Event Bus Integration</h2>
+    <p>The workspace can communicate bidirectionally with custom sidebar tab templates (or any other component on the page) via the platform event bus. This requires setting the <code>id</code> attribute on the workspace.</p>
+
+    <h3>Events</h3>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Event Type</th>
+          <th>Direction</th>
+          <th>Data</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>TextAnnotation.FocusAnnotation</code></td>
+          <td>Incoming (template → workspace)</td>
+          <td><code>{ annotationIri: string }</code></td>
+          <td>Focus and highlight the annotation with the given IRI. Scrolls the editor to bring it into view.</td>
+        </tr>
+        <tr>
+          <td><code>TextAnnotation.AnnotationFocused</code></td>
+          <td>Outgoing (workspace → template)</td>
+          <td><code>{ annotationIri: string }</code> or <code>{}</code></td>
+          <td>Fired when an annotation is focused (from editor click, sidebar click, or incoming event). Empty data when focus is cleared.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>When <code>id</code> is not set, no events are listened to or emitted — the workspace behaves identically to before.</p>
+
+    <br>
+    <h3>Example: Triggering Focus from a Custom Sidebar Tab</h3>
+    <mp-code-block mode='text/html'>
+    <![CDATA[
+<rs-text-annotation-workspace
+  id="my-workspace"
+  document-iri='[[{{documentation}}]][[this]][[{{/documentation}}]]'
+  storage='runtime'
+  annotation-subject-template='http://example.com/data/annotation/{{UUID}}'
+  sidebar-tabs='[{"key": "nav", "label": "Navigation"}]'
+  default-sidebar-tab="nav">
+
+  <template id="sidebar-nav">
+    <div>
+      <!-- Focus a specific annotation when clicking this button -->
+      <mp-event-trigger
+        id="focus-trigger"
+        type="TextAnnotation.FocusAnnotation"
+        targets='["my-workspace"]'
+        data='{"annotationIri":"http://example.com/annotation/1"}'>
+        <button class="btn btn-sm btn-default">Go to Annotation 1</button>
+      </mp-event-trigger>
+    </div>
+  </template>
+
+</rs-text-annotation-workspace>
+      ]]>
+    </mp-code-block>
   </div>
 </div>

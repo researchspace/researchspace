@@ -42,6 +42,7 @@ import {fromLonLat}  from 'ol/proj';
 import {transform} from 'ol/proj';
 import {defaults as controlDefaults} from 'ol/control';
 import Draw from 'ol/interaction/Draw';
+import GeometryType from 'ol/geom/GeometryType';
 import * as Sphere from 'ol/sphere';
 import * as _ from 'lodash';
 import * as classNames from 'classnames';
@@ -261,7 +262,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
     }
     this.currentDraw = new Draw({
       source: this.vectorSource,
-      type: this.state.selectionTool === SelectType.Box ? 'LineString' : 'Circle',
+      type: this.state.selectionTool === SelectType.Box ? GeometryType.LINE_STRING : GeometryType.CIRCLE,
       geometryFunction: this.state.selectionTool === SelectType.Box ? this.geometryFunction : undefined,
       maxPoints: 2,
       wrapX: false,

@@ -292,16 +292,10 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
           const editorPanel = document.querySelector('.TextAnnotationWorkspace--editorPanel');
           if (!editorPanel) { return; }
 
-          // Find the first highlighted annotation span (backgroundColor indicates highlight)
-          const allAnnoSpans = editorPanel.querySelectorAll('[data-slate-object="annotation"]');
-          let targetSpan: HTMLElement | null = null;
-          for (let i = 0; i < allAnnoSpans.length; i++) {
-            const span = allAnnoSpans[i] as HTMLElement;
-            if (span.style.backgroundColor && span.style.backgroundColor !== '') {
-              targetSpan = span;
-              break;
-            }
-          }
+          // Find the annotation span by its data attribute
+          const targetSpan = editorPanel.querySelector(
+            `[data-annotation-iri="${CSS.escape(focused.value)}"]`
+          ) as HTMLElement | null;
 
           if (!targetSpan) { return; }
 

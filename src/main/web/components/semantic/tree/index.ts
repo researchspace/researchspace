@@ -19,3 +19,8 @@
 
 export { SemanticTree, SemanticTreeConfig, Props, Props as SemanticTreeProps } from './SemanticTree';
 export { SemanticTreeAdvanced, SemanticTreeAdvancedConfig, PropsAdvanced, PropsAdvanced as SemanticTreeAdvancedProps } from './SemanticTreeAdvanced';
+export { PerformanceTestRunner, PerformanceTestRunnerConfig, Props as PerformanceTestRunnerProps } from './PerformanceTestRunner';
+export { NodeExpansionTestRunner, NodeExpansionTestConfig, Props as NodeExpansionTestRunnerProps } from './NodeExpansionTestRunner';
+export { SearchPerformanceTestRunner, SearchPerformanceTestConfig, Props as SearchPerformanceTestRunnerProps } from './SearchPerformanceTestRunner';
+export { RelatedNodesTestRunner, RelatedNodesTestConfig, Props as RelatedNodesTestRunnerProps } from './RelatedNodesTestRunner';
+export { CacheEffectivenessTestRunner, CacheEffectivenessTestConfig, Props as CacheEffectivenessTestRunnerProps } from './CacheEffectivenessTestRunner';

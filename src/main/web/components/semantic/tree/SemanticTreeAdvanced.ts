@@ -46,7 +46,28 @@ export interface SortOption {
   defaultDirection?: 'asc' | 'desc';   // Optional default direction
 }
 
+export interface PerformanceMetric {
+  operation: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  nodeCount?: number;
+  cacheSize?: number;
+  querySize?: number;
+}
+
 export interface SemanticTreeAdvancedConfig extends SemanticTreeConfig {
+  /**
+   * Enable performance tracking and metric collection
+   * @default false
+   */
+  enablePerformanceTracking?: boolean;
+  
+  /**
+   * Callback to receive performance metrics
+   */
+  onPerformanceMetric?: (metric: PerformanceMetric) => void;
+  
   /**
    * Whether to show tree connector lines
    * @default false
@@ -954,14 +975,33 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
   };
 
   private loadData(props: PropsAdvanced) {
+    const startTime = performance.now();
     const context = this.context.semanticContext;
     this.querying = this.cancellation.deriveAndCancel(this.querying);
+    
+    const queryStartTime = performance.now();
+    
     const loading =
       this.querying.map(
         SparqlClient.select(props.query, { context })
       )
       .onError((errorMessage) => this.setState({ isLoading: false, errorMessage: maybe.Just(errorMessage) }))
-      .onValue(this.processSparqlResult)
+      .onValue((res) => {
+        const queryEndTime = performance.now();
+        
+        // Emit query performance metric
+        if (this.props.enablePerformanceTracking && this.props.onPerformanceMetric) {
+          this.props.onPerformanceMetric({
+            operation: 'initialQuery',
+            startTime: queryStartTime,
+            endTime: queryEndTime,
+            duration: queryEndTime - queryStartTime,
+            querySize: res.results.bindings.length
+          });
+        }
+        
+        this.processSparqlResult(res, startTime);
+      })
       .onEnd(() => {
         if (this.props.id) {
           trigger({ eventType: BuiltInEvents.ComponentLoaded, source: props.id });
@@ -977,7 +1017,9 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     }
   }
 
-  private processSparqlResult = (res: SparqlClient.SparqlSelectResult): void => {
+  private processSparqlResult = (res: SparqlClient.SparqlSelectResult, loadStartTime?: number): void => {
+    const renderStartTime = performance.now();
+    
     if (SparqlUtil.isSelectResultEmpty(res)) {
       this.setState({ data: [], isLoading: false });
       return;
@@ -999,6 +1041,31 @@ export class SemanticTreeAdvanced extends Component<PropsAdvanced, StateAdvanced
     // Apply initial sorting if configured
     if (this.props.sortOptions && this.props.sortOptions.length > 0 && this.state.currentSortBinding) {
       data = this.sortTreeNodes(data);
+    }
+
+    const renderEndTime = performance.now();
+    
+    // Emit render performance metric
+    if (this.props.enablePerformanceTracking && this.props.onPerformanceMetric) {
+      this.props.onPerformanceMetric({
+        operation: 'processAndRender',
+        startTime: renderStartTime,
+        endTime: renderEndTime,
+        duration: renderEndTime - renderStartTime,
+        nodeCount: data.length
+      });
+      
+      // Emit total load time if we have the start time
+      if (loadStartTime) {
+        this.props.onPerformanceMetric({
+          operation: 'totalLoad',
+          startTime: loadStartTime,
+          endTime: renderEndTime,
+          duration: renderEndTime - loadStartTime,
+          nodeCount: data.length,
+          cacheSize: this.state.expandedNodes.size
+        });
+      }
     }
 
     if (notFound.length === 0) {

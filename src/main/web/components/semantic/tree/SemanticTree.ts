@@ -37,7 +37,28 @@ import { TemplateItem } from 'platform/components/ui/template';
 import { Tree } from './Tree';
 import { D3Tree, D3TreeProviderKind, D3TreeOptions } from './D3Tree';
 
+export interface PerformanceMetric {
+  operation: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  nodeCount?: number;
+  cacheSize?: number;
+  querySize?: number;
+}
+
 export interface SemanticTreeConfig {
+  /**
+   * Enable performance tracking and metric collection
+   * @default false
+   */
+  enablePerformanceTracking?: boolean;
+  
+  /**
+   * Callback to receive performance metrics
+   */
+  onPerformanceMetric?: (metric: PerformanceMetric) => void;
+  
   /**
    * Determines visual style of the tree. Defaults to HTML rendering if left unspecified.
    * @default 'html'
@@ -199,14 +220,33 @@ export class SemanticTree extends Component<Props, State> {
   }
 
   private loadData(props: Props) {
+    const startTime = performance.now();
     const context = this.context.semanticContext;
     this.querying = this.cancellation.deriveAndCancel(this.querying);
+    
+    const queryStartTime = performance.now();
+    
     const loading =
       this.querying.map(
         SparqlClient.select(props.query, { context })
       )
       .onError((errorMessage) => this.setState({ isLoading: false, errorMessage: maybe.Just(errorMessage) }))
-      .onValue(this.processSparqlResult)
+      .onValue((res) => {
+        const queryEndTime = performance.now();
+        
+        // Emit query performance metric
+        if (this.props.enablePerformanceTracking && this.props.onPerformanceMetric) {
+          this.props.onPerformanceMetric({
+            operation: 'initialQuery',
+            startTime: queryStartTime,
+            endTime: queryEndTime,
+            duration: queryEndTime - queryStartTime,
+            querySize: res.results.bindings.length
+          });
+        }
+        
+        this.processSparqlResult(res, startTime);
+      })
       .onEnd(() => {
         if (this.props.id) {
           trigger({ eventType: BuiltInEvents.ComponentLoaded, source: props.id });
@@ -260,7 +300,9 @@ export class SemanticTree extends Component<Props, State> {
     return D.div({}, createElement(Tree, providerProps));
   }
 
-  private processSparqlResult = (res: SparqlClient.SparqlSelectResult): void => {
+  private processSparqlResult = (res: SparqlClient.SparqlSelectResult, loadStartTime?: number): void => {
+    const renderStartTime = performance.now();
+    
     if (SparqlUtil.isSelectResultEmpty(res)) {
       this.setState({ data: [], isLoading: false });
       return;
@@ -278,6 +320,30 @@ export class SemanticTree extends Component<Props, State> {
     breakGraphCycles(graph.nodes);
     const { roots, notFound } = this.findRoots(graph);
     const data = makeImmutableForest(roots);
+
+    const renderEndTime = performance.now();
+    
+    // Emit render performance metric
+    if (this.props.enablePerformanceTracking && this.props.onPerformanceMetric) {
+      this.props.onPerformanceMetric({
+        operation: 'processAndRender',
+        startTime: renderStartTime,
+        endTime: renderEndTime,
+        duration: renderEndTime - renderStartTime,
+        nodeCount: data.length
+      });
+      
+      // Emit total load time if we have the start time
+      if (loadStartTime) {
+        this.props.onPerformanceMetric({
+          operation: 'totalLoad',
+          startTime: loadStartTime,
+          endTime: renderEndTime,
+          duration: renderEndTime - loadStartTime,
+          nodeCount: data.length
+        });
+      }
+    }
 
     if (notFound.length === 0) {
       this.setState({ data, isLoading: false });

@@ -401,6 +401,14 @@ The `QueryLog` logger is defined in `log4j2-debug.xml` and `log4j2-trace.xml`:
 
 Production `log4j2.xml` intentionally does NOT include this logger.
 
+### 3. Source Selection Cache Invalidation
+
+FedX caches the results of source-selection ASK probes in a `SourceSelectionMemoryCache` (default: `maximumSize=1000, expireAfterWrite=6h`). This avoids redundant ASK requests but can cause stale results when data is inserted into a federation member — patterns that previously returned `NONE` may now have data, but FedX won't re-check.
+
+**Automatic invalidation:** During federation initialization, `MpFederationSailRepository` registers the FedX source selection cache as a `PlatformCache` with the platform `CacheManager`. This means any operation that calls `CacheManager.invalidateAll()` — including SPARQL UPDATE execution, form persistence, and LDP operations — automatically clears the source selection cache.
+
+**Manual invalidation:** Call the cache invalidation REST endpoint (`/rest/cache/all/invalidate`) to clear all caches including source selection.
+
 ---
 
 ## Important Conventions

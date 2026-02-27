@@ -35,6 +35,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.SailException;
+import org.researchspace.cache.CacheManager;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.sail.rest.AbstractServiceWrappingSail;
 import org.researchspace.federation.repository.evaluation.QueryHintAwareFederationEvaluationStrategyFactory;
@@ -59,6 +60,9 @@ public class MpFederation extends FedX {
 
     @Inject
     protected Provider<RepositoryManager> repositoryManagerProvider;
+
+    @Inject
+    protected CacheManager cacheManager;
 
     /**
      * The configuration for this federation.

@@ -45,6 +45,15 @@ import org.researchspace.repository.RepositoryManager;
  */
 public class MpFederationSailRepository extends FedXRepository {
 
+    private static final org.apache.logging.log4j.Logger logger = 
+        org.apache.logging.log4j.LogManager.getLogger(MpFederationSailRepository.class);
+
+    /**
+     * Adapter that registers the FedX source selection cache with the platform CacheManager.
+     * Stored so we can deregister on shutdown.
+     */
+    private SourceSelectionPlatformCache sourceSelectionPlatformCache;
+
     public MpFederationSailRepository(MpFederation sail) {
         super(sail, sail.getFedXConfig());
     }
@@ -122,5 +131,34 @@ public class MpFederationSailRepository extends FedXRepository {
         }
 
         super.initializeInternal();
+
+        // Register FedX source selection cache with platform CacheManager
+        // so that CacheManager.invalidateAll() (triggered by SPARQL updates,
+        // form persistence, LDP, etc.) also clears the source selection cache.
+        try {
+            var selectionCache = getFederationContext().getSourceSelectionCache();
+            sourceSelectionPlatformCache = new SourceSelectionPlatformCache(
+                    selectionCache, sail.getDefaultRepositoryId());
+            sail.cacheManager.register(sourceSelectionPlatformCache);
+            logger.debug("Registered FedX source selection cache with platform CacheManager");
+        } catch (Exception e) {
+            logger.warn("Failed to register source selection cache with CacheManager: {}", e.getMessage());
+        }
+    }
+
+    @Override
+    protected void shutDownInternal() throws RepositoryException {
+        // Deregister source selection cache from CacheManager
+        if (sourceSelectionPlatformCache != null) {
+            try {
+                MpFederation sail = (MpFederation) getSail();
+                sail.cacheManager.deregister(sourceSelectionPlatformCache);
+                logger.debug("Deregistered FedX source selection cache from platform CacheManager");
+            } catch (Exception e) {
+                logger.debug("Failed to deregister source selection cache: {}", e.getMessage());
+            }
+            sourceSelectionPlatformCache = null;
+        }
+        super.shutDownInternal();
     }
 }

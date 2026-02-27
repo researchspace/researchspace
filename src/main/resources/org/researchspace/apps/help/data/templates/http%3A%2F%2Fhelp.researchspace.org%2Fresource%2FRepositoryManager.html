@@ -254,10 +254,7 @@
         <tr><td><code>fedx:leftJoinWorkerThreads</code></td><td>10</td><td>Thread pool size for LEFT JOIN operations</td></tr>
         <tr><td><code>fedx:boundJoinBlockSize</code></td><td>25</td><td>Number of bindings per VALUES clause in bound join</td></tr>
         <tr><td><code>fedx:enableServiceAsBoundJoin</code></td><td>true</td><td>Use VALUES clause for SERVICE evaluation</td></tr>
-        <tr><td><code>fedx:enableMonitoring</code></td><td>false</td><td>Enable monitoring features (required for query logging)</td></tr>
-        <tr><td><code>fedx:logQueries</code></td><td>false</td><td>Log incoming queries (requires <code>enableMonitoring</code>). Logs to SLF4J logger <code>"QueryLog"</code> at INFO level.</td></tr>
         <tr><td><code>fedx:debugQueryPlan</code></td><td>false</td><td>Print optimized query plan to stdout</td></tr>
-        <tr><td><code>fedx:logQueryPlan</code></td><td>false</td><td>Log query plan via QueryPlanLog</td></tr>
         <tr><td><code>fedx:sourceSelectionCacheSpec</code></td><td>-</td><td>Guava CacheBuilderSpec for source selection cache</td></tr>
       </tbody>
     </table>
@@ -300,11 +297,12 @@
     <ul>
       <li><strong>Incoming queries</strong>: Set <code>fedx:enableMonitoring true</code> and <code>fedx:logQueries true</code> in the federation config. 
           Queries are logged via SLF4J logger <code>"QueryLog"</code>.</li>
-      <li><strong>Outgoing sub-queries</strong>: Each SPARQL query dispatched to individual federation endpoints is logged at DEBUG level by the evaluation strategy. 
-          Includes the target endpoint ID and the full SPARQL query string.</li>
+      <li><strong>Outgoing SPARQL queries</strong>: All SPARQL queries sent to any endpoint (federation members, default member, standalone repos)
+          are logged at TRACE level by <code>CustomSPARQLConnection</code>.
+          This includes SELECT, ASK, and CONSTRUCT queries with the target endpoint URL and full query string.</li>
     </ul>
-    <p>Both features require the <code>log4j2-debug.xml</code> or <code>log4j2-trace.xml</code> logging profile. 
-       In production (<code>log4j2.xml</code>), all federation query logging is silent.</p>
+    <p>To enable outgoing query logging, use the <code>log4j2-trace.xml</code> logging profile. 
+       In production (<code>log4j2.xml</code>), all query logging is silent with zero overhead.</p>
     
     <hr class="divider">
     <h3>Adding SPARQL Endpoints as Federation Members</h3>
@@ -368,7 +366,7 @@
     <div class="alert alert-warning">
       <strong>Always use <code>ResolvableRepository</code></strong> to reference SPARQL endpoints as federation members.
       Do <strong>not</strong> use <code>fedx:store "SPARQLEndpoint"</code> or <code>config:rep.type "fedx:FedXRepository"</code> directly &mdash;
-      these bypass the platform's connection pooling, <code>httpUserAgent</code>, outgoing query logging, and bind join optimizations.
+      these bypass the platform's connection pooling, <code>httpUserAgent</code>, outgoing query TRACE logging (<code>CustomSPARQLConnection</code>), and bind join optimizations.
       Instead, create a standalone SPARQL repository config (e.g. <code>wikidata-sparql.ttl</code>)
       and reference it by ID within a <code>researchspace:FederationSailRepository</code>.
     </div>

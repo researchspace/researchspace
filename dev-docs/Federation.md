@@ -354,8 +354,6 @@ The old federation was a custom implementation based on RDF4J's deprecated Feder
 
 ## Monitoring & Logging
 
-FedX supports two levels of query logging, both at DEBUG level in the platform log.
-
 ### 1. Incoming Query Logging (FedX built-in)
 
 FedX's `QueryLog` logs the top-level incoming query via SLF4J logger `"QueryLog"` at INFO level.
@@ -364,22 +362,32 @@ FedX's `QueryLog` logs the top-level incoming query via SLF4J logger `"QueryLog"
 - Set `fedx:enableMonitoring true` and `fedx:logQueries true` in the federation config
 - Use `log4j2-debug.xml` or `log4j2-trace.xml` logging profile (the `QueryLog` logger is configured there)
 
-### 2. Outgoing Sub-query Logging (our customization)
+### 2. Outgoing Query Logging (central, all SPARQL repos)
 
-`QueryHintAwareSparqlFederationEvalStrategy` overrides 4 dispatch methods to log every SPARQL query sent to federation endpoints at DEBUG level:
+All outgoing SPARQL queries are logged at **TRACE** level by `CustomSPARQLConnection` — the central connection class used by all RS SPARQL repository implementations. This captures every SELECT, ASK, and CONSTRUCT query sent to any SPARQL endpoint, including:
 
-| Method | What it captures |
-|--------|------------------|
-| `evaluateAtStatementSources(String, ...)` | Bound joins (VALUES), grouped checks, left bind joins |
-| `evaluateExclusiveGroup(...)` | Grouped triple patterns to a single endpoint |
-| `evaluateExclusiveTupleExpr(...)` | Individual exclusive expressions |
-| `evaluateSingleSourceQuery(...)` | Entire query routed to a single source |
+- Federation default member queries
+- FedX bound-join sub-queries (VALUES)
+- FedX source-selection ASK probes
+- Standalone (non-federated) repository queries
 
-Each log entry includes the target endpoint ID and the full SPARQL query string.
+**Log format:**
+```
+TRACE Outgoing SPARQL SELECT to [endpoint]: SELECT ?x WHERE { ... }
+TRACE Outgoing SPARQL ASK to [endpoint]: ASK { ... }
+```
 
 **Requirements:**
-- Use `log4j2-debug.xml` or `log4j2-trace.xml` (the `org.researchspace` logger is set to DEBUG/TRACE)
-- No config flags needed — logging is gated behind `logger.isDebugEnabled()` with zero overhead in production
+- Use `log4j2-trace.xml` logging profile
+- No config flags needed — logging is gated behind `logger.isTraceEnabled()` with zero overhead in production
+
+**Covered repository implementations:**
+| Repository | Inherits `CustomSPARQLConnection`? |
+|---|---|
+| `CustomSPARQLRepository` | ✅ (base class) |
+| `SPARQLAuthenticatingRepository` | ✅ (extends `CustomSPARQLRepository`) |
+| `SPARQLBearerTokenAuthRepository` | ✅ (extends `CustomSPARQLRepository`) |
+| `QLeverRepository` | ✅ (extends `CustomSPARQLRepository`) |
 
 ### Log4j2 Configuration
 
@@ -400,7 +408,7 @@ Production `log4j2.xml` intentionally does NOT include this logger.
 ### Always use `researchspace:FederationSailRepository` for FedX federations
 
 > [!CAUTION]
-> **Never** use `fedx:FedXRepository` or `fedx:store "SPARQLEndpoint"` directly. Standard FedX bypasses the platform's `MpSharedHttpClientSessionManager` (no User-Agent), our `QueryHintAwareSparqlFederationEvalStrategy` (no outgoing query logging), and `BoundJoinExclusiveGroup` optimization.
+> **Never** use `fedx:FedXRepository` or `fedx:store "SPARQLEndpoint"` directly. Standard FedX bypasses the platform's `MpSharedHttpClientSessionManager` (no User-Agent), our `QueryHintAwareSparqlFederationEvalStrategy` (no REST service support, no ExclusiveGroup bind join), and `CustomSPARQLConnection` (no outgoing query TRACE logging).
 
 **Correct pattern:**
 1. Create standalone SPARQL repo configs for external endpoints (e.g. `wikidata-sparql.ttl`):
@@ -435,7 +443,7 @@ Production `log4j2.xml` intentionally does NOT include this logger.
        ] .
    ```
 
-`MpFederationConfig` parses both `config:fed.member` and `fedx:member` entries. `MpFederationSailRepository` adds SPARQL endpoints as real FedX federation members (with source selection). All HTTP traffic flows through `MpSharedHttpClientSessionManager` (User-Agent) and all outgoing queries are logged by our evaluation strategy.
+`MpFederationConfig` parses both `config:fed.member` and `fedx:member` entries. `MpFederationSailRepository` adds SPARQL endpoints as real FedX federation members (with source selection). All HTTP traffic flows through `MpSharedHttpClientSessionManager` (User-Agent) and all outgoing SPARQL queries are logged at TRACE level by `CustomSPARQLConnection`.
 
 ---
 

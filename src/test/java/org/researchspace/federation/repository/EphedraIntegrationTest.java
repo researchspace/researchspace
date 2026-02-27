@@ -970,4 +970,108 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         // Verify the SPARQL endpoint was called
         verify(anyRequestedFor(urlPathEqualTo("/sparql")));
     }
+
+    /**
+     * Tests that source selection is bypassed for single-member federations.
+     * <p>
+     * The default Ephedra configuration has only ONE FedX member (the default repo).
+     * With a single member, every triple pattern must go to that endpoint — source
+     * selection ASK probes are redundant and should be skipped entirely.
+     * <p>
+     * This test verifies:
+     * - The sourceSelectionBypassCount counter is incremented (bypass happened)
+     * - The query still produces correct results
+     * - No per-binding endpoint evaluations occur (endpointEvals == 0)
+     */
+    @Test
+    public void testSingleMemberSourceSelectionBypass() throws Exception {
+        int N = 5;
+
+        // 1. Setup WireMock for MET Search API
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("source-selection-test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": " + N + ", \"objectIDs\": [1,2,3,4,5] }")));
+
+        // 2. Add local data matching some objectIDs
+        Repository defaultRepo = repositoryManager.getDefault();
+        var vf = SimpleValueFactory.getInstance();
+        try (var conn = defaultRepo.getConnection()) {
+            for (int id : new int[]{1, 2}) {
+                conn.add(vf.createStatement(
+                    vf.createIRI("http://example.org/record/" + id),
+                    vf.createIRI("http://example.org/ns#hasObjectId"),
+                    vf.createLiteral(String.valueOf(id))
+                ));
+                conn.add(vf.createStatement(
+                    vf.createIRI("http://example.org/record/" + id),
+                    vf.createIRI("http://example.org/ns#hasLabel"),
+                    vf.createLiteral("Record " + id)
+                ));
+            }
+        }
+
+        // 3. Get Federation Repository
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        // 4. Enable debug counters
+        org.researchspace.federation.repository.evaluation.QueryHintAwareSparqlFederationEvalStrategy
+            .enableDebugCounters();
+
+        try {
+            // 5. Execute query with SERVICE + OPTIONAL (triggers source selection)
+            String query = 
+                "PREFIX ex: <http://example.org/ns#> " +
+                "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+                "SELECT ?objectid ?existingRecord ?label WHERE { " +
+                "  SERVICE met:METCollectionSearchService { " +
+                "    ?x met:q \"source-selection-test\"; " +
+                "       met:objectIDs ?objectid. " +
+                "  } " +
+                "  OPTIONAL { " +
+                "    ?existingRecord ex:hasObjectId ?objectid . " +
+                "    ?existingRecord ex:hasLabel ?label . " +
+                "  } " +
+                "}";
+
+            int resultCount = 0;
+            int matchCount = 0;
+            try (var conn = ephedraRepo.getConnection()) {
+                TupleQuery tq = conn.prepareTupleQuery(query);
+                try (TupleQueryResult tqr = tq.evaluate()) {
+                    while (tqr.hasNext()) {
+                        var bs = tqr.next();
+                        resultCount++;
+                        if (bs.getValue("existingRecord") != null) {
+                            matchCount++;
+                        }
+                    }
+                }
+            }
+
+            // 6. Verify results
+            assertEquals("Should get N results (one per objectID from SERVICE)", N, resultCount);
+            assertEquals("Should match 2 records from default repo (IDs 1,2)", 2, matchCount);
+
+            // 7. Verify source selection was BYPASSED (the core assertion for this test)
+            int bypassCount = org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.getSourceSelectionBypassCount();
+            assertTrue("Source selection should be bypassed for single-member federation " +
+                "(bypassCount=" + bypassCount + ")", bypassCount > 0);
+
+            // 8. Verify no per-binding endpoint evaluations (VALUES batching works)
+            int endpointEvals = org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.getEndpointEvalCount();
+            assertEquals("Endpoint evaluations should be 0 — VALUES batching", 0, endpointEvals);
+        } finally {
+            org.researchspace.federation.repository.evaluation
+                .QueryHintAwareSparqlFederationEvalStrategy.disableDebugCounters();
+        }
+
+        verify(getRequestedFor(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("source-selection-test")));
+    }
 }

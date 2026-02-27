@@ -604,6 +604,18 @@ JOIN+SERVICE (N=10): endpointEvals=0   (one VALUES query)
 
 ---
 
+### Issue 6: Redundant Source Selection with Single Federation Member
+
+**Problem**: When the Ephedra federation has only one real FedX member (the default repository, typically Blazegraph), FedX still performs full source selection — sending ASK queries to check which endpoint provides data for each triple pattern. For queries with `SERVICE` + `OPTIONAL`, this generates **tens of thousands of individual ASK queries** due to `CheckStatementPattern` evaluating every binding individually.
+
+**Root Cause**: FedX has a `SingleSourceQuery` optimization that would send the entire query to the single member, but `propagateServices()` returns `false` when `SERVICE` clauses are present (since the single member can't evaluate Ephedra REST services). The `ephedra.ttl` typically has zero `fedx:member` entries — only Ephedra REST services (`config:fed.member`) and `ephedra:defaultMember "default"`.
+
+**Solution**: Override `performSourceSelection()` in `QueryHintAwareSparqlFederationEvalStrategy`. When `members.size() == 1`, annotate all statement patterns as `ExclusiveStatement` for the single endpoint without sending any ASK queries. This feeds into the Issue 5 fix: patterns form `ExclusiveGroup` → `BoundJoinExclusiveGroup` → VALUES-batched queries.
+
+**Result**: ~86K ASK queries → 0 ASK queries. OPTIONAL/JOIN patterns are evaluated via 1 VALUES query.
+
+---
+
 ## Configuration Reference
 
 ### Ephedra Federation Configuration

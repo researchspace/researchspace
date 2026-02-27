@@ -6,6 +6,8 @@
 
 package org.researchspace.federation.repository.evaluation;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -17,10 +19,15 @@ import org.eclipse.rdf4j.federated.FederationContext;
 import org.eclipse.rdf4j.federated.algebra.BoundJoinTupleExpr;
 import org.eclipse.rdf4j.federated.algebra.ExclusiveGroup;
 import org.eclipse.rdf4j.federated.algebra.ExclusiveTupleExpr;
+import org.eclipse.rdf4j.federated.algebra.ExclusiveStatement;
 import org.eclipse.rdf4j.federated.algebra.FedXService;
+import org.eclipse.rdf4j.federated.algebra.StatementSource;
+import org.eclipse.rdf4j.federated.algebra.StatementSource.StatementSourceType;
 import org.eclipse.rdf4j.federated.algebra.FilterTuple;
 import org.eclipse.rdf4j.federated.algebra.FilterValueExpr;
 import org.eclipse.rdf4j.federated.algebra.StatementTupleExpr;
+import org.eclipse.rdf4j.federated.cache.SourceSelectionCache;
+import org.eclipse.rdf4j.federated.endpoint.Endpoint;
 import org.eclipse.rdf4j.federated.evaluation.SparqlFederationEvalStrategy;
 import org.eclipse.rdf4j.federated.evaluation.concurrent.ControlledWorkerScheduler;
 import org.eclipse.rdf4j.federated.evaluation.iterator.BindLeftJoinIteration;
@@ -34,6 +41,7 @@ import org.eclipse.rdf4j.federated.structures.QueryInfo;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.LeftJoin;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.Var;
 import org.researchspace.federation.repository.MpFederation;
@@ -58,6 +66,7 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
     private static final AtomicInteger leftJoinCallCount = new AtomicInteger(0);
     private static final AtomicInteger joinCallCount = new AtomicInteger(0);
     private static final AtomicInteger endpointEvalCount = new AtomicInteger(0);
+    private static final AtomicInteger sourceSelectionBypassCount = new AtomicInteger(0);
 
     /** Enable debug counters (for tests only). */
     public static void enableDebugCounters() {
@@ -65,6 +74,7 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         leftJoinCallCount.set(0);
         joinCallCount.set(0);
         endpointEvalCount.set(0);
+        sourceSelectionBypassCount.set(0);
     }
 
     /** Disable debug counters and reset to zero. */
@@ -73,6 +83,7 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         leftJoinCallCount.set(0);
         joinCallCount.set(0);
         endpointEvalCount.set(0);
+        sourceSelectionBypassCount.set(0);
     }
 
     /** Number of times executeLeftJoin was called (only tracked when debug counters are enabled). */
@@ -88,6 +99,9 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
      * ControlledWorkerLeftJoin creating N ParallelLeftJoinTasks.
      */
     public static int getEndpointEvalCount() { return endpointEvalCount.get(); }
+
+    /** Number of times source selection was bypassed due to single-member optimization. */
+    public static int getSourceSelectionBypassCount() { return sourceSelectionBypassCount.get(); }
     
     public QueryHintAwareSparqlFederationEvalStrategy(FederationContext federationContext) {
         super(federationContext);
@@ -245,7 +259,48 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         return super.evaluateExclusiveTupleExpr(expr, bindings);
     }
 
+    /**
+     * Skip ASK-based source selection when the federation has a single member.
+     * <p>
+     * With only one endpoint, every triple pattern MUST go to that endpoint —
+     * no ASK probes needed. This eliminates tens of thousands of redundant ASK
+     * queries for queries like SERVICE + OPTIONAL where the OPTIONAL patterns
+     * would otherwise be checked per-binding.
+     * </p>
+     * <p>
+     * All patterns are annotated as {@link ExclusiveStatement} for the single
+     * member, which enables downstream grouping into {@link ExclusiveGroup}
+     * and VALUES-based batching.
+     * </p>
+     */
+    @Override
+    protected Set<Endpoint> performSourceSelection(List<Endpoint> members,
+            SourceSelectionCache cache, QueryInfo queryInfo, GenericInfoOptimizer info) {
 
+        if (members.size() == 1) {
+            Endpoint singleMember = members.get(0);
+            StatementSource source = new StatementSource(
+                    singleMember.getId(), StatementSourceType.REMOTE);
+
+            for (StatementPattern stmt : info.getStatements()) {
+                stmt.replaceWith(new ExclusiveStatement(stmt, source, queryInfo));
+            }
+
+            if (debugCountersEnabled) {
+                sourceSelectionBypassCount.incrementAndGet();
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("Single-member federation: skipping source selection, "
+                        + "assigned {} patterns to {}",
+                        info.getStatements().size(), singleMember.getId());
+            }
+
+            return new HashSet<>(Collections.singleton(singleMember));
+        }
+
+        return super.performSourceSelection(members, cache, queryInfo, info);
+    }
 
     /**
      * Override to handle ExclusiveGroup in bind left joins.

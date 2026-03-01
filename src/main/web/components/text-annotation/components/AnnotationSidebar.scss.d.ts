@@ -3,7 +3,9 @@ declare namespace AnnotationSidebarScssNamespace {
     annotation: string;
     annotationList: string;
     component: string;
+    customTabContent: string;
     focused: string;
+    topNav: string;
     highlighted: string;
     newAnnotationPlaceholder: string;
     tabHeader: string;

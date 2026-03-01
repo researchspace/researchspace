@@ -192,6 +192,7 @@ export interface Props {
   rightPanels?: {template: string, label: string, class?: string}[];
 
   homePageIri?: string;
+  homePageFrameLabel?: string;
   dashboardIri: Rdf.Iri;
     
 }
@@ -217,7 +218,7 @@ export class DashboardComponent extends Component<Props, State> {
   private frameLabel = (label?: string) => {
     this.itemLabelCount = this.itemLabelCount + 1;
 
-    const displayLabel = label ?? 'Homepage';
+    const displayLabel = label ?? this.props.homePageFrameLabel ?? 'Dashboard';
     const displayCustomLabel = this.props.initialView?.data["customLabel"] && (this.state.items.length == 0) ?this.props.initialView.data["customLabel"]:displayLabel;
 
     return { 
@@ -440,23 +441,35 @@ export class DashboardComponent extends Component<Props, State> {
     this.subscription.unsubscribe();
   }
 
-  private onAddNewItem = (item: Item = this.frameLabel()) => {
+  private onAddNewItem = (item: Item = this.frameLabel()) => { 
+    if (!item.viewId) {
+      item = { ...item, viewId: "dashboard" };
+    }
     // check if item.resourceIri exists and is an actual iri to prevent errors
-    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")) && !(item?.resourceIri.startsWith("https://"))) 
-      return;
+    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")) && !(item?.resourceIri.startsWith("https://"))) {
+        return;
+    }
   
-    // check if an item with the same resourceIri is already in the tabset
-    const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
+    // check if an item with the same resourceIri and viewId is already in the tabset
+    // This allows matching items even when resourceIri is undefined
+    const itemIsAlreadyOpen = this.state.items.filter((i) => (i.resourceIri === item.resourceIri && i.viewId === item.viewId) && (item.viewId !== "resource-editor"));
+    
     // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
     if(itemIsAlreadyOpen.length > 0) { 
-      this.state.layout.doAction(FlexLayout.Actions.selectTab(item.resourceIri+item.viewId))
+      const existingItem = itemIsAlreadyOpen[0];
+      const tabIdToSelect = (existingItem.resourceIri && existingItem.viewId) 
+        ? existingItem.resourceIri + existingItem.viewId 
+        : existingItem.id;
+
+      this.state.layout.doAction(FlexLayout.Actions.selectTab(tabIdToSelect));
       this.onSelectView({
-        itemId: item.id,
-        viewId: item.viewId,
-        resourceIri: item.resourceIri,
+        itemId: existingItem.id,
+        viewId: existingItem.viewId,
+        resourceIri: existingItem.resourceIri,
       });
-      return
+      return;
     }
+
     const itemViewConfig = this.props.views.find(({id}) => id === item.viewId);
     const itemLinkedViewConfig = this.props.linkedViews.find(({id}) => id === item.viewId);
     
@@ -480,14 +493,14 @@ export class DashboardComponent extends Component<Props, State> {
               this.layoutRef.current.addTabWithDragAndDrop('Drag me where you want',
                 {
                   'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'homepage-button', 'icon': 'add'
+                 'className': viewConfig?.iconName || viewConfig?.iconClass || 'dashboard_customize', 'icon': 'add'
                 }
               );
             } else {
               this.layoutRef.current.addTabToActiveTabSet(
                 {
                   'type': 'tab', 'id':newFrameId, 'name': item.label, 'component': "item", 'config': {'itemId': item.id},
-                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'homepage-button', 'icon': 'add'
+                  'className': viewConfig?.iconName || viewConfig?.iconClass || 'dashboard_customize', 'icon': 'add'
                 }
               );
             }
@@ -751,7 +764,7 @@ export class DashboardComponent extends Component<Props, State> {
     );
   }
 
-  private renderView(item: Item) {
+  private renderView(item: Item) { 
     const { views, linkedViews, homePageIri } = this.props;
     const allViews: Array<DashboardViewConfig> = [...views];
     linkedViews.forEach((linkedView) => {

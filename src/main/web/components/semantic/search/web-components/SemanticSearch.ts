@@ -64,6 +64,7 @@ interface State {
   selectedAlignment?: Data.Maybe<Alignment>;
   isConfigurationEditable?: boolean;
   visualizationContext?: Data.Maybe<Model.Relation>;
+  facetBreadcrumbsMounted?: boolean;
   isInitialized?: boolean;
 }
 
@@ -112,6 +113,7 @@ export class SemanticSearch extends Component<Props, State> {
       selectedAlignment: this.getDefaultAlignments(availableDatasets),
       isConfigurationEditable: true,
       visualizationContext: Maybe.Nothing<Model.Relation>(),
+      facetBreadcrumbsMounted: false,
       isInitialized: false,
     };
   }
@@ -150,6 +152,8 @@ export class SemanticSearch extends Component<Props, State> {
       availableDatasets: this.state.availableDatasets,
       visualizationContext: this.state.visualizationContext,
       setVisualizationContext: this.setVisualizationContext,
+      facetBreadcrumbsMounted: this.state.facetBreadcrumbsMounted,
+      setFacetBreadcrumbsMounted: this.setFacetBreadcrumbsMounted,
     };
   }
 
@@ -317,6 +321,10 @@ export class SemanticSearch extends Component<Props, State> {
 
   private setVisualizationContext = (visualizationContext: Data.Maybe<Model.Relation>) =>
     this.setState({ visualizationContext });
+
+  private setFacetBreadcrumbsMounted = (mounted: boolean) => {
+    this.setState({ facetBreadcrumbsMounted: mounted });
+  };
 
   private setSearchProfileStore = (profileStore: SearchProfileStore) => {
     this.setState({ searchProfileStore: Maybe.Just(profileStore) });

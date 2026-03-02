@@ -384,6 +384,10 @@
         "PresetFacetValueConfig": {
             "description": "Configuration for pre-selected facet values.\nAllows defining a set of values that will be selected in the facet filters by default.\n\nThe expected format for values depends on the 'kind' of the relation (resource, literal, date-range, numeric-range) defined in the Search Profile.\n\n1. **Resource / Hierarchy**:\n   - Expects an IRI string or an object with a `value` property containing the IRI.\n   - Example: `'http://example.org/resource'` or `{ value: 'http://example.org/resource' }`\n\n2. **Literal**:\n   - Expects a string, number, or an object with `value` (and optional `language` or `datatype`).\n   - Example: `'some string'`, `123`, `{ value: 'hello', language: 'en' }`, `{ value: 'true', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' }`\n\n3. **Date Range**:\n   - Expects an object with `begin` and `end` properties. Values can be ISO strings or timestamps.\n   - Example: `{ begin: '2020-01-01', end: '2020-12-31' }`\n\n4. **Numeric Range**:\n   - Expects an object with `begin` and `end` properties (numbers or strings parseable as numbers).\n   - Example: `{ begin: 10, end: 20 }`",
             "properties": {
+                "hidden": {
+                    "description": "If true, the facet relation stays hidden in the UI while its presets are applied to the query.",
+                    "type": "boolean"
+                },
                 "relation": {
                     "description": "IRI of the relation to which the preset values apply.\nThis must match a relation defined in the search profile.",
                     "type": "string"
@@ -471,7 +475,8 @@
             },
             "propertyOrder": [
                 "relation",
-                "values"
+                "values",
+                "hidden"
             ],
             "required": [
                 "relation",

@@ -382,3 +382,12 @@ export function buildPresetFacetAstWithLabels(
   return LabelsService.getLabels(requiredLabels, { context: queryContext })
     .map((labelMap) => buildAst(validatedPresets, labelMap));
 }
+
+export function getHiddenPresetRelationIris(
+  presets: ReadonlyArray<PresetFacetValueConfig> | undefined
+): Array<Rdf.Iri> {
+  if (!presets || presets.length === 0) {
+    return [];
+  }
+  return presets.filter((preset) => preset.hidden).map((preset) => parseIri(preset.relation));
+}

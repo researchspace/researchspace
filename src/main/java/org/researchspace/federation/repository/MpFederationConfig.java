@@ -164,7 +164,9 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
     public MpFederationConfig() {
         super(MpFederationFactory.SAIL_TYPE);
         // Initialize with default FedXConfig, setting our default timeout
-        this.fedXConfig = new FedXConfig().withEnforceMaxQueryTime(DEFAULT_QUERY_TIMEOUT);
+        this.fedXConfig = new FedXConfig()
+                .withEnforceMaxQueryTime(DEFAULT_QUERY_TIMEOUT)
+                .withBoundJoinBlockSize(100);
     }
 
     @Override

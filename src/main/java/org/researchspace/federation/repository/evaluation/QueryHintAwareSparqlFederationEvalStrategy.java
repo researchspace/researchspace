@@ -29,6 +29,7 @@ import org.eclipse.rdf4j.federated.algebra.StatementTupleExpr;
 import org.eclipse.rdf4j.federated.cache.SourceSelectionCache;
 import org.eclipse.rdf4j.federated.endpoint.Endpoint;
 import org.eclipse.rdf4j.federated.evaluation.SparqlFederationEvalStrategy;
+import org.eclipse.rdf4j.federated.evaluation.TripleSource;
 import org.eclipse.rdf4j.federated.evaluation.concurrent.ControlledWorkerScheduler;
 import org.eclipse.rdf4j.federated.evaluation.iterator.BindLeftJoinIteration;
 import org.eclipse.rdf4j.federated.evaluation.iterator.FilteringIteration;
@@ -245,7 +246,16 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
     }
 
     /**
-     * Override to count endpoint evaluations for single triple patterns.
+     * Override to handle {@link ExclusiveSubquery} directly and count endpoint
+     * evaluations for single triple patterns.
+     *
+     * <p>
+     * {@link ExclusiveSubquery} wraps an entire algebra tree (potentially
+     * including UNIONs) destined for a single endpoint. It cannot go through
+     * the normal precompile/ExclusiveTupleExprRenderer path because it's not
+     * a simple statement pattern. Instead, we construct a SELECT query from
+     * the algebra and send it directly to the endpoint.
+     * </p>
      */
     @Override
     protected CloseableIteration<BindingSet> evaluateExclusiveTupleExpr(
@@ -256,6 +266,18 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         if (debugCountersEnabled) {
             endpointEvalCount.incrementAndGet();
         }
+
+        if (expr instanceof ExclusiveSubquery) {
+            ExclusiveSubquery subquery = (ExclusiveSubquery) expr;
+            String sparql = subquery.toSelectQuery(bindings);
+            if (log.isDebugEnabled()) {
+                log.debug("Evaluating ExclusiveSubquery @{}: {}",
+                        subquery.getOwner().getEndpointID(), sparql);
+            }
+            TripleSource tripleSource = subquery.getOwnedEndpoint().getTripleSource();
+            return tripleSource.getStatements(sparql, bindings, (FilterValueExpr) null, subquery.getQueryInfo());
+        }
+
         return super.evaluateExclusiveTupleExpr(expr, bindings);
     }
 
@@ -330,6 +352,10 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
     public CloseableIteration<BindingSet> evaluateLeftBoundJoinStatementPattern(
             StatementTupleExpr stmt, List<BindingSet> bindings) throws QueryEvaluationException {
         
+        if (stmt instanceof ExclusiveSubquery) {
+            return evaluateExclusiveSubqueryBoundJoin((ExclusiveSubquery) stmt, bindings, true);
+        }
+
         if (!(stmt instanceof ExclusiveGroup)) {
             // For regular StatementPattern, use the base implementation
             return super.evaluateLeftBoundJoinStatementPattern(stmt, bindings);
@@ -396,6 +422,10 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
     public CloseableIteration<BindingSet> evaluateBoundJoinStatementPattern(
             StatementTupleExpr stmt, List<BindingSet> bindings) throws QueryEvaluationException {
 
+        if (stmt instanceof ExclusiveSubquery) {
+            return evaluateExclusiveSubqueryBoundJoin((ExclusiveSubquery) stmt, bindings, false);
+        }
+
         if (!(stmt instanceof ExclusiveGroup)) {
             return super.evaluateBoundJoinStatementPattern(stmt, bindings);
         }
@@ -432,6 +462,59 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
                     result.close();
                     return new EmptyIteration<>();
                 }
+            } else {
+                result = new org.eclipse.rdf4j.federated.evaluation.iterator
+                        .BoundJoinVALUESConversionIteration(result, bindings);
+            }
+
+            return result;
+        } catch (Throwable t) {
+            if (result != null) {
+                result.close();
+            }
+            if (t instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new QueryEvaluationException(t);
+        }
+    }
+
+    /**
+     * Evaluate an {@link ExclusiveSubquery} with VALUES-based bind join.
+     *
+     * @param subquery  the exclusive subquery node
+     * @param bindings  the batched bindings
+     * @param leftJoin  true for left join semantics (NULL-fill), false for inner join
+     * @return the result iteration
+     */
+    private CloseableIteration<BindingSet> evaluateExclusiveSubqueryBoundJoin(
+            ExclusiveSubquery subquery, List<BindingSet> bindings, boolean leftJoin)
+            throws QueryEvaluationException {
+
+        // Optimization: single binding doesn't need VALUES batching
+        if (bindings.size() == 1) {
+            return subquery.evaluate(bindings.get(0));
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Evaluating ExclusiveSubquery {} bind join @{} with {} bindings",
+                    leftJoin ? "left" : "inner",
+                    subquery.getOwner().getEndpointID(), bindings.size());
+        }
+
+        String preparedQuery = subquery.toSelectQueryBoundJoinVALUES(bindings);
+
+        if (log.isDebugEnabled()) {
+            log.debug("ExclusiveSubquery VALUES query: {}", preparedQuery);
+        }
+
+        CloseableIteration<BindingSet> result = null;
+        try {
+            result = evaluateAtStatementSources(preparedQuery,
+                    subquery.getStatementSources(), subquery.getQueryInfo());
+
+            if (leftJoin) {
+                result = new BindLeftJoinIteration(result, bindings);
             } else {
                 result = new org.eclipse.rdf4j.federated.evaluation.iterator
                         .BoundJoinVALUESConversionIteration(result, bindings);

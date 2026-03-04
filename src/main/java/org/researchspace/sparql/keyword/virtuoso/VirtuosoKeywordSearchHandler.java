@@ -148,12 +148,12 @@ public class VirtuosoKeywordSearchHandler implements KeywordSearchHandler {
             if (predicateVars.size() == 1) {
                 // A single predicate allowed (e.g., rdfs:label).
                 // Write as a triple pattern ?subj rdfs:label ?label .
-                new StatementPattern(pattern.getSubjectVar(), pattern.getFirstPredicateVar(), pattern.getMatchVar())
+                new StatementPattern(pattern.getSubjectVar().clone(), pattern.getFirstPredicateVar().clone(), pattern.getMatchVar().clone())
                         .visit(this);
             } else {
                 // More than one predicate: write a variable in the predicate position,
                 // then filter using "FILTER(?prop = <X> || ?prop = <Y>)"
-                new StatementPattern(pattern.getSubjectVar(), predVar, pattern.getMatchVar()).visit(this);
+                new StatementPattern(pattern.getSubjectVar().clone(), predVar, pattern.getMatchVar().clone()).visit(this);
                 renderPredicatesAsFilter(predVar, pattern.getPredicateVars());
             }
         }
@@ -188,8 +188,9 @@ public class VirtuosoKeywordSearchHandler implements KeywordSearchHandler {
             Var valueVar = pattern.getValueVar();
             String token = valueVar.getValue().stringValue().toLowerCase();
             token = token.replace('*', '%');
-            valueVar.setValue(VF.createLiteral(token));
-            valueVar.visit(this);
+            Var newValueVar = new Var(valueVar.getName(), VF.createLiteral(token), valueVar.isAnonymous(), valueVar.isConstant());
+            valueVar.replaceWith(newValueVar);
+            newValueVar.visit(this);
             builder.append(") .\n");
             if (pattern.getScoreVar() != null) {
                 builder.append("\t");
@@ -251,11 +252,11 @@ public class VirtuosoKeywordSearchHandler implements KeywordSearchHandler {
             }
 
             if (typeVars.size() == 1) {
-                new StatementPattern(pattern.getSubjectVar(), TupleExprs.createConstVar(RDF.TYPE),
-                        pattern.getFirstTypeVar()).visit(this);
+                new StatementPattern(pattern.getSubjectVar().clone(), TupleExprs.createConstVar(RDF.TYPE),
+                        pattern.getFirstTypeVar().clone()).visit(this);
             } else {
                 Var typeVar = new Var("type");
-                new StatementPattern(pattern.getSubjectVar(), TupleExprs.createConstVar(RDF.TYPE), typeVar).visit(this);
+                new StatementPattern(pattern.getSubjectVar().clone(), TupleExprs.createConstVar(RDF.TYPE), typeVar).visit(this);
                 builder.append("FILTER(");
                 typeVar.visit(this);
                 builder.append(" = ");
@@ -278,7 +279,7 @@ public class VirtuosoKeywordSearchHandler implements KeywordSearchHandler {
     }
 
     @Override
-    public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateKeywordSearchQuery(
+    public CloseableIteration<? extends BindingSet> evaluateKeywordSearchQuery(
             RepositoryConnection conn, TupleExpr tupleExpr, Dataset dataset, boolean includeInferred)
             throws SailException {
         ParsedQueryPreprocessor parserVisitor = new ParsedQueryPreprocessor();

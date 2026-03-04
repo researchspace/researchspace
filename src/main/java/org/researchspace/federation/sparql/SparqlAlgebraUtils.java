@@ -19,126 +19,57 @@
 
 package org.researchspace.federation.sparql;
 
-import java.util.List;
-
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.query.algebra.Join;
-import org.eclipse.rdf4j.query.algebra.Projection;
 import org.eclipse.rdf4j.query.algebra.QueryModelNode;
-import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
-import org.eclipse.rdf4j.query.algebra.Var;
-import org.eclipse.rdf4j.sail.federation.algebra.NaryJoin;
-import org.researchspace.federation.sparql.optimizers.RemoveNodeQueryModelVisitor;
 
 /**
- * Util helper class for common operations over SPARQL algebra expressions.
- * 
- * @author Andriy Nikolov <an@metaphacts.com>
- *
+ * Utility class for common operations over SPARQL algebra expressions.
  */
 public class SparqlAlgebraUtils {
 
     private SparqlAlgebraUtils() {
-
     }
 
     /**
-     * Removes all occurrences of the tuple expression {@code toRemove} from under
-     * the {@code root}.
+     * Finds the root TupleExpr of the query tree containing the given node.
      * 
+     * @param node the node to find the scope root for
+     * @return the root TupleExpr of the query tree
      */
-    public static void removeTupleExpr(QueryModelNode root, TupleExpr toRemove) throws Exception {
-        RemoveNodeQueryModelVisitor removeVisitor = new RemoveNodeQueryModelVisitor(toRemove);
-        root.visit(removeVisitor);
-    }
-
-    /**
-     * Removes all occurrences of the tuple expression {@code toRemove} in scope
-     * {@code scope} from under the {@code root}.
-     * 
-     */
-    public static void removeTupleExpr(QueryModelNode root, TupleExpr toRemove, TupleExpr scope) throws Exception {
-        RemoveNodeQueryModelVisitor removeVisitor = new RemoveNodeQueryModelVisitor(toRemove, scope);
-        root.visit(removeVisitor);
-    }
-
-    /**
-     * Finds the tuple expression that serves the root of the scope for a given node
-     * {@code leaf}. The scope root is either:
-     * <ul>
-     * <li>the projection node of the most specific (sub-)query to which the
-     * statement pattern belongs</li>
-     * <li>the top-most {@link TupleExpr} in the tree to which {@code leaf} belongs
-     * (if there are no projection nodes in the tree above {@code leaf})</li>
-     * </ul>
-     */
-    public static TupleExpr getScopeRoot(TupleExpr leaf) {
-        if (leaf instanceof Projection) {
-            return leaf;
-        }
-        TupleExpr parent = (TupleExpr) leaf.getParentNode();
+    public static TupleExpr getScopeRoot(QueryModelNode node) {
+        QueryModelNode parent = node.getParentNode();
         if (parent == null) {
-            return leaf;
-        } else {
-            return getScopeRoot(parent);
+            return (TupleExpr) node;
         }
+        while (parent.getParentNode() != null) {
+            parent = parent.getParentNode();
+        }
+        return (TupleExpr) parent;
     }
 
     /**
-     * Gathers join args from nested joins into a flat list. Moved from
-     * {@link QueryMultiJoinOptimizer}
+     * Removes a tuple expression from the query tree. For binary operators (like Join),
+     * the parent is replaced with the sibling. For other operators, the child is replaced
+     * with an EmptySet.
      * 
-     * @param tupleExpr
-     * @param joinArgs
-     * @return
+     * @param parent the parent node containing the child
+     * @param child the tuple expression to remove
+     * @param scope unused, kept for API compatibility
      */
-    public static <L extends List<TupleExpr>> L getJoinArgs(TupleExpr tupleExpr, L joinArgs) {
-        if (tupleExpr instanceof NaryJoin) {
-            NaryJoin join = (NaryJoin) tupleExpr;
-            for (TupleExpr arg : join.getArgs()) {
-                getJoinArgs(arg, joinArgs);
+    public static void removeTupleExpr(QueryModelNode parent, TupleExpr child, TupleExpr scope) {
+        if (parent == null) {
+            return;
+        }
+        
+        if (parent instanceof org.eclipse.rdf4j.query.algebra.BinaryTupleOperator) {
+            org.eclipse.rdf4j.query.algebra.BinaryTupleOperator binary = 
+                (org.eclipse.rdf4j.query.algebra.BinaryTupleOperator) parent;
+            TupleExpr other = binary.getLeftArg() == child ? binary.getRightArg() : binary.getLeftArg();
+            if (parent.getParentNode() != null) {
+                parent.getParentNode().replaceChildNode(parent, other);
             }
-        } else if (tupleExpr instanceof Join) {
-            Join join = (Join) tupleExpr;
-            getJoinArgs(join.getLeftArg(), joinArgs);
-            getJoinArgs(join.getRightArg(), joinArgs);
         } else {
-            joinArgs.add(tupleExpr);
-        }
-
-        return joinArgs;
-    }
-
-    /**
-     * Checks that the statement pattern matches given subject, predicate, and
-     * object. Values for subject, predicate, and object can be null (interpreted as
-     * wildcard). For the object value, compares both on the typed literal as well
-     * as on a string match: i.e., "true"^^xsd:bolean = "true".
-     * 
-     */
-    public static boolean statementPatternMatches(StatementPattern pattern, IRI subject, IRI predicate, Value object) {
-        boolean matches = true;
-        if (subject != null) {
-            matches = matches && varHasValue(pattern.getSubjectVar(), subject, true);
-        }
-        if (predicate != null) {
-            matches = matches && varHasValue(pattern.getPredicateVar(), predicate, true);
-        }
-        if (object != null) {
-            matches = matches && varHasValue(pattern.getObjectVar(), object, false);
-        }
-        return matches;
-    }
-
-    public static boolean varHasValue(Var var, Value val, boolean matchDatatypes) {
-        if (matchDatatypes || !(val instanceof Literal)) {
-            return var.hasValue() && var.getValue().equals(val);
-        } else {
-            return var.hasValue() && var.getValue().stringValue().equals(val.stringValue());
+            parent.replaceChildNode(child, new org.eclipse.rdf4j.query.algebra.EmptySet());
         }
     }
-
 }

@@ -28,6 +28,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.algebra.Projection;
 import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.QueryRoot;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.evaluation.QueryOptimizer;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
@@ -96,7 +97,10 @@ public class VirtuosoKeywordSearchGroupExtractorTest {
                 + "  ?label <bif:score> ?thescore . \n" + "}";
 
         VirtuosoKeywordSearchGroupExtractor extractor = new VirtuosoKeywordSearchGroupExtractor();
-        Projection res = (Projection) parseAndOptimize(query, extractor);
+        TupleExpr res = parseAndOptimize(query, extractor);
+        if (res instanceof QueryRoot) {
+            res = ((QueryRoot) res).getArg();
+        }
         Assert.assertTrue(extractor.containsKeywordClauses());
         patternCollector.optimize(res, null, null);
         Assert.assertEquals(1, patternCollector.getKeywordSearchPatterns().size());
@@ -118,7 +122,10 @@ public class VirtuosoKeywordSearchGroupExtractorTest {
                 + "  ?label <bif:score> ?thescore . \n" + "}";
 
         VirtuosoKeywordSearchGroupExtractor extractor = new VirtuosoKeywordSearchGroupExtractor();
-        Projection res = (Projection) parseAndOptimize(query, extractor);
+        TupleExpr res = parseAndOptimize(query, extractor);
+        if (res instanceof QueryRoot) {
+            res = ((QueryRoot) res).getArg();
+        }
         Assert.assertTrue(extractor.containsKeywordClauses());
         patternCollector.optimize(res, null, null);
         Assert.assertEquals(1, patternCollector.getKeywordSearchPatterns().size());
@@ -140,7 +147,10 @@ public class VirtuosoKeywordSearchGroupExtractorTest {
                 + "  ?label2 <bif:contains> \"token2\" . \n" + "  ?label2 <bif:score> ?thescore2 . \n" + "}";
 
         VirtuosoKeywordSearchGroupExtractor extractor = new VirtuosoKeywordSearchGroupExtractor();
-        Projection res = (Projection) parseAndOptimize(query, extractor);
+        TupleExpr res = parseAndOptimize(query, extractor);
+        if (res instanceof QueryRoot) {
+            res = ((QueryRoot) res).getArg();
+        }
         Assert.assertTrue(extractor.containsKeywordClauses());
         patternCollector.optimize(res, null, null);
         Assert.assertEquals(2, patternCollector.getKeywordSearchPatterns().size());

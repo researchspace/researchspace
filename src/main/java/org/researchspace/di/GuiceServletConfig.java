@@ -80,6 +80,11 @@ public class GuiceServletConfig extends GuiceServletContextListener {
                         + "*************************************************************************************\n");
 
         // Replace with proper onContextInitialized hook
+        try {
+            injector.getInstance(RepositoryManager.class).init();
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to initialize RepositoryManager", e);
+        }
         injector.getInstance(RepositoryManager.class).sentTestQueries();
 
         try {

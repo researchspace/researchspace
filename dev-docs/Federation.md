@@ -194,7 +194,7 @@ FedX extends RDF4J's query algebra with federation-aware nodes:
 
 | Property | Default | Purpose |
 |----------|---------|---------|
-| `boundJoinBlockSize` | 25 | Bindings per VALUES clause in bound join |
+| `boundJoinBlockSize` | **100** | Bindings per VALUES clause in bound join (our default, FedX default is 25) |
 | `enableServiceAsBoundJoin` | true | Use bound join for SERVICE clauses |
 | `joinWorkerThreads` | 20 | Thread pool size for joins |
 | `unionWorkerThreads` | 20 | Thread pool size for unions |
@@ -230,9 +230,10 @@ Location: `src/main/java/org/researchspace/federation/`
 | Class | Purpose |
 |-------|---------|
 | `QueryHintAwareFederationEvaluationStrategyFactory.java` | Creates our custom strategy |
-| `QueryHintAwareSparqlFederationEvalStrategy.java` | **Core** - query hints + REST detection + ExclusiveGroup bind join |
-| `QueryHintAwareJoinOptimizer.java` | Join ordering with query hints |
+| `QueryHintAwareSparqlFederationEvalStrategy.java` | **Core** - query hints + REST detection + ExclusiveGroup/ExclusiveSubquery bind join |
+| `QueryHintAwareJoinOptimizer.java` | Join ordering with query hints + single-source NJoin pushdown |
 | `SynchronousRestServiceJoin.java` | **Key** - Lazy evaluation for REST services |
+| `ExclusiveSubquery.java` | Wraps single-source NJoin trees (including NUnion) for subquery pushdown |
 | `ExclusiveGroupQueryBuilder.java` | Builds VALUES-based SPARQL queries for ExclusiveGroup bind joins |
 
 #### Optimizers
@@ -391,15 +392,26 @@ TRACE Outgoing SPARQL ASK to [endpoint]: ASK { ... }
 
 ### Log4j2 Configuration
 
-The `QueryLog` logger is defined in `log4j2-debug.xml` and `log4j2-trace.xml`:
+The `QueryLog` logger and `org.eclipse.rdf4j.federated` logger are defined in `log4j2-debug.xml` and `log4j2-trace.xml`:
 ```xml
-<Logger name="QueryLog" level="DEBUG" additivity="false">
+<!-- FedX federation: optimized query plans logged here at DEBUG -->
+<Logger name="org.eclipse.rdf4j.federated" level="debug" additivity="false">
+  <AppenderRef ref="LOGFILE"/>
+  <AppenderRef ref="STDOUT"/>
+</Logger>
+
+<!-- FedX incoming query log (requires enableMonitoring + logQueries in fedx:config) -->
+<Logger name="QueryLog" level="debug" additivity="false">
   <AppenderRef ref="LOGFILE"/>
   <AppenderRef ref="STDOUT"/>
 </Logger>
 ```
 
-Production `log4j2.xml` intentionally does NOT include this logger.
+Production `log4j2.xml` intentionally does NOT include these loggers.
+
+> [!NOTE]
+> When `fedx:logQueryPlan true` is set, `enableMonitoring` is automatically enabled by `MpFederationConfig`.
+> The `debugQueryPlan` option (which prints to stdout) is silently forced off — use `logQueryPlan` instead.
 
 ### 3. Source Selection Cache Invalidation
 
@@ -616,6 +628,59 @@ JOIN+SERVICE (N=10): endpointEvals=0   (one VALUES query)
 
 ---
 
+### Issue 7: Wrong Join Order Inside OPTIONAL (Outer-Scope Variable Unawareness)
+
+**Problem**: When a query has `SERVICE` → `BIND` → `OPTIONAL { ... }`, the OPTIONAL body's triple patterns are reordered by FedX's cost model without considering which variables are bound from the outer scope. This causes fully-unbound queries to be sent to Blazegraph, scanning entire tables.
+
+**Example**: `?citableReference` is computed via `BIND` in the outer scope, but the OPTIONAL's NJoin puts `ExclusiveGroup(P1, P2)` first (no `?citableReference`) instead of the NUnion that uses `?citableReference`. The ExclusiveGroup produces a fully unbound query: `SELECT ?identifier ?existingRecord WHERE { ?existingRecord P1 ?identifier . ?identifier P2 crn }`.
+
+**Root Cause**: `StatementGroupAndJoinOptimizer.meetNJoin()` → `optimizeJoinOrder()` starts with an empty `joinVars` set. It has no context about which variables are bound from the outer scope of a `FedXLeftJoin`. The `DefaultFedXCostModel` estimates ExclusiveGroup as cheaper (cost ~0) vs NUnion (cost ~100+), so ExclusiveGroup goes first despite using no outer-scope variables.
+
+**Solution**: Override the visitor traversal in `QueryHintAwareJoinOptimizer` to track outer-scope binding names when entering a `FedXLeftJoin` right side. The left side's `getBindingNames()` are captured and passed as initial `joinVars` to the cost model when ordering the right side's NJoin children. This makes the cost model correctly identify patterns using outer-scope-bound variables as cheap/selective.
+
+**Result**: Patterns using `?citableReference` (from outer scope) are now ordered first within the OPTIONAL body. The subsequent ExclusiveGroup is driven by the results of the first pattern, producing a properly constrained query instead of a full table scan.
+
+---
+
+### Issue 8: NJoin Subquery Pushdown with VALUES Batching
+
+**Problem**: SPARQL property paths like `(crm:P190|rdfs:label)` expand into `NJoin(NUnion, ExclusiveGroup)` inside OPTIONAL clauses. Even when all children target the same single endpoint, FedX evaluates them separately — the NUnion and ExclusiveGroup each produce individual per-binding queries, doubling the query count.
+
+**Example**:
+```sparql
+OPTIONAL {
+  ?existingRecord crm:P1_is_identified_by ?identifier .
+  ?identifier crm:P2_has_type <.../crn> ;
+              (crm:P190_has_symbolic_content|rdfs:label) ?citableReference .
+}
+```
+
+The `|` expands to `NUnion(P190, rdfs:label)`, yielding a tree: `NJoin(NUnion, ExclusiveGroup(P1, P2))`. With 40 left-side bindings, this produces **80 queries** (2 per binding) without optimization.
+
+**Solution**: Two-phase optimization:
+
+1. **Phase 1 — NJoin Pushdown** (`QueryHintAwareJoinOptimizer.meetNJoin()`): Detects when all children of an NJoin target the same endpoint via `detectSingleSource()`. Replaces the entire NJoin with an `ExclusiveSubquery @default` node that sends a single SPARQL query (with UNION) per binding.
+
+2. **Phase 2 — VALUES Batching**: `ExclusiveSubquery` implements `BoundJoinTupleExpr`, enabling FedX's `ControlledWorkerBindLeftJoin` to batch all bindings into a single VALUES-based query:
+   ```sparql
+   SELECT ?identifier ?citableReference ?existingRecord ?__index WHERE {
+     VALUES (?citableReference ?__index) { ("YBBK/P/3" "0") ("RAIL 144" "1") ... }
+     { ?identifier <P190> ?citableReference . }
+     UNION
+     { ?identifier <rdfs:label> ?citableReference . }
+     ?existingRecord <P1> ?identifier .
+     ?identifier <P2> <crn> .
+   }
+   ```
+
+**Key classes**:
+- `ExclusiveSubquery` — Algebra node wrapping the NJoin tree. Implements `StatementTupleExpr`, `ExclusiveTupleExpr`, and `BoundJoinTupleExpr`. Has `toSparqlBody()` for recursive SPARQL reconstruction and `toSelectQueryBoundJoinVALUES()` for VALUES batching.
+- `QueryHintAwareJoinOptimizer.meetNJoin()` — Detects single-source NJoins, replaces with `ExclusiveSubquery`.
+- `QueryHintAwareSparqlFederationEvalStrategy.evaluateExclusiveSubqueryBoundJoin()` — Handles VALUES-batched evaluation for both left and inner joins.
+
+**Result**: 80 queries → 40 (Phase 1) → **1 query** (Phase 2, with `boundJoinBlockSize=100`).
+
+
 ## Configuration Reference
 
 ### Ephedra Federation Configuration
@@ -664,7 +729,7 @@ The federation uses a single `researchspace:FederationSailRepository` that combi
          fedx:config [
             fedx:enforceMaxQueryTime 120 ;
             fedx:joinWorkerThreads 20 ;
-            fedx:debugQueryPlan false
+            fedx:logQueryPlan false
          ]
       ]
    ] .
@@ -680,12 +745,12 @@ All properties use the `fedx:` namespace (`http://rdf4j.org/config/federation#`)
 | `joinWorkerThreads` | 20 | Thread pool size for parallel join operations |
 | `unionWorkerThreads` | 20 | Thread pool size for parallel union operations |
 | `leftJoinWorkerThreads` | 10 | Thread pool size for LEFT JOIN operations |
-| `boundJoinBlockSize` | 25 | Number of bindings per VALUES clause in bound join |
+| `boundJoinBlockSize` | **100** | Bindings per VALUES clause in bound join (our default, FedX default is 25) |
 | `enableServiceAsBoundJoin` | true | Use VALUES clause for SERVICE evaluation (vectored) |
 | `enableOptionalAsBindJoin` | true | Use bind join for OPTIONAL clauses |
 | `enableMonitoring` | false | Enable monitoring features |
-| `debugQueryPlan` | false | Print optimized query plan to stdout |
-| `logQueryPlan` | false | Log query plan via QueryPlanLog |
+| `debugQueryPlan` | ~~false~~ | ~~Print query plan to stdout~~ — **ignored**, silently forced off; use `logQueryPlan` |
+| `logQueryPlan` | false | Log optimized query plan via SLF4J (auto-enables `enableMonitoring`) |
 | `logQueries` | false | Log all queries to file |
 | `includeInferredDefault` | true | Include inferred statements by default |
 | `sourceSelectionCacheSpec` | - | Guava CacheBuilderSpec for source selection cache |

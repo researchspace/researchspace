@@ -59,7 +59,7 @@ import com.google.common.collect.Lists;
  *   fedx:config [
  *     fedx:enforceMaxQueryTime 120 ;
  *     fedx:joinWorkerThreads 20 ;
- *     fedx:debugQueryPlan false
+ *     fedx:logQueryPlan true
  *   ]
  * ]
  * </pre>
@@ -164,7 +164,9 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
     public MpFederationConfig() {
         super(MpFederationFactory.SAIL_TYPE);
         // Initialize with default FedXConfig, setting our default timeout
-        this.fedXConfig = new FedXConfig().withEnforceMaxQueryTime(DEFAULT_QUERY_TIMEOUT);
+        this.fedXConfig = new FedXConfig()
+                .withEnforceMaxQueryTime(DEFAULT_QUERY_TIMEOUT)
+                .withBoundJoinBlockSize(100);
     }
 
     @Override
@@ -309,6 +311,17 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
             helper.parseFedXConfig(model, implNode);
             fedXConfig = helper.getConfig();  // Get back the populated config
         }
+        
+        // Auto-enable monitoring when logQueryPlan is set (FedX requires it)
+        if (fedXConfig.isLogQueryPlan() && !fedXConfig.isEnableMonitoring()) {
+            fedXConfig.withEnableMonitoring(true);
+        }
+        
+        // Force off debugQueryPlan — it uses System.out.println which is
+        // garbage in a multi-threaded server; use logQueryPlan instead
+        if (fedXConfig.isDebugQueryPlan()) {
+            fedXConfig.withDebugQueryPlan(false);
+        }
     }
     
     /**
@@ -348,8 +361,6 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
                 vf.createLiteral(fedXConfig.isLogQueryPlan()));
         model.add(confNode, FedXRepositoryConfig.CONFIG_LOG_QUERIES, 
                 vf.createLiteral(fedXConfig.isLogQueries()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_DEBUG_QUERY_PLAN, 
-                vf.createLiteral(fedXConfig.isDebugQueryPlan()));
         model.add(confNode, FedXRepositoryConfig.CONFIG_INCLUDE_INFERRED_DEFAULT, 
                 vf.createLiteral(fedXConfig.getIncludeInferredDefault()));
 

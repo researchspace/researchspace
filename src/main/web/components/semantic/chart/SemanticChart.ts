@@ -319,7 +319,10 @@ function fetchLabels(data: BuiltData): Kefir.Property<Dictionary<string>> {
       }
     }
   }
-  return getLabels(iris).map((labels) => labels.mapKeys((k) => k.value).toObject());
+  const context = {
+    ...this.context.semanticContext
+  };
+  return getLabels(iris,{context}).map((labels) => labels.mapKeys((k) => k.value).toObject());
 }
 
 export type { SemanticChartConfig };

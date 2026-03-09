@@ -245,6 +245,11 @@ class LDPApi {
         Model model = ldpResource.getModelRecursive();
         Model containers = read.getStatements(null, LDP.contains, iri);
         for (Statement triple : containers) {
+            // Only process if subject is an IRI
+            if (!(triple.getSubject() instanceof IRI)) {
+                logger.trace("Skipping ldp:contains statement with non-IRI subject in exportLDPResource: {}", triple);
+                continue;
+            }
             BNode containerBNode = vf.createBNode();
             model.add(containerBNode, LDP.contains, iri, triple.getContext());
             Set<IRI> containerTypes = getLDPTypesFromRepository((IRI) triple.getSubject());
@@ -263,6 +268,11 @@ class LDPApi {
         Map<String, List<IRI>> bnodeTypes = new HashMap<>();
         for (Statement stmt : resource) {
             if (stmt.getSubject() instanceof BNode && stmt.getPredicate().equals(RDF.TYPE)) {
+                // Only process if object is an IRI (skip BNodes or literals)
+                if (!(stmt.getObject() instanceof IRI)) {
+                    logger.trace("Skipping rdf:type statement with non-IRI object: {}", stmt);
+                    continue;
+                }
                 String id = ((BNode) stmt.getSubject()).getID();
                 if (!bnodeTypes.containsKey(id)) {
                     bnodeTypes.put(id, new ArrayList<IRI>());
@@ -307,7 +317,13 @@ class LDPApi {
                     // sometimes triplestores can return empty bindings for query like
                     // SELECT ?cont WHERE {}
                     if (next.hasBinding("cont")) {
-                        result.add((IRI) next.getBinding("cont").getValue());
+                        Value contValue = next.getBinding("cont").getValue();
+                        // Only add if it's an IRI (defensive check)
+                        if (contValue instanceof IRI) {
+                            result.add((IRI) contValue);
+                        } else {
+                            logger.trace("Skipping non-IRI container result: {}", contValue);
+                        }
                     }
                 }
             }
@@ -359,9 +375,22 @@ class LDPApi {
         Map<IRI, Set<IRI>> parents = Maps.newHashMap();
         // get all edges A contains B with Bctx
         for (Statement stmt : graph.filter(null, LDP.contains, null)) {
+            // Skip BNode subjects - these are residual from the export format placeholder
+            // and should have been replaced with parentIRI. Only process IRI subjects.
+            if (!(stmt.getSubject() instanceof IRI)) {
+                logger.trace("Skipping BNode subject in ldp:contains statement during import: {}", stmt);
+                continue;
+            }
+            // Skip if object is not an IRI (defensive check - objects of ldp:contains should be IRIs)
+            if (!(stmt.getObject() instanceof IRI)) {
+                logger.trace("Skipping ldp:contains statement with non-IRI object during import: {}", stmt);
+                continue;
+            }
             IRI s = (IRI) stmt.getSubject();
             IRI o = (IRI) stmt.getObject();
-            IRI ctx = (IRI) stmt.getContext();
+            Resource context = stmt.getContext();
+            // Context might be null for default graph statements
+            IRI ctx = (context instanceof IRI) ? (IRI) context : null;
             contexts.put(o, ctx);
             if (!adjacencyList.containsKey(s)) {
                 adjacencyList.put(s, Sets.newHashSet());
@@ -442,6 +471,11 @@ class LDPApi {
         Set<String> placeholders = Sets.newHashSet();
         for (Statement stmt : resource) {
             if (stmt.getSubject() instanceof BNode && stmt.getPredicate().equals(LDP.contains)) {
+                // Only process if object is an IRI (the resource to import)
+                if (!(stmt.getObject() instanceof IRI)) {
+                    logger.trace("Skipping ldp:contains statement with non-IRI object when finding roots: {}", stmt);
+                    continue;
+                }
                 IRI root = (IRI) stmt.getObject();
                 roots.add(root);
                 BNode placeholder = (BNode) stmt.getSubject();

@@ -81,7 +81,7 @@ export class CategorySelectorComponent extends Component<CategorySelectorProps, 
             className: classnames({
               btn: true,
               'category-item-holder': true,
-              // 'category-item-holder--active': isSelectedElement,
+              'category-item-holder--active': isSelectedElement,
             }),
             title: entity.label,
             'data-rdfa-about': entity.iri.value,

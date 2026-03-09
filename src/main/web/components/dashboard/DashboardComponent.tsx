@@ -193,7 +193,7 @@ export interface Props {
   rightPanels?: {template: string, label: string, class?: string}[];
 
   dashboardIri: Rdf.Iri;
-  defaultViewId: string;  
+  defaultViewId?: string;  
 }
 
 export interface State {

@@ -27,7 +27,7 @@ import org.eclipse.rdf4j.query.algebra.OrderElem;
 import org.eclipse.rdf4j.query.algebra.QueryModelVisitor;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.Var;
-import org.eclipse.rdf4j.sail.federation.algebra.AbstractNaryTupleOperator;
+import org.researchspace.federation.sparql.algebra.AbstractNaryTupleOperator;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;

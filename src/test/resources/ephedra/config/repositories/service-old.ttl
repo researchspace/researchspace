@@ -1,0 +1,19 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix : <http://www.researchspace.org/resource/system/repository#> .
+
+[] a rep:Repository ;
+   rep:repositoryID "service-old" ;
+   rdfs:label "Old Config Service" ;
+   rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+         sail:sailType "researchspace:RESTSail" ;
+         ephedra:serviceURL "http://localhost:18089/service-old" ;
+         ephedra:httpMethod "GET" ;
+         ephedra:implementsService :ServiceOld
+      ]
+   ] .

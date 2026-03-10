@@ -63,7 +63,7 @@ public class SerializableParsedTupleQuery extends AbstractSerializableParsedQuer
         List<String> res = new ArrayList<String>(projection.getProjectionElemList().getElements().size());
 
         for (ProjectionElem elem : projection.getProjectionElemList().getElements()) {
-            res.add(elem.getTargetName());
+            res.add(elem.getProjectionAlias().orElse(elem.getName()));
         }
 
         return res;

@@ -67,7 +67,7 @@ import org.eclipse.rdf4j.query.algebra.Label;
 import org.eclipse.rdf4j.query.algebra.Lang;
 import org.eclipse.rdf4j.query.algebra.LangMatches;
 import org.eclipse.rdf4j.query.algebra.LeftJoin;
-import org.eclipse.rdf4j.query.algebra.Like;
+
 import org.eclipse.rdf4j.query.algebra.Load;
 import org.eclipse.rdf4j.query.algebra.LocalName;
 import org.eclipse.rdf4j.query.algebra.MathExpr;
@@ -108,7 +108,7 @@ import org.eclipse.rdf4j.query.parser.ParsedBooleanQuery;
 import org.eclipse.rdf4j.query.parser.ParsedDescribeQuery;
 import org.eclipse.rdf4j.query.parser.ParsedGraphQuery;
 import org.eclipse.rdf4j.query.parser.ParsedTupleQuery;
-import org.eclipse.rdf4j.sail.federation.algebra.AbstractNaryTupleOperator;
+import org.researchspace.federation.sparql.algebra.AbstractNaryTupleOperator;
 import org.researchspace.sparql.renderer.SerializableParsedTupleQuery.QueryModifier;
 
 import com.google.common.collect.Lists;
@@ -607,10 +607,7 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
         super.meet(node);
     }
 
-    @Override
-    public void meet(Like node) throws RuntimeException {
-        super.meet(node);
-    }
+
 
     @Override
     public void meet(Load load) throws RuntimeException {

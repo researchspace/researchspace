@@ -51,7 +51,7 @@ public interface KeywordSearchHandler {
      * @return
      * @throws SailException
      */
-    public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateKeywordSearchQuery(
+    public CloseableIteration<? extends BindingSet> evaluateKeywordSearchQuery(
             RepositoryConnection connection, TupleExpr tupleExpr, Dataset dataset, boolean includeInferred)
             throws SailException;
 }

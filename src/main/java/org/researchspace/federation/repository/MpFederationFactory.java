@@ -53,12 +53,9 @@ public class MpFederationFactory implements SailFactory {
             throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
         }
         MpFederationConfig config = (MpFederationConfig) originalConfig;
-        MpFederation result = new MpFederation(config.getDefaultMember(), config.getRepositoryIDMappings());
-        result.setUseAsyncParallelJoin(config.isUseAsyncParallelJoin());
-        result.setUseBoundJoin(config.isUseBoundJoin());
-        result.setUseCompetingJoin(config.isUseCompetingJoin());
-        result.setEnableQueryHints(config.isEnableQueryHints());
-        return result;
+        
+        // Simply pass the full config - MpFederation reads all settings from it
+        return new MpFederation(config);
     }
 
 }

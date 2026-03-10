@@ -20,7 +20,7 @@
 package org.researchspace.repository;
 
 import org.eclipse.rdf4j.http.client.HttpClientDependent;
-import org.eclipse.rdf4j.repository.sail.config.RepositoryResolver;
+import org.eclipse.rdf4j.repository.RepositoryResolver;
 
 /**
  * @author Johannes Trame <jt@metaphacts.com>

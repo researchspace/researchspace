@@ -36,9 +36,9 @@ import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
-import org.eclipse.rdf4j.query.algebra.evaluation.impl.BindingAssigner;
-import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
-import org.eclipse.rdf4j.query.algebra.helpers.StatementPatternCollector;
+import org.eclipse.rdf4j.query.algebra.evaluation.optimizer.BindingAssignerOptimizer;
+import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
+import org.eclipse.rdf4j.query.algebra.helpers.collectors.StatementPatternCollector;
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 import org.eclipse.rdf4j.sail.helpers.AbstractSailConnection;
@@ -117,15 +117,14 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
      * 
      */
     @Override
-    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(TupleExpr tupleExpr,
+    protected CloseableIteration<? extends BindingSet> evaluateInternal(TupleExpr tupleExpr,
             Dataset dataset, BindingSet bindings, boolean includeInferred) throws SailException {
         TupleExpr cloned = tupleExpr.clone();
-        new BindingAssigner().optimize(cloned, dataset, bindings);
+        new BindingAssignerOptimizer().optimize(cloned, dataset, bindings);
         StatementPatternCollector collector = new StatementPatternCollector();
         cloned.visit(collector);
         List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
         ServiceParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
-        // limiter goes here
         return executeAndConvertResultsToBindingSet(parametersHolder);
     }
 
@@ -138,18 +137,18 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
      *                         parameters to be submitted to the service
      * @return iteration over binding sets
      */
-    protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
+    protected abstract CloseableIteration<? extends BindingSet> executeAndConvertResultsToBindingSet(
             ServiceParametersHolder parametersHolder);
 
     @Override
-    protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal() throws SailException {
-        return new CollectionIteration<Resource, SailException>(Lists.<Resource>newArrayList());
+    protected CloseableIteration<? extends Resource> getContextIDsInternal() throws SailException {
+        return new CloseableIteratorIteration<>(Lists.<Resource>newArrayList().iterator());
     }
 
     @Override
-    protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj, IRI pred,
+    protected CloseableIteration<? extends Statement> getStatementsInternal(Resource subj, IRI pred,
             Value obj, boolean includeInferred, Resource... contexts) throws SailException {
-        return new CollectionIteration<Statement, SailException>(Lists.<Statement>newArrayList());
+        return new CloseableIteratorIteration<>(Lists.<Statement>newArrayList().iterator());
     }
 
     @Override
@@ -190,8 +189,8 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
     }
 
     @Override
-    protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal() throws SailException {
-        return new CollectionIteration<Namespace, SailException>(Lists.<Namespace>newArrayList());
+    protected CloseableIteration<? extends Namespace> getNamespacesInternal() throws SailException {
+        return new CloseableIteratorIteration<>(Lists.<Namespace>newArrayList().iterator());
     }
 
     @Override

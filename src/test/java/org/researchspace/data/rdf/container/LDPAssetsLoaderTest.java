@@ -297,7 +297,7 @@ public class LDPAssetsLoaderTest extends AbstractIntegrationTest {
 
     private Model getRandomSortedModelFromFile(String fileId) {
         Repository db = new SailRepository(new MemoryStore());
-        db.initialize();
+        db.init();
 
         ArrayList<Statement> arrayList = new ArrayList();
         try (RepositoryConnection con = db.getConnection()) {

@@ -336,8 +336,8 @@ public class ResearchSpaceHandlebarsTest extends JerseyTest {
                 "[[getQueryString \"http://localhost:10214/container/queryTemplateContainer/test-query-label\" label='\"mylabel\"']]")
                 .apply(context(vf.createIRI(thisIriString)));
 
-        String expected = "SELECT ?x (\"mylabel\"^^<" + XMLSchema.STRING + "> AS ?label) \n" + "WHERE { \n"
-                + "\t?x <http://www.w3.org/2000/01/rdf-schema#label> \"mylabel\"^^<" + XMLSchema.STRING + "> . \n"
+        String expected = "SELECT ?x (\"\"\"mylabel\"\"\"^^<" + XMLSchema.STRING + "> AS ?label) \n" + "WHERE { \n"
+                + "\t?x <http://www.w3.org/2000/01/rdf-schema#label> \"\"\"mylabel\"\"\"^^<" + XMLSchema.STRING + "> . \n"
                 + " }";
 
         Assert.assertEquals(expected, rendered);

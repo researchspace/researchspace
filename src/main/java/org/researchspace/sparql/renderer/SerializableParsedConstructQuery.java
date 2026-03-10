@@ -59,7 +59,7 @@ public class SerializableParsedConstructQuery extends AbstractSerializableParsed
         List<String> res = Lists.newArrayList();
         for (ProjectionElemList proj : projection.getProjections()) {
             for (ProjectionElem elem : proj.getElements()) {
-                res.add(elem.getTargetName());
+                res.add(elem.getProjectionAlias().orElse(elem.getName()));
             }
         }
         return res;

@@ -33,7 +33,6 @@
       <AppenderRef ref="LOGFILE"/>
       <AppenderRef ref="STDOUT"/>
     </Logger>
-    <Logger name="platform.logging.ephedra.QueryPlanLogger" level="OFF" additivity="true" />
     
     <!-- specifically exclude MpSPARQLProtocolSession as this spams the log
          due to the same logger name being used by the RDF4J parent class
@@ -64,6 +63,19 @@
     </Logger>
 
     <Logger name="org.apache" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <!-- FedX federation: allow query plan and monitoring logs through.
+         Set to DEBUG for optimized query plan output. -->
+    <Logger name="org.eclipse.rdf4j.federated" level="debug" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <!-- FedX incoming query log (requires enableMonitoring + logQueries in fedx:config) -->
+    <Logger name="QueryLog" level="info" additivity="false">
       <AppenderRef ref="LOGFILE"/>
       <AppenderRef ref="STDOUT"/>
     </Logger>

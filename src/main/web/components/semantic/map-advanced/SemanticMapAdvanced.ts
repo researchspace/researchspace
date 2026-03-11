@@ -282,6 +282,18 @@ export interface SemanticMapAdvancedConfig {
   };
 
   /**
+   * Optional default color for features (buildings, geometries) when no color taxonomy is applied.
+   * Accepts any CSS color string: hex (#c2185b), rgb, or rgba format.
+   * Default: 'rgba(128,128,128,0.5)' (semi-transparent grey)
+   *
+   * Example:
+   * ```html
+   * <semantic-map-advanced default-features-color="#c2185b" ...>
+   * ```
+   */
+  defaultFeaturesColor?: string;
+
+  /**
    * Optional comma-separated list of Cesium Ion asset IDs to load as 3D tilesets
    * when 3D mode is enabled. The assets are fetched through the platform's proxy
    * system (configured in proxy.prop as config.proxy.cesium.*), so the Cesium Ion
@@ -357,7 +369,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private draw: Interaction;
   private snap: Interaction;
-  private defaultFeaturesColor = 'rgba(128,128,128,0.5)'; // Default gray color
+  private defaultFeaturesColor: string; // Set from prop or fallback to grey
 
   // OLCesium 3D view properties (lazily loaded)
   private ol3d: any = null;
@@ -378,6 +390,31 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   constructor(props: SemanticMapAdvancedProps, context: ComponentContext) {
     super(props, context);
+
+    // Initialize default features color from prop or use grey fallback
+    if (this.props.defaultFeaturesColor) {
+      // Convert any CSS color format (hex, rgb, rgba) to rgba with 0.5 alpha
+      const c = this.props.defaultFeaturesColor.trim();
+      if (c.startsWith('rgba')) {
+        this.defaultFeaturesColor = c;
+      } else if (c.startsWith('rgb(')) {
+        // rgb(r,g,b) -> rgba(r,g,b,0.5)
+        this.defaultFeaturesColor = c.replace('rgb(', 'rgba(').replace(')', ', 0.5)');
+      } else if (c.startsWith('#')) {
+        const hex = c.substring(1);
+        let r = 0, g = 0, b = 0;
+        if (hex.length === 3) {
+          r = parseInt(hex[0] + hex[0], 16); g = parseInt(hex[1] + hex[1], 16); b = parseInt(hex[2] + hex[2], 16);
+        } else if (hex.length === 6) {
+          r = parseInt(hex.substring(0, 2), 16); g = parseInt(hex.substring(2, 4), 16); b = parseInt(hex.substring(4, 6), 16);
+        }
+        this.defaultFeaturesColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+      } else {
+        this.defaultFeaturesColor = 'rgba(128,128,128,0.5)';
+      }
+    } else {
+      this.defaultFeaturesColor = 'rgba(128,128,128,0.5)';
+    }
 
     // Initialize debounced update function
     this.debouncedUpdateVisibleFeatures = _.debounce(() => {

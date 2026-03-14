@@ -139,6 +139,11 @@ export interface SemanticChartConfig {
    * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> which is applied to render tooltip for chart points.
    */
   tooltipTemplate?: string;
+
+  /**
+   * Optional repository to execute labels queries against. If omitted, labels will be resolved against the semantic context where the chart configuration applies to.
+   */
+  labelRepository?: string;
 }
 
 export type DataPoint = SparqlClient.Binding;

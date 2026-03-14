@@ -478,12 +478,13 @@ export class DashboardComponent extends Component<Props, State> {
     }
 
     const itemViewConfig = this.props.views.find(({id}) => id === item.viewId);
+    const selectedItem = this.state.items.find((i) => (i.viewId === item.viewId));
     const itemLinkedViewConfig = this.props.linkedViews.find(({id}) => id === item.viewId);
     
     const viewConfig = !itemViewConfig?itemLinkedViewConfig:itemViewConfig;
 
     if (viewConfig?.unique && this.state.items.find(i => i.viewId === item.viewId)) { 
-      this.state.layout.doAction(FlexLayout.Actions.selectTab(viewConfig.id));     
+      this.state.layout.doAction(FlexLayout.Actions.selectTab(selectedItem.id));     
       return;
     } else {
       this.setState(

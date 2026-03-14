@@ -147,7 +147,7 @@ export class SemanticChart extends Component<SemanticChartProps, State> {
 
   buildRendererProps(config: SemanticChartConfig, queryResult: SparqlClient.SparqlSelectResult) {
     const data = buildData(config, queryResult);
-    fetchLabels(data)
+    fetchLabels.call(this, data, config.labelRepository)
       .onValue((labels) => {
         this.setState({
           queryResult,
@@ -297,7 +297,7 @@ function buildCategorialDataInPlace(dataPoints: DataPoint[], dataSets: DataSet[]
   return { sets: dataSets, categories: categories };
 }
 
-function fetchLabels(data: BuiltData): Kefir.Property<Dictionary<string>> {
+function fetchLabels(data: BuiltData, labelRepository?: string): Kefir.Property<Dictionary<string>> {
   const iris: Rdf.Iri[] = [];
   for (const set of data.sets) {
     if (set.iri) {
@@ -320,7 +320,8 @@ function fetchLabels(data: BuiltData): Kefir.Property<Dictionary<string>> {
     }
   }
   const context = {
-    ...this.context.semanticContext
+    ...this.context.semanticContext,
+    ...(labelRepository ? { repository: labelRepository } : {})
   };
   return getLabels(iris,{context}).map((labels) => labels.mapKeys((k) => k.value).toObject());
 }

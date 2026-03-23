@@ -131,11 +131,45 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     this.queryAllImagesInfo();
   }
 
-  private triggerManifestUpdatedEvent = (resources: IiifManifestResource[], regionIris?:string[]) => {
+  private getRegionsForResource(resourceIri: string, allImages: IiifManifestResource[] = this.state.allImages) {
+    if (!this.miradorInstance || !this.miradorInstance.viewer || !this.miradorInstance.viewer.workspace) {
+      return undefined;
+    }
+    const windows = this.miradorInstance.viewer.workspace.windows;
+    const resource = allImages.find(r => r.resourceIri === resourceIri);
+    const resourceImages = resource?.images || [];
+    const regions = [];
+
+    for (const window of windows) {
+      if (resourceImages.includes(window.canvasID) && window.annotationsList) {
+        window.annotationsList.forEach(annotation => {
+          const regionIri = annotation['@id'];
+          const existingRegion = resource.regions && resource.regions.find(r => r.regionIri === regionIri);
+          const visibility = existingRegion ? existingRegion.visibility : true;
+          if (!regions.some(r => r.regionIri === regionIri)) {
+            regions.push({ regionIri, visibility });
+          }
+        });
+      }
+    }
+    return regions.length > 0 ? regions : undefined;
+  }
+
+  private triggerManifestUpdatedEvent = (resources: IiifManifestResource[]) => {
+    const resourcesWithRegions = resources.map(resource => {
+      const resourceRegions = this.getRegionsForResource(resource.resourceIri, resources);
+      return {
+        ...resource,
+        regions: resourceRegions
+      };
+    });
+
+    this.setState({ allImages: resourcesWithRegions });
+
     trigger({
       eventType: ManifestUpdatedEvent,
       source: this.props.id,
-      data: { resources,regionIris }
+      data: { resources: resourcesWithRegions}
     });
   }
 
@@ -153,13 +187,41 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       const imageIri = oa.on[0].full;
       const resourceIri = this.state.allImages.find(i => i.images.includes(imageIri)).resourceIri;
       const regionLabel = getAnnotationTextResource(oa).chars;
+
+      let newImages = [...this.state.allImages];
+      const resourceIndex = newImages.findIndex(r => r.resourceIri === resourceIri);
+
+      if (resourceIndex !== -1) {
+        const resource = newImages[resourceIndex];
+        const miradorRegions = this.getRegionsForResource(resourceIri, newImages) || [];
+        let newRegions = [...miradorRegions];
+
+        if (eventType === RegionCreatedEvent) {
+          if (!newRegions.some(r => r.regionIri === regionIri.value)) {
+            newRegions.push({ regionIri: regionIri.value, visibility: true });
+          }
+        } else if (eventType === RegionRemovedEvent) {
+          newRegions = newRegions.filter(r => r.regionIri !== regionIri.value);
+        }
+
+        newImages[resourceIndex] = { ...resource, regions: newRegions };
+      }
+
+      this.setState({ allImages: newImages });
+
+      trigger({
+        eventType: ManifestUpdatedEvent,
+        source: this.props.id,
+        data: { resources: newImages }
+      });
+
       trigger({
         eventType,
         source: this.props.id,
         data: {
           resourceIri, imageIri, regionIri: regionIri.value, regionLabel
         }
-      });
+      });    
     }
 
   public shouldComponentUpdate(nextProps: ImageRegionEditorProps, nextState: ImageRegionEditorState) {
@@ -448,6 +510,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         value: (event) => {
           if (event.data.regionIri) {
             this.setRegionVisibility(event.data.regionIri, true);
+            //this.triggerManifestUpdatedEvent(this.state.allImages);
             this.triggerToggleAnnotationEvent(event.data.regionIri);
           }
         }
@@ -464,6 +527,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         value: (event) => {
           if (event.data.regionIri) {
             this.setRegionVisibility(event.data.regionIri, false);
+            //this.triggerManifestUpdatedEvent(this.state.allImages);
             this.triggerToggleAnnotationEvent(event.data.regionIri);
           }
         }
@@ -479,17 +543,10 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       .observe({
         value: (event) => { 
           if (event.data.regionIri) {
-            if (event.data.imageIri) {
-              const windows = this.miradorInstance.viewer.workspace.windows;
-              const window = windows.find(w => w.canvasID === event.data.imageIri);
-              if (window) {
-                this.toggleRegionVisibilityInWindow(window, event.data.regionIri);
-              }
-            } else {
-              this.toggleRegionVisibility(event.data.regionIri);
-            }
+            this.toggleRegionVisibility(event.data.regionIri);
           }
           
+          //this.triggerManifestUpdatedEvent(this.state.allImages);
           this.triggerToggleAnnotationEvent(event.data.regionIri);
         }
       });
@@ -503,12 +560,11 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       )
       .observe({
         value: (event) => { console.log("toggling");
+          let newImages = this.state.allImages;
           if (event.data.regionIris) {
-            event.data.regionIris.forEach((regionIri) => {
-              this.toggleRegionVisibility(regionIri);
-            });
+            newImages = this.toggleRegionsVisibility(event.data.regionIris);
           }
-          this.triggerManifestUpdatedEvent(this.state.allImages,event.data.regionIris);
+          this.triggerManifestUpdatedEvent(newImages);
           //this.triggerToggleAnnotationEvent(event.data.regionIris);
         }
       });
@@ -723,37 +779,41 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     });
   }
 
+  private updateRegionVisibilityState(updates: Array<{ regionIri: string, visible: boolean }>): IiifManifestResource[] {
+    const newAllImages = this.state.allImages.map(resource => {
+      if (!resource.regions) return resource;
+      const updatedRegions = resource.regions.map(region => {
+        const update = updates.find(u => u.regionIri === region.regionIri);
+        if (update) {
+          return { ...region, visibility: update.visible };
+        }
+        return region;
+      });
+      return { ...resource, regions: updatedRegions };
+    });
+    this.setState({ allImages: newAllImages });
+    return newAllImages;
+  }
+
   private setRegionVisibility = (regionIri: string, visible: boolean) => {
+    this.updateRegionVisibilityState([{ regionIri, visible }]);
     const windows = this.miradorInstance.viewer.workspace.windows;
     for (const window of windows) {
-      const annotation = window.annotationsList.find(a => a['@id'] === regionIri);
-      if (annotation) {
-        const imageView = window.focusModules.ImageView;
-        if (imageView && imageView.annotationsLayer) {
-           const layer = imageView.annotationsLayer as any;
-           const shapesMap = layer.drawTool ? layer.drawTool.annotationsToShapesMap : (layer.annotationsToShapesMap || null);
-           
-           if (shapesMap) {
-             const shapes = shapesMap[regionIri];
-             if (shapes) {
-               shapes.forEach(shape => {
-                 shape.visible = visible;
-               });
-               const paperScope = (layer.drawTool && layer.drawTool.paperScope) ||
-                 (layer.drawTool && layer.drawTool.svgOverlay && layer.drawTool.svgOverlay.paperScope) ||
-                 (layer.svgOverlay && layer.svgOverlay.paperScope) ||
-                 layer.paperScope;
-               if (paperScope && paperScope.view) {
-                 paperScope.view.draw();
-               }
-             }
-           }
-        }
-      }
+      this.setRegionVisibilityInWindow(window, regionIri, visible);
     }
   }
 
   private setAllRegionsVisibility = (visible: boolean) => {
+    const updates = [];
+    this.state.allImages.forEach(resource => {
+      if (resource.regions) {
+        resource.regions.forEach(region => {
+          updates.push({ regionIri: region.regionIri, visible });
+        });
+      }
+    });
+    this.updateRegionVisibilityState(updates);
+
     const windows = this.miradorInstance.viewer.workspace.windows;
     for (const window of windows) {
       const imageView = window.focusModules.ImageView;
@@ -783,13 +843,42 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   }
 
   private toggleRegionVisibility = (regionIri: string) => {
-    const windows = this.miradorInstance.viewer.workspace.windows;
-    for (const window of windows) {
-      this.toggleRegionVisibilityInWindow(window, regionIri);
+    let current = true;
+    for (const resource of this.state.allImages) {
+      const region = resource.regions && resource.regions.find(r => r.regionIri === regionIri);
+      if (region) {
+        current = region.visibility;
+        break;
+      }
     }
+    this.setRegionVisibility(regionIri, !current);
   }
 
-  private toggleRegionVisibilityInWindow = (window: Mirador.Window, regionIri: string) => {
+  private toggleRegionsVisibility(regionIris: string[]) {
+    const updates = [];
+    const windows = this.miradorInstance.viewer.workspace.windows;
+
+    regionIris.forEach(regionIri => {
+      let current = true;
+      for (const resource of this.state.allImages) {
+        const region = resource.regions && resource.regions.find(r => r.regionIri === regionIri);
+        if (region) {
+          current = region.visibility;
+          break;
+        }
+      }
+      updates.push({ regionIri, visible: !current });
+
+      // Update visual
+      for (const window of windows) {
+        this.setRegionVisibilityInWindow(window, regionIri, !current);
+      }
+    });
+
+    return this.updateRegionVisibilityState(updates);
+  }
+
+  private setRegionVisibilityInWindow = (window: Mirador.Window, regionIri: string, visible: boolean) => {
     const annotation = window.annotationsList.find(a => a['@id'] === regionIri);
     if (annotation) {
       const imageView = window.focusModules.ImageView;
@@ -801,7 +890,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
             const shapes = shapesMap[regionIri];
             if (shapes) {
               shapes.forEach(shape => {
-                shape.visible = !shape.visible;
+                shape.visible = visible;
               });
               const paperScope = (layer.drawTool && layer.drawTool.paperScope) ||
                 (layer.drawTool && layer.drawTool.svgOverlay && layer.drawTool.svgOverlay.paperScope) ||
@@ -817,6 +906,16 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   }
 
   private toggleAllRegionsVisibility = () => {
+    const updates = [];
+    this.state.allImages.forEach(resource => {
+      if (resource.regions) {
+        resource.regions.forEach(region => {
+          updates.push({ regionIri: region.regionIri, visible: !region.visibility });
+        });
+      }
+    });
+    this.updateRegionVisibilityState(updates);
+
     const windows = this.miradorInstance.viewer.workspace.windows;
     for (const window of windows) {
       const imageView = window.focusModules.ImageView;
@@ -863,6 +962,9 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
   }
 
   create(annotation: OARegionAnnotation) {
+    console.log('Creating annotation:', annotation);
+    annotation.representsResourcesOfType = Rdf.iri('http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object');
+    console.log('Creating annotation2:', annotation);
     return this.endpoint.create(annotation)
       .onValue(regionIri => this.onCreated(regionIri, annotation));
   }

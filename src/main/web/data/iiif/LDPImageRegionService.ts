@@ -40,6 +40,7 @@ import {
   ImageRegionViewport,
   ImageRegionIsPrimaryAreaOf,
   ImageRegionFields,
+  ImageRegionRepresentsSamplingSite
 } from './ImageRegionSchema';
 
 const IIIF_PRESENTATION_CONTEXT = require('./ld-resources/iiif-context.json');
@@ -60,6 +61,7 @@ export interface OARegionAnnotation {
     };
   }>;
   'http://www.researchspace.org/ontology/viewport': string;
+  representsResourcesOfType?: Rdf.Iri;
 }
 
 /**
@@ -245,6 +247,12 @@ export function getAnnotationTextResource(annotation: OARegionAnnotation): { cha
   }
 }
 
+export function getAnnotationRepresentsResourcesOfType(annotation: OARegionAnnotation): Rdf.Iri {
+  if (annotation) {
+    return annotation.representsResourcesOfType;
+  }
+}
+
 export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation): Forms.CompositeValue {
   const initial: Forms.CompositeValue = {
     type: Forms.CompositeValue.type,
@@ -288,6 +296,15 @@ export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation
         annotation.on.map((on) => {
           const value = Rdf.iri(on.full);
           return Forms.FieldValue.fromLabeled({ value });
+        })
+      );
+    } else if (field.id === ImageRegionRepresentsSamplingSite.id) {
+        const value = getAnnotationRepresentsResourcesOfType(annotation);// this depends on the semantic annotation mode of the viewer
+        //values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
+        values = Immutable.List<Forms.FieldValue>(
+        annotation.on.map((on) => {
+          const value = Rdf.iri(on.full+"/annotation_label/"+textResource.chars);     console.log("value"+value.value);     
+          return Forms.FieldValue.fromLabeled({ value:value});
         })
       );
     }

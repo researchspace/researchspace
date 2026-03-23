@@ -133514,7 +133514,7 @@ S2.define('jquery.select2',[
     }, options);
 
     var uid = $.genUUID();
-    this.element  = this.element || jQuery('<div class="workspace-container" id="workspace-'+uid+'">');
+    this.element  = this.element || jQuery('<div class="mirador-container workspace-container" id="workspace-'+uid+'">');
     this.init();
 
   };
@@ -133656,7 +133656,7 @@ S2.define('jquery.select2',[
 
       // Enter
       divs.enter().append("div")
-        .attr("class", "layout-slot")
+        .attr("class", "layout-slot mirador-container")
         .attr("data-layout-slot-id", function(d) { return d.id; })
         .call(cell)
         .each(function(d) {
@@ -138719,7 +138719,7 @@ S2.define('jquery.select2',[
       availableAnnotationDrawingTools: availableAnnotationDrawingTools,
       availableExternalCommentsPanel: availableExternalCommentsPanel,
       dashArray: [],
-      strokeWidth: 1,
+      strokeWidth: 3,
       fixedShapeSize: drawingToolsSettings.fixedShapeSize,
       selectedColor: drawingToolsSettings.selectedColor || '#004c66',
       shapeHandleSize:drawingToolsSettings.shapeHandleSize,
@@ -138736,7 +138736,7 @@ S2.define('jquery.select2',[
     this.currentTool = null;
     // Default colors.
     this.dashArray = [];
-    this.strokeWidth = 1;
+    this.strokeWidth = 3;
     this.strokeColor = drawingToolsSettings.strokeColor;
     this.fillColor = drawingToolsSettings.fillColor;
     this.fillColorAlpha = drawingToolsSettings.fillColorAlpha;
@@ -143506,8 +143506,9 @@ $.SimpleASEndpoint = function (options) {
     },
 
     addStrokeStylePicker:function(){
+	  this.setBackground.thick(this.container.find('.mirador-line-type .thick'));
       this.setBackground.solid(this.container.find('.mirador-line-type .solid'));
-      this.setBackground.thick(this.container.find('.mirador-line-type .thick'));
+      
       this.setBackground.thickest(this.container.find('.mirador-line-type .thickest'));
       this.setBackground.dashed(this.container.find('.mirador-line-type .dashed'));
       this.setBackground.dotdashed(this.container.find('.mirador-line-type .dotdashed'));
@@ -143651,7 +143652,7 @@ $.SimpleASEndpoint = function (options) {
                                    '{{#if showStrokeStyle}}',
                                    '<a class="hud-control hud-dropdown hud-disabled mirador-line-type" aria-label="{{t "borderTypeTooltip"}}" title="{{t "borderTypeTooltip"}}">',
                                    '<i class="material-icons mirador-border-icon">create</i>',
-                                   '<i class="border-type-image solid"></i>',
+                                   '<i class="border-type-image thick"></i>',
                                    '<i class="fa fa-caret-down dropdown-icon"></i>',
                                    '<ul class="dropdown type-list">',
                                    '<li><i class="fa solid"></i> {{t "solid"}}</li>',
@@ -143673,7 +143674,7 @@ $.SimpleASEndpoint = function (options) {
                                    '</a>',
                                    '{{/if}}',
                                    '{{#if showRefresh}}',
-                                     '<a class="hud-control mirador-osd-refresh-mode">',
+                                     '<a class="hud-control mirador-osd-refresh-mode" onClick="">',
                                      '<i class="fa fa-lg fa-refresh"></i>',
                                      '</a>',
                                    '{{/if}}',
@@ -144311,6 +144312,7 @@ $.SimpleASEndpoint = function (options) {
       this.element.find('.mirador-osd-refresh-mode').on('click', function() {
         //update annotation list from endpoint
         _this.eventEmitter.publish('updateAnnotationList.' + _this.windowId);
+        _this.eventEmitter.publish('ANNOTATIONS_REFRESH_CLICKED.' + _this.windowId);console.log("clicked refresh");
       });
       //Annotation specific controls
 

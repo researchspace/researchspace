@@ -22,6 +22,7 @@ import * as React from 'react';
 
 import { Cancellation, requestAsProperty } from 'platform/api/async';
 import { Component } from 'platform/api/components';
+import { listen, trigger } from 'platform/api/events';
 import * as http from 'platform/api/http';
 import { Rdf } from 'platform/api/rdf';
 import { VocabPlatform } from 'platform/api/rdf/vocabularies';
@@ -35,16 +36,26 @@ import { OverlayDialog, getOverlaySystem } from 'platform/components/ui/overlay'
 import { Spinner } from 'platform/components/ui/spinner';
 
 import * as Schema from '../model/AnnotationSchema';
-import { TextEditorState, WorkspaceHandlers, AnnotationBodyType, WorkspacePermissions } from '../model/ComponentModel';
+import * as EditorModel from '../model/EditorModel';
+import { TextEditorState, WorkspaceHandlers, AnnotationBodyType, WorkspacePermissions, SidebarTab } from '../model/ComponentModel';
 
 import { AnnotationEditForm } from './AnnotationEditForm';
 import { AnnotationSidebar } from './AnnotationSidebar';
 import { TextAnnotationEditor, makeIntitialEditorState } from './TextAnnotationEditor';
-import { extractAnnotationType } from './TextAnnotationType';
+import { TextAnnotationType, extractAnnotationType } from './TextAnnotationType';
+import { FocusAnnotation, AnnotationFocused } from '../TextAnnotationEvents';
+
+import { componentHasType } from 'platform/components/utils';
 
 import * as styles from './TextAnnotationWorkspace.scss';
 
 export interface TextAnnotationWorkspaceProps {
+  /**
+   * Unique identifier for the workspace instance. Required for event bus
+   * integration — used as `target` for incoming events and `source` for
+   * outgoing events. When omitted, no events are listened to or emitted.
+   */
+  id?: string;
   /**
    * Text document IRI to load in the annotation editor.
    * All annotations attached to this document are loaded as well.
@@ -74,10 +85,25 @@ export interface TextAnnotationWorkspaceProps {
    * See `AnnotationTemplateBindings` for template bindings.
    */
   fallbackTemplate?: string;
+  /**
+   * JSON array of custom sidebar tab definitions. Each tab references a
+   * <code>&lt;template id="sidebar-{key}"&gt;</code> child for its content.
+   *
+   * Example: <code>[{"key": "iiif", "label": "IIIF"}, {"key": "metadata", "label": "Metadata"}]</code>
+   *
+   * Templates receive <code>{{iri}}</code> binding set to the document IRI.
+   */
+  sidebarTabs?: string | Array<{ key: string; label: string; iconUrl?: string }>;
+  /**
+   * Key of the custom sidebar tab to select by default (e.g. <code>"iiif"</code>).
+   * If not set, the Annotations tab is selected.
+   */
+  defaultSidebarTab?: string;
 }
 
 interface State {
   annotationTypes?: ReadonlyMap<string, AnnotationBodyType>;
+  customTabs?: ReadonlyArray<SidebarTab>;
   loadingDocument?: boolean;
   loadingError?: any;
   permissions?: WorkspacePermissions;
@@ -124,8 +150,24 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
       throw new Error(`Missing required property 'annotation-tooltip'`);
     }
 
+    // Subscribe to incoming FocusAnnotation events when id is provided
+    if (this.props.id) {
+      this.cancellation
+        .map(listen({ eventType: FocusAnnotation, target: this.props.id }))
+        .observe({
+          value: (event) => {
+            if (event.data && event.data.annotationIri) {
+              const iri = Rdf.iri(event.data.annotationIri);
+              this.onFocusAnnotation(iri);
+              this.onHighlightAnnotations(new Set([iri.value]));
+            }
+          },
+        });
+    }
+
     const annotationTypes = extractAnnotationTypes(this.props.children);
-    this.setState({ annotationTypes });
+    const customTabs = this.parseSidebarTabs();
+    this.setState({ annotationTypes, customTabs });
 
     const documentIri = Rdf.iri(this.props.documentIri);
 
@@ -178,7 +220,7 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
       return <ErrorNotification title={`Error loading document ${documentIri}`} errorMessage={loadingError} />;
     }
 
-    const { permissions, editorState, highlightedAnnotations, focusedAnnotation } = this.state;
+    const { permissions, editorState, highlightedAnnotations, focusedAnnotation, customTabs } = this.state;
     return (
       <div className={styles.component}>
         <TextAnnotationEditor
@@ -199,6 +241,10 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
           focusedAnnotation={focusedAnnotation}
           permissions={permissions}
           handlers={this.handlers}
+          customTabs={customTabs || []}
+          documentIri={documentIri}
+          templateScope={this.appliedTemplateScope}
+          defaultTab={this.props.defaultSidebarTab}
         />
       </div>
     );
@@ -209,11 +255,60 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
   };
 
   private onHighlightAnnotations = (highlighted: ReadonlySet<string>) => {
-    this.setState({ highlightedAnnotations: highlighted });
+    this.setState((state): State => {
+      const { editorState } = state;
+      if (!editorState) {
+        return { highlightedAnnotations: highlighted };
+      }
+      // Also update Slate annotation data so AnnotationMark renders with highlight
+      const highlightedAnnotations = EditorModel.highlightAnnotations(
+        editorState.value.annotations, highlighted
+      );
+      const nextEditorState = editorState.set({
+        value: EditorModel.setValueProps(editorState.value, { annotations: highlightedAnnotations }),
+      });
+      return {
+        highlightedAnnotations: highlighted,
+        editorState: nextEditorState,
+      };
+    });
   };
 
   private onFocusAnnotation = (focused: Rdf.Iri | undefined) => {
-    this.setState({ focusedAnnotation: focused });
+    this.setState({ focusedAnnotation: focused }, () => {
+      // Emit outgoing event so custom sidebar templates can react
+      if (this.props.id) {
+        trigger({
+          eventType: AnnotationFocused,
+          source: this.props.id,
+          data: focused ? { annotationIri: focused.value } : {},
+        });
+      }
+
+      // Scroll annotation into view within the editor panel (only if not already visible)
+      if (focused) {
+        // Wait a tick for the highlight to render
+        setTimeout(() => {
+          const editorPanel = document.querySelector('.TextAnnotationWorkspace--editorPanel');
+          if (!editorPanel) { return; }
+
+          // Find the annotation span by its data attribute
+          const targetSpan = editorPanel.querySelector(
+            `[data-annotation-iri="${CSS.escape(focused.value)}"]`
+          ) as HTMLElement | null;
+
+          if (!targetSpan) { return; }
+
+          // Check if already visible within the editor panel scroll container
+          const panelRect = editorPanel.getBoundingClientRect();
+          const spanRect = targetSpan.getBoundingClientRect();
+          const isVisible = spanRect.top >= panelRect.top && spanRect.bottom <= panelRect.bottom;
+          if (!isVisible) {
+            targetSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 50);
+      }
+    });
   };
 
   private onBeginAddingAnnotation = () => {
@@ -403,6 +498,67 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
     return task;
   };
 
+  private parseSidebarTabs(): ReadonlyArray<SidebarTab> {
+    if (!this.props.sidebarTabs) {
+      return [];
+    }
+    const scope = this.appliedTemplateScope;
+
+    let tabDefs: Array<{ key: string; label: string; iconUrl?: string }>;
+    try {
+      tabDefs = typeof this.props.sidebarTabs === 'string'
+        ? JSON.parse(this.props.sidebarTabs)
+        : this.props.sidebarTabs;
+    } catch (e) {
+      throw new Error(`sidebarTabs prop contains invalid JSON: ${e instanceof Error ? e.message : String(e)}`);
+    }
+
+    if (!Array.isArray(tabDefs)) {
+      throw new TypeError(`sidebarTabs prop must be a JSON array`);
+    }
+
+    return tabDefs.map((def, index) => {
+      if (typeof def !== 'object' || def === null) {
+        throw new Error(`sidebarTabs[${index}] must be an object`);
+      }
+
+      // Restrict key to safe identifier characters to prevent template-ID injection
+      if (typeof def.key !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(def.key)) {
+        throw new Error(
+          `sidebarTabs[${index}].key must be a non-empty string containing only` +
+          ` alphanumeric characters, hyphens, or underscores`
+        );
+      }
+
+      if (typeof def.label !== 'string' || def.label.length === 0) {
+        throw new Error(`sidebarTabs[${index}].label must be a non-empty string`);
+      }
+
+      // Only allow relative paths and http/https absolute URLs in iconUrl
+      if (def.iconUrl !== undefined) {
+        if (typeof def.iconUrl !== 'string' || !isSafeUrl(def.iconUrl)) {
+          throw new Error(
+            `sidebarTabs[${index}].iconUrl is not a safe URL — only http, https,` +
+            ` and relative URLs are permitted`
+          );
+        }
+      }
+
+      const partial = scope ? scope.getPartial(`sidebar-${def.key}`) : undefined;
+      if (!partial) {
+        throw new Error(
+          `Missing <template id="sidebar-${def.key}"> for sidebar tab "${def.label}"`
+        );
+      }
+      return {
+        key: def.key,
+        label: def.label,
+        iconUrl: def.iconUrl,
+        template: partial.source,
+      };
+    });
+  }
+
   private getPersistence() {
     const { semanticContext } = this.context;
     return new Forms.LdpPersistence({
@@ -412,9 +568,30 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
   }
 }
 
+/**
+ * Returns true for relative URLs and absolute http/https URLs.
+ * Blocks dangerous schemes such as javascript:, data:, vbscript:, etc.
+ * 
+ * Trim whitespace first — browsers strip it from src attributes, so
+ * " javascript:..." would otherwise bypass the scheme check below.
+ */
+function isSafeUrl(url: string): boolean {
+
+  const trimmed = url.trim();
+  // Relative paths (no URI scheme present) are safe.
+  if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) {
+    return true;
+  }
+  const lower = trimmed.toLowerCase();
+  return lower.startsWith('http://') || lower.startsWith('https://');
+}
+
 function extractAnnotationTypes(children: React.ReactNode): ReadonlyMap<string, AnnotationBodyType> {
   const types = new Map<string, AnnotationBodyType>();
   React.Children.forEach(children, (child) => {
+    if (!componentHasType(child, TextAnnotationType)) {
+      return; // skip non-annotation-type children (e.g. sidebar tab templates)
+    }
     const type = extractAnnotationType(child);
     types.set(type.iri.value, type);
   });

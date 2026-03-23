@@ -199,9 +199,9 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
           .then(binding=>{
             if (binding.resourceFormIri) {
               if (binding.scheme)
-                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" scheme="${binding.scheme.value}"}}`});
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" subject="${rdfNode.value}" scheme="${binding.scheme.value}"}}`});
               else  
-                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit"}}`});
+                this.setState({activeForm: `{{> "${binding.resourceFormIri.value}" nested=true editable=true mode="edit" subject="${rdfNode.value}"}}`});
             }
             else
                 {this.setState({activeForm: undefined, valueSelectedWithoutEditForm: true});}})

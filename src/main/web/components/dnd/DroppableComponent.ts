@@ -103,6 +103,7 @@ interface State {
 export class Droppable extends Component<DroppableProps, State> {
   private target: Element;
   public refs: { trigger: OverlayTriggerOverride };
+  private triggerRef: OverlayTriggerOverride | null = null;
 
   constructor(props: DroppableProps) {
     super(props);
@@ -279,9 +280,9 @@ export class Droppable extends Component<DroppableProps, State> {
   public shouldComponentUpdate(nextProps, nextState) {
     if (this.props.dropComponents && this.props.dropComponents.disabledHover) {
       if (!this.showDisabledHover(this.state) && this.showDisabledHover(nextState)) {
-        this.refs.trigger.show();
+        if (this.triggerRef) this.triggerRef.show();
       } else if (this.showDisabledHover(this.state) && !this.showDisabledHover(nextState)) {
-        this.refs.trigger.hide();
+        if (this.triggerRef) this.triggerRef.hide();
       }
     }
     return true;
@@ -323,7 +324,7 @@ export class Droppable extends Component<DroppableProps, State> {
       return OverlayTrigger(
         {
           trigger: [],
-          ref: 'trigger',
+          ref: (node) => { this.triggerRef = node as OverlayTriggerOverride; },
           placement: 'top',
           overlay: Popover({ id: 'help' }, cloneElement(this.props.dropComponents.disabledHover)),
           defaultOverlayShown: false,

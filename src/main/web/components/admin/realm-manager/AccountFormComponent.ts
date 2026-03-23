@@ -201,9 +201,10 @@ class AccountFormComponent extends Component<Props, State> {
     const create = existingAccount.isNothing;
     return D.div(
       { className: 'account-manager-component__create-account-panel' },
-      Panel(
-        { header: create ? 'New Account' : 'Update Account' },
-        D.form(
+      createElement(ReactBootstrap.Panel, {},
+        createElement(ReactBootstrap.Panel.Heading, {}, create ? 'New Account' : 'Update Account'),
+        createElement(ReactBootstrap.Panel.Body, {},
+          D.form(
           {
             key: 'account-panel',
             onSubmit: create ? this.onSubmitCreateAccount : this.onSubmitUpdateAccount,
@@ -297,7 +298,8 @@ class AccountFormComponent extends Component<Props, State> {
                 'Delete account'
               )
             )
-      ) // end of panel
+          ) // end of panel body
+        ) // end of panel
     );
   };
 

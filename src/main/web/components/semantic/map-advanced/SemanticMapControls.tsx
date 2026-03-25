@@ -27,6 +27,7 @@ import {
   SemanticMapControlsToggleMeasurement,
   SemanticMapControlsHandleGeneralizedData,
   SemanticMapControlsHighlightFeatures,
+  SemanticMapSendVisibleGroups,
   GeneralizedEventData,
 } from './SemanticMapControlsEvents';
 import { SemanticMapRequestControlsRegistration, SemanticMapSendSelectedFeature, SemanticMapClearSelectedFeature } from './SemanticMapEvents';
@@ -47,8 +48,8 @@ const sliderbar: CSSProperties = {
 interface Timeline {
   mode: 'marked' | 'normal';
   min: number;
-  max: number;
-  default: number;
+  max?: number;
+  default?: number;
   locked?: boolean;
   tour?: boolean;
 }
@@ -81,6 +82,8 @@ interface State {
   sunHeightDeg: number;
   sunDirectionDeg: number;
   is3dEnabled: boolean;
+  visibleGroups: string[]; // Groups with features visible in current viewport
+  isLegendHovered: boolean; // Whether the legend is being hovered
 }
 
 interface Props {
@@ -169,6 +172,31 @@ export class SemanticMapControls extends Component<Props, State> {
   private featuresTaxonomies = [];
   private featuresColorTaxonomies = [];
   private defaultFeaturesColor: string;
+
+  /**
+   * Returns the effective maximum year for the timeline.
+   * Falls back to the current year if not specified in props.
+   */
+  private getTimelineMax(): number {
+    const currentYear = new Date().getFullYear();
+    if (this.props.timeline && this.props.timeline.max != null) {
+      return this.props.timeline.max;
+    }
+    return currentYear;
+  }
+
+  /**
+   * Returns the effective default year for the timeline.
+   * Falls back to the current year if not specified in props.
+   */
+  private getTimelineDefault(): number {
+    const currentYear = new Date().getFullYear();
+    if (this.props.timeline && this.props.timeline.default != null) {
+      return this.props.timeline.default;
+    }
+    return currentYear;
+  }
+
   //TODO: fix optionals
   constructor(props: any, context: ComponentContext) {
     super(props, context);
@@ -188,7 +216,7 @@ export class SemanticMapControls extends Component<Props, State> {
       featuresColorGroups: [],
       displayColorPicker: {},
       groupColorAssociations: {},
-      year: this.props.timeline ? this.props.timeline.default : new Date().getFullYear(), // Todo fix optional timeline props.
+      year: this.props.timeline ? this.getTimelineDefault() : new Date().getFullYear(),
       yearMarks: [],
       registeredMap: '',
       activePanel: null,
@@ -197,6 +225,8 @@ export class SemanticMapControls extends Component<Props, State> {
       sunHeightDeg: 45,
       sunDirectionDeg: 180,
       is3dEnabled: false,
+      visibleGroups: [],
+      isLegendHovered: false,
     };
     this.toggleGroupDisabled = this.toggleGroupDisabled.bind(this);
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
@@ -249,6 +279,16 @@ export class SemanticMapControls extends Component<Props, State> {
         })
       )
       .onValue(this.handleGeneralizedData);
+
+    // Listen for visible groups updates from the map (viewport-aware legend)
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapSendVisibleGroups,
+          target: this.props.id,
+        })
+      )
+      .onValue(this.handleVisibleGroupsUpdate);
 
     this.onDragEnd = this.onDragEnd.bind(this);
   }
@@ -1091,6 +1131,14 @@ export class SemanticMapControls extends Component<Props, State> {
   };
   
   /**
+   * Handle visible groups update from the map.
+   * Updates which taxonomy groups have features in the current viewport.
+   */
+  private handleVisibleGroupsUpdate = (event: any) => {
+    this.setState({ visibleGroups: event.data || [] });
+  };
+
+  /**
    * Trigger feature highlighting based on a SPARQL pattern
    */
   private triggerHighlightFeatures = (pattern: string) => {
@@ -1716,7 +1764,7 @@ export class SemanticMapControls extends Component<Props, State> {
                   type={'range'}
                   className={styles.timelineSlider}
                   min={this.props.timeline.min}
-                  max={this.props.timeline.max}
+                  max={this.getTimelineMax()}
                   step={1}
                   value={this.state.year}
                   onChange={this.handleTimelineChange}
@@ -1744,25 +1792,33 @@ export class SemanticMapControls extends Component<Props, State> {
          this.state.featuresColorTaxonomy !== '' && 
          this.state.featuresColorTaxonomy !== 'default' && 
          this.state.featuresColorGroups.length > 0 && (
-          <div className={`${styles.colorsLegend} ${this.state.activePanel === null ? styles.colorsLegendExternal : styles.colorsLegendWithPanel}`}>
+          <div 
+            className={`${styles.colorsLegend} ${this.state.activePanel === null ? styles.colorsLegendExternal : styles.colorsLegendWithPanel}`}
+            onMouseEnter={() => this.setState({ isLegendHovered: true })}
+            onMouseLeave={() => this.setState({ isLegendHovered: false })}
+          >
             {/* Button container - will be hidden/shown on hover */}
             <div>
               <button onClick={() => this.enableAllGroups()}>
-                <i className="fa fa-check-circle" style={{ marginRight: '5px' }}></i>
-                Select All
+                <i className="fa fa-eye" style={{ marginRight: '5px' }}></i>
+                See all
               </button>
               <button onClick={() => this.disableAllGroups()} style={{ marginLeft: '10px' }}>
-                <i className="fa fa-times-circle" style={{ marginRight: '5px' }}></i>
-                Clear All
+                <i className="fa fa-eye-slash" style={{ marginRight: '5px' }}></i>
+                Hide all
               </button>
             </div>
             {this.state.featuresColorGroups.map((group, index) => {
               const isDisabled = this.state.groupDisabled[group];
+              const isVisibleInViewport = this.state.visibleGroups.includes(group);
+              // When not hovered: hide groups not visible in viewport (unless disabled which already hides via CSS)
+              // When hovered: show all groups
+              const isOutOfViewport = !isVisibleInViewport && !this.state.isLegendHovered;
               return (
                 <div
                   key={group}
                   id={'color-' + group}
-                  className={isDisabled ? styles.disabledColorGroup : ''}
+                  className={`${isDisabled ? styles.disabledColorGroup : ''} ${isOutOfViewport ? styles['outOfViewportGroup'] : ''}`}
                   style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
                 >
                   <div style={stylesSwatch.swatch} onClick={() => this.handleColorpickerClick(group)}>
@@ -2251,7 +2307,8 @@ export class SemanticMapControls extends Component<Props, State> {
   private generateTickMarks = () => {
     if (!this.props.timeline) return [];
 
-    const { min, max } = this.props.timeline;
+    const min = this.props.timeline.min;
+    const max = this.getTimelineMax();
     const range = max - min;
 
     // For small ranges, show more ticks
@@ -2319,7 +2376,7 @@ export class SemanticMapControls extends Component<Props, State> {
     } else {
       // Start animation
       const min = this.props.timeline.min;
-      const max = this.props.timeline.max;
+      const max = this.getTimelineMax();
       let current = this.state.year;
 
       const interval = window.setInterval(() => {

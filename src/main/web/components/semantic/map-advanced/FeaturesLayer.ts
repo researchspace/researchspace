@@ -46,6 +46,20 @@ export interface FeaturesLayerConfig {
    * Default: 1
    */
   opacity?: number | string;
+
+  /**
+   * Optional: Fill opacity 0-1 for polygon/geometry features
+   * Controls the transparency of the interior fill color.
+   * If not set, falls back to the layer's general opacity behavior.
+   */
+  'fill-opacity'?: number | string;
+
+  /**
+   * Optional: Stroke opacity 0-1 for polygon/geometry features
+   * Controls the transparency of the border/outline color.
+   * If not set, falls back to the layer's general opacity behavior.
+   */
+  'stroke-opacity'?: number | string;
 }
 
 export type FeaturesLayerProps = FeaturesLayerConfig & Props<any>;

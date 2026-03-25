@@ -56,12 +56,13 @@ declare namespace SemanticMapControlsScssNamespace {
     opacitySlider: string;
     featuresOptionsDiv: string;
     yearLabel: string;
-  colorsLegend: string;
-  colorsLegendExternal: string;
-  colorsLegendWithPanel: string;
-  disabledColorGroup: string;
-  colorPickerContainer: string;
-  colorPickerFadeOut: string;
+    colorsLegend: string;
+    colorsLegendExternal: string;
+    colorsLegendWithPanel: string;
+    disabledColorGroup: string;
+    outOfViewportGroup: string;
+    colorPickerContainer: string;
+    colorPickerFadeOut: string;
     filtersLabel: string;
     timelineSlider: string;
     

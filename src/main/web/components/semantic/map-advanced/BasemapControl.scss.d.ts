@@ -26,6 +26,17 @@ declare const styles: {
   readonly measurementToolContainer: string;
   readonly measurementToolButton: string;
   readonly active: string;
+  // Visualization banner
+  readonly vizBanner: string;
+  readonly vizBannerMode: string;
+  readonly vizBannerSelect: string;
+  readonly vizBannerRadius: string;
+  readonly vizBannerRadiusIcon: string;
+  readonly vizBannerClose: string;
+  // Compass control
+  readonly compassControlContainer: string;
+  readonly compassControlButton: string;
+  readonly rotated: string;
 };
 
 export = styles;

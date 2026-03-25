@@ -120,6 +120,7 @@ import {
   SemanticMapControlsToggleMeasurement,
   SemanticMapControlsHighlightFeatures,
   SemanticMapControlsHandleGeneralizedData,
+  SemanticMapSendVisibleGroups,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -151,6 +152,10 @@ interface FeaturesLayerConfig {
   visible: boolean;
   /** Optional: Initial opacity 0-1 (default: 1) */
   opacity: number;
+  /** Optional: Fill opacity 0-1 for polygon interiors (default: undefined = use color as-is) */
+  fillOpacity?: number;
+  /** Optional: Stroke opacity 0-1 for polygon borders (default: undefined = use color as-is) */
+  strokeOpacity?: number;
 }
 
 interface ProviderOptions {
@@ -312,6 +317,45 @@ export interface SemanticMapAdvancedConfig {
    * If omitted, no 3D tilesets are loaded (the 3D globe view still works).
    */
   cesiumAssetIds?: string;
+
+  /**
+   * Optional JSON object mapping manifest building paths to their temporal range
+   * (bob = begin of begin, eoe = end of end). Used to control which 3D models
+   * are shown/hidden when the timeline year changes in 3D mode.
+   *
+   * Keys are the `path` values from the manifest.json.
+   * Values are objects with `bob` and `eoe` year numbers.
+   *
+   * Example:
+   * ```html
+   * <semantic-map-advanced cesium-asset-temporal='{
+   *   "5": {"bob": 1737, "eoe": 2026}
+   * }' ...>
+   * ```
+   *
+   * If a manifest entry's path is not listed here, the tileset is always visible (bob=0, eoe=9999).
+   */
+  cesiumAssetTemporal?: string;
+
+  /**
+   * Optional comma-separated list of URLs pointing to self-hosted 3D tilesets
+   * (e.g. tileset.json or manifest.json). These are loaded directly without
+   * going through Cesium Ion — no access token or proxy is needed.
+   *
+   * Example (single URL):
+   * ```html
+   * <semantic-map-advanced cesium-asset-urls="http://myserver:9000/tiles/ifc/LZV/manifest.json" ...>
+   * ```
+   *
+   * Example (multiple URLs):
+   * ```html
+   * <semantic-map-advanced cesium-asset-urls="http://server/tiles/a/tileset.json,http://server/tiles/b/tileset.json" ...>
+   * ```
+   *
+   * Can be used alongside cesium-asset-ids; both Ion-based and URL-based
+   * tilesets will be loaded into the same 3D scene.
+   */
+  cesiumAssetUrls?: string;
 }
 
 export type SemanticMapAdvancedProps = SemanticMapAdvancedConfig & Props<any>;
@@ -339,6 +383,8 @@ interface MapState {
   basemapControlExpanded: boolean;
   selectedBasemapIdentifier: string | null;
   basemapLayers: Array<any>;
+  // Visualization mask target
+  maskTargetIdentifier: string | null;
   // Sun control state
   sunControlExpanded: boolean;
 }
@@ -371,9 +417,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private snap: Interaction;
   private defaultFeaturesColor: string; // Set from prop or fallback to grey
 
+  // Compass control properties
+  private compassCanvas: HTMLCanvasElement | null = null;
+  private compassDragging = false;
+  private compassDragStartAngle = 0; // angle of pointer relative to center at drag start
+  private compassViewStartRotation = 0; // view rotation at drag start
+  private compassRedraw: (() => void) | null = null;
+
   // OLCesium 3D view properties (lazily loaded)
   private ol3d: any = null;
   private cesium3dTileset: any = null;
+  private cesiumUrlTilesets: Array<{ tileset: any; bob: number; eoe: number; path: string }> = [];
   private is3dEnabled: boolean = false;
   private cesiumLib: any = null;
   private readonly tilesetMinAmbient: number = 0.18;
@@ -448,6 +502,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       basemapControlExpanded: false,
       selectedBasemapIdentifier: null,
       basemapLayers: [],
+      maskTargetIdentifier: null,
       sunControlExpanded: false,
     };
 
@@ -697,6 +752,62 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return visible || basemaps[0];
   };
   
+  /**
+   * Returns layers eligible for mask visualization (overlay + feature, excludes basemap).
+   */
+  private getMaskableLayers(): Array<any> {
+    return this.state.mapLayers.filter(layer => {
+      const level = layer.get('level');
+      return level === 'overlay' || level === 'feature' || layer instanceof VectorLayer;
+    });
+  }
+
+  /**
+   * Smart default: first visible overlay, else first visible feature layer.
+   */
+  private getDefaultMaskTarget(): any {
+    const maskable = this.getMaskableLayers();
+    const visibleOverlay = maskable.find(l => l.get('level') === 'overlay' && l.get('visible'));
+    if (visibleOverlay) return visibleOverlay;
+    const visibleFeature = maskable.find(l => (l.get('level') === 'feature' || l instanceof VectorLayer) && l.get('visible'));
+    return visibleFeature || maskable[0] || null;
+  }
+
+  /**
+   * Resolve the current mask target layer from state or default.
+   */
+  private resolveMaskTargetLayer(): any {
+    if (this.state.maskTargetIdentifier) {
+      const found = this.state.mapLayers.find(l => l.get('identifier') === this.state.maskTargetIdentifier);
+      if (found) return found;
+    }
+    return this.getDefaultMaskTarget();
+  }
+
+  /**
+   * Change the mask target layer while a visualization mode is active.
+   */
+  private changeMaskTarget = (identifier: string) => {
+    const currentMode = this.state.overlayVisualization;
+    if (currentMode !== 'spyglass' && currentMode !== 'swipe') return;
+
+    this.resetAllVisualizations();
+
+    const targetLayer = this.state.mapLayers.find(l => l.get('identifier') === identifier);
+    if (!targetLayer) return;
+
+    this.setState({ maskTargetIdentifier: identifier }, () => {
+      if (currentMode === 'spyglass') {
+        targetLayer.on('prerender', this.spyglassFunction);
+        targetLayer.on('postrender', function (event) { event.context.restore(); });
+      } else if (currentMode === 'swipe') {
+        targetLayer.on('prerender', this.swipeFunction);
+        targetLayer.on('postrender', function (event) { event.context.restore(); });
+      }
+      this.map.render();
+    });
+  };
+
   private renderMeasurementToolButton() {
     const isActive = this.state.overlayVisualization === 'measure';
     
@@ -853,6 +964,205 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
     // Store draw fn so we can redraw on external updates
     (container as any)._redrawCompass = draw;
+  }
+
+  /**
+   * Render the compass control that shows orientation and allows rotation.
+   * Click → animate back to north (rotation 0).
+   * Press-and-drag → rotate the 2D view.
+   */
+  private renderCompassControl() {
+    // Read current rotation (OL stores radians, 0 = north)
+    const rotation = this.map ? this.map.getView().getRotation() : 0;
+    const isRotated = Math.abs(rotation) > 0.01; // threshold to avoid flicker
+
+    return D.div(
+      { className: (basemapStyles as any).compassControlContainer },
+      D.button(
+        {
+          className: `${(basemapStyles as any).compassControlButton} ${isRotated ? (basemapStyles as any).rotated : ''}`,
+          title: isRotated ? 'Click to reset to north' : 'Press and drag to rotate the map',
+          ref: (el: any) => {
+            if (el && !el._compassControlInit) {
+              this.initCompassControl(el);
+              el._compassControlInit = true;
+            }
+          },
+        }
+      )
+    );
+  }
+
+  /**
+   * Initialise the compass control canvas inside the given button element.
+   * - Single click (no drag) → animate view rotation back to 0 (north).
+   * - Press-and-drag → rotate the OL 2D view interactively.
+   * The canvas is redrawn whenever the view rotation changes.
+   */
+  private initCompassControl(button: HTMLElement) {
+    const SIZE = 30; // CSS pixels (fits inside 36px button with padding)
+    const RETINA = 2; // pixel ratio for crisp rendering
+    const HALF = SIZE * RETINA / 2; // center of the canvas in canvas-pixels
+
+    // Create retina canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = SIZE * RETINA;
+    canvas.height = SIZE * RETINA;
+    canvas.style.width = SIZE + 'px';
+    canvas.style.height = SIZE + 'px';
+    canvas.style.pointerEvents = 'none'; // clicks go through to button
+    button.appendChild(canvas);
+    this.compassCanvas = canvas;
+
+    const ctx = canvas.getContext('2d');
+
+    // ── Draw helper ──────────────────────────────────────
+    const draw = (rotationRad: number) => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+
+      // Translate to center and rotate the whole dial so north points up
+      ctx.translate(HALF, HALF);
+      ctx.rotate(-rotationRad);
+
+      const R = HALF - 4; // outer radius
+
+      // Outer ring
+      ctx.beginPath();
+      ctx.arc(0, 0, R, 0, Math.PI * 2);
+      ctx.strokeStyle = '#ccc';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Fill
+      ctx.beginPath();
+      ctx.arc(0, 0, R - 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#f9f9f9';
+      ctx.fill();
+
+      // Tick marks for E, S, W (small dots)
+      const tickR = R - 6;
+      for (let deg = 90; deg < 360; deg += 90) {
+        const rad = (deg - 90) * Math.PI / 180;
+        ctx.beginPath();
+        ctx.arc(Math.cos(rad) * tickR, Math.sin(rad) * tickR, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#bbb';
+        ctx.fill();
+      }
+
+      // North needle (red triangle pointing up)
+      const needleLen = R - 8;
+      ctx.beginPath();
+      ctx.moveTo(0, -needleLen);
+      ctx.lineTo(-5, 4);
+      ctx.lineTo(5, 4);
+      ctx.closePath();
+      ctx.fillStyle = '#c0392b';
+      ctx.fill();
+
+      // South needle (lighter, shorter)
+      ctx.beginPath();
+      ctx.moveTo(0, needleLen * 0.6);
+      ctx.lineTo(-4, -2);
+      ctx.lineTo(4, -2);
+      ctx.closePath();
+      ctx.fillStyle = '#ddd';
+      ctx.fill();
+
+      // Center dot
+      ctx.beginPath();
+      ctx.arc(0, 0, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#666';
+      ctx.fill();
+
+      ctx.restore();
+    };
+
+    // Store redraw fn so we can call it externally
+    this.compassRedraw = () => {
+      if (this.map) {
+        draw(this.map.getView().getRotation());
+      }
+    };
+
+    // Initial draw
+    draw(this.map ? this.map.getView().getRotation() : 0);
+
+    // Listen to OL view rotation changes to keep the compass in sync
+    if (this.map) {
+      this.map.getView().on('change:rotation', () => {
+        draw(this.map.getView().getRotation());
+        this.forceUpdate(); // update the "rotated" CSS class
+      });
+    }
+
+    // ── Interaction: click-to-north + drag-to-rotate ──────
+    const self = this;
+    let didDrag = false;
+
+    const pointerAngle = (clientX: number, clientY: number): number => {
+      const rect = button.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      return Math.atan2(clientX - cx, -(clientY - cy)); // radians, 0 = up
+    };
+
+    // mousedown / touchstart
+    const onPointerDown = (clientX: number, clientY: number) => {
+      didDrag = false;
+      self.compassDragging = true;
+      self.compassDragStartAngle = pointerAngle(clientX, clientY);
+      self.compassViewStartRotation = self.map ? self.map.getView().getRotation() : 0;
+    };
+
+    // mousemove / touchmove
+    const onPointerMove = (clientX: number, clientY: number) => {
+      if (!self.compassDragging || !self.map) return;
+      const currentAngle = pointerAngle(clientX, clientY);
+      const delta = currentAngle - self.compassDragStartAngle;
+      // Only count as a drag if the pointer moved a meaningful amount
+      if (Math.abs(delta) > 0.02) {
+        didDrag = true;
+      }
+      self.map.getView().setRotation(self.compassViewStartRotation - delta);
+    };
+
+    // mouseup / touchend
+    const onPointerUp = () => {
+      self.compassDragging = false;
+      // If the user did NOT drag, treat it as a click → reset to north
+      if (!didDrag && self.map) {
+        self.map.getView().animate({ rotation: 0, duration: 350 });
+      }
+    };
+
+    // Mouse events
+    button.addEventListener('mousedown', (e: MouseEvent) => {
+      e.preventDefault();
+      onPointerDown(e.clientX, e.clientY);
+    });
+    document.addEventListener('mousemove', (e: MouseEvent) => {
+      onPointerMove(e.clientX, e.clientY);
+    });
+    document.addEventListener('mouseup', () => {
+      if (self.compassDragging) onPointerUp();
+    });
+
+    // Touch events
+    button.addEventListener('touchstart', (e: TouchEvent) => {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        onPointerDown(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+    document.addEventListener('touchmove', (e: TouchEvent) => {
+      if (self.compassDragging && e.touches.length === 1) {
+        onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+    document.addEventListener('touchend', () => {
+      if (self.compassDragging) onPointerUp();
+    });
   }
 
   private toggleMeasurementTool = () => {
@@ -1075,28 +1385,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
     return D.div(
       { style: { height: '100%', width: '100%', position: 'relative' } },
-      // Visualization mode notification
-      this.state.overlayVisualization !== 'normal' && D.div(
-        {
-          style: {
-            position: 'absolute',
-            top: '10px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            zIndex: 1000,
-            fontWeight: 'bold',
-            fontSize: '14px',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-            textAlign: 'center',
-            pointerEvents: 'none',
-          }
-        },
-      `${this.state.overlayVisualization.charAt(0).toUpperCase() + this.state.overlayVisualization.slice(1).toLowerCase()} mode active. Press ESC to exit${this.state.overlayVisualization === 'spyglass' ? '. Right click (or Ctrl+click) to change radius.' : ''}`
-      ),
+      // Visualization mode notification banner with layer selector
+      this.state.overlayVisualization !== 'normal' && this.renderVisualizationBanner(),
       D.div(
         {
           ref: MAP_REF,
@@ -1117,11 +1407,67 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       ),
       // Basemap control - Google Maps style selector in bottom-right corner
       !isMapLoading && this.renderBasemapControl(),
+      // Compass control - top-right corner, only in 2D mode
+      !isMapLoading && !this.is3dEnabled && this.renderCompassControl(),
       // Measurement tool button - above zoom controls
       !isMapLoading && !this.is3dEnabled && this.renderMeasurementToolButton(),
       // Sun controls panel - shown on the right when 3D is enabled
       !isMapLoading && this.is3dEnabled && this.renderSunControlPanel(),
       isMapLoading ? this.renderLoadingOverlay() : null
+    );
+  }
+
+  private renderVisualizationBanner() {
+    const mode = this.state.overlayVisualization;
+    const isMaskMode = mode === 'spyglass' || mode === 'swipe';
+    const isSpyglass = mode === 'spyglass';
+    const maskableLayers = this.getMaskableLayers();
+    const currentTarget = this.resolveMaskTargetLayer();
+    const currentTargetId = currentTarget ? currentTarget.get('identifier') : null;
+    const modeLabel = mode.charAt(0).toUpperCase() + mode.slice(1);
+    const self = this;
+
+    return D.div(
+      {
+        className: basemapStyles.vizBanner,
+      },
+      D.span({ className: basemapStyles.vizBannerMode }, modeLabel),
+      isMaskMode && maskableLayers.length > 0 && D.select(
+        {
+          className: basemapStyles.vizBannerSelect,
+          value: currentTargetId || '',
+          onChange: (e: any) => this.changeMaskTarget(e.target.value),
+        },
+        maskableLayers.map(layer =>
+          D.option(
+            { key: layer.get('identifier'), value: layer.get('identifier') },
+            layer.get('name') || layer.get('identifier')
+          )
+        )
+      ),
+      isSpyglass && D.div(
+        { className: basemapStyles.vizBannerRadius },
+        D.span({ className: basemapStyles.vizBannerRadiusIcon }, '◎'),
+        D.input({
+          type: 'range',
+          min: '30',
+          max: '300',
+          value: String(Math.round(this.spyglassRadius)),
+          onChange: function (e: any) {
+            self.spyglassRadius = parseInt(e.target.value, 10);
+            if (self.map) self.map.render();
+            self.forceUpdate();
+          },
+        })
+      ),
+      D.button(
+        {
+          className: basemapStyles.vizBannerClose,
+          onClick: () => this.setVisualizationMode('normal'),
+          title: 'Exit visualization mode (ESC)',
+        },
+        '✕'
+      )
     );
   }
 
@@ -1454,6 +1800,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         },
         () => {
           this.applyFeaturesFilteringFromControls();
+          // Also apply temporal filtering to 3D tilesets (Cesium primitives)
+          this.apply3dTilesetTemporalFiltering();
         }
       );
     } else {
@@ -1461,6 +1809,40 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       console.log('Yearfiltering is set to false.');
     }
   };
+
+  /**
+   * Shows or hides Cesium 3D tilesets based on the currently selected year.
+   * Each tileset loaded from a manifest has bob (begin of begin) and eoe (end of end)
+   * metadata. A tileset is shown if bob <= selectedYear <= eoe.
+   * If no year is set, all tilesets are shown.
+   */
+  private apply3dTilesetTemporalFiltering(): void {
+    if (this.cesiumUrlTilesets.length === 0) return;
+
+    const yearStr = this.state.year;
+    const selectedYear = yearStr ? parseInt(String(yearStr).split('-')[0], 10) : NaN;
+
+    console.log(`[Cesium 3D] Applying temporal filter: year=${selectedYear}, ${this.cesiumUrlTilesets.length} tilesets tracked`);
+
+    for (const entry of this.cesiumUrlTilesets) {
+      if (Number.isNaN(selectedYear)) {
+        // No year selected — show everything
+        entry.tileset.show = true;
+      } else {
+        const visible = entry.bob <= selectedYear && selectedYear <= entry.eoe;
+        entry.tileset.show = visible;
+        if (!visible) {
+          console.log(`[Cesium 3D] HIDDEN: ${entry.path} (bob=${entry.bob}, eoe=${entry.eoe}, year=${selectedYear})`);
+        }
+      }
+    }
+
+    // Request a Cesium render to reflect the changes
+    const scene = this.getCesiumSceneSafely();
+    if (scene && scene.requestRender) {
+      scene.requestRender();
+    }
+  }
 
   private setVectorLevels = (event: Event<any>) => {
     this.setState(
@@ -1731,10 +2113,33 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         features = source.getFeatures();
       }
 
+      // Read per-layer fill/stroke opacity overrides (set by features-layer template attributes)
+      const layerFillOpacity = vectorLayer.get('fillOpacity');
+      const layerStrokeOpacity = vectorLayer.get('strokeOpacity');
+      const hasLayerOpacityOverride = layerFillOpacity !== undefined || layerStrokeOpacity !== undefined;
+
       features.forEach((feature) => {
         try {
           // Use the optimized style function that includes caching
-          feature.setStyle(this.getFeatureStyleWithFilters(feature));
+          const style = this.getFeatureStyleWithFilters(feature);
+          // Apply per-layer fill/stroke opacity overrides if configured
+          if (hasLayerOpacityOverride && style) {
+            const fill = style.getFill();
+            const stroke = style.getStroke();
+            if (fill && layerFillOpacity !== undefined) {
+              const fillColor = fill.getColor();
+              if (fillColor && typeof fillColor === 'string') {
+                fill.setColor(this.ensureRgbaWithAlpha(fillColor, layerFillOpacity));
+              }
+            }
+            if (stroke && layerStrokeOpacity !== undefined) {
+              const strokeColor = stroke.getColor();
+              if (strokeColor && typeof strokeColor === 'string') {
+                stroke.setColor(this.ensureRgbaWithAlpha(strokeColor, layerStrokeOpacity));
+              }
+            }
+          }
+          feature.setStyle(style);
         } catch (ex) {
           console.log('Error styling feature: ', feature);
           console.log(ex);
@@ -2304,6 +2709,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       console.log(`[FEATURES-LAYER]   - isMatch:`, isMatch);
       
       if (isMatch) {
+        const rawFillOpacity = child.props['fill-opacity'] || child.props.fillOpacity;
+        const rawStrokeOpacity = child.props['stroke-opacity'] || child.props.strokeOpacity;
         const config: FeaturesLayerConfig = {
           identifier: child.props.identifier,
           name: child.props.name,
@@ -2312,6 +2719,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           query: child.props.query,
           visible: child.props.visible !== 'false' && child.props.visible !== false,
           opacity: parseFloat(child.props.opacity || '1'),
+          fillOpacity: rawFillOpacity !== undefined ? parseFloat(rawFillOpacity) : undefined,
+          strokeOpacity: rawStrokeOpacity !== undefined ? parseFloat(rawStrokeOpacity) : undefined,
         };
         console.log(`[FEATURES-LAYER]   - Config created:`, config.identifier);
         featuresLayers.push(config);
@@ -2440,9 +2849,34 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
     const source = new Vector({ features: allFeatures });
 
+    // Capture fill/stroke opacity for the style closure
+    const layerFillOpacity = layerConfig.fillOpacity;
+    const layerStrokeOpacity = layerConfig.strokeOpacity;
+    const hasFillStrokeOverride = layerFillOpacity !== undefined || layerStrokeOpacity !== undefined;
+
     const vectorLayer = new VectorLayer({
       source,
-      style: (feature: Feature) => this.getFeatureStyleWithFilters(feature),
+      style: (feature: Feature) => {
+        const baseStyle = this.getFeatureStyleWithFilters(feature);
+        // Apply per-layer fill/stroke opacity overrides if configured
+        if (hasFillStrokeOverride && baseStyle) {
+          const fill = baseStyle.getFill();
+          const stroke = baseStyle.getStroke();
+          if (fill && layerFillOpacity !== undefined) {
+            const fillColor = fill.getColor();
+            if (fillColor && typeof fillColor === 'string') {
+              fill.setColor(this.ensureRgbaWithAlpha(fillColor, layerFillOpacity));
+            }
+          }
+          if (stroke && layerStrokeOpacity !== undefined) {
+            const strokeColor = stroke.getColor();
+            if (strokeColor && typeof strokeColor === 'string') {
+              stroke.setColor(this.ensureRgbaWithAlpha(strokeColor, layerStrokeOpacity));
+            }
+          }
+        }
+        return baseStyle;
+      },
       zIndex: layerConfig.zIndex,
       visible: layerConfig.visible,
       opacity: layerConfig.opacity,
@@ -2455,6 +2889,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     vectorLayer.set('name', layerConfig.name);
     vectorLayer.set('type', layerConfig.type);
     vectorLayer.set('zIndex', layerConfig.zIndex);
+    // Store per-layer fill/stroke opacity (optional, may be undefined)
+    if (layerFillOpacity !== undefined) {
+      vectorLayer.set('fillOpacity', layerFillOpacity);
+    }
+    if (layerStrokeOpacity !== undefined) {
+      vectorLayer.set('strokeOpacity', layerStrokeOpacity);
+    }
 
     // Add the layer to the map and update state
     if (this.map) {
@@ -2566,12 +3007,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           tileslayer.set('visible', false);
         });
 
-        // Add defensive checks before accessing array elements
         if (basemapLayers.length > 0) {
           basemapLayers[0].set('visible', true);
-        }
-        if (basemapLayers.length > 1) {
-          basemapLayers[1].set('visible', true);
         }
 
 
@@ -3211,9 +3648,60 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       });
 
       console.log(`Visible features in extent: ${this.visibleFeatures.size}`);
+      
+      // Compute and send visible taxonomy groups to controls
+      this.computeAndSendVisibleGroups(bufferedExtent);
     } catch (error) {
       console.error('Error updating visible features:', error);
     }
+  }
+
+  /**
+   * Computes which taxonomy groups are visible in the current viewport
+   * and sends them to registered controls via the SemanticMapSendVisibleGroups event.
+   * This allows the legend in controls to show only groups with features
+   * currently visible on the map.
+   */
+  private computeAndSendVisibleGroups(extent: Extent) {
+    if (!this.map || !this.state.featuresColorTaxonomy || this.state.registeredControls.length === 0) return;
+
+    const taxonomy = this.state.featuresColorTaxonomy;
+    if (!taxonomy || taxonomy === '' || taxonomy === 'default') return;
+
+    const visibleGroups: Set<string> = new Set();
+    
+    this.getVectorLayersFromMap().forEach((vectorLayer) => {
+      const source = vectorLayer.getSource();
+      let featuresInExtent;
+
+      if (source instanceof Cluster) {
+        featuresInExtent = source.getSource().getFeaturesInExtent(extent);
+      } else if (source instanceof VectorSource) {
+        featuresInExtent = source.getFeaturesInExtent(extent);
+      } else {
+        featuresInExtent = source.getFeatures ? source.getFeatures() : [];
+      }
+
+      featuresInExtent.forEach((feature) => {
+        const taxonomyValue = feature.get(taxonomy);
+        if (taxonomyValue && taxonomyValue.value) {
+          // Also check that this feature would be visible (not hidden by year filter etc.)
+          const style = this.getFeatureStyleWithFilters(feature);
+          const isHidden = !style.getFill() && !style.getStroke() && !style.getImage();
+          if (!isHidden) {
+            visibleGroups.add(taxonomyValue.value);
+          }
+        }
+      });
+    });
+
+    // Send to controls
+    trigger({
+      eventType: SemanticMapSendVisibleGroups,
+      source: this.props.id,
+      data: Array.from(visibleGroups),
+      targets: this.state.registeredControls,
+    });
   }
 
   /*** VISUALIZATIONS  */
@@ -3278,11 +3766,26 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       
       console.log('Cesium scene configured with lighting');
 
-      // Load the 3D Tiles asset from Cesium Ion
+      // Load 3D Tilesets from Cesium Ion (cesium-asset-ids prop)
       await this.load3DTileset(Cesium);
+
+      // Load 3D Tilesets from direct URLs (cesium-asset-urls prop)
+      await this.loadUrlTilesets(Cesium);
     } catch (err) {
       console.error('Failed to initialize OLCesium:', err);
     }
+  }
+
+  /**
+   * Parse the cesiumAssetUrls prop into an array of URL strings.
+   * Returns an empty array if the prop is not set or empty.
+   */
+  private parseCesiumAssetUrls(): string[] {
+    if (!this.props.cesiumAssetUrls) return [];
+    return String(this.props.cesiumAssetUrls)
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
   }
 
   /**
@@ -3374,6 +3877,190 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         console.error(`[Cesium] Failed to load 3D Tileset for asset ${assetId}:`, err);
       }
     }
+  }
+
+  /**
+   * Load 3D Tilesets from direct URLs (self-hosted, no Cesium Ion).
+   * Iterates over every URL specified in the `cesium-asset-urls` prop.
+   *
+   * Supports two URL types:
+   * 1. Direct tileset.json URL → loaded as-is into Cesium.
+   * 2. Custom manifest.json URL → fetched first; every `path` entry in the
+   *    manifest is resolved to `{baseUrl}/{path}/tileset.json` and each
+   *    building is loaded as a separate Cesium3DTileset.
+   *
+   * Manifest detection: if the fetched JSON has no `asset` property (which
+   * every valid 3D Tiles tileset.json MUST have), it is treated as a manifest.
+   */
+  private async loadUrlTilesets(Cesium: any): Promise<void> {
+    const urls = this.parseCesiumAssetUrls();
+    if (urls.length === 0) {
+      console.log('[Cesium] No cesium-asset-urls specified — skipping URL-based tileset loading');
+      return;
+    }
+
+    const scene = this.ol3d.getCesiumScene();
+
+    for (const tilesetUrl of urls) {
+      try {
+        console.log(`[Cesium] Loading URL-based 3D tileset: ${tilesetUrl}`);
+
+        // Resolve the list of actual tileset.json URLs to load.
+        // If the URL points to a manifest (custom index), we expand it;
+        // otherwise we treat it as a single direct tileset.json.
+        const resolvedUrls = await this.resolveUrlTilesetEntries(tilesetUrl);
+        console.log(`[Cesium] Resolved ${resolvedUrls.length} tileset(s) from: ${tilesetUrl}`);
+
+        for (const entry of resolvedUrls) {
+          try {
+            console.log(`[Cesium] Loading tileset: ${entry.url} (bob=${entry.bob}, eoe=${entry.eoe})`);
+
+            // Cesium 1.90-compatible: use the constructor with a plain URL string.
+            const tileset = new Cesium.Cesium3DTileset({
+              url: entry.url,
+              enableModelExperimental: true,
+            });
+
+            scene.primitives.add(tileset);
+            await tileset.readyPromise;
+
+            // Disable cast/receive shadows
+            tileset.shadows = Cesium.ShadowMode.DISABLED;
+
+            // Custom shader for IFC-converted tilesets that lack vertex normals
+            if (Cesium.CustomShader && Cesium.LightingModel) {
+              tileset.customShader = new Cesium.CustomShader({
+                mode: Cesium.CustomShaderMode ? Cesium.CustomShaderMode.MODIFY_MATERIAL : undefined,
+                lightingModel: Cesium.LightingModel.UNLIT,
+                fragmentShaderText: `
+                  void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material)
+                  {
+                    vec3 dpdx = dFdx(fsInput.attributes.positionEC);
+                    vec3 dpdy = dFdy(fsInput.attributes.positionEC);
+                    vec3 n = normalize(cross(dpdx, dpdy));
+                    float ndotl = max(dot(n, czm_lightDirectionEC), 0.0);
+                    float lit = 0.15 + 0.85 * ndotl;
+                    material.diffuse *= lit;
+                  }
+                `,
+              });
+            }
+
+            // Store reference with temporal metadata for timeline filtering
+            this.cesium3dTileset = tileset;
+            this.cesiumUrlTilesets.push({ tileset, bob: entry.bob, eoe: entry.eoe, path: entry.path });
+
+            // Apply sun lighting immediately
+            this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
+
+            console.log(`[Cesium] 3D Tileset loaded successfully: ${entry.url}`);
+          } catch (innerErr) {
+            console.error(`[Cesium] Failed to load tileset ${entry.url}:`, innerErr);
+          }
+        }
+      } catch (err) {
+        console.error(`[Cesium] Failed to process URL ${tilesetUrl}:`, err);
+      }
+    }
+  }
+
+  /**
+   * Resolves a URL to one or more actual tileset.json URLs.
+   *
+   * If the URL points to a valid 3D Tiles tileset (has an `asset` property),
+   * the URL is returned as-is in a single-element array.
+   *
+   * If the URL points to a custom manifest (no `asset` property), it extracts
+   * all `path` entries from every array value in the JSON, and builds
+   * tileset.json URLs using the manifest's base URL:
+   *   {scheme}://{host}:{port}/tiles/{path}/tileset.json
+   *
+   * @param url The URL to resolve (can be tileset.json or manifest.json)
+   * @returns Array of tileset.json URLs
+   */
+  private async resolveUrlTilesetEntries(url: string): Promise<Array<{ url: string; bob: number; eoe: number; path: string }>> {
+    // Fetch the JSON to inspect its structure
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} fetching ${url}`);
+    }
+    const json = await response.json();
+
+    // If it has an `asset` property, it's a valid 3D Tiles tileset — use as-is
+    // (no temporal metadata available for direct tileset URLs)
+    if (json.asset) {
+      console.log('[Cesium] URL is a direct 3D Tiles tileset.json');
+      return [{ url, bob: 0, eoe: 9999, path: url }];
+    }
+
+    // Otherwise, treat as a manifest. Extract entries with temporal metadata.
+    console.log('[Cesium] URL is a manifest — extracting building paths with temporal data');
+
+    // Collect all entries from all array values in the manifest
+    const allEntries: Array<{ phase: number; phase_year: string; code: string; building_id: string; path: string; demolished_phase?: number }> = [];
+    for (const key of Object.keys(json)) {
+      const value = json[key];
+      if (Array.isArray(value)) {
+        for (const entry of value) {
+          if (entry && typeof entry.path === 'string') {
+            allEntries.push(entry);
+          }
+        }
+      }
+    }
+
+    if (allEntries.length === 0) {
+      console.warn('[Cesium] Manifest has no building paths — nothing to load');
+      return [];
+    }
+
+    // Collect all unique phase years across the manifest (sorted ascending)
+    const phaseYears = Array.from(new Set(allEntries.map(e => parseInt(e.phase_year, 10)))).filter(y => !Number.isNaN(y)).sort((a, b) => a - b);
+    // Map from phase number to phase_year for demolished_phase lookup
+    const phaseToYear: { [phase: number]: number } = {};
+    allEntries.forEach(e => {
+      const y = parseInt(e.phase_year, 10);
+      if (!Number.isNaN(y)) {
+        phaseToYear[e.phase] = y;
+      }
+    });
+
+    const currentYear = new Date().getFullYear();
+
+    // Derive the base URL from the manifest URL.
+    const urlObj = new URL(url);
+    const tilesIdx = urlObj.pathname.indexOf('/tiles/');
+    const basePath = tilesIdx !== -1
+      ? urlObj.pathname.substring(0, tilesIdx + '/tiles/'.length)
+      : urlObj.pathname.substring(0, urlObj.pathname.lastIndexOf('/') + 1);
+    const baseUrl = `${urlObj.origin}${basePath}`;
+
+    // Parse the manual temporal mapping from the cesiumAssetTemporal prop (if provided).
+    // Format: { "path": { "bob": 1737, "eoe": 1869 }, ... }
+    let temporalMap: { [path: string]: { bob: number; eoe: number } } = {};
+    if (this.props.cesiumAssetTemporal) {
+      try {
+        temporalMap = JSON.parse(this.props.cesiumAssetTemporal);
+        console.log('[Cesium] Parsed cesium-asset-temporal prop:', Object.keys(temporalMap).length, 'entries');
+      } catch (e) {
+        console.error('[Cesium] Failed to parse cesium-asset-temporal JSON:', e);
+      }
+    }
+
+    // Build result with bob/eoe for each entry — use manual prop if available, else always-visible defaults
+    const results: Array<{ url: string; bob: number; eoe: number; path: string }> = [];
+    for (const entry of allEntries) {
+      const manual = temporalMap[entry.code];
+      const bob = manual ? manual.bob : 0;
+      const eoe = manual ? manual.eoe : 9999;
+
+      const tilesetUrl = `${baseUrl}${entry.path}/tileset.json`;
+      results.push({ url: tilesetUrl, bob, eoe, path: entry.path });
+      console.log(`[Cesium] Manifest entry: ${entry.code} phase ${entry.phase} → bob=${bob}, eoe=${eoe}${manual ? ' (from prop)' : ' (default — not in cesium-asset-temporal)'}, url=${tilesetUrl}`);
+    }
+
+    console.log(`[Cesium] Manifest resolved ${results.length} tileset entries with temporal data`);
+    return results;
   }
 
   /**
@@ -4300,27 +4987,24 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private setOverlayVisualization(overlayVisualization: string, layerIndex: number) {
-    // Get the first two visible layers
-    const visibleLayers = this.state.mapLayers.filter(layer => layer.get('visible')).slice(0, 2);
-    
-    // Only proceed if we have at least two visible layers
-    if (visibleLayers.length < 2 && overlayVisualization !== 'normal' && overlayVisualization !== 'measure') {
-      console.warn('Visualization mode requires at least two visible layers');
+    const targetLayer = this.resolveMaskTargetLayer();
+
+    if (!targetLayer && overlayVisualization !== 'normal' && overlayVisualization !== 'measure') {
+      console.warn('No maskable layer available for visualization mode');
       return;
     }
-    
-    // The top layer (index 0) will be the one that gets the visualization effect
-    const overlayLayer = visibleLayers.length > 0 ? visibleLayers[0] : null;
 
-    // Remove ESC key listener if we're going to normal mode
     if (overlayVisualization === 'normal' && this.escKeyListener) {
       document.removeEventListener('keydown', this.escKeyListener);
       this.escKeyListener = null;
     }
 
+    const targetId = targetLayer ? targetLayer.get('identifier') : null;
+
     this.setState(
       {
         overlayVisualization: overlayVisualization,
+        maskTargetIdentifier: targetId,
       },
       () => {
         switch (overlayVisualization) {
@@ -4331,11 +5015,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           }
           case 'spyglass': {
             this.resetAllVisualizations();
-            overlayLayer.on('prerender', this.spyglassFunction);
-            overlayLayer.on('postrender', function (event) {
+            targetLayer.on('prerender', this.spyglassFunction);
+            targetLayer.on('postrender', function (event) {
               event.context.restore();
             });
-            // Add ESC key listener for spyglass mode
             if (!this.escKeyListener) {
               this.addEscapeKeyListener();
             }
@@ -4344,11 +5027,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           }
           case 'swipe': {
             this.resetAllVisualizations();
-            overlayLayer.on('prerender', this.swipeFunction);
-            overlayLayer.on('postrender', function (event) {
+            targetLayer.on('prerender', this.swipeFunction);
+            targetLayer.on('postrender', function (event) {
               event.context.restore();
             });
-            // Add ESC key listener for swipe mode
             if (!this.escKeyListener) {
               this.addEscapeKeyListener();
             }

@@ -303,7 +303,7 @@ export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation
         //values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
         values = Immutable.List<Forms.FieldValue>(
         annotation.on.map((on) => {
-          const value = Rdf.iri(on.full+"/annotation_label/"+textResource.chars);     console.log("value"+value.value);     
+          const value = Rdf.iri(on.full+"/annotation_label/"+URI.encode(textResource.chars));     
           return Forms.FieldValue.fromLabeled({ value:value});
         })
       );

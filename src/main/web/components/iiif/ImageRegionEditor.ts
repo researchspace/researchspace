@@ -721,6 +721,10 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
           endpoint: this.annotationEndpoint,
         },
       },
+      showAnnotationTextLabels: true,
+      annotationTextLabelMaxLength: 120,
+      annotationTextLabelPinOffsetX: -15,
+      annotationTextLabelPinOffsetY: -20,
       availableAnnotationDrawingTools: ['Rectangle', 'Ellipse', 'Freehand', 'Polygon', 'Pin'],
       windowObjects,
       annotationBodyEditor: {

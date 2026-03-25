@@ -133656,7 +133656,7 @@ S2.define('jquery.select2',[
 
       // Enter
       divs.enter().append("div")
-        .attr("class", "layout-slot mirador-container")
+        .attr("class", "layout-slot")
         .attr("data-layout-slot-id", function(d) { return d.id; })
         .call(cell)
         .each(function(d) {
@@ -138719,7 +138719,7 @@ S2.define('jquery.select2',[
       availableAnnotationDrawingTools: availableAnnotationDrawingTools,
       availableExternalCommentsPanel: availableExternalCommentsPanel,
       dashArray: [],
-      strokeWidth: 3,
+      strokeWidth: 1,
       fixedShapeSize: drawingToolsSettings.fixedShapeSize,
       selectedColor: drawingToolsSettings.selectedColor || '#004c66',
       shapeHandleSize:drawingToolsSettings.shapeHandleSize,
@@ -138736,7 +138736,7 @@ S2.define('jquery.select2',[
     this.currentTool = null;
     // Default colors.
     this.dashArray = [];
-    this.strokeWidth = 3;
+    this.strokeWidth = 1;
     this.strokeColor = drawingToolsSettings.strokeColor;
     this.fillColor = drawingToolsSettings.fillColor;
     this.fillColorAlpha = drawingToolsSettings.fillColorAlpha;
@@ -143506,9 +143506,8 @@ $.SimpleASEndpoint = function (options) {
     },
 
     addStrokeStylePicker:function(){
-	  this.setBackground.thick(this.container.find('.mirador-line-type .thick'));
       this.setBackground.solid(this.container.find('.mirador-line-type .solid'));
-      
+      this.setBackground.thick(this.container.find('.mirador-line-type .thick'));
       this.setBackground.thickest(this.container.find('.mirador-line-type .thickest'));
       this.setBackground.dashed(this.container.find('.mirador-line-type .dashed'));
       this.setBackground.dotdashed(this.container.find('.mirador-line-type .dotdashed'));
@@ -143652,7 +143651,7 @@ $.SimpleASEndpoint = function (options) {
                                    '{{#if showStrokeStyle}}',
                                    '<a class="hud-control hud-dropdown hud-disabled mirador-line-type" aria-label="{{t "borderTypeTooltip"}}" title="{{t "borderTypeTooltip"}}">',
                                    '<i class="material-icons mirador-border-icon">create</i>',
-                                   '<i class="border-type-image thick"></i>',
+                                   '<i class="border-type-image solid"></i>',
                                    '<i class="fa fa-caret-down dropdown-icon"></i>',
                                    '<ul class="dropdown type-list">',
                                    '<li><i class="fa solid"></i> {{t "solid"}}</li>',
@@ -143674,7 +143673,7 @@ $.SimpleASEndpoint = function (options) {
                                    '</a>',
                                    '{{/if}}',
                                    '{{#if showRefresh}}',
-                                     '<a class="hud-control mirador-osd-refresh-mode" onClick="">',
+                                     '<a class="hud-control mirador-osd-refresh-mode">',
                                      '<i class="fa fa-lg fa-refresh"></i>',
                                      '</a>',
                                    '{{/if}}',
@@ -144312,7 +144311,6 @@ $.SimpleASEndpoint = function (options) {
       this.element.find('.mirador-osd-refresh-mode').on('click', function() {
         //update annotation list from endpoint
         _this.eventEmitter.publish('updateAnnotationList.' + _this.windowId);
-        _this.eventEmitter.publish('ANNOTATIONS_REFRESH_CLICKED.' + _this.windowId);console.log("clicked refresh");
       });
       //Annotation specific controls
 
@@ -148313,3 +148311,490 @@ $.SearchWithinResults.prototype = {
   };
 
 }(Mirador));
+
+
+
+/* --------------------------------------------------------------------------
+ * ResearchSpace patch: persistent annotation text labels (non-tooltip)
+ * -------------------------------------------------------------------------- */
+(function($) {
+  if (!$ || !$.OsdRegionDrawTool) { return; }
+
+  if ($.DEFAULT_SETTINGS) {
+    $.DEFAULT_SETTINGS.showAnnotationTextLabels = false;
+    $.DEFAULT_SETTINGS.annotationTextLabelClassName = 'mirador-annotation-text-label';
+    $.DEFAULT_SETTINGS.annotationTextLabelMaxLength = 80;
+    $.DEFAULT_SETTINGS.annotationTextLabelPinOffsetX = 10;
+    $.DEFAULT_SETTINGS.annotationTextLabelPinOffsetY = -8;
+  }
+
+  function getStatePropertySafe(instance, key, fallback) {
+    try {
+      if (instance && instance.state && typeof instance.state.getStateProperty === 'function') {
+        var value = instance.state.getStateProperty(key);
+        return value === undefined ? fallback : value;
+      }
+    } catch (e) {}
+    return fallback;
+  }
+
+  function extractAnnotationText(annotation) {
+    if (!annotation || !annotation.resource) { return ''; }
+
+    var annoText = '';
+    var resource = annotation.resource;
+
+    if (jQuery.isArray(resource)) {
+      jQuery.each(resource, function(index, value) {
+        if (!value) { return; }
+        if (value['@type'] === 'oa:Tag') { return; }
+        if (!annoText && value.chars) {
+          annoText = value.chars;
+        }
+      });
+    } else if (resource.chars) {
+      annoText = resource.chars;
+    }
+
+    if (annoText == null) { return ''; }
+    annoText = String(annoText).replace(/\s+/g, ' ').trim();
+    return annoText;
+  }
+
+  function truncateText(text, maxLength) {
+    if (!text) { return ''; }
+    if (!maxLength || text.length <= maxLength) { return text; }
+    return text.slice(0, Math.max(1, maxLength - 1)).trim() + '…';
+  }
+
+  function getUnionBounds(shapeArray) {
+    var union = null;
+    if (!shapeArray || !shapeArray.length) { return null; }
+
+    for (var i = 0; i < shapeArray.length; i++) {
+      var item = shapeArray[i];
+      if (!item || !item.bounds) { continue; }
+      var bounds = item.bounds;
+      var left = bounds.x;
+      var top = bounds.y;
+      var right = bounds.x + bounds.width;
+      var bottom = bounds.y + bounds.height;
+
+      if (!union) {
+        union = { left: left, top: top, right: right, bottom: bottom };
+      } else {
+        union.left = Math.min(union.left, left);
+        union.top = Math.min(union.top, top);
+        union.right = Math.max(union.right, right);
+        union.bottom = Math.max(union.bottom, bottom);
+      }
+    }
+
+    return union;
+  }
+
+  function getShapeName(shape) {
+    if (!shape) { return ''; }
+    return (shape._name || shape.name || '').toString();
+  }
+
+  function isPinShape(shape) {
+    return getShapeName(shape).indexOf('pin_') !== -1;
+  }
+
+  function isPinAnnotation(shapeArray) {
+    if (!shapeArray || !shapeArray.length) { return false; }
+    for (var i = 0; i < shapeArray.length; i++) {
+      if (isPinShape(shapeArray[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function getPinAnchor(shapeArray) {
+    if (!shapeArray || !shapeArray.length) { return null; }
+    var shape = shapeArray[0];
+    if (shape && shape.segments && shape.segments.length && shape.segments[0].point) {
+      return {
+        x: shape.segments[0].point.x,
+        y: shape.segments[0].point.y
+      };
+    }
+
+    var union = getUnionBounds(shapeArray);
+    if (!union) { return null; }
+    return {
+      x: union.left,
+      y: union.bottom
+    };
+  }
+
+  function getLabelAnchor(shapeArray) {
+    if (isPinAnnotation(shapeArray)) {
+      return getPinAnchor(shapeArray);
+    }
+
+    var union = getUnionBounds(shapeArray);
+    if (!union) { return null; }
+    return {
+      x: (union.left + union.right) / 2,
+      y: (union.top + union.bottom) / 2
+    };
+  }
+
+  function imageToViewerElementPoint(osdViewer, point) {
+    if (!osdViewer || !osdViewer.viewport || !point) { return null; }
+    var viewportPoint = osdViewer.viewport.imageToViewportCoordinates(point.x, point.y);
+    return osdViewer.viewport.pixelFromPoint(viewportPoint, true);
+  }
+
+  function isShapeVisible(shape) {
+    if (!shape) { return false; }
+
+    if (shape.visible === false || shape._visible === false) {
+      return false;
+    }
+
+    if (shape.opacity === 0 || shape._opacity === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function isShapeArrayVisible(shapeArray) {
+    if (!shapeArray || !shapeArray.length) { return false; }
+
+    for (var i = 0; i < shapeArray.length; i++) {
+      if (isShapeVisible(shapeArray[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  var proto = $.OsdRegionDrawTool.prototype;
+
+  proto.shouldShowAnnotationTextLabels = function() {
+    return !!getStatePropertySafe(this, 'showAnnotationTextLabels', false);
+  };
+
+  proto.getAnnotationTextLabelClassName = function() {
+    return getStatePropertySafe(this, 'annotationTextLabelClassName', 'mirador-annotation-text-label');
+  };
+
+  proto.getAnnotationTextLabelMaxLength = function() {
+    return getStatePropertySafe(this, 'annotationTextLabelMaxLength', 80);
+  };
+
+  proto.getAnnotationTextLabelPinOffsetX = function() {
+    return getStatePropertySafe(this, 'annotationTextLabelPinOffsetX', 10);
+  };
+
+  proto.getAnnotationTextLabelPinOffsetY = function() {
+    return getStatePropertySafe(this, 'annotationTextLabelPinOffsetY', -8);
+  };
+
+  proto.isAnnotationOverlayVisible = function() {
+    if (!this.svgOverlay || !this.svgOverlay.canvas) { return false; }
+    return this.svgOverlay.canvas.style.display !== 'none';
+  };
+
+  proto.shouldRenderAnnotationTextLabelsNow = function() {
+    if (!this.shouldShowAnnotationTextLabels()) { return false; }
+    if (!this.isAnnotationOverlayVisible()) { return false; }
+    return true;
+  };
+
+  proto.ensureAnnotationTextLabelsContainer = function() {
+    if (this.annotationTextLabelsContainer && this.annotationTextLabelsContainer.length) {
+      return this.annotationTextLabelsContainer;
+    }
+
+    var $target = jQuery(this.osdViewer && this.osdViewer.element ? this.osdViewer.element : null);
+    if (!$target.length) { return null; }
+
+    if ($target.css('position') === 'static') {
+      $target.css('position', 'relative');
+    }
+
+    var existing = $target.children('.mirador-annotation-text-labels-layer');
+    if (existing.length) {
+      this.annotationTextLabelsContainer = existing.first();
+      return this.annotationTextLabelsContainer;
+    }
+
+    this.annotationTextLabelsContainer = jQuery('<div class="mirador-annotation-text-labels-layer"></div>').css({
+      position: 'absolute',
+      inset: '0',
+      pointerEvents: 'none',
+      overflow: 'hidden',
+      zIndex: 40
+    });
+
+    $target.append(this.annotationTextLabelsContainer);
+    return this.annotationTextLabelsContainer;
+  };
+
+  proto.clearAnnotationTextLabels = function() {
+    if (this.annotationTextLabelsContainer && this.annotationTextLabelsContainer.length) {
+      this.annotationTextLabelsContainer.empty().hide();
+    }
+    this.annotationTextLabelsMap = {};
+  };
+
+  proto.removeAnnotationTextLabels = function() {
+    if (this.annotationTextLabelsContainer && this.annotationTextLabelsContainer.length) {
+      this.annotationTextLabelsContainer.remove();
+    }
+    this.annotationTextLabelsContainer = null;
+    this.annotationTextLabelsMap = {};
+  };
+
+  proto.buildAnnotationTextLabel = function(annotationId, annotation, shapeArray) {
+    var text = truncateText(extractAnnotationText(annotation), this.getAnnotationTextLabelMaxLength());
+    if (!text) { return null; }
+
+    var labelType = isPinAnnotation(shapeArray) ? 'pin' : 'region';
+    var className = this.getAnnotationTextLabelClassName();
+
+    return jQuery('<div></div>')
+      .addClass(className)
+      .attr('data-annotation-id', annotationId)
+      .attr('data-label-type', labelType)
+      .css({
+        position: 'absolute',
+        left: '0px',
+        top: '0px',
+        transform: labelType === 'pin' ? 'translate(0, -100%)' : 'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        whiteSpace: 'nowrap',
+        maxWidth: '220px',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        fontFamily: 'Source Sans Pro, Lato, Helvetica Neue, Helvetica, Arial, sans-serif',
+        fontSize: '14px',
+        fontWeight: '600',
+        lineHeight: '1.4',
+        color: 'rgba(17, 17, 17, 0.78)',
+        background: 'rgba(255, 255, 255, 0.46)',
+        //border: '1px solid rgba(255, 255, 255, 0.55)',
+        borderRadius: '4px',
+        padding: '1px 6px',
+        boxShadow: '0 1px 2px rgba(155, 228, 246, 0.08)'
+      })
+      .text(text);
+  };
+
+  proto.renderAnnotationTextLabels = function() {
+    if (!this.shouldShowAnnotationTextLabels()) {
+      this.clearAnnotationTextLabels();
+      return;
+    }
+
+    var container = this.ensureAnnotationTextLabelsContainer();
+    if (!container) { return; }
+
+    this.annotationTextLabelsMap = {};
+    container.empty();
+
+    if (!this.shouldRenderAnnotationTextLabelsNow()) {
+      container.hide();
+      return;
+    }
+
+    var _this = this;
+    var visibleCount = 0;
+
+    for (var annotationId in this.annotationsToShapesMap) {
+      if (!this.annotationsToShapesMap.hasOwnProperty(annotationId)) { continue; }
+
+      var shapeArray = this.annotationsToShapesMap[annotationId];
+      if (!shapeArray || !shapeArray.length || !isShapeArrayVisible(shapeArray)) { continue; }
+
+      var annotation = shapeArray[0].data && shapeArray[0].data.annotation ? shapeArray[0].data.annotation : null;
+      var label = this.buildAnnotationTextLabel(annotationId, annotation, shapeArray);
+      if (!label) { continue; }
+
+      container.append(label);
+      _this.annotationTextLabelsMap[annotationId] = label;
+      visibleCount += 1;
+    }
+
+    if (visibleCount > 0) {
+      container.show();
+      this.updateAnnotationTextLabelsPosition();
+    } else {
+      container.hide();
+    }
+  };
+
+  proto.updateAnnotationTextLabelsPosition = function() {
+    if (!this.shouldShowAnnotationTextLabels()) { return; }
+    if (!this.annotationTextLabelsContainer || !this.annotationTextLabelsContainer.length) { return; }
+
+    if (!this.shouldRenderAnnotationTextLabelsNow()) {
+      this.annotationTextLabelsContainer.hide();
+      return;
+    }
+
+    var visibleCount = 0;
+    for (var annotationId in this.annotationTextLabelsMap) {
+      if (!this.annotationTextLabelsMap.hasOwnProperty(annotationId)) { continue; }
+
+      var label = this.annotationTextLabelsMap[annotationId];
+      var shapeArray = this.annotationsToShapesMap[annotationId];
+      var anchor = getLabelAnchor(shapeArray);
+
+      if (!label || !shapeArray || !anchor || !isShapeArrayVisible(shapeArray)) {
+        if (label && label.hide) { label.hide(); }
+        continue;
+      }
+
+      var pixel = imageToViewerElementPoint(this.osdViewer, anchor);
+      if (!pixel) {
+        label.hide();
+        continue;
+      }
+
+      var labelType = label.attr('data-label-type');
+      var css = {
+        left: pixel.x + 'px',
+        top: pixel.y + 'px'
+      };
+
+      if (labelType === 'pin') {
+        css.left = (pixel.x + this.getAnnotationTextLabelPinOffsetX()) + 'px';
+        css.top = (pixel.y + this.getAnnotationTextLabelPinOffsetY()) + 'px';
+      }
+
+      label.css(css).show();
+      visibleCount += 1;
+    }
+
+    if (visibleCount > 0) {
+      this.annotationTextLabelsContainer.show();
+    } else {
+      this.annotationTextLabelsContainer.hide();
+    }
+  };
+
+  proto.syncAnnotationTextLabels = function() {
+    if (!this.shouldShowAnnotationTextLabels()) {
+      this.clearAnnotationTextLabels();
+      return;
+    }
+
+    if (!this.shouldRenderAnnotationTextLabelsNow()) {
+      if (this.annotationTextLabelsContainer && this.annotationTextLabelsContainer.length) {
+        this.annotationTextLabelsContainer.hide();
+      }
+      return;
+    }
+
+    if (!this.annotationTextLabelsMap || !Object.keys(this.annotationTextLabelsMap).length) {
+      this.renderAnnotationTextLabels();
+      return;
+    }
+
+    this.updateAnnotationTextLabelsPosition();
+  };
+
+  var originalInit = proto.init;
+  proto.init = function() {
+    originalInit.apply(this, arguments);
+
+    this.annotationTextLabelsMap = {};
+    this.annotationTextLabelsContainer = null;
+
+    if (this._annotationTextLabelsHandlersInstalled) { return; }
+    this._annotationTextLabelsHandlersInstalled = true;
+
+    var _this = this;
+    this._updateAnnotationTextLabelsBound = function() {
+      _this.syncAnnotationTextLabels();
+    };
+
+    if (this.osdViewer && typeof this.osdViewer.addHandler === 'function') {
+      this.osdViewer.addHandler('zoom', this._updateAnnotationTextLabelsBound);
+      this.osdViewer.addHandler('pan', this._updateAnnotationTextLabelsBound);
+      this.osdViewer.addHandler('resize', this._updateAnnotationTextLabelsBound);
+      this.osdViewer.addHandler('animation', this._updateAnnotationTextLabelsBound);
+      this.osdViewer.addHandler('open', this._updateAnnotationTextLabelsBound);
+    }
+  };
+
+  var originalRender = proto.render;
+  proto.render = function() {
+    originalRender.apply(this, arguments);
+    this.renderAnnotationTextLabels();
+  };
+
+  var originalEnterCreateAnnotation = proto.enterCreateAnnotation;
+  proto.enterCreateAnnotation = function() {
+    var result = originalEnterCreateAnnotation.apply(this, arguments);
+    this.syncAnnotationTextLabels();
+    return result;
+  };
+
+  var originalEnterCreateShape = proto.enterCreateShape;
+  proto.enterCreateShape = function() {
+    var result = originalEnterCreateShape.apply(this, arguments);
+    this.syncAnnotationTextLabels();
+    return result;
+  };
+
+  var originalEnterEditAnnotation = proto.enterEditAnnotation;
+  proto.enterEditAnnotation = function() {
+    var result = originalEnterEditAnnotation.apply(this, arguments);
+    this.syncAnnotationTextLabels();
+    return result;
+  };
+
+  var originalEnterDefault = proto.enterDefault;
+  proto.enterDefault = function() {
+    var result = originalEnterDefault.apply(this, arguments);
+    this.syncAnnotationTextLabels();
+    return result;
+  };
+
+  var originalExitEditMode = proto.exitEditMode;
+  proto.exitEditMode = function(showAnnotations) {
+    var result = originalExitEditMode.apply(this, arguments);
+    if (showAnnotations) {
+      this.renderAnnotationTextLabels();
+    } else {
+      this.syncAnnotationTextLabels();
+    }
+    return result;
+  };
+
+  var originalDestroy = proto.destroy;
+  if (typeof originalDestroy === 'function') {
+    proto.destroy = function() {
+      this.removeAnnotationTextLabels();
+      return originalDestroy.apply(this, arguments);
+    };
+  }
+
+  var originalUpdateRenderer = $.AnnotationsLayer.prototype.updateRenderer;
+  $.AnnotationsLayer.prototype.updateRenderer = function() {
+    var result = originalUpdateRenderer.apply(this, arguments);
+    if (this.drawTool) {
+      this.drawTool.syncAnnotationTextLabels();
+    }
+    return result;
+  };
+
+  var originalModeSwitch = $.AnnotationsLayer.prototype.modeSwitch;
+  $.AnnotationsLayer.prototype.modeSwitch = function() {
+    var result = originalModeSwitch.apply(this, arguments);
+    if (this.drawTool) {
+      this.drawTool.syncAnnotationTextLabels();
+    }
+    return result;
+  };
+
+})(Mirador);
+

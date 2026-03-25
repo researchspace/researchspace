@@ -140,7 +140,8 @@ export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition(
     ?sampleTakingAppellation crm:P190_has_symbolic_content ?sampleTakingLabel .
   
   } WHERE {
-      BIND(STR(?value) as ?iriStr)
+      BIND(REPLACE(REPLACE(STR(?value), "%20", " "),"%2F", "/") AS ?decoded)
+      BIND(STR(?decoded) as ?iriStr)
       FILTER(CONTAINS(?iriStr, "/annotation_label/"))
       BIND(IRI(REPLACE(?iriStr, "^(.*)/annotation_label/.*$", "$1")) AS ?annotationIri)
       BIND(REPLACE(?iriStr, "^.*/annotation_label/(.*)$", "$1") AS ?annotationLabel)

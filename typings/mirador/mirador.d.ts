@@ -49,7 +49,13 @@ declare global {
       // these are ResearchSpace specific option, it is not actually used by mirador,
       // see Mirador.ts for usage
       useDetailsSidebar?: boolean;
+      
       annotationViewTooltipTemplate?: string;
+      showAnnotationTextLabels?: boolean;
+      annotationTextLabelClassName?: string;
+      annotationTextLabelMaxLength?: number;
+      annotationTextLabelPinOffsetX?: number;
+      annotationTextLabelPinOffsetY?: number;
 
       // end of ResearchSpace specific options
 

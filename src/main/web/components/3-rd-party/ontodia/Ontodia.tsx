@@ -24,23 +24,21 @@ import {
   ReactElement,
   Children,
   cloneElement,
-  createElement,
 } from 'react';
+import { flushSync } from 'react-dom';
 import * as Kefir from 'kefir';
 import { debounce, includes } from 'lodash';
 import * as Reactodia from '@reactodia/workspace';
 import { blockingDefaultLayout } from '@reactodia/workspace/layout-sync';
-import * as URI from 'urijs';
 
 import { BuiltInEvents, trigger, listen, registerEventSource, unregisterEventSource } from 'platform/api/events';
 import { Cancellation, WrappingError } from 'platform/api/async';
 import { Component } from 'platform/api/components';
 import { Rdf, turtle } from 'platform/api/rdf';
 import {
+  constructUrlForResourceSync,
   navigateToResource,
   navigationConfirmation,
-  openResourceInNewWindow,
-  openExternalLink,
 } from 'platform/api/navigation';
 import { isSimpleClick } from 'platform/api/navigation/components/ResourceLink';
 
@@ -83,13 +81,47 @@ import { FormBasedPersistence, FormBasedPersistenceProps } from './authoring/For
 
 import * as OntodiaEvents from './OntodiaEvents';
 
+import enTranslation from './translations/en.reactodia-translation.json';
 import './Ontodia.scss';
+import { Literal } from '@rdfjs/types';
 
 export interface EdgeStyle {
   markerSource?: Reactodia.LinkMarkerStyle;
   markerTarget?: Reactodia.LinkMarkerStyle;
   linkStyle?: LinkStyle;
   editable?: boolean;
+}
+
+export interface LinkStyle {
+  connection?: {
+    fill?: string;
+    stroke?: string;
+    'stroke-width'?: number;
+    'stroke-dasharray'?: string;
+  };
+  label?: LinkLabel;
+  properties?: LinkLabel[];
+}
+
+export interface LinkLabel {
+  position?: number;
+  title?: string;
+  attrs?: {
+    rect?: {
+      fill?: string;
+      stroke?: string;
+      'stroke-width'?: number;
+    };
+    text?: {
+      fill?: string;
+      stroke?: string;
+      'stroke-width'?: number;
+      'font-family'?: string;
+      'font-size'?: string | number;
+      'font-weight'?: 'normal' | 'bold' | 'lighter' | 'bolder' | number;
+      text?: readonly Rdf.Literal[];
+    };
+  };
 }
 
 export interface OntodiaConfig {
@@ -433,6 +465,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
   private validationApi: FieldBasedValidationApi;
   private parsedMetadata: Kefir.Property<ReadonlyArray<Rdf.Triple>>;
   private readonly renameLinkProvider: Reactodia.RenameLinkProvider;
+  private readonly dialogSettingsProvider: Reactodia.DialogSettingsProvider;
 
   workspace: Reactodia.Workspace;
   private dataProvider: Reactodia.SparqlDataProvider | Reactodia.CompositeDataProvider;
@@ -461,6 +494,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
         ));
       }
     };
+
+    this.dialogSettingsProvider = new PlatformDialogSettingsProvider();
 
     this.state = {
       diagramIri: props.diagram,
@@ -510,9 +545,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
 
   render() {
     if (this.state.configurationError) {
-      return createElement(ErrorNotification, { errorMessage: this.state.configurationError });
+      return <ErrorNotification errorMessage={this.state.configurationError} />;
     } else if (this.state.loading) {
-      return createElement(Spinner, {});
+      return <Spinner />;
     }
 
     const preferredLanguage = getPreferredUserLanguage();
@@ -526,24 +561,23 @@ export class Ontodia extends Component<OntodiaProps, State> {
     const {
       autoZoom,
       readonly,
+      // TODO: `groupBy` is deprecated and removed from Reactodia
       groupBy,
       hidePanels,
       hideNavigator,
       collapseNavigator,
       hideToolbar,
       hideHalo,
-      hideScrollBars,
+      hideScrollBars = true,
       saveDiagramLabel,
       persistChangesLabel,
       propertySuggestionQuery,
-      zoomRequireCtrl,
+      zoomRequireCtrl = true,
       nodeStyles,
       leftPanelInitiallyOpen,
       rightPanelInitiallyOpen,
     } = this.props;
     const { fieldConfiguration } = this.state;
-    // TODO: support `hidePanels`
-    // TODO: `groupBy` is deprecated and removed from Reactodia
     return (
       <Reactodia.Workspace
         ref={this.initWorkspace}
@@ -552,8 +586,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
         metadataProvider={this.metadataApi}
         validationProvider={this.validationApi}
         renameLinkProvider={this.renameLinkProvider}
+        dialogSettingsProvider={this.dialogSettingsProvider}
         defaultLanguage={preferredLanguage}
         selectLabelLanguage={selectLabelLanguage}
+        // TODO: fix typings
+        translations={[enTranslation as {} as Record<string, Record<string, string>>]}
         onWorkspaceEvent={key => {
           if (key === Reactodia.WorkspaceEventKey.editorAddElements) {
             if (autoZoom) {
@@ -565,8 +602,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
         }}>
         <Reactodia.ClassicWorkspace
           colorScheme='light'
-          leftColumn={{defaultCollapsed: !(readonly ? false : leftPanelInitiallyOpen)}}
-          rightColumn={{defaultCollapsed: !(readonly ? false : rightPanelInitiallyOpen)}}
+          leftColumn={hidePanels ? null : {defaultCollapsed: !(readonly ? false : leftPanelInitiallyOpen)}}
+          rightColumn={hidePanels ? null : {defaultCollapsed: !(readonly ? false : rightPanelInitiallyOpen)}}
           canvas={{
             elementTemplateResolver: this.resolveElementTemplate,
             linkTemplateResolver: this.resolveLinkTemplate,
@@ -578,6 +615,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
             },
           }}
           toolbar={null}
+          classTree={{
+            draggableItems: false,
+          }}
           connectionsMenu={{
             suggestProperties: propertySuggestionQuery ? this.suggestProperties : undefined,
           }}
@@ -587,7 +627,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
           }}
           visualAuthoring={{
             propertyEditor: this.renderPropertyEditor,
-          }}>
+          }}
+          zoomControl={null}>
           {hideToolbar ? null : (
             <Toolbar key='rs-toolbar'
               languages={languages}
@@ -605,6 +646,10 @@ export class Ontodia extends Component<OntodiaProps, State> {
               dropdownTemplate={this.getTemplate('{{> knowledge-map-dropdown}}')}
             />
           )}
+          <Reactodia.Toolbar dock='sw'>
+            <Reactodia.ToolbarActionUndo />
+            <Reactodia.ToolbarActionRedo />
+          </Reactodia.Toolbar>
         </Reactodia.ClassicWorkspace>
       </Reactodia.Workspace>
     );
@@ -656,25 +701,6 @@ export class Ontodia extends Component<OntodiaProps, State> {
   }
 
   private getWorkspace = () => this.workspace;
-
-  // TODO: onIriClick is removed from Reactodia
-  private onIriClick = ({ iri: elementIri, clickIntent, originalEvent }: any) => {
-    const iri = Rdf.iri(elementIri);
-    if (clickIntent === 'jumpToEntity' || clickIntent === 'openEntityIri') {
-      if (isSimpleClick(originalEvent)) {
-        navigateToResource(iri).onEnd(() => {
-          /* nothing */
-        });
-      } else {
-        openResourceInNewWindow(iri);
-      }
-    } else {
-      const { target = '_blank' } = originalEvent.target as HTMLAnchorElement;
-      openExternalLink(URI(iri.value), target).onEnd(() => {
-        /* nothing */
-      });
-    }
-  };
 
   private getRepositories = (): string[] => {
     const { repository = 'default' } = this.context.semanticContext;
@@ -1314,11 +1340,15 @@ export class Ontodia extends Component<OntodiaProps, State> {
     preloadedElements?: ReadonlyMap<Reactodia.ElementIri, Reactodia.ElementModel>;
     diagram?: Reactodia.SerializedDiagram;
   }): Promise<void> => {
-    const { model } = this.workspace.getContext();
+    const { model, translation } = this.workspace.getContext();
     const validateLinks = this.props.requestLinksOnInit === undefined ? true : this.props.requestLinksOnInit;
     const params = layout || {};
     return model.importLayout({
       dataProvider: this.dataProvider,
+      locale: new PlatformLocaleProvider(
+        { model, translation },
+        this.state.fieldConfiguration
+      ),
       preloadedElements: params.preloadedElements,
       diagram: params.diagram,
       validateLinks: validateLinks,
@@ -1335,65 +1365,74 @@ export class Ontodia extends Component<OntodiaProps, State> {
 
     getOverlaySystem().show(
       dialogRef,
-      createElement(CreateResourceDialog, {
-        onSave: (label) => this.onSaveModalSubmit(label, layout),
-        onHide: () => getOverlaySystem().hide(dialogRef),
-        show: true,
-        title: this.props.saveDiagramLabel || 'Save knowledge map',
-        placeholder: 'Enter map name',
-      })
+      <CreateResourceDialog
+        onSave={(label) => this.onSaveModalSubmit(label, layout)}
+        onHide={() => getOverlaySystem().hide(dialogRef)}
+        show={true}
+        title={this.props.saveDiagramLabel || 'Save knowledge map'}
+        placeholder='Enter map name'
+      />
     );
   };
 
   private renderPropertyEditor = (options: Reactodia.PropertyEditorOptions) => {
     if (options.type !== 'entity') {
-      return undefined;
+      return (
+        <Reactodia.DefaultPropertyEditor
+          options={options}
+          resolveInput={() => null}
+        />
+      );
     }
+  
     const { editor } = this.workspace.getContext();
     const { fieldConfiguration } = this.state;
-    const metadata = getEntityMetadata(options.elementData, fieldConfiguration.metadata);
-    const authoringState = editor.authoringState;
+    const metadata = getEntityMetadata(options.target.data, fieldConfiguration.metadata);
+    const isNewElement = Reactodia.AuthoringState.isAddedEntity(
+      editor.authoringState,
+      options.target.data.id
+    );
 
     if (metadata) {
-      const rawModel = convertElementModelToCompositeValue(options.elementData, metadata);
-      const elementState = authoringState.elements.get(rawModel.subject.value);
-
-      let isNewElement = false;
-      let elementNewIri: Reactodia.ElementIri | undefined;
-      if (elementState) {
-        isNewElement = elementState.type === 'entityAdd';
-        elementNewIri = elementState.type === 'entityChange' ? elementState.newIri : undefined;
-      }
-
-      const model: Forms.CompositeValue = {
-        ...rawModel,
-        subject: typeof elementNewIri === 'string' ? Rdf.iri(elementNewIri) : rawModel.subject,
-      };
-
       const persistence = makePersistenceFromConfig(fieldConfiguration.persistence);
-      const props: EntityFormProps = {
-        acceptIriAuthoring: isNewElement || persistence.supportsIriEditing,
-        fields: metadata.fieldByIri.toArray(),
-        newSubjectTemplate: metadata.newSubjectTemplate,
-        model,
-        onSubmit: (newData) => {
-          const editedModel = convertCompositeValueToElementModel(newData, metadata);
-          options.onSubmit(editedModel);
-        },
-        onCancel: () => options.onCancel && options.onCancel(),
-      }; 
       const formBody =
         metadata.formChildren ||
         Forms.generateFormFromFields({
           fields: metadata.fields.filter((f) => !isObjectProperty(f, metadata)),
           overrides: fieldConfiguration.inputOverrides,
         });
-      return <EntityForm {...props}>{formBody}</EntityForm>;
+
+      // TODO: fix types
+      const EntityEditor = Reactodia.EntityEditor as
+        React.ComponentType<Parameters<typeof Reactodia.EntityEditor>[0]>;
+      return (
+        <EntityEditor target={options.target}>
+          {({data, updateData, applyChanges}) => {
+            const model = convertElementModelToCompositeValue(data, metadata);
+            const props: EntityFormProps = {
+              acceptIriAuthoring: isNewElement || persistence.supportsIriEditing,
+              fields: metadata.fieldByIri.toArray(),
+              newSubjectTemplate: metadata.newSubjectTemplate,
+              model,
+              onSubmit: (newData) => {
+                const editedModel = convertCompositeValueToElementModel(newData, metadata);
+                // TODO: use after fix in the library
+                // updateData(() => editedModel);
+                // applyChanges();
+                editor.changeEntity(options.target.data, editedModel);
+                options.onClose();
+              },
+              onCancel: () => options.onClose(),
+            };
+            return <EntityForm {...props}>{formBody}</EntityForm>;
+          }}
+        </EntityEditor>
+      );
     } else {
       return (
         <ErrorNotification
           errorMessage={
-            `<ontodia-entity-metadata> is not defined for the ` + `'${options.elementData.types.join(', ')}' types`
+            `<ontodia-entity-metadata> is not defined for the ` + `'${options.target.data.types.join(', ')}' types`
           }
         />
       );
@@ -1494,8 +1533,33 @@ export class Ontodia extends Component<OntodiaProps, State> {
         markerSource,
         markerTarget,
         renderLink: (props) => {
-          // TODO: convert edge style to default link template props
-          return <Reactodia.StandardRelation {...props} />;
+          const {connection, label, properties} = linkStyle;
+          const propertyLabels = properties ? (
+            <>
+              {properties.map(p => (
+                <LinkExtraProperty link={props.link}
+                  label={p}
+                  position={props.getPathPosition(p.position ?? 0.5)}
+                />
+              ))}
+            </>
+          ) : undefined;
+          return (
+            <Reactodia.StandardRelation {...props}
+              pathProps={connection ? {
+                fill: connection.fill,
+                stroke: connection.stroke,
+                strokeWidth: connection['stroke-width'],
+                strokeDasharray: connection['stroke-dasharray'],
+              } : undefined}
+              primaryLabelProps={label ? {
+                title: label.title,
+                style: getLinkLabelStyle(label.attrs),
+              } : undefined}
+              propertyLabelStartLine={1 + (properties ? properties.length : 0)}
+              prependLabels={propertyLabels}
+            />
+          );
         },
       };
     } else {
@@ -1671,6 +1735,122 @@ function getElementTemplateContext(
     isExpanded,
     props: properties,
     propsAsList: propertiesList,
+  };
+}
+
+class PlatformDialogSettingsProvider extends Reactodia.DefaultDialogSettingsProvider {
+  override getDialogSize(
+    dialog: Reactodia.OverlayDialog
+  ): Pick<Reactodia.DialogStyleProps, 'defaultSize' | 'minSize' | 'maxSize'> {
+    const result = super.getDialogSize(dialog);
+    if (result) {
+      return result;
+    }
+
+    switch (dialog.knownType) {
+      case Reactodia.BuiltinDialogType.editRelation: {
+        return { defaultSize: { width: 300, height: 180 } };
+      }
+      case Reactodia.BuiltinDialogType.findOrCreateEntity: {
+        return { defaultSize: { width: 300, height: 350 } };
+      }
+    }
+    return undefined;
+  }
+}
+
+class PlatformLocaleProvider extends Reactodia.DefaultDataLocaleProvider {
+  constructor(
+    options: Reactodia.DefaultDataLocaleProviderOptions,
+    private readonly fieldConfiguration: FieldConfiguration | undefined
+  ) {
+    super({
+      ...options,
+      labelProperties: ConfigHolder.getUIConfig().preferredLabels,
+      imageProperties: ConfigHolder.getUIConfig().preferredThumbnails,
+    });
+  }
+
+  override selectEntityLabel(entity: Reactodia.ElementModel): readonly Reactodia.Rdf.Literal[] {
+    if (this.fieldConfiguration) {
+      const metadata = getEntityMetadata(entity, this.fieldConfiguration.metadata);
+      if (metadata && Object.prototype.hasOwnProperty.call(entity.properties, metadata.labelField.id)) {
+        const values = entity.properties[metadata.labelField.id];
+        if (values.length > 0) {
+          return values.filter((v): v is Reactodia.Rdf.Literal => v.termType === 'Literal');
+        }
+      }
+    }
+    return super.selectEntityLabel(entity);
+  }
+
+  override selectEntityImageUrl(entity: Reactodia.ElementModel): string {
+    if (this.fieldConfiguration) {
+      const metadata = getEntityMetadata(entity, this.fieldConfiguration.metadata);
+      if (
+        metadata && metadata.imageField &&
+        Object.prototype.hasOwnProperty.call(entity.properties, metadata.imageField.id)
+      ) {
+        const values = entity.properties[metadata.imageField.id];
+        if (values.length > 0) {
+          return values[0].value;
+        }
+      }
+    }
+    return super.selectEntityImageUrl(entity);
+  }
+
+  override prepareAnchor(
+    targetIri: string
+  ): Pick<React.ComponentProps<'a'>, 'href' | 'target' | 'rel' | 'onClick'> {
+    const resourceIri = Rdf.iri(targetIri);
+    return {
+      ...super.prepareAnchor(targetIri),
+      href: constructUrlForResourceSync(resourceIri).toString(),
+      onClick: e => {
+        if (isSimpleClick(e)) {
+          e.preventDefault();
+          navigateToResource(resourceIri).onEnd(() => {/* nothing */});
+        }
+      },
+    };
+  }
+}
+
+function LinkExtraProperty(props: {
+  link: Reactodia.Link;
+  label: LinkLabel;
+  position: Reactodia.Vector;
+}) {
+  const { link, label, position } = props;
+  const { model } = Reactodia.useWorkspace();
+  const t = Reactodia.useTranslation();
+  const language = Reactodia.useObservedProperty(
+    model.events, 'changeLanguage', () => model.language
+  );
+  const propertyText = t.selectLabel(label?.attrs?.text?.text ?? [], language);
+  return (
+    <Reactodia.LinkLabel link={link}
+      position={position}
+      style={getLinkLabelStyle(label.attrs)}
+      title={label.title}>
+      {propertyText?.value}
+    </Reactodia.LinkLabel>
+  );
+}
+
+function getLinkLabelStyle(attrs: LinkLabel['attrs']): React.CSSProperties | undefined {
+  if (!attrs) {
+    return undefined;
+  }
+  return {
+    color: attrs.text?.stroke,
+    backgroundColor: attrs.rect?.fill,
+    borderWidth: attrs.rect?.['stroke-width'],
+    borderColor: attrs.rect?.stroke,
+    fontFamily: attrs.text['font-family'],
+    fontSize: attrs.text['font-size'],
+    fontWeight: attrs.text['font-weight'],
   };
 }
 

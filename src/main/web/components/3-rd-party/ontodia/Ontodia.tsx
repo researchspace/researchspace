@@ -25,7 +25,6 @@ import {
   Children,
   cloneElement,
 } from 'react';
-import { flushSync } from 'react-dom';
 import * as Kefir from 'kefir';
 import { debounce, includes } from 'lodash';
 import * as Reactodia from '@reactodia/workspace';
@@ -83,7 +82,6 @@ import * as OntodiaEvents from './OntodiaEvents';
 
 import enTranslation from './translations/en.reactodia-translation.json';
 import './Ontodia.scss';
-import { Literal } from '@rdfjs/types';
 
 export interface EdgeStyle {
   markerSource?: Reactodia.LinkMarkerStyle;
@@ -621,7 +619,20 @@ export class Ontodia extends Component<OntodiaProps, State> {
           connectionsMenu={{
             suggestProperties: propertySuggestionQuery ? this.suggestProperties : undefined,
           }}
-          halo={hideHalo ? null : {}}
+          halo={hideHalo ? null : {
+            children: (
+              <>
+                <Reactodia.SelectionActionGroup dock='nw' dockColumn={1} />
+                <Reactodia.SelectionActionRemove dock='ne' />
+                <Reactodia.SelectionActionExpand dock='s' />
+                <Reactodia.SelectionActionAnchor dock='w' />
+                <Reactodia.SelectionActionConnections dock='e' />
+                <Reactodia.SelectionActionAddToFilter dock='se' />
+                <Reactodia.SelectionActionAnnotate dock='se' dockColumn={1} />
+                <Reactodia.SelectionActionEstablishLink dock='se' />
+              </>
+            )
+          }}
           navigator={hideNavigator ? null : {
             expanded: collapseNavigator ? false : 'auto',
           }}
@@ -1772,7 +1783,7 @@ class PlatformLocaleProvider extends Reactodia.DefaultDataLocaleProvider {
   }
 
   override selectEntityLabel(entity: Reactodia.ElementModel): readonly Reactodia.Rdf.Literal[] {
-    if (this.fieldConfiguration) {
+    if (this.fieldConfiguration?.metadata) {
       const metadata = getEntityMetadata(entity, this.fieldConfiguration.metadata);
       if (metadata && Object.prototype.hasOwnProperty.call(entity.properties, metadata.labelField.id)) {
         const values = entity.properties[metadata.labelField.id];
@@ -1785,7 +1796,7 @@ class PlatformLocaleProvider extends Reactodia.DefaultDataLocaleProvider {
   }
 
   override selectEntityImageUrl(entity: Reactodia.ElementModel): string {
-    if (this.fieldConfiguration) {
+    if (this.fieldConfiguration?.metadata) {
       const metadata = getEntityMetadata(entity, this.fieldConfiguration.metadata);
       if (
         metadata && metadata.imageField &&

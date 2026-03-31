@@ -1,0 +1,592 @@
+<style>
+  .table>tbody>tr>td,
+  .table>tbody>tr>th,
+  .table>thead>tr>td,
+  .table>thead>tr>th {
+    vertical-align: top;
+  }
+</style>
+
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+    <h1>Semantic Tree Advanced</h1>
+
+    <p>
+      The <code>&lt;semantic-tree-advanced&gt;</code> component extends the base
+      <code>&lt;semantic-tree&gt;</code> with advanced capabilities for
+      interactive tree visualizations backed by SPARQL queries.
+    </p>
+
+    <p>It supports:</p>
+    <ul>
+      <li><b>Lazy loading</b> &mdash; load child nodes on demand via a dedicated SPARQL query</li>
+      <li><b>Search</b> &mdash; find nodes by text and highlight matching paths in the tree</li>
+      <li><b>Sorting</b> &mdash; sort nodes by any SPARQL binding (string, number, or date)</li>
+      <li><b>Filtering</b> &mdash; exclude nodes based on SPARQL conditions</li>
+      <li><b>Related node discovery</b> &mdash; hover menu to find related nodes via SPARQL queries</li>
+      <li><b>Node highlighting</b> &mdash; programmatic highlighting via the event system</li>
+      <li><b>Tree lines</b> &mdash; visual connector lines between parent and child nodes</li>
+    </ul>
+
+    <h3>Table of Contents</h3>
+    <ul>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#base-properties">Base Properties</a></li>
+      <li><a href="#advanced-properties">Advanced Properties</a></li>
+      <li><a href="#type-definitions">Type Definitions</a></li>
+      <li><a href="#examples">Usage Examples</a></li>
+      <li><a href="#sparql-requirements">SPARQL Query Requirements</a></li>
+      <li><a href="#event-system">Event System</a></li>
+      <li><a href="#rendering-modes">Rendering Modes</a></li>
+      <li><a href="#performance">Performance</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ul>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="architecture">Architecture</h2>
+
+    <mp-code-block mode='text/plain' show-copy-button=false>
+<![CDATA[
+SemanticTreeAdvanced  (data fetching, search, sort, filter)
+  └── TreeAdvanced    (React rendering, collapse/expand, templates)
+        └── D3Tree    (optional: dendrogram, collapsible tree, sankey)
+]]>
+    </mp-code-block>
+
+    <ul>
+      <li><b>SemanticTreeAdvanced</b> handles SPARQL queries, state management, caching, and data transformation.</li>
+      <li><b>TreeAdvanced</b> renders the HTML tree with collapsible nodes, hover menus, tree lines, and Handlebars templates.</li>
+      <li><b>D3Tree</b> is used only when <code>provider</code> is set to a D3 variant.</li>
+    </ul>
+
+    <h3>Data Flow</h3>
+    <ol>
+      <li>Executes the main <code>query</code> to fetch node-parent pairs.</li>
+      <li>Transforms SPARQL bindings into a graph (adjacency list).</li>
+      <li>Breaks graph cycles, identifies roots, converts to an immutable forest.</li>
+      <li>If <code>expand-query</code> is provided, children are loaded lazily on click.</li>
+    </ol>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="base-properties">Base Properties (inherited from SemanticTree)</h2>
+
+    <table class="table table-striped table-bordered">
+      <thead>
+        <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>query</code> *</td><td>string</td><td>&mdash;</td>
+          <td>SPARQL SELECT returning <code>?node</code> and <code>?parent</code> bindings.</td>
+        </tr>
+        <tr>
+          <td><code>tuple-template</code></td><td>string</td>
+          <td><code>&lt;semantic-link iri="{{node.value}}"&gt;</code></td>
+          <td>Handlebars template for each node. Has access to all SPARQL projection variables.</td>
+        </tr>
+        <tr>
+          <td><code>no-result-template</code></td><td>string</td><td><code>'No results'</code></td>
+          <td>Template shown when query returns no results.</td>
+        </tr>
+        <tr>
+          <td><code>roots</code></td><td>string[]</td><td><code>[]</code></td>
+          <td>Node IRIs to use as roots. If empty, computed automatically.</td>
+        </tr>
+        <tr>
+          <td><code>parent-binding-name</code></td><td>string</td><td><code>'parent'</code></td>
+          <td>SPARQL variable for the parent.</td>
+        </tr>
+        <tr>
+          <td><code>node-binding-name</code></td><td>string</td><td><code>'node'</code></td>
+          <td>SPARQL variable for the child/node.</td>
+        </tr>
+        <tr>
+          <td><code>collapsed</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Whether the tree starts fully collapsed.</td>
+        </tr>
+        <tr>
+          <td><code>keys-opened</code></td><td>string[]</td><td><code>[]</code></td>
+          <td>Node IRIs that should be expanded on load.</td>
+        </tr>
+        <tr>
+          <td><code>provider</code></td><td>string</td><td><code>'html'</code></td>
+          <td><code>'html'</code>, <code>'d3-dendrogram'</code>, <code>'d3-collapsible-tree'</code>, or <code>'d3-sankey'</code>.</td>
+        </tr>
+        <tr>
+          <td><code>d3-tree-options</code></td><td>object</td><td>&mdash;</td>
+          <td>D3 provider options, e.g. <code>{"nodeWidth": 160, "nodeHeight": 25}</code>.</td>
+        </tr>
+        <tr>
+          <td><code>id</code></td><td>string</td><td>&mdash;</td>
+          <td>Component ID for event communication.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="advanced-properties">Advanced Properties</h2>
+
+    <h3>Lazy Loading</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>expand-query</code></td><td>string</td><td>&mdash;</td>
+          <td>SPARQL SELECT for lazy loading. <code>&lt;{{clickedNode}}&gt;</code> is replaced with the expanded node's IRI. Must return <code>?node</code> and <code>?parent</code>.</td>
+        </tr>
+        <tr>
+          <td><code>has-children-binding</code></td><td>string</td><td><code>'hasChildren'</code></td>
+          <td>SPARQL variable (<code>'true'</code>/<code>'false'</code>) controlling expand arrow visibility.</td>
+        </tr>
+        <tr>
+          <td><code>loading-template</code></td><td>string</td><td><code>&lt;i class="fa fa-spinner fa-spin"&gt; Loading...</code></td>
+          <td>Template shown while children are loading.</td>
+        </tr>
+        <tr>
+          <td><code>enable-cache</code></td><td>boolean</td><td><code>true</code></td>
+          <td>Cache expanded children to avoid re-querying.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Search</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>search-query</code></td><td>string</td><td>&mdash;</td>
+          <td>SPARQL SELECT for searching. <code>$__searchText__</code> is replaced with user input. Must return <code>?node</code>.</td>
+        </tr>
+        <tr>
+          <td><code>path-to-root-query</code></td><td>string</td><td>&mdash;</td>
+          <td>SPARQL SELECT for ancestor paths. <code>&lt;$__node__&gt;</code> is replaced with node IRI. Must return <code>?ancestor</code>.</td>
+        </tr>
+        <tr>
+          <td><code>search-placeholder</code></td><td>string</td><td><code>'Search...'</code></td>
+          <td>Placeholder text.</td>
+        </tr>
+        <tr>
+          <td><code>show-search</code></td><td>boolean</td><td>auto</td>
+          <td>Whether to show the search bar. Defaults to <code>true</code> if <code>search-query</code> is set.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Sorting</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>sort-options</code></td><td>SortOption[]</td><td>&mdash;</td><td>Sort configurations. See <a href="#type-sortOption">SortOption</a>.</td></tr>
+        <tr><td><code>initial-sort</code></td><td>object</td><td>&mdash;</td><td>E.g. <code>{"binding": "title", "direction": "asc"}</code>.</td></tr>
+        <tr><td><code>show-sort-controls</code></td><td>boolean</td><td>auto</td><td>Show sort dropdown. Defaults to <code>true</code> if <code>sort-options</code> is set.</td></tr>
+        <tr><td><code>sort-controls-class</code></td><td>string</td><td><code>'tree-sort-controls'</code></td><td>CSS class for sort controls.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Filtering</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>filter-options</code></td><td>FilterOption[]</td><td>&mdash;</td><td>Filter configurations. See <a href="#type-filterOption">FilterOption</a>.</td></tr>
+        <tr><td><code>show-filter-controls</code></td><td>boolean</td><td>auto</td><td>Show filter checkboxes. Defaults to <code>true</code> if <code>filter-options</code> is set.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Related Nodes</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>related-node-criteria</code></td><td>RelatedNodeCriteria[]</td><td>&mdash;</td><td>Criteria for related nodes. See <a href="#type-relatedNodeCriteria">RelatedNodeCriteria</a>.</td></tr>
+        <tr><td><code>show-related-node-buttons</code></td><td>boolean</td><td>auto</td><td>Show hover buttons. Defaults to <code>true</code> if criteria are set.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Visual Options</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>show-tree-lines</code></td><td>boolean</td><td><code>false</code></td><td>Render connector lines between nodes.</td></tr>
+        <tr><td><code>tree-line-style</code></td><td>'solid' | 'dotted'</td><td><code>'solid'</code></td><td>Style of tree lines.</td></tr>
+        <tr><td><code>enable-performance-tracking</code></td><td>boolean</td><td><code>false</code></td><td>Collect performance metrics.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="type-definitions">Type Definitions</h2>
+
+    <h3 id="type-sortOption">SortOption</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>string</td><td>yes</td><td>Display name in dropdown.</td></tr>
+        <tr><td><code>binding</code></td><td>string</td><td>yes</td><td>SPARQL variable to sort by. Must be projected in both queries.</td></tr>
+        <tr><td><code>type</code></td><td>'string' | 'number' | 'date'</td><td>yes</td><td>Data type for comparison.</td></tr>
+        <tr><td><code>defaultDirection</code></td><td>'asc' | 'desc'</td><td>no</td><td>Default direction.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="type-filterOption">FilterOption</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>string</td><td>yes</td><td>Checkbox label.</td></tr>
+        <tr><td><code>description</code></td><td>string</td><td>no</td><td>Tooltip text.</td></tr>
+        <tr><td><code>condition</code></td><td>string</td><td>yes</td><td>SPARQL SELECT returning <code>?node</code> IRIs to exclude.</td></tr>
+        <tr><td><code>defaultChecked</code></td><td>boolean</td><td>no</td><td>Active on page load.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="type-relatedNodeCriteria">RelatedNodeCriteria</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>string</td><td>yes</td><td>Label in hover menu.</td></tr>
+        <tr><td><code>icon</code></td><td>string</td><td>no</td><td>Font Awesome class, e.g. <code>"fa fa-link"</code>.</td></tr>
+        <tr><td><code>query</code></td><td>string</td><td>yes</td><td>SPARQL SELECT. <code>$__nodeIri__</code> replaced with node IRI. Must return <code>?node</code>.</td></tr>
+        <tr><td><code>description</code></td><td>string</td><td>no</td><td>Tooltip text.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="examples">Usage Examples</h2>
+
+    <!-- Live Example 1: Basic static tree with inline data -->
+    <h3 id="ex-basic">Example 1: Basic static tree</h3>
+    <p>A tree built entirely from inline <code>VALUES</code> &mdash; no real data needed.</p>
+
+    <mp-code-example>
+<![CDATA[
+<semantic-tree-advanced
+  query='
+    SELECT ?node ?parent ?label WHERE {
+      VALUES (?node ?parent ?label) {
+        (<http://example.org/Animals> UNDEF "Animals")
+        (<http://example.org/Mammals> <http://example.org/Animals> "Mammals")
+        (<http://example.org/Birds> <http://example.org/Animals> "Birds")
+        (<http://example.org/Dog> <http://example.org/Mammals> "Dog")
+        (<http://example.org/Cat> <http://example.org/Mammals> "Cat")
+        (<http://example.org/Whale> <http://example.org/Mammals> "Whale")
+        (<http://example.org/Eagle> <http://example.org/Birds> "Eagle")
+        (<http://example.org/Parrot> <http://example.org/Birds> "Parrot")
+        (<http://example.org/Penguin> <http://example.org/Birds> "Penguin")
+      }
+    }
+  '
+  tuple-template='{{label.value}}'
+  collapsed=true
+></semantic-tree-advanced>
+]]>
+    </mp-code-example>
+
+    <!-- Live Example 2: Tree with lazy loading -->
+    <h3>Example 2: Lazy-loaded tree</h3>
+    <p>
+      The initial query loads only root nodes. The <code>expand-query</code> loads children on click.
+      Both use inline <code>VALUES</code> to simulate a hierarchy.
+    </p>
+
+    <mp-code-example>
+<![CDATA[
+<semantic-tree-advanced
+  query='
+    SELECT ?node ?label ?hasChildren WHERE {
+      VALUES (?node ?label ?hasChildren) {
+        (<http://example.org/Europe> "Europe" "true")
+        (<http://example.org/Asia> "Asia" "true")
+        (<http://example.org/Americas> "Americas" "true")
+      }
+    }
+  '
+  expand-query='
+    SELECT ?node ?parent ?label ?hasChildren WHERE {
+      VALUES (?node ?parent ?label ?hasChildren) {
+        (<http://example.org/Italy> <http://example.org/Europe> "Italy" "true")
+        (<http://example.org/France> <http://example.org/Europe> "France" "false")
+        (<http://example.org/Germany> <http://example.org/Europe> "Germany" "false")
+        (<http://example.org/Japan> <http://example.org/Asia> "Japan" "false")
+        (<http://example.org/China> <http://example.org/Asia> "China" "false")
+        (<http://example.org/India> <http://example.org/Asia> "India" "false")
+        (<http://example.org/Brazil> <http://example.org/Americas> "Brazil" "false")
+        (<http://example.org/USA> <http://example.org/Americas> "USA" "false")
+        (<http://example.org/Rome> <http://example.org/Italy> "Rome" "false")
+        (<http://example.org/Milan> <http://example.org/Italy> "Milan" "false")
+        (<http://example.org/Naples> <http://example.org/Italy> "Naples" "false")
+      }
+      FILTER(?parent = <{{clickedNode}}>)
+    }
+  '
+  tuple-template='{{label.value}}'
+  collapsed=true
+  enable-cache=true
+></semantic-tree-advanced>
+]]>
+    </mp-code-example>
+
+    <!-- Live Example 3: Tree + event detail panel -->
+    <h3>Example 3: Tree with detail panel (event system)</h3>
+    <p>
+      Clicking a node sends its IRI via <code>mp-event-trigger</code> to an
+      <code>mp-event-target-template-render</code> that displays details.
+    </p>
+
+    <mp-code-example>
+<![CDATA[
+<div style="display: flex; gap: 20px; align-items: flex-start;">
+  <div style="flex: 0 0 300px; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
+    <semantic-tree-advanced
+      id='demo-tree'
+      query='
+        SELECT ?node ?parent ?label ?hasChildren ?description WHERE {
+          VALUES (?node ?parent ?label ?hasChildren ?description) {
+            (<http://example.org/Library> UNDEF "Library" "true" "Main collection")
+            (<http://example.org/Fiction> <http://example.org/Library> "Fiction" "true" "Novels and stories")
+            (<http://example.org/NonFiction> <http://example.org/Library> "Non-Fiction" "false" "Essays and references")
+          }
+        }
+      '
+      expand-query='
+        SELECT ?node ?parent ?label ?hasChildren ?description WHERE {
+          VALUES (?node ?parent ?label ?hasChildren ?description) {
+            (<http://example.org/SciFi> <http://example.org/Fiction> "Science Fiction" "false" "Futuristic and speculative works")
+            (<http://example.org/Fantasy> <http://example.org/Fiction> "Fantasy" "false" "Magical and mythical worlds")
+            (<http://example.org/Mystery> <http://example.org/Fiction> "Mystery" "false" "Detective and thriller novels")
+          }
+          FILTER(?parent = <{{clickedNode}}>)
+        }
+      '
+      tuple-template='{{> demoNodeTpl}}'
+      collapsed=true
+      enable-cache=true
+    >
+      <template id='demoNodeTpl'>
+        <mp-event-trigger
+          id='demo-trigger'
+          type='Component.TemplateUpdate'
+          targets='["demo-details"]'
+          data='{"iri": "{{node.value}}", "nodeLabel": "{{label.value}}", "nodeDescription": "{{description.value}}"}'>
+          <span style="cursor: pointer;">{{label.value}}</span>
+        </mp-event-trigger>
+      </template>
+    </semantic-tree-advanced>
+  </div>
+
+  <div style="flex: 1; border: 1px solid #ddd; border-radius: 4px; padding: 14px; min-height: 150px; background: #fafafa;">
+    <mp-event-target-template-render id='demo-details' template='{{> demoDetailsTpl}}'>
+      <template id='demoDetailsTpl'>
+        {{#if iri}}
+          <h4 style="margin-top: 0;">{{nodeLabel}}</h4>
+          <p><b>IRI:</b> <code>{{iri}}</code></p>
+          {{#if nodeDescription}}<p><b>Description:</b> {{nodeDescription}}</p>{{/if}}
+        {{else}}
+          <p style="color: #999; text-align: center; padding: 30px 0;">
+            Click a node to view its details.
+          </p>
+        {{/if}}
+      </template>
+    </mp-event-target-template-render>
+  </div>
+</div>
+]]>
+    </mp-code-example>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h3>Code-only examples</h3>
+    <p>The following examples show configuration patterns. They use generic SPARQL queries that you should adapt to your ontology.</p>
+
+    <h4>Search</h4>
+    <p>Add <code>search-query</code> and <code>path-to-root-query</code> to enable full-text search with path expansion.</p>
+    <mp-code-block mode='text/html'>
+<![CDATA[
+<semantic-tree-advanced
+  id='my-tree'
+  query='SELECT ?node ?parent ?hasChildren WHERE { ... }'
+  expand-query='SELECT ?node ?parent ?hasChildren WHERE { ... }'
+  search-query='
+    SELECT DISTINCT ?node WHERE {
+      ?node rdfs:label ?label .
+      FILTER(CONTAINS(LCASE(STR(?label)), LCASE("$__searchText__")))
+    }
+  '
+  path-to-root-query='
+    SELECT DISTINCT ?ancestor WHERE {
+      <$__node__> rico:isOrWasIncludedIn* ?ancestor .
+    }
+  '
+  search-placeholder='Search records...'
+  collapsed=true
+></semantic-tree-advanced>
+]]>
+    </mp-code-block>
+    <p>
+      <b>Important:</b> Both <code>search-query</code> and <code>path-to-root-query</code> should be provided together.
+      Without <code>path-to-root-query</code>, deep search results will not be revealed.
+    </p>
+
+    <h4>Sorting</h4>
+    <p>Use <code>sort-options</code> to let users sort nodes. The <code>binding</code> must match a projected SPARQL variable in both queries.</p>
+    <mp-code-block mode='text/html'>
+<![CDATA[
+<semantic-tree-advanced
+  query='SELECT ?node ?parent ?title ?hasChildren WHERE { ... }'
+  expand-query='SELECT ?node ?parent ?title ?hasChildren WHERE { ... }'
+  sort-options='[
+    {"label": "Title", "binding": "title", "type": "string"},
+    {"label": "Date", "binding": "created", "type": "date", "defaultDirection": "desc"}
+  ]'
+  initial-sort='{"binding": "title", "direction": "asc"}'
+  collapsed=true
+></semantic-tree-advanced>
+]]>
+    </mp-code-block>
+
+    <h4>Filtering</h4>
+    <p>Checkbox filters that run SPARQL queries to exclude matching nodes.</p>
+    <mp-code-block mode='text/html'>
+<![CDATA[
+<semantic-tree-advanced
+  query='SELECT ?node ?parent ?hasChildren WHERE { ... }'
+  expand-query='SELECT ?node ?parent ?hasChildren WHERE { ... }'
+  filter-options='[
+    {
+      "label": "Hide empty records",
+      "description": "Exclude records with no children",
+      "condition": "SELECT ?node WHERE { ?node a rico:RecordSet . FILTER NOT EXISTS { ?child rico:isOrWasIncludedIn ?node } }",
+      "defaultChecked": false
+    }
+  ]'
+  collapsed=true
+></semantic-tree-advanced>
+]]>
+    </mp-code-block>
+    <p>Each filter's <code>condition</code> is a SELECT returning <code>?node</code> IRIs to <b>exclude</b>. Runs once per toggle, not per-node.</p>
+
+    <h4>Related Nodes</h4>
+    <p>Hover menu to find nodes sharing a property (sender, place, date, etc.).</p>
+    <mp-code-block mode='text/html'>
+<![CDATA[
+<semantic-tree-advanced
+  query='SELECT ?node ?parent ?hasChildren WHERE { ... }'
+  expand-query='SELECT ?node ?parent ?hasChildren WHERE { ... }'
+  path-to-root-query='SELECT DISTINCT ?ancestor WHERE { <$__node__> rico:isOrWasIncludedIn* ?ancestor . }'
+  related-node-criteria='[
+    {
+      "label": "Same Sender",
+      "icon": "fa fa-user",
+      "query": "SELECT ?node WHERE { <$__nodeIri__> rico:hasSender ?s . ?node rico:hasSender ?s . FILTER(?node != <$__nodeIri__>) }",
+      "description": "Find records from the same sender"
+    },
+    {
+      "label": "Same Place",
+      "icon": "fa fa-map-marker",
+      "query": "SELECT ?node WHERE { <$__nodeIri__> rico:isAssociatedWithPlace ?p . ?node rico:isAssociatedWithPlace ?p . FILTER(?node != <$__nodeIri__>) }"
+    }
+  ]'
+  collapsed=true
+  show-tree-lines=true
+  tree-line-style='dotted'
+></semantic-tree-advanced>
+]]>
+    </mp-code-block>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="sparql-requirements">SPARQL Query Requirements</h2>
+
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Query</th><th>Attribute</th><th>Required Bindings</th><th>Placeholder</th></tr></thead>
+      <tbody>
+        <tr><td>Main query</td><td><code>query</code></td><td><code>?node</code>, <code>?parent</code> (optional for roots)</td><td>&mdash;</td></tr>
+        <tr><td>Expand query</td><td><code>expand-query</code></td><td><code>?node</code>, <code>?parent</code></td><td><code>&lt;{{clickedNode}}&gt;</code></td></tr>
+        <tr><td>Search query</td><td><code>search-query</code></td><td><code>?node</code></td><td><code>$__searchText__</code></td></tr>
+        <tr><td>Path to root</td><td><code>path-to-root-query</code></td><td><code>?ancestor</code></td><td><code>&lt;$__node__&gt;</code></td></tr>
+        <tr><td>Filter condition</td><td><code>filter-options[].condition</code></td><td><code>?node</code> (to exclude)</td><td>&mdash;</td></tr>
+        <tr><td>Related nodes</td><td><code>related-node-criteria[].query</code></td><td><code>?node</code> (related)</td><td><code>$__nodeIri__</code></td></tr>
+      </tbody>
+    </table>
+
+    <p><b>Recommended:</b> Include <code>?hasChildren</code> (<code>'true'</code>/<code>'false'</code>) in both main and expand queries to show expand arrows.</p>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="event-system">Event System</h2>
+
+    <p>Requires an <code>id</code> attribute on the component for event communication.</p>
+
+    <h3>Events Listened To</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Event Type</th><th>Data</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>SemanticTreeHighlightNodes</code></td><td><code>{ nodeIds: string[] }</code></td><td>Highlights nodes. Empty array clears.</td></tr>
+        <tr><td><code>Component.TemplateUpdate</code></td><td><code>{ iri: string }</code></td><td>Selects matching node visually.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Events Emitted</h3>
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Event Type</th><th>When</th></tr></thead>
+      <tbody>
+        <tr><td><code>Component.Loading</code></td><td>Query starts.</td></tr>
+        <tr><td><code>Component.Loaded</code></td><td>Query completes.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="rendering-modes">Rendering Modes</h2>
+
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Provider</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>html</code> (default)</td><td>Interactive HTML tree with collapsible nodes, hover menus, tree lines.</td></tr>
+        <tr><td><code>d3-dendrogram</code></td><td>D3-based dendrogram layout.</td></tr>
+        <tr><td><code>d3-collapsible-tree</code></td><td>D3-based collapsible tree with animations.</td></tr>
+        <tr><td><code>d3-sankey</code></td><td>D3-based Sankey diagram.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="performance">Performance Considerations</h2>
+
+    <dl>
+      <dt>Lazy Loading</dt>
+      <dd>Use <code>expand-query</code> for large trees. Loading thousands of nodes upfront will be slow.</dd>
+      <hr style="margin: 10px 0;">
+      <dt>Batch Expansion</dt>
+      <dd>Search highlighting batches multiple node expansions into a single SPARQL query using <code>VALUES</code>.</dd>
+      <hr style="margin: 10px 0;">
+      <dt>Caching</dt>
+      <dd>With <code>enable-cache=true</code> (default), expanded children are cached in memory. Cleared when filters change.</dd>
+      <hr style="margin: 10px 0;">
+      <dt>Memoization</dt>
+      <dd>Computed tree data is memoized to prevent expanded folders from collapsing on unrelated state changes.</dd>
+      <hr style="margin: 10px 0;">
+      <dt>Performance Tracking</dt>
+      <dd>Set <code>enable-performance-tracking=true</code> for query time, render time, and cache metrics.</dd>
+    </dl>
+
+    <!-- ================================================================ -->
+    <hr class="divider">
+    <h2 id="troubleshooting">Troubleshooting</h2>
+
+    <table class="table table-striped table-bordered">
+      <thead><tr><th>Problem</th><th>Cause</th><th>Solution</th></tr></thead>
+      <tbody>
+        <tr><td>Expand arrows don't appear</td><td>Missing <code>?hasChildren</code></td><td>Add <code>BIND(EXISTS { ... } AS ?hasChildren)</code> to queries.</td></tr>
+        <tr><td>Search finds nodes but tree doesn't show them</td><td>Missing <code>path-to-root-query</code></td><td>Add the query so ancestor paths can be loaded.</td></tr>
+        <tr><td>Filters don't exclude nodes</td><td>Condition query doesn't project <code>?node</code></td><td>Ensure the SELECT returns <code>?node</code>.</td></tr>
+        <tr><td>Sorting has no effect</td><td>Binding name mismatch</td><td>The <code>binding</code> must exactly match a SPARQL projection variable.</td></tr>
+        <tr><td>Expanded folders collapse on click</td><td>Cache issue</td><td>Ensure <code>enable-cache=true</code> and consistent <code>expand-query</code> results.</td></tr>
+        <tr><td>Nodes show raw URI</td><td>Label not projected in SELECT</td><td>Add label variables to the <code>SELECT</code> clause, not just the <code>WHERE</code>.</td></tr>
+        <tr><td>"Expected roots not found"</td><td><code>roots</code> IRIs missing from results</td><td>Check that <code>roots</code> match <code>?node</code> values.</td></tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>

@@ -17,26 +17,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import RDF = require('../core/Rdf');
+import * as Rdf from '../core/Rdf';
 
-module dc {
+namespace dc {
   export var _NAMESPACE = 'http://purl.org/dc/elements/1.1/';
 
-  export var contributor = RDF.iri(_NAMESPACE + 'contributor');
-  export var coverage = RDF.iri(_NAMESPACE + 'coverage');
-  export var creator = RDF.iri(_NAMESPACE + 'creator');
-  export var date = RDF.iri(_NAMESPACE + 'date');
-  export var description = RDF.iri(_NAMESPACE + 'description');
-  export var format = RDF.iri(_NAMESPACE + 'format');
-  export var identifier = RDF.iri(_NAMESPACE + 'identifier');
-  export var language = RDF.iri(_NAMESPACE + 'language');
-  export var publisher = RDF.iri(_NAMESPACE + 'publisher');
-  export var relation = RDF.iri(_NAMESPACE + 'relation');
-  export var rights = RDF.iri(_NAMESPACE + 'rights');
-  export var source = RDF.iri(_NAMESPACE + 'source');
-  export var subject = RDF.iri(_NAMESPACE + 'subject');
-  export var title = RDF.iri(_NAMESPACE + 'title');
-  export var type = RDF.iri(_NAMESPACE + 'type');
+  export var contributor = Rdf.iri(_NAMESPACE + 'contributor');
+  export var coverage = Rdf.iri(_NAMESPACE + 'coverage');
+  export var creator = Rdf.iri(_NAMESPACE + 'creator');
+  export var date = Rdf.iri(_NAMESPACE + 'date');
+  export var description = Rdf.iri(_NAMESPACE + 'description');
+  export var format = Rdf.iri(_NAMESPACE + 'format');
+  export var identifier = Rdf.iri(_NAMESPACE + 'identifier');
+  export var language = Rdf.iri(_NAMESPACE + 'language');
+  export var publisher = Rdf.iri(_NAMESPACE + 'publisher');
+  export var relation = Rdf.iri(_NAMESPACE + 'relation');
+  export var rights = Rdf.iri(_NAMESPACE + 'rights');
+  export var source = Rdf.iri(_NAMESPACE + 'source');
+  export var subject = Rdf.iri(_NAMESPACE + 'subject');
+  export var title = Rdf.iri(_NAMESPACE + 'title');
+  export var type = Rdf.iri(_NAMESPACE + 'type');
 }
 
 export default dc;

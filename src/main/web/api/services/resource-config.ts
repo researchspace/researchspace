@@ -18,6 +18,7 @@
 
 import * as _ from 'lodash';
 import * as SparqlJs from 'sparqljs';
+import Basil from 'basil.js';
 
 import { Rdf } from 'platform/api/rdf';
 import * as request from 'platform/api/http';
@@ -213,7 +214,6 @@ export function getResourceConfigurationValue(iri: string, key: string)  {
     return undefined;
 }
 
-import Basil = require('basil.js');
 const RESOURCE_CONFIGURATION_SERVICE_URL = '/rest/data/rdf/utils/getResourceConfiguration';
 const TTL_MS = 60 * 60 * 1000; // 1 hour
 

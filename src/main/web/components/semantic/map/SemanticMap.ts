@@ -27,8 +27,7 @@ import * as maybe from 'data.maybe';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
-import VectorLayer from 'ol/layer/Vector';
-import Vector from 'ol/source/Vector';
+import VectorSource from 'ol/source/Vector';
 import Cluster from 'ol/source/Cluster';
 import Style from 'ol/style/Style';
 import Text from 'ol/style/Text';
@@ -46,8 +45,7 @@ import WKT from 'ol/format/WKT';
 import {transform} from 'ol/proj';
 import {defaults as controlDefaults} from 'ol/control';
 import {defaults as interactionDefaults} from 'ol/interaction';
-import {extend} from 'ol/extent';
-import {createEmpty} from 'ol/extent';
+import {createEmpty, getCenter} from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
@@ -120,7 +118,8 @@ interface MapState {
 const MAP_REF = 'researchspace-map-widget';
 
 export class SemanticMap extends Component<SemanticMapProps, MapState> {
-  private layers: { [id: string]: VectorLayer };
+  // A single master source holds all features (Points, Polygons, etc.)
+  private masterSource: VectorSource;
   private map: Map;
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
@@ -244,10 +243,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   }
 
-  private createGeometries = (markersData: any[]) => {
-    const geometries: { [type: string]: Feature[] } = {};
-
-    markersData.forEach((marker) => {
+  private createFeatures = (markersData: any[]): Feature[] => {
+    return markersData.map((marker) => {
       const f = new Feature(marker);
       let geo: Geometry = undefined;
       if (!_.isUndefined(marker['lat']) && !_.isUndefined(marker['lng'])) {
@@ -260,42 +257,54 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         const msg = `Result of SPARQL Select query does have neither
                     lat,lng nor wkt projection variable. `;
         this.setState({ errorMessage: maybe.Just(msg) });
+        return null;
       } else {
         f.setGeometry(geo);
-
-        const type = geo.getType();
-        geometries[type] = geometries[type] ? [...geometries[type], f] : [f];
+        return f;
       }
-    });
-
-    return geometries;
-  };
-
-  private createLayer = (features: Feature[], type: string): VectorLayer => {
-    const source = new Vector({ features });
-    if (type === 'Point') {
-      const clusterSource = new Cluster({ source, distance: 40 });
-      return new AnimatedCluster({
-        source: clusterSource,
-        style: getMarkerStyle(),
-        zIndex: 1, // we want to always have markers on top of polygons
-      });
-    }
-    return new VectorLayer({
-      source,
-      style: (feature: Feature) => {
-        const geometry = feature.getGeometry();
-        const color = feature.get('color');
-        return getFeatureStyle(geometry, color ? color.value : undefined);
-      },
-      zIndex: 0,
-    });
+    }).filter(Boolean); // Filter out any nulls from failed features
   };
 
   private renderMap(node, props, center, markers) {
     window.setTimeout(() => {
-      const geometries = this.createGeometries(markers);
-      const layers = _.mapValues(geometries, this.createLayer);
+      const initialFeatures = this.createFeatures(markers);
+      // A single source for ALL features, regardless of geometry type.
+      this.masterSource = new VectorSource({ features: initialFeatures });
+
+      // A single cluster source wraps the master source.
+      const clusterSource = new Cluster({
+        source: this.masterSource,
+        distance: 40,
+        // The geometryFunction tells the clusterer how to find a 'point'
+        // for any given feature, enabling points and polygons to cluster together.
+        geometryFunction: (feature: Feature) => {
+          const geometry = feature.getGeometry();
+          if (geometry instanceof Point) {
+            return geometry; // For points, use the point itself.
+          }
+          if (geometry instanceof MultiPoint) {
+            return geometry.getPoint(0);
+          }
+          if (geometry instanceof Polygon) {
+            return geometry.getInteriorPoint(); // For polygons, use a point inside.
+          }
+          if (geometry instanceof MultiPolygon) {
+            return geometry.getInteriorPoints().getPoint(0);
+          }
+          if (geometry instanceof GeometryCollection) {
+            // For a collection, get the center of its bounding box.
+            return new Point(getCenter(geometry.getExtent()));
+          }
+          return null;
+        },
+      });
+
+      // A single AnimatedCluster layer handles all rendering logic.
+      // Its style function is smart enough to draw clusters, points, or polygons.
+      const clusterLayer = new AnimatedCluster({
+        source: clusterSource,
+        style: getMarkerStyle(),
+      });
 
       const map = new Map({
         controls: controlDefaults({
@@ -308,7 +317,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           new TileLayer({
             source: new OSM(),
           }),
-          ..._.values(layers),
+          clusterLayer, // We only need this one layer for all features.
         ],
         target: node,
         view: new View({
@@ -317,20 +326,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         }),
       });
 
-      this.layers = layers;
       this.map = map;
 
       // asynch execute query and add markers
       this.addMarkersFromQuery(this.props, this.context);
 
       this.initializeMarkerPopup(map);
-      // map.getView().fit(markersSource.getExtent(), map.getSize());
 
       window.addEventListener('resize', () => {
         map.updateSize();
       });
 
-      window.addEventListener(LayoutChanged,() => {map.updateSize()});
+      window.addEventListener(LayoutChanged, () => { map.updateSize() });
     }, 1000);
   }
 
@@ -348,6 +355,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             errorMessage: maybe.Nothing<string>(),
             isLoading: false,
           });
+          this.updateFeatures([]);
         } else {
           this.setState({
             noResults: false,
@@ -355,12 +363,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             isLoading: false,
           });
 
-          const geometries = this.createGeometries(m);
-          this.updateLayers(geometries);
+          const allFeatures = this.createFeatures(m);
+          this.updateFeatures(allFeatures);
 
           const view = this.map.getView();
           const extent = this.calculateExtent();
-          view.fit(extent, { maxZoom: 10 });
+          if (extent && extent[0] !== Infinity) {
+            view.fit(extent, { maxZoom: 10, padding: [50, 50, 50, 50] });
+          }
 
           if (fixZoomLevel) {
             view.setZoom(fixZoomLevel);
@@ -391,37 +401,15 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }
   };
 
-  private updateLayers = (geometries: { [type: string]: Feature[] }) => {
-    _.forEach(geometries, (features, type) => {
-      let layer = this.layers[type];
-
-      if (layer) {
-        let source = layer.getSource();
-        if (source instanceof Cluster) {
-          source = source.getSource();
-        }
-        source.clear();
-        source.addFeatures(features);
-      } else {
-        layer = this.createLayer(features, type);
-        this.layers[type] = layer;
-        this.map.addLayer(layer);
-      }
-    });
+  private updateFeatures = (features: Feature[]) => {
+    if (this.masterSource) {
+      this.masterSource.clear();
+      this.masterSource.addFeatures(features);
+    }
   };
 
-  private calculateExtent() {
-    const viewExtent = createEmpty();
-
-    _.forEach(this.layers, (layer) => {
-      let source = layer.getSource();
-      if (source instanceof Cluster) {
-        source = source.getSource();
-      }
-      extend(viewExtent, source.getExtent());
-    });
-
-    return viewExtent;
+  private calculateExtent = () => {
+    return this.masterSource ? this.masterSource.getExtent() : createEmpty();
   }
 
   private createMap = () => {
@@ -437,22 +425,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private getMarkerFromMapAsElements = () => {
-    if (!_.isUndefined(this.layers)) {
-      _.forEach(this.layers, (layer) => {
-        const elementDiv = this.refs['ref-map-widget-elements'];
-        let source = layer.getSource();
-        if (source instanceof Cluster) {
-          source = source.getSource();
-        }
-        const features = source.getFeaturesInExtent(source.getExtent());
-        const d = findDOMNode(elementDiv);
-        const template = this.state.tupleTemplate;
+    if (this.masterSource) {
+      const elementDiv = this.refs['ref-map-widget-elements'];
+      const features = this.masterSource.getFeatures();
+      const d = findDOMNode(elementDiv);
+      const template = this.state.tupleTemplate;
 
-        _.forEach(features, (f) => {
-          const html = SemanticMap.createPopupContent(f.getProperties(), template);
-          const doc = new DOMParser().parseFromString(html, 'text/html');
+      _.forEach(features, (f) => {
+        const html = SemanticMap.createPopupContent(f.getProperties(), template);
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        if (doc.body.firstChild) {
           d.appendChild(doc.body.firstChild);
-        });
+        }
       });
     }
   };
@@ -492,6 +476,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 }
 
+/**
+ * A threshold in screen pixels. If a polygon's largest dimension is smaller
+ * than this value, it will be rendered as a point marker for better visibility
+ * and clickability.
+ */
+const PIXEL_THRESHOLD = 20;
+
 function getMarkerStyle() {
   const styleCache = {};
 
@@ -507,32 +498,41 @@ function getMarkerStyle() {
       }),
     });
 
-  return function (feature: Feature) {
+  return function (feature: Feature, resolution: number) {
     const features = feature.get('features');
     const size = features.length;
 
-    const { value: color } = features[0].get('color') || { value: '#000' };
-
-    let style = styleCache[`${size}${color}`];
-    if (!style) {
-      if (size === 1) {
-        const geometry = feature.getGeometry();
-        style = getFeatureStyle(geometry, color);
-      } else {
+    if (size > 1) {
+      // It's a true cluster: draw a circle.
+      const { value: color } = features[0].get('color') || { value: '#000' };
+      const cacheKey = `cluster_${size}_${color}`;
+      let style = styleCache[cacheKey];
+      if (!style) {
         const radius = Math.max(8, Math.min(size * 0.75, 20));
         style = clusterStyle(size, radius, color);
+        styleCache[cacheKey] = style;
       }
-
-      styleCache[size] = style;
+      return style;
+    } else {
+      // It's a single feature. The style now depends on resolution, so we don't cache it.
+      const originalFeature = features[0];
+      const geometry = originalFeature.getGeometry();
+      const color = originalFeature.get('color');
+      return getFeatureStyle(geometry, color ? color.value : undefined, resolution);
     }
-    return [style];
   };
 }
 
-function getFeatureStyle(geometry: Geometry, color: string | undefined) {
+
+/**
+ * This function provides the specific style for an individual geometry.
+ * The critical part is setting geometry: geometry on the polygon style.
+ * This forces the style to render the original polygon shape, overriding
+ * the cluster's default point geometry for single-item clusters.
+ */
+function getFeatureStyle(geometry: Geometry, color: string | undefined, resolution: number): Style | Style[] {
   if (geometry instanceof Point || geometry instanceof MultiPoint) {
     return new Style({
-      geometry,
       text: new Text({
         text: '\uf041',
         font: 'normal 22px FontAwesome',
@@ -541,16 +541,36 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined) {
       }),
     });
   } else if (geometry instanceof GeometryCollection) {
-    return geometry.getGeometries().map((geom) => getFeatureStyle(geom, color));
+    return _.flatten(geometry.getGeometries().map((geom) => getFeatureStyle(geom, color, resolution)));
   }
-  return new Style({
-    geometry,
-    fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
-    stroke: new Stroke({
-      color: color || '#3399CC',
-      width: 1.25,
-    }),
-  });
+
+  // Handle both Polygon and MultiPolygon.
+  const extent = geometry.getExtent();
+  const widthInPixels = (extent[2] - extent[0]) / resolution;
+  const heightInPixels = (extent[3] - extent[1]) / resolution;
+
+  // Check if the feature is too small to be rendered as a polygon.
+  if (Math.max(widthInPixels, heightInPixels) < PIXEL_THRESHOLD) {
+    // High resolution (zoomed out): Render a point-style marker for the polygon.
+    return new Style({
+      text: new Text({
+        text: '\uf041',
+        font: 'normal 22px FontAwesome',
+        textBaseline: 'bottom',
+        fill: new Fill({ color: color || '#3399CC' }),
+      }),
+    });
+  } else {
+    // Low resolution (zoomed in): Render the actual polygon shape.
+    return new Style({
+      geometry: geometry, // CRITICAL: This forces the polygon's shape to be rendered.
+      fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
+      stroke: new Stroke({
+        color: color || '#3399CC',
+        width: 1.25,
+      }),
+    });
+  }
 }
 
 function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {
@@ -567,13 +587,14 @@ function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {
         return getPopupCoordinate(polygon, coordinate);
       }
     }
+    return geometry.getInteriorPoints().getCoordinates()[0];
   } else if (geometry instanceof GeometryCollection) {
     const geometries = geometry.getGeometries();
     for (let i = 0; i < geometries.length; i++) {
       const geometry = geometries[i];
       if (geometry.intersectsCoordinate(coordinate)) {
         return getPopupCoordinate(geometry, coordinate);
-      }
+      }    
     }
   }
   return geometry.getClosestPoint(coordinate);

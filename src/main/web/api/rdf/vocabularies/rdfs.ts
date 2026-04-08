@@ -19,7 +19,7 @@
 
 import * as Rdf from '../core/Rdf';
 
-module rdfs {
+namespace rdfs {
   export var _NAMESPACE = 'http://www.w3.org/2000/01/rdf-schema#';
   export const iri = (s: string) => Rdf.iri(_NAMESPACE + s);
 

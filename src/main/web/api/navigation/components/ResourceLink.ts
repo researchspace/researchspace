@@ -24,7 +24,6 @@ import * as classNames from 'classnames';
 import * as Maybe from 'data.maybe';
 import * as _ from 'lodash';
 
-import { Cancellation } from 'platform/api/async';
 import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
 import { Draggable } from 'platform/components/dnd';
@@ -55,21 +54,22 @@ interface ResourceLinkProps extends Props<ResourceLink> {
 }
 
 interface State {
-  readonly url?: uri.URI;
+  readonly url: uri.URI;
 }
 
 export class ResourceLink extends Component<ResourceLinkProps, State> {
-  private readonly cancellation = new Cancellation();
-
   constructor(props: ResourceLinkProps, context: any) {
     super(props, context);
     this.state = {
-      url: construcUrlForResourceSync(
-        this.props.resource,
-        this.props.params,
-        this.getRepository(),
-        this.props.fragment
-      ),
+      url:
+        this.props.resource && this.props.resource.value
+          ? construcUrlForResourceSync(
+              this.props.resource,
+              this.props.params,
+              this.getRepository(),
+              this.props.fragment
+            )
+          : undefined,
     };
   }
 
@@ -78,21 +78,31 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
   };
 
   componentDidMount() {
-    this.cancellation
-      .map(constructUrlForResource(this.props.resource, this.props.params, this.getRepository(), this.props.fragment))
-      .observe({
-        value: (url) => this.setState({ url }),
-        error: (error) => console.error(error),
+    if (this.props.resource && this.props.resource.value) {
+      this.setState({
+        url: constructUrlForResource(this.props.resource, this.props.params, this.getRepository(), this.props.fragment),
       });
-  }
-
-  componentWillUnmount() {
-    this.cancellation.cancelAll();
+    }
   }
 
   public render() {
     const { title, className, activeClassName, style, resource, draggable, target } = this.props;
     const { url } = this.state;
+
+    // It doesn't make sense to render a link without a resource
+    // so it shouldn't ever happen. We have this check here just to make sure that
+    // the template doesn't crash, because it actually happens time to time
+    if (!resource || !resource.value || !url) {
+      console.warn('ResourceLink: resource is undefined or null', this.props);
+      // Render a plain anchor without href if resource is missing
+      return D.a({
+        className,
+        style,
+        title,
+        draggable: false
+      }, this.props.children);
+    }
+
     const props = {
       href: url.toString(),
       title: title,

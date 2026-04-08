@@ -17,9 +17,6 @@
  */
 
 import { EventMaker } from 'platform/api/events';
-import Rdf = require('platform/api/rdf/core/Rdf');
-
-
 
 export interface OverlayComparisonEventData {
   /**

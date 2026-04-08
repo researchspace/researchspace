@@ -322,6 +322,6 @@ function fetchLabels(data: BuiltData): Kefir.Property<Dictionary<string>> {
   return getLabels(iris).map((labels) => labels.mapKeys((k) => k.value).toObject());
 }
 
-export { SemanticChartConfig };
-export { DataSetMappings, ChartType, ProviderSpecificStyle, DataSet } from './ChartingCommons';
+export type { SemanticChartConfig };
+export type { DataSetMappings, ChartType, ProviderSpecificStyle, DataSet } from './ChartingCommons';
 export default SemanticChart;

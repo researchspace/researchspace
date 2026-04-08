@@ -19,7 +19,7 @@
 
 import * as Rdf from '../core/Rdf';
 
-module prov {
+namespace prov {
   export const _NAMESPACE = 'http://www.w3.org/ns/prov#';
   export const iri = (s: string) => Rdf.iri(_NAMESPACE + s);
 

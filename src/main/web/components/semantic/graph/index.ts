@@ -19,8 +19,13 @@
 
 export {
   SemanticGraph,
-  SemanticGraphProps as SemanticGraphConifg,
-  SemanticGraphProps,
-  State as SemanticGraphState,
+  type SemanticGraphProps as SemanticGraphConifg,
+  type SemanticGraphProps,
+  type State as SemanticGraphState,
 } from './SemanticGraph';
-export { Graph, Config as GraphConfig, Props as GraphProps, State as GraphState } from './Graph';
+export {
+  Graph,
+  type Config as GraphConfig,
+  type Props as GraphProps,
+  type State as GraphState,
+} from './Graph';

@@ -23,8 +23,6 @@ import { Rdf, vocabularies } from 'platform/api/rdf';
 import { LdpService } from 'platform/api/services/ldp';
 
 import { rso, crmdig, crm } from '../vocabularies/vocabularies';
-import Maybe = require('data.maybe');
-import { FileManager } from 'platform/api/services/file-manager';
 
 /**
  * ldp client for ImageOverlayService

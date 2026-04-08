@@ -19,6 +19,7 @@
 
 var webpack = require('webpack'),
     path = require('path'),
+    MiniCssExtractPlugin = require('mini-css-extract-plugin'),
     webpackConfigFn = require('../webpack.config.js');
 
 /**
@@ -28,7 +29,30 @@ var webpack = require('webpack'),
 module.exports = function (defaults) {
     const webpackConfig = webpackConfigFn(defaults);
     webpackConfig.mode = 'development';
+    // Use a separate cache for tests to avoid conflicts with the main build cache
+    // which contains MiniCssExtractPlugin dependencies that are not available here
+    webpackConfig.cache.cacheDirectory = path.resolve(defaults.ROOT_DIR, 'build/webpack_karma_cache');
     delete webpackConfig.optimization.splitChunks;
+    
+    // Replace MiniCssExtractPlugin.loader with style-loader for tests
+    // MiniCssExtractPlugin extracts CSS into separate files, which causes issues in the Karma/Webpack
+    // test environment (running in memory). The loader often fails to find the extracted data,
+    // leading to errors like "TypeError: Cannot read properties of undefined (reading 'data')".
+    // style-loader injects CSS directly into the DOM, which is the standard and more robust approach for tests.
+    webpackConfig.module.rules.forEach(rule => {
+        if (Array.isArray(rule.use)) {
+            rule.use = rule.use.map(use => {
+                if (use === MiniCssExtractPlugin.loader) {
+                    return 'style-loader';
+                }
+                return use;
+            });
+        }
+    });
+
+    // Remove MiniCssExtractPlugin from plugins
+    webpackConfig.plugins = webpackConfig.plugins.filter(plugin => !(plugin instanceof MiniCssExtractPlugin));
+    
     delete webpackConfig.entry;
     delete webpackConfig.devtool;
     webpackConfig.output.path = path.resolve(defaults.ROOT_DIR, 'build/webpack-build');

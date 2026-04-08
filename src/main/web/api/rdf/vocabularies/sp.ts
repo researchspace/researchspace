@@ -17,19 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import RDF = require('../core/Rdf');
+import * as Rdf from '../core/Rdf';
 
-module sp {
+namespace sp {
   export var _NAMESPACE = 'http://spinrdf.org/sp#';
 
-  export var Query = RDF.iri(_NAMESPACE + 'Query');
-  export const Ask = RDF.iri(_NAMESPACE + 'Ask');
-  export const Select = RDF.iri(_NAMESPACE + 'Select');
-  export const Describe = RDF.iri(_NAMESPACE + 'Describe');
-  export const Construct = RDF.iri(_NAMESPACE + 'Construct');
-  export const Update = RDF.iri(_NAMESPACE + 'Update');
+  export var Query = Rdf.iri(_NAMESPACE + 'Query');
+  export const Ask = Rdf.iri(_NAMESPACE + 'Ask');
+  export const Select = Rdf.iri(_NAMESPACE + 'Select');
+  export const Describe = Rdf.iri(_NAMESPACE + 'Describe');
+  export const Construct = Rdf.iri(_NAMESPACE + 'Construct');
+  export const Update = Rdf.iri(_NAMESPACE + 'Update');
 
-  export var text = RDF.iri(_NAMESPACE + 'text');
+  export var text = Rdf.iri(_NAMESPACE + 'text');
 }
 
 export default sp;

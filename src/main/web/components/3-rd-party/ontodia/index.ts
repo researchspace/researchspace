@@ -17,5 +17,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { Ontodia, OntodiaProps, OntodiaPersistenceMode } from './Ontodia';
-export { Toolbar, ToolbarProps, ToolbarCommand, ToolbarStyles } from './Toolbar';
+export { Ontodia, type OntodiaProps, type OntodiaPersistenceMode } from './Ontodia';
+export { Toolbar, type ToolbarProps, type ToolbarCommand, ToolbarStyles } from './Toolbar';

@@ -112,11 +112,12 @@ export class SparqlEditor extends Component<SparqlEditorProps, State> {
         // Workaround for disabling caching of prefixes
         // YASQE doesn't support overriding the persistent option
         const _prefixes = YASQE['Autocompleters'].prefixes;
-        YASQE['Autocompleters'].prefixes = (yasqe, completerName) => {
+        // must be a normal function, not an arrow, because YASQE calls it with `new`
+        YASQE['Autocompleters'].prefixes = function(yasqe, completerName) {
           const completer = _prefixes(yasqe, completerName);
           completer.persistent = null;
           return completer;
-        };
+        } as any;
       }
     } else {
       // by default we only support variables, since prefixes issues

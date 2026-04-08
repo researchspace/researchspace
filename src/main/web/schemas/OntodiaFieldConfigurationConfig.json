@@ -107,9 +107,7 @@
                 "maxOccurs": {
                     "anyOf": [
                         {
-                            "enum": [
-                                "unbound"
-                            ],
+                            "const": "unbound",
                             "type": "string"
                         },
                         {
@@ -120,9 +118,7 @@
                 "minOccurs": {
                     "anyOf": [
                         {
-                            "enum": [
-                                "unbound"
-                            ],
+                            "const": "unbound",
                             "type": "string"
                         },
                         {
@@ -133,9 +129,7 @@
                 "order": {
                     "anyOf": [
                         {
-                            "enum": [
-                                "unbound"
-                            ],
+                            "const": "unbound",
                             "type": "string"
                         },
                         {
@@ -180,14 +174,7 @@
                     ]
                 },
                 "treePatterns": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/SimpleTreeConfig"
-                        },
-                        {
-                            "$ref": "#/definitions/FullTreeConfig"
-                        }
-                    ]
+                    "$ref": "#/definitions/TreeQueriesConfig"
                 },
                 "valueSetPattern": {
                     "type": "string"
@@ -231,6 +218,16 @@
             ],
             "type": "object"
         },
+        "FormBasedPersistenceProps": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/LdpBasedPersistenceProps"
+                },
+                {
+                    "$ref": "#/definitions/SparqlPersistenceProps"
+                }
+            ]
+        },
         "FullTreeConfig": {
             "properties": {
                 "childrenQuery": {
@@ -253,9 +250,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "enum": [
-                        "full"
-                    ],
+                    "const": "full",
                     "type": "string"
                 }
             },
@@ -282,9 +277,7 @@
                     "type": "string"
                 },
                 "termType": {
-                    "enum": [
-                        "NamedNode"
-                    ],
+                    "const": "NamedNode",
                     "type": "string"
                 },
                 "value": {
@@ -317,9 +310,7 @@
                     "type": "boolean"
                 },
                 "type": {
-                    "enum": [
-                        "form"
-                    ],
+                    "const": "form",
                     "type": "string"
                 }
             },
@@ -344,15 +335,15 @@
                     "type": "string"
                 },
                 "datatype": {
-                    "$ref": "#/definitions/Iri"
+                    "$ref": "#/definitions/Iri",
+                    "description": "A NamedNode whose IRI represents the datatype of the literal."
                 },
                 "language": {
+                    "description": "the language as lowercase BCP47 string (examples: en, en-gb)\nor an empty string if the literal has no language.",
                     "type": "string"
                 },
                 "termType": {
-                    "enum": [
-                        "Literal"
-                    ],
+                    "const": "Literal",
                     "type": "string"
                 },
                 "value": {
@@ -410,9 +401,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "enum": [
-                        "simple"
-                    ],
+                    "const": "simple",
                     "type": "string"
                 }
             },
@@ -441,9 +430,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "enum": [
-                        "sparql"
-                    ],
+                    "const": "sparql",
                     "type": "string"
                 }
             },
@@ -457,6 +444,16 @@
                 "type"
             ],
             "type": "object"
+        },
+        "TreeQueriesConfig": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/SimpleTreeConfig"
+                },
+                {
+                    "$ref": "#/definitions/FullTreeConfig"
+                }
+            ]
         }
     },
     "properties": {
@@ -472,8 +469,7 @@
         "children": {
             "additionalProperties": true,
             "description": "Children can be either ontodia-entity-metadata or ontodia-field-input-override",
-            "properties": {
-            },
+            "properties": {},
             "type": "object"
         },
         "debug": {
@@ -513,14 +509,7 @@
             "type": "array"
         },
         "persistence": {
-            "anyOf": [
-                {
-                    "$ref": "#/definitions/LdpBasedPersistenceProps"
-                },
-                {
-                    "$ref": "#/definitions/SparqlPersistenceProps"
-                }
-            ],
+            "$ref": "#/definitions/FormBasedPersistenceProps",
             "default": "{type: \"form\"}",
             "description": "Defines persistence mode to use in authoring mode."
         },

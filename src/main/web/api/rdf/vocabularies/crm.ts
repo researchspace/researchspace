@@ -20,7 +20,7 @@
 
 import * as Rdf from '../core/Rdf';
 
-module crm {
+namespace crm {
   export var _NAMESPACE = 'http://www.cidoc-crm.org/cidoc-crm/';
   export const iri = (s: string) => Rdf.iri(_NAMESPACE + s);
 

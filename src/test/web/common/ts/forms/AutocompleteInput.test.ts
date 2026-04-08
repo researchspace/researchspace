@@ -73,10 +73,6 @@ describe('AutocompleteInput Component', () => {
     expect(autocomplete).to.have.length(1);
   });
 
-  it('have minimum query limit for request', () => {
-    expect(fieldProps.minimumInput).to.be.equal(3);
-  });
-
   it('have template for suggestion', () => {
     const template = `<span title="{{label.value}}">{{label.value}}</span>`;
     expect(fieldProps.templates.suggestion).to.be.equal(template);

@@ -7,9 +7,7 @@
                     "type": "string"
                 },
                 "termType": {
-                    "enum": [
-                        "BlankNode"
-                    ],
+                    "const": "BlankNode",
                     "type": "string"
                 },
                 "value": {
@@ -18,12 +16,12 @@
             },
             "propertyOrder": [
                 "termType",
+                "equals",
                 "toString",
                 "toJSON",
                 "_value",
                 "value",
                 "hashCode",
-                "equals",
                 "cata",
                 "isIri",
                 "isLiteral",
@@ -36,15 +34,38 @@
             ],
             "type": "object"
         },
+        "DefaultGraph": {
+            "description": "An instance of DefaultGraph represents the default graph.\nIt's only allowed to assign a DefaultGraph to the .graph property of a Quad.",
+            "properties": {
+                "termType": {
+                    "const": "DefaultGraph",
+                    "description": "Contains the constant \"DefaultGraph\".",
+                    "type": "string"
+                },
+                "value": {
+                    "const": "",
+                    "description": "Contains an empty string as constant value.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "termType",
+                "value",
+                "equals"
+            ],
+            "required": [
+                "termType",
+                "value"
+            ],
+            "type": "object"
+        },
         "Iri": {
             "properties": {
                 "_value": {
                     "type": "string"
                 },
                 "termType": {
-                    "enum": [
-                        "NamedNode"
-                    ],
+                    "const": "NamedNode",
                     "type": "string"
                 },
                 "value": {
@@ -73,25 +94,14 @@
         },
         "Literal": {
             "properties": {
-                "_datatype": {
-                    "$ref": "#/definitions/Iri"
-                },
-                "_lang": {
-                    "type": "string"
-                },
-                "_value": {
-                    "type": "string"
-                },
                 "datatype": {
-                    "$ref": "#/definitions/Iri"
+                    "$ref": "#/definitions/SimpleTerm"
                 },
                 "language": {
                     "type": "string"
                 },
                 "termType": {
-                    "enum": [
-                        "Literal"
-                    ],
+                    "const": "Literal",
                     "type": "string"
                 },
                 "value": {
@@ -99,26 +109,12 @@
                 }
             },
             "propertyOrder": [
-                "_datatype",
-                "_lang",
                 "termType",
-                "datatype",
                 "language",
-                "toString",
-                "equals",
-                "toJSON",
-                "_value",
                 "value",
-                "hashCode",
-                "cata",
-                "isIri",
-                "isLiteral",
-                "isBnode"
+                "datatype"
             ],
             "required": [
-                "_datatype",
-                "_lang",
-                "_value",
                 "datatype",
                 "language",
                 "termType",
@@ -136,8 +132,58 @@
                 },
                 {
                     "$ref": "#/definitions/BNode"
+                },
+                {
+                    "$ref": "#/definitions/DefaultGraph"
+                },
+                {
+                    "$ref": "#/definitions/Variable"
                 }
             ]
+        },
+        "SimpleTerm": {
+            "properties": {
+                "termType": {
+                    "const": "NamedNode",
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "termType",
+                "value"
+            ],
+            "required": [
+                "termType",
+                "value"
+            ],
+            "type": "object"
+        },
+        "Variable": {
+            "description": "A variable name.",
+            "properties": {
+                "termType": {
+                    "const": "Variable",
+                    "description": "Contains the constant \"Variable\".",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "The name of the variable *without* leading ? (example: a).",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "termType",
+                "value",
+                "equals"
+            ],
+            "required": [
+                "termType",
+                "value"
+            ],
+            "type": "object"
         }
     },
     "properties": {
@@ -153,8 +199,7 @@
                 ]
             },
             "description": "A string indexed map (object), of key value pairs to inject into queries.\nThe key is the plain binding name (without ? or $) and the value is the plain IRI or literal value to be injected.\n\nThe interface and implementation is not yet stable and might be changed or even be removed in the future without notice.",
-            "propertyOrder": [
-            ],
+            "propertyOrder": [],
             "type": "object"
         },
         "defaultGraphs": {

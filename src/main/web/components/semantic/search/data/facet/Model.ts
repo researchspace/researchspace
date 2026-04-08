@@ -72,7 +72,7 @@ export type FacetRelationDisjunct =
   | SearchModel.LiteralDisjunct
   | SearchModel.NumericRangeDisjunct;
 
-export { DateRange, Literal, NumericRange } from '../search/Model';
+export type { DateRange, Literal, NumericRange } from '../search/Model';
 export type FacetValue = SearchModel.Resource | SearchModel.DateRange | SearchModel.Literal | SearchModel.NumericRange;
 
 /**

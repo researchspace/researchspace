@@ -20,11 +20,11 @@
 import * as Kefir from 'kefir';
 import * as SparqlJs from 'sparqljs';
 
+import { Rdf } from 'platform/api/rdf';
 import { SparqlUtil } from 'platform/api/sparql';
 
 import * as ConfigService from './config';
 import { NotEnoughPermissionsError } from './security';
-import Rdf = require('../rdf/core/Rdf');
 
 interface RawConfig {
   environment: EnvironmentConfig;

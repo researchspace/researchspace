@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createFactory, cloneElement, Children, createElement } from 'react';
+import React, { createFactory, cloneElement, Children, createElement } from 'react';
 import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as Kefir from 'kefir';
@@ -36,12 +36,9 @@ import { Spinner } from 'platform/components/ui/spinner/Spinner';
 import { isValidChild } from 'platform/components/utils';
 import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
 import Icon from 'platform/components/ui/icon/Icon';
-import * as LabelsService from 'platform/api/services/resource-label';
-import { getLabels, getLabel } from 'platform/api/services/resource-label';
 import crm from 'platform/data/vocabularies/crm';
 
-import { ErrorNotification, addNotification } from 'platform/components/ui/notification';
-import React = require('react');
+import { addNotification } from 'platform/components/ui/notification';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 
 const Button = createFactory(ReactBootstrap.Button);

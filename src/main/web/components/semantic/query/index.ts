@@ -17,4 +17,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { SemanticQuery, SemanticQueryConfig, SemanticQueryProps } from './SemanticQuery';
+export { SemanticQuery, type SemanticQueryConfig, type SemanticQueryProps } from './SemanticQuery';

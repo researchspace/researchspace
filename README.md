@@ -191,6 +191,18 @@ In development mode we recommend to run ResearchSpace with bundled blazegraph an
 
 When build is completed go to [http://localhost:10214/](http://localhost:10214/), where you should see the login screen. Default platform access username and password are  `admin:admin`
 
+### Secrets Management
+
+For security, sensitive configuration like passwords and API keys should not be hardcoded in `build.gradle`. Instead:
+
+1. **Copy the template**: `cp gradle-local.properties.template gradle-local.properties`
+2. **Fill in your secrets**: Edit `gradle-local.properties` with real credentials
+3. **Git-ignored**: The file is automatically ignored by git to prevent accidental commits
+
+The build system automatically loads all properties from `gradle-local.properties` and makes them available as system properties. You can add any new secrets without modifying the build file.
+
+For production deployments, use environment variables or create the properties file on the server.
+
 ### ResearchSpace with bundled Blazegraph triplestore and Digilib IIIF Server
 
 Enter the following into your terminal (for Linux and Mac):

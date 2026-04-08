@@ -117,7 +117,7 @@ export class AutoCompletionInput extends Component<AutoCompletionInputProps, {}>
   private replaceTokenAndParseQuery = (queryString: string, tokenVariable: string, token: string) => {
     let parametrized = queryString;
     if (queryString.indexOf(SEARCH_INPUT_VARIABLE) === -1) {
-      parametrized = queryString.split(`?${tokenVariable}`).join(token);
+      parametrized = queryString.replace(new RegExp('\\?' + tokenVariable, 'g'), token);
       if (parametrized !== queryString) {
         console.warn('Please use new $__token__ variable in autocomplete search.');
       }

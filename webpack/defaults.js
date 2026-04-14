@@ -120,6 +120,8 @@ module.exports = function() {
             "SemanticTableConfig",
             "SemanticTimelineConfig",
             "SemanticTreeConfig",
+            "SigmaGraphConfig",
+            "SigmaEventData",
             "SplitPaneConfig",
             "BaseSplitPaneConfig",
             "SplitPaneConfigWithDock",

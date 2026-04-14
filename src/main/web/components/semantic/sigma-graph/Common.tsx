@@ -28,7 +28,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
 
     // Iterate through nodes of the graph and group nodes that share a source node, type and predicate
     for (const node of graph.nodes()) {
-        const types = graph.getNodeAttribute(node, 'types');
+        const types = graph.getNodeAttribute(node, 'types') || [];
         const typesString = types.map((type) => type.value).sort().join('');
     
         // Iterate through source nodes

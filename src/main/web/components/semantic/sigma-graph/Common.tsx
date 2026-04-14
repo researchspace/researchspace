@@ -36,7 +36,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
             // Iterate through predicates
             for (const predicate of predicates) {
                 // Check if there is an edge from the source to the node with the given predicate
-                const edges = graph.edges().filter((edge) => graph.getEdgeAttribute(edge, 'predicate') == predicate).filter((edge) => graph.source(edge) == source && graph.target(edge) == node)
+                const edges = graph.edges(source, node).filter((edge) => graph.getEdgeAttribute(edge, 'predicate') == predicate)
                 if (edges.length > 0) {
                     // Check if the map already contains an entry for the current source node, type combination and predicate
                     const key = source + typesString + predicate;

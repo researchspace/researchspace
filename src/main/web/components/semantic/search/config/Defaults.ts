@@ -19,6 +19,7 @@
 
 import { ConfigHolder } from 'platform/api/services/config-holder';
 import { SEMANTIC_SEARCH_VARIABLES, FACET_VARIABLES, Patterns } from './SearchConfig';
+import { defaultKeywordSearchConfig } from 'platform/components/shared/KeywordSearchConfig';
 
 export const DefaultInlineProfile = '<http://www.researchspace.org/semantic-search/dummyInlineDefaultProfile>';
 
@@ -113,7 +114,8 @@ export function DefaultTextPattern(): Patterns {
                       bds:matchAllTerms "true"  .
              }
            }
-      `,
+        `,
+        ...defaultKeywordSearchConfig
       },
     ],
   };

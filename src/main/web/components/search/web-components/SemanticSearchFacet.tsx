@@ -18,7 +18,6 @@
  */
 
 import * as React from 'react';
-import * as D from 'react-dom-factories';
 import * as _ from 'lodash';
 import * as classNames from 'classnames';
 import * as SparqlJs from 'sparqljs';
@@ -36,6 +35,7 @@ import {
   FacetContext,
 } from 'platform/components/semantic/search/web-components/SemanticSearchApi';
 import * as Model from 'platform/components/semantic/search/data/search/Model';
+import * as FacetModel from 'platform/components/semantic/search/data/facet/Model';
 
 import Facet from '../facet/Facet';
 import { FacetStore, FacetData } from '../facet/FacetStore';
@@ -98,12 +98,18 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
   componentWillReceiveProps(nextProps: InnerProps) {
     const { context } = this.props;
     const { context: nextContext } = nextProps;
+    const hasInitialFacets = nextContext.facetStructure
+      .map((ast) => ast.conjuncts.length > 0)
+      .getOrElse(false);
     const canUpdateFacets =
-      nextContext.baseQuery.isJust && nextContext.domain.isJust && nextContext.resultsStatus.loaded;
+      nextContext.baseQuery.isJust &&
+      nextContext.domain.isJust &&
+      (nextContext.resultsStatus.loaded || hasInitialFacets);
     const isNewDomain = context.domain
       .chain((currentDomain) => nextContext.domain.map((newDomain) => ({ currentDomain, newDomain })))
       .map(({ currentDomain, newDomain }) => !currentDomain.iri.equals(newDomain.iri))
       .getOrElse(false);
+
     if ((!this.facetStore && canUpdateFacets) || isNewDomain) {
       this.createFacetStore(nextContext.baseQuery.get(), nextContext);
     } else if (canUpdateFacets) {
@@ -136,13 +142,22 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
   };
 
   private createFacetStore(baseQuery: SparqlJs.SelectQuery, context: FacetContext & SemanticContext) {
+    const existingAst = context.facetStructure.getOrElse(undefined);
+    this.initializeFacetStore(baseQuery, context, existingAst);
+  }
+
+  private initializeFacetStore(
+    baseQuery: SparqlJs.SelectQuery,
+    context: FacetContext & SemanticContext,
+    initialAst: FacetModel.Ast | undefined
+  ) {
     this.facetStore = new FacetStore(
       {
         domain: context.domain.get(),
         availableDomains: context.availableDomains.getOrElse(undefined),
         baseConfig: context.baseConfig,
         baseQuery: baseQuery,
-        initialAst: context.facetStructure.getOrElse(undefined),
+        initialAst: initialAst,
         searchProfileStore: context.searchProfileStore.get(),
         config: this.props,
       },

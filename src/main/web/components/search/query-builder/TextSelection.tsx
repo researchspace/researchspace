@@ -50,8 +50,10 @@ export class TextSelection extends React.PureComponent<Props, State> {
       helpUrl: '',
     };
 
-    if (props.helpPage)
-      Navigation.constructUrlForResource(props.helpPage).onValue((uri) => this.setState({ helpUrl: uri.valueOf() }));
+    if (props.helpPage) {
+      const uri = Navigation.constructUrlForResource(props.helpPage)
+      this.setState({ helpUrl: uri.valueOf() });
+    }
   }
 
   render() {

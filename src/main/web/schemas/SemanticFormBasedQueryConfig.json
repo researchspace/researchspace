@@ -107,9 +107,7 @@
                 "maxOccurs": {
                     "anyOf": [
                         {
-                            "enum": [
-                                "unbound"
-                            ],
+                            "const": "unbound",
                             "type": "string"
                         },
                         {
@@ -120,9 +118,7 @@
                 "minOccurs": {
                     "anyOf": [
                         {
-                            "enum": [
-                                "unbound"
-                            ],
+                            "const": "unbound",
                             "type": "string"
                         },
                         {
@@ -133,9 +129,7 @@
                 "order": {
                     "anyOf": [
                         {
-                            "enum": [
-                                "unbound"
-                            ],
+                            "const": "unbound",
                             "type": "string"
                         },
                         {
@@ -180,14 +174,7 @@
                     ]
                 },
                 "treePatterns": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/SimpleTreeConfig"
-                        },
-                        {
-                            "$ref": "#/definitions/FullTreeConfig"
-                        }
-                    ]
+                    "$ref": "#/definitions/TreeQueriesConfig"
                 },
                 "valueSetPattern": {
                     "type": "string"
@@ -253,9 +240,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "enum": [
-                        "full"
-                    ],
+                    "const": "full",
                     "type": "string"
                 }
             },
@@ -282,9 +267,7 @@
                     "type": "string"
                 },
                 "termType": {
-                    "enum": [
-                        "NamedNode"
-                    ],
+                    "const": "NamedNode",
                     "type": "string"
                 },
                 "value": {
@@ -323,15 +306,15 @@
                     "type": "string"
                 },
                 "datatype": {
-                    "$ref": "#/definitions/Iri"
+                    "$ref": "#/definitions/Iri",
+                    "description": "A NamedNode whose IRI represents the datatype of the literal."
                 },
                 "language": {
+                    "description": "the language as lowercase BCP47 string (examples: en, en-gb)\nor an empty string if the literal has no language.",
                     "type": "string"
                 },
                 "termType": {
-                    "enum": [
-                        "Literal"
-                    ],
+                    "const": "Literal",
                     "type": "string"
                 },
                 "value": {
@@ -373,8 +356,7 @@
                         "$ref": "#/definitions/QueryTemplateArgument"
                     },
                     "description": "A map of query arguments.\nThe key of every map entry must be equal to the query variable in the SPARQL queryString.",
-                    "propertyOrder": [
-                    ],
+                    "propertyOrder": [],
                     "type": "object"
                 },
                 "queryString": {
@@ -436,9 +418,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "enum": [
-                        "simple"
-                    ],
+                    "const": "simple",
                     "type": "string"
                 }
             },
@@ -454,6 +434,16 @@
                 "type"
             ],
             "type": "object"
+        },
+        "TreeQueriesConfig": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/SimpleTreeConfig"
+                },
+                {
+                    "$ref": "#/definitions/FullTreeConfig"
+                }
+            ]
         }
     },
     "properties": {

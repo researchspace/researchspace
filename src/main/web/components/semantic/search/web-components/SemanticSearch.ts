@@ -31,6 +31,7 @@ import { getCurrentUrl } from 'platform/api/navigation';
 import { Component } from 'platform/api/components';
 import { trigger, BuiltInEvents } from 'platform/api/events';
 import { addNotification } from 'platform/components/ui/notification';
+import { Spinner } from 'platform/components/ui/spinner';
 
 import { SemanticSearchConfig, DatasetAlignmentConfig } from '../config/SearchConfig';
 import * as SearchDefaults from '../config/Defaults';
@@ -40,6 +41,9 @@ import * as FacetModel from '../data/facet/Model';
 import { Dataset, Alignment } from '../data/datasets/Model';
 import { SemanticSearchContext, ResultOperation, ExtendedSearchValue } from './SemanticSearchApi';
 import { SearchProfileStore, createSearchProfileStore } from '../data/profiles/SearchProfileStore';
+import {
+  buildPresetFacetAstWithLabels,
+} from '../../../search/facet/PresetFacetBuilder';
 
 export interface Props extends React.Props<SemanticSearch>, SemanticSearchConfig {}
 interface State {
@@ -60,6 +64,7 @@ interface State {
   selectedAlignment?: Data.Maybe<Alignment>;
   isConfigurationEditable?: boolean;
   visualizationContext?: Data.Maybe<Model.Relation>;
+  isInitialized?: boolean;
 }
 
 const SAVED_STATE_QUERY_KEY = 'semanticSearch';
@@ -107,6 +112,7 @@ export class SemanticSearch extends Component<Props, State> {
       selectedAlignment: this.getDefaultAlignments(availableDatasets),
       isConfigurationEditable: true,
       visualizationContext: Maybe.Nothing<Model.Relation>(),
+      isInitialized: false,
     };
   }
 
@@ -155,14 +161,32 @@ export class SemanticSearch extends Component<Props, State> {
           this.decodeSavedSearch(store, this.props.initialState, { reload: true }) :
           this.getStateFromHistory(store, { reload: true });
 
-        this.setState((s: State) => ({
-          selectedDatasets: savedState.map((state) => state.datasets).getOrElse(s.selectedDatasets),
-          selectedAlignment: savedState.chain((state) => state.alignment).orElse(() => s.selectedAlignment),
-          searchProfileStore: Maybe.Just(store),
-          baseQueryStructure: savedState.chain((state) => Maybe.fromNullable(state.search)),
-          facetStructure: savedState.chain((state) => Maybe.fromNullable(state.facet)).getOrElse(undefined),
-          resultState: savedState.map((state) => state.result).getOrElse({}),
-        }));
+        const savedFacetStructure = savedState.chain((state) => Maybe.fromNullable(state.facet)).getOrElse(undefined);
+        let facetObservable: Kefir.Observable<FacetModel.Ast | undefined>;
+
+        if (savedFacetStructure) {
+          facetObservable = Kefir.constant(savedFacetStructure);
+        } else {
+          const presetConfigs = this.props.presetFacets || [];
+          if (presetConfigs.length > 0) {
+            const semanticContext = (this.context as any).semanticContext;
+            facetObservable = buildPresetFacetAstWithLabels(presetConfigs, store.relations, this.props, semanticContext);
+          } else {
+            facetObservable = Kefir.constant(undefined);
+          }
+        }
+
+        facetObservable.onValue((facetStructure) => {
+          this.setState((s: State) => ({
+            selectedDatasets: savedState.map((state) => state.datasets).getOrElse(s.selectedDatasets),
+            selectedAlignment: savedState.chain((state) => state.alignment).orElse(() => s.selectedAlignment),
+            searchProfileStore: Maybe.Just(store),
+            baseQueryStructure: savedState.chain((state) => Maybe.fromNullable(state.search)),
+            facetStructure: facetStructure,
+            resultState: savedState.map((state) => state.result).getOrElse({}),
+            isInitialized: true,
+          }));
+        });
       });
     }
     trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
@@ -305,6 +329,9 @@ export class SemanticSearch extends Component<Props, State> {
   }
 
   render() {
+    if (this.props.searchProfile && !this.state.isInitialized) {
+       return React.createElement(Spinner);
+    }
     return React.createElement(
       SemanticSearchContext.Provider,
       { value: this.makeSearchContext() },

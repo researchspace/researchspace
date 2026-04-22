@@ -21,7 +21,11 @@ import { ReactElement, ReactChild, ComponentClass, Component, Children } from 'r
 import * as _ from 'lodash';
 import { Panel as BootstrapPanel, PanelProps as BootstrapPanelProps } from 'react-bootstrap';
 
-export interface PanelProps extends BootstrapPanelProps {}
+export interface PanelProps extends BootstrapPanelProps {
+  header?: React.ReactNode;
+  footer?: React.ReactNode;
+  collapsible?: boolean;
+}
 
 import { PanelHeader } from './PanelHeader';
 import { PanelFooter } from './PanelFooter';
@@ -50,9 +54,32 @@ export class Panel extends Component<PanelProps, {}> {
     const body = this.findComponent(children, PanelBody);
     const footer = this.findComponent(children, PanelFooter);
 
+    const { header: _header, footer: _footer, collapsible, ...panelProps } = this.props;
+
+    // When collapsible is true, Panel.Body with collapsible={true} is a shorthand
+    // that wraps the body in Panel.Collapse automatically
+    const bodyElement = collapsible ? (
+      <BootstrapPanel.Body collapsible>{body}</BootstrapPanel.Body>
+    ) : (
+      <BootstrapPanel.Body>{body}</BootstrapPanel.Body>
+    );
+
+    // For collapsible panels, header should use Panel.Title with toggle to enable click-to-expand
+    const headerElement = header ? (
+      collapsible ? (
+        <BootstrapPanel.Heading>
+          <BootstrapPanel.Title toggle>{header}</BootstrapPanel.Title>
+        </BootstrapPanel.Heading>
+      ) : (
+        <BootstrapPanel.Heading>{header}</BootstrapPanel.Heading>
+      )
+    ) : null;
+
     return (
-      <BootstrapPanel {...this.props} header={header} footer={footer}>
-        {body}
+      <BootstrapPanel {...panelProps}>
+        {headerElement}
+        {bodyElement}
+        {footer && <BootstrapPanel.Footer>{footer}</BootstrapPanel.Footer>}
       </BootstrapPanel>
     );
   }

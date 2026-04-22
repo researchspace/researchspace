@@ -31,10 +31,8 @@ export function getShortKey(url: string): Kefir.Property<string> {
 }
 
 export function getShortURLForResource(iri: Rdf.Iri, repository?: string): Kefir.Property<string> {
-  return constructUrlForResource(iri, {}, repository)
-    .map((url) => url.absoluteTo(location.origin).valueOf())
-    .flatMap(makeShortURL)
-    .toProperty();
+  const url = constructUrlForResource(iri, {}, repository);
+  return makeShortURL(url.absoluteTo(location.origin).valueOf());
 }
 
 export function makeShortURL(fullUrl: string): Kefir.Property<string> {

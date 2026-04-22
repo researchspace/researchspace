@@ -42,10 +42,10 @@ import {fromLonLat}  from 'ol/proj';
 import {transform} from 'ol/proj';
 import {defaults as controlDefaults} from 'ol/control';
 import Draw from 'ol/interaction/Draw';
+import GeometryType from 'ol/geom/GeometryType';
 import * as Sphere from 'ol/sphere';
 import * as _ from 'lodash';
 import * as classNames from 'classnames';
-import GeometryType from 'ol/geom/GeometryType';
 
 import { SpatialDistance, SpatialBoundingBox, Coordinate } from 'platform/components/semantic/search/data/search/Model';
 import * as styles from './OLMapSelection.scss';

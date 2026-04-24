@@ -22,7 +22,7 @@ export const ApplicableTemplates: React.FC<ApplicableTemplatesProps> = (props) =
     const candidates = new Set<string>();
 
     if (props.resourceConfigurationIri) {
-      const templateIri = getResourceConfigurationValue(props.resourceConfigurationIri.toString(), 'resourceDetailedVisualisationTemplateIRI');
+      const templateIri = getResourceConfigurationValue(props.resourceConfigurationIri.toString(), 'resourceVisualisationTemplateIRI');
       if (templateIri) {
         candidates.add(templateIri);
       }

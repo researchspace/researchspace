@@ -18,7 +18,7 @@
                   resource_restriction_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern"
 
                   resource_form="http://www.researchspace.org/pattern/system/resource_configuration/resource_form"
-                  resource_detailed_visualisation="http://www.researchspace.org/pattern/system/resource_configuration/resource_detailed_visualisation"
+                  resource_visualisation="http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation"
 
                   resource_card_icon="http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon"
 
@@ -26,6 +26,7 @@
                   resource_broader_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property"
                   resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
 
+                  resource_default_search_view_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type"                 
                   resource_search_view_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_view_type"
                   resource_search_facet_kpCategory="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory"
                   resource_search_listView_column1="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column1"
@@ -379,22 +380,22 @@
               <div style="flex: 1;">
                 {{#if (not resource_type)}} 
                   <semantic-form-text-input 
-                    for="resource_detailed_visualisation" 
-                    label="Resource visualisation template" 
+                    for="resource_visualisation" 
+                    label="Resource visualisation template -- Template:{{resource_ontology_class}}" 
                     placeholder="Use the following file -- Template:{{resource_ontology_class}}"
                   >
                 </semantic-form-text-input>  
                 {{else}}
                   <semantic-form-text-input 
-                    for="resource_detailed_visualisation" 
-                    label="Resource visualisation template" 
+                    for="resource_visualisation" 
+                    label="Resource visualisation template -- Template:{{resource_p2type}}" 
                     placeholder="Use the following file -- Template:{{resource_p2type}}"
                   >
                 </semantic-form-text-input>
                 {{/if}}            
               </div>
               {{#if node}}
-                  <semantic-query query='SELECT ?template WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_detailed_visualisation> ?template}'>
+                  <semantic-query query='SELECT ?template WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?template}'>
                     <template id='template'>
                       <semantic-link-container uri='{{bindings.0.template.value}}' urlqueryparam-action='edit' target='_blank'>
                           <button class="btn btn-default btn-textAndIcon" style="height: 38px;">
@@ -615,6 +616,8 @@
               </div>
         
               <div class="form-section-content page__section-container">
+                <semantic-form-checklist-input for='resource_default_search_view_type' label="Default search view" row="true" force-default=true default-value="http://www.researchspace.org/resource/system/vocab/search_view_type/list"></semantic-form-checklist-input>
+                
                 <semantic-form-checklist-input for='resource_search_view_type' label="Search view" row="true" default-value="http://www.researchspace.org/resource/system/vocab/search_view_type/list"></semantic-form-checklist-input>
                   
                 <semantic-form-tree-picker-input  for="resource_search_facet_kpCategory" 

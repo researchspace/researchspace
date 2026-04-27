@@ -700,8 +700,9 @@
             <mp-event-target-template-render id="[[urlParam 'viewid' escape=false]]-search-result-views" template="{{> resultViews}}">
               <template id='resultViews'>                     
                 {{#bind defaultSearchViewType="[[urlParam "resourcedefaultsearchview" escape=false]]"}}  
+                  {{#bind isSearchViewTypeNotSet=(not searchViewType)}} 
                   <semantic-search-result-holder>
-                    {{#if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid") (and (eq searchViewType undefined) (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid"))) }}
+                    {{#if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid"))) }}
                     [[!-- grid view --]]
                       <semantic-search-result>
                         <semantic-table id='semantic-search-result-grid'
@@ -737,9 +738,9 @@
                         [[> numberOfResults]]
                       </semantic-search-result>
                     
-                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map") (and (eq searchViewType undefined) (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")))}}
+                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")))}}
                       <div>no map results</div>
-                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline") (and (eq searchViewType undefined) (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")))}}
+                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")))}}
                     
                     [[!-- timeline view: currently enabled only for crm:E21_Person and rdfs:subClassOf* crm:E2_Temporal_Entity  --]]
                       <div>
@@ -935,7 +936,7 @@
                           </semantic-search-result>
                         </semantic-search-result-context>
                       </div>
-                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart") (and (eq searchViewType undefined) (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")))}}
+                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")))}}
 
                       [[!-- chart view --]]
                       <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept","http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
@@ -1553,6 +1554,7 @@
                       </semantic-query></div>
                     {{/if}}
                   </semantic-search-result-holder>
+                  {{/bind}}
                 {{/bind}}
               </template>
             </mp-event-target-template-render>

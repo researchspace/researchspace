@@ -1,5 +1,16 @@
-<div>
-  <h3 style="margin-top: 0; margin-bottom: 5px; text-transform: capitalize;">
-    <mp-label iri='[[urlParam "uri" escape=true]]'></mp-label> Details Page
-  </h3>
+[[#if (urlParam "frame")]]
+<style>
+  .rs-application .page.page-local-overwrite {
+    padding-top: 0;
+  }
+</style>
+<div class="page page-local-overwrite">
+    [[> rsp:E22_Human-Made_Object_Content iri=(urlParam "resourceIri") resourceLabel="{{(getResourceConfigurationValue iri 'resourcelabel')}}"]]
 </div>
+
+[[else]]
+[[!-- Resource Page --]]
+<div class="page">
+  [[> rsp:E22_Human-Made_Object_Content iri=(urlParam "uri") resourceLabel="{{(getResourceConfigurationValue iri 'resourcelabel')}}"]]
+</div>
+[[/if]]

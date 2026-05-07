@@ -107,9 +107,10 @@ export const ImageRegionRepresentsVisualItem = Forms.normalizeFieldDefinition({
 });
 //category the P2_type for SamplingSite
 export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition({
-  id: 'represents',
+  id: 'representsSamplingActivity',
+  domain:'http://www.cidoc-crm.org/cidoc-crm/E7_Activity',
   xsdDatatype: vocabularies.xsd.anyURI,
-  range: '[ "http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature", "http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site"]',
+  range: '["http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature","http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site"]',
   insertPattern: `INSERT {
     $subject <http://www.cidoc-crm.org/cidoc-crm/P138_represents> ?samplingSite .
     ?samplingSite <http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation> $subject .
@@ -118,6 +119,8 @@ export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition(
 
     ?samplingSite crm:P56i_is_found_on ?objectSampled . 
     ?objectSampled crm:P56_bears_feature ?samplingSite . 
+
+    ?sampleTaking crm:P134_continued ?activityIri .
 
     ?samplingSite a <http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature> .
     ?samplingSite crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site> .
@@ -163,23 +166,23 @@ export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition(
       BIND(REPLACE(REPLACE(STR(?value), "%20", " "),"%2F", "/") AS ?decoded)
       BIND(STR(?decoded) as ?decodedStr)
 
-      FILTER(CONTAINS(?decodedStr, "/object_iri/"))
+      FILTER(CONTAINS(?decodedStr, "/activity_iri/"))
       # determine examination iri
       BIND(
-        STRBEFORE(?decodedStr, "/object_iri/")
+        STRBEFORE(?decodedStr, "/activity_iri/")
         AS ?iriStr
       )
 
       BIND(
-        IRI(STRAFTER(?decodedStr, "/object_iri/"))
-        AS ?objectSampled
+        IRI(STRAFTER(?decodedStr, "/activity_iri/"))
+        AS ?activityIri
       )
 
       FILTER(CONTAINS(?iriStr, "/annotation_label/"))
       BIND(IRI(REPLACE(?iriStr, "^(.*)/annotation_label/.*$", "$1")) AS ?annotationIri)
       BIND(REPLACE(?iriStr, "^.*/annotation_label/(.*)$", "$1") AS ?annotationLabel)
 
-      ?annotationIri rso:PX_main_represents ?objectSampled .
+      ?activityIri crm:P16_used_specific_object ?objectSampled .
 
       BIND(IRI(CONCAT(STR($subject),"/sampling_site/",STRUUID())) as ?samplingSite)  
       BIND(URI(CONCAT(STR(?samplingSite),"/place/", STRUUID())) as ?samplingPlace)

@@ -348,16 +348,22 @@ export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation
     else if (field.id === ImageRegionRepresentsSamplingSite.id) {
         const rdfResourceType = getAnnotationRepresentsResourcesOfType(annotation);// this depends on the semantic annotation mode of the viewer
         const rdfResourceP2Type = annotation?.representsResourcesOfP2Type;
-        const objectIri = annotation?.annotationDataContext?.objectIri;
+        const activityIri = annotation?.annotationDataContext?.activityIri;
+        const activityType = annotation?.annotationDataContext?.activityType; console.log("extr context");console.dir(annotation.annotationDataContext,{"depth":null});
 
         let isMatch = false; 
-        if (field.range && rdfResourceType && rdfResourceP2Type) { 
+        if (field.range && rdfResourceType && rdfResourceP2Type) { console.log("going in");
           try {
             const rangeValue = (field.range as any).value || field.range;
             const rangeStr = typeof rangeValue === 'string' ? rangeValue : String(rangeValue);
             const parsedRange = JSON.parse(rangeStr); 
+
+            const domainValue = (field.domain as any).value || field.domain;
+            const domainStr = typeof domainValue === 'string' ? domainValue : String(domainValue); //TBD
+            //const parsedDomain = JSON.parse(domainStr);
+
             if (Array.isArray(parsedRange)) {
-              isMatch = parsedRange.includes(rdfResourceType) && parsedRange.includes(rdfResourceP2Type); 
+              isMatch = parsedRange.includes(rdfResourceType) && parsedRange.includes(rdfResourceP2Type);// && parsedDomain.includes(activityType); 
             } else {
               isMatch = false;//parsedRange === rdfResourceType; 
             }
@@ -370,9 +376,9 @@ export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation
             //values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
             values = Immutable.List<Forms.FieldValue>(
             annotation.on.map((on) => {
-              if (objectIri) {
+              if (activityIri) {
                 /* this is a hack, but this way we are passing on the examination information to the KP */
-                const value = Rdf.iri(on.full+"/annotation_label/"+URI.encode(textResource.chars)+"/object_iri/"+objectIri); 
+                const value = Rdf.iri(on.full+"/annotation_label/"+URI.encode(textResource.chars)+"/activity_iri/"+activityIri); 
                 return Forms.FieldValue.fromLabeled({ value:value});
               }             
             })

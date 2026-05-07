@@ -138,6 +138,12 @@ export const GenericFunctions = {
     return options.fn(this);
   },
 
+  /**
+   * Get value from an array of objects by key.
+   * @param options Array of objects with key and value properties
+   * @param keys Array of keys to search for
+   * @param noMatch Value to return if no match found
+   */
   getValueByKey(options: Array<{key: string, value: string}>, keys: Array<string>, noMatch: any) {
     for (let i = 0; i < keys.length; i++) {
       const value = _.find(options, o => o.key === keys[i]);
@@ -146,6 +152,22 @@ export const GenericFunctions = {
       }
     }
     return noMatch;
+  },
+
+  /**
+   * Get a property value from an object in a collection by matching another property.
+   *
+   * @example
+   * {{getValueByProperty regions "regionIri" "visibility" "http://example.org/region1"}}
+   *
+   * @param collection Array of objects
+   * @param keyProp Property name to match against
+   * @param valueProp Property name to return the value of
+   * @param keyValue Value to match
+   */
+  getValueByProperty(collection: Array<any>, keyProp: string, valueProp: string, keyValue: string) {
+    const found = _.find(collection, item => item[keyProp] === keyValue);
+    return found ? found[valueProp] : undefined;
   },
 
   hasKey(options: Array<string>, key: string) {

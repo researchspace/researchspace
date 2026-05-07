@@ -90,6 +90,7 @@ export const ImageRegionIsPrimaryAreaOf = Forms.normalizeFieldDefinition({
 export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition({
   id: 'represents',
   xsdDatatype: vocabularies.xsd.anyURI,
+  range: '[ "http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature", "http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site"]',
   insertPattern: `INSERT {
     $subject <http://www.cidoc-crm.org/cidoc-crm/P138_represents> ?samplingSite .
     ?samplingSite <http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation> $subject .

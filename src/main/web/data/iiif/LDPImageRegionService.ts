@@ -62,6 +62,7 @@ export interface OARegionAnnotation {
   }>;
   'http://www.researchspace.org/ontology/viewport': string;
   representsResourcesOfType?: Rdf.Iri;
+  representsResourcesOfP2Type?: Rdf.Iri;
 }
 
 /**
@@ -299,16 +300,33 @@ export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation
         })
       );
     } else if (field.id === ImageRegionRepresentsSamplingSite.id) {
-        const value = getAnnotationRepresentsResourcesOfType(annotation);// this depends on the semantic annotation mode of the viewer
-        //values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
-        values = Immutable.List<Forms.FieldValue>(
-        annotation.on.map((on) => {
-          const value = Rdf.iri(on.full+"/annotation_label/"+URI.encode(textResource.chars));     
-          return Forms.FieldValue.fromLabeled({ value:value});
-        })
-      );
+        const rdfResourceType = getAnnotationRepresentsResourcesOfType(annotation);// this depends on the semantic annotation mode of the viewer
+        const rdfResourceP2Type = annotation?.representsResourcesOfP2Type;
+        let isMatch = false;
+        if (field.range && rdfResourceType && rdfResourceP2Type) {
+          {
+            const rangeValue = (field.range as any).value || field.range;
+            const rangeStr = typeof rangeValue === 'string' ? rangeValue : String(rangeValue);
+            const parsedRange = JSON.parse(rangeStr);
+            if (Array.isArray(parsedRange)) {
+              isMatch = parsedRange.includes(rdfResourceType) && parsedRange.includes(rdfResourceP2Type); 
+            } else {
+              isMatch = false;//parsedRange === rdfResourceType; 
+            }
+          } 
+        }
+        if (isMatch) {
+            //values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
+            values = Immutable.List<Forms.FieldValue>(
+            annotation.on.map((on) => {
+              const value = Rdf.iri(on.full+"/annotation_label/"+URI.encode(textResource.chars));     
+              return Forms.FieldValue.fromLabeled({ value:value});
+            })
+            
+          );
+        }
     }
-    fieldState = Forms.FieldState.set(fieldState, { values });
+    if (values) fieldState = Forms.FieldState.set(fieldState, { values });
     return [field.id, fieldState];
   });
   const subject = Forms.generateSubjectByTemplate(SubjectTemplate, undefined, initial);

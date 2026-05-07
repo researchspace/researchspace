@@ -21,7 +21,7 @@
 import * as React from 'react';
 import { Component } from 'react';
 import { trigger } from 'platform/api/events';
-import { ToggleRegionEvent, ToggleRegionsEvent } from '../ImageRegionEditorEvents';
+import { ToggleRegionsEvent } from '../ImageRegionEditorEvents';
 import { MenuProps } from 'platform/components/ui/selection/SelectionActionProps';
 import { AllTitleProps } from '../../sets/TypedSelectionActionProps';
 import TypedSelectionActionComponent from '../../sets/TypedSelectionActionComponent';

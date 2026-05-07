@@ -40,7 +40,9 @@ import {
   ImageRegionViewport,
   ImageRegionIsPrimaryAreaOf,
   ImageRegionFields,
-  ImageRegionRepresentsSamplingSite
+  ImageRegionRepresentsSamplingSite,
+  ImageRegionRepresentsVisualItem,
+  ImageRegionRepresentsXRFMeasurement
 } from './ImageRegionSchema';
 
 const IIIF_PRESENTATION_CONTEXT = require('./ld-resources/iiif-context.json');
@@ -63,6 +65,7 @@ export interface OARegionAnnotation {
   'http://www.researchspace.org/ontology/viewport': string;
   representsResourcesOfType?: Rdf.Iri;
   representsResourcesOfP2Type?: Rdf.Iri;
+  annotationDataContext?: any;
 }
 
 /**
@@ -299,33 +302,84 @@ export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation
           return Forms.FieldValue.fromLabeled({ value });
         })
       );
-    } else if (field.id === ImageRegionRepresentsSamplingSite.id) {
+    } else if (field.id === ImageRegionRepresentsVisualItem.id){
+       values = Immutable.List<Forms.FieldValue>(
+        annotation.on.map((on) => {
+          const value = Rdf.iri(on.full);
+          return Forms.FieldValue.fromLabeled({ value });
+        })
+      );
+    }
+    else if (field.id === ImageRegionRepresentsXRFMeasurement.id) {
         const rdfResourceType = getAnnotationRepresentsResourcesOfType(annotation);// this depends on the semantic annotation mode of the viewer
         const rdfResourceP2Type = annotation?.representsResourcesOfP2Type;
-        let isMatch = false;
-        if (field.range && rdfResourceType && rdfResourceP2Type) {
-          {
+        const examinationIri = annotation?.annotationDataContext?.examinationIri; 
+
+        let isMatch = false; 
+        if (field.range && rdfResourceType && rdfResourceP2Type) { 
+          try {
             const rangeValue = (field.range as any).value || field.range;
             const rangeStr = typeof rangeValue === 'string' ? rangeValue : String(rangeValue);
-            const parsedRange = JSON.parse(rangeStr);
+            const parsedRange = JSON.parse(rangeStr); 
             if (Array.isArray(parsedRange)) {
               isMatch = parsedRange.includes(rdfResourceType) && parsedRange.includes(rdfResourceP2Type); 
             } else {
               isMatch = false;//parsedRange === rdfResourceType; 
             }
-          } 
+          } catch (e) {
+            console.error('Failed to parse field.range JSON string', e);
+            isMatch = false;
+          }
         }
         if (isMatch) {
             //values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
             values = Immutable.List<Forms.FieldValue>(
             annotation.on.map((on) => {
-              const value = Rdf.iri(on.full+"/annotation_label/"+URI.encode(textResource.chars));     
-              return Forms.FieldValue.fromLabeled({ value:value});
+              
+              if (examinationIri) {
+                /* this is a hack, but this way we are passing on the examination information to the KP */
+                const value = Rdf.iri(on.full+"/annotation_label/"+URI.encode(textResource.chars)+"/examination_iri/"+examinationIri); 
+                return Forms.FieldValue.fromLabeled({ value:value});
+              }             
+            })         
+          );
+        }
+    }
+    else if (field.id === ImageRegionRepresentsSamplingSite.id) {
+        const rdfResourceType = getAnnotationRepresentsResourcesOfType(annotation);// this depends on the semantic annotation mode of the viewer
+        const rdfResourceP2Type = annotation?.representsResourcesOfP2Type;
+        const objectIri = annotation?.annotationDataContext?.objectIri;
+
+        let isMatch = false; 
+        if (field.range && rdfResourceType && rdfResourceP2Type) { 
+          try {
+            const rangeValue = (field.range as any).value || field.range;
+            const rangeStr = typeof rangeValue === 'string' ? rangeValue : String(rangeValue);
+            const parsedRange = JSON.parse(rangeStr); 
+            if (Array.isArray(parsedRange)) {
+              isMatch = parsedRange.includes(rdfResourceType) && parsedRange.includes(rdfResourceP2Type); 
+            } else {
+              isMatch = false;//parsedRange === rdfResourceType; 
+            }
+          } catch (e) {
+            console.error('Failed to parse field.range JSON string', e);
+            isMatch = false;
+          }
+        }
+        if (isMatch) {
+            //values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
+            values = Immutable.List<Forms.FieldValue>(
+            annotation.on.map((on) => {
+              if (objectIri) {
+                /* this is a hack, but this way we are passing on the examination information to the KP */
+                const value = Rdf.iri(on.full+"/annotation_label/"+URI.encode(textResource.chars)+"/object_iri/"+objectIri); 
+                return Forms.FieldValue.fromLabeled({ value:value});
+              }             
             })
             
           );
         }
-    }
+    } 
     if (values) fieldState = Forms.FieldState.set(fieldState, { values });
     return [field.id, fieldState];
   });

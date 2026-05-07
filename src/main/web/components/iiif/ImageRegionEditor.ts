@@ -63,6 +63,14 @@ export interface ImageRegionEditorConfig {
    * way as platform templates and can't be used with <template> tag
    */
   annotationViewTooltipTemplate?: string;
+
+  semanticAnnotationMode?: SemanticAnnotationMode[];
+
+  /**
+   * Additional data passed from the configuration that will be merged into the
+   * OARegionAnnotation payload so it can be consumed in the service layer.
+   */
+  annotationDataContext?: any;
 }
 
 export interface ImageRegionEditorProps extends ImageRegionEditorConfig {
@@ -79,12 +87,11 @@ interface ImageRegionEditorState {
   allImages: IiifManifestResource[];
 }
 
-interface SemanticAnnotationMode {
+export interface SemanticAnnotationMode {
   id: string;
   label: string;
   iri: string;
   p2TypeIri?: string;
-  iconClass?: string | null;
 }
 
 /**
@@ -93,7 +100,8 @@ interface SemanticAnnotationMode {
  *   <rs-iiif-mirador image-or-region='http://example.com/AN00230/AN00230725_001_l.jpg'
  *     image-id-pattern='BIND(REPLACE(str(?imageIRI),
  *       "^.+/[A-Z0]*([1-9][0-9]*)_.*$", "$1") AS ?imageID)'
- *     iiif-server-url='http://example.com/IIIF'>
+ *     iiif-server-url='http://example.com/IIIF'
+ *     semantic-annotation-mode='[{"id":"annotateImage","label":"Image Region","iri":"http://www.researchspace.org/ontology/EX_Digital_Image_Region"},{"id":"digitalSample","label":"Sampling Site","iri":"http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature","p2TypeIri":"http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site"},{"id":"visualItem","label":"Visual Item","iri":"http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item"}]'>
  *   </rs-iiif-mirador>
  * </div>
  */
@@ -111,6 +119,8 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     imageOrRegion: PropTypes.any.isRequired,
     imageIdPattern: PropTypes.string.isRequired,
     iiifServerUrl: PropTypes.string.isRequired,
+    semanticAnnotationMode: PropTypes.array,
+    annotationDataContext: PropTypes.object,
   };
 
   private miradorElement: HTMLElement;
@@ -122,7 +132,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   private windowUpdatedSemanticHandler?: Function;
 
   constructor(props: ImageRegionEditorProps, context: any) {
-    super(props, context);
+    super(props, context); 
     this.state = {
       loading: true,
       allImages: this.normalizeImageProps(props),
@@ -697,13 +707,18 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   }
 
 
-  private getAvailableSemanticModes = (): SemanticAnnotationMode[] => ([
-     {
-      id: 'annotateImage',
-      label: 'Image Region',
-      iri: 'http://www.researchspace.org/ontology/EX_Digital_Image_Region',
+  private getAvailableSemanticModes = (): SemanticAnnotationMode[] => {
+    if (this.props.semanticAnnotationMode && this.props.semanticAnnotationMode.length > 0) {
+      return this.props.semanticAnnotationMode;
     }
-      ]);
+    return [
+      {
+        id: 'annotateImage',
+        label: 'Image Region',
+        iri: 'http://www.researchspace.org/ontology/EX_Digital_Image_Region',
+      }
+    ];
+  };
 
   private getDefaultSemanticMode = (): SemanticAnnotationMode | undefined =>
     this.getAvailableSemanticModes()[0];
@@ -885,6 +900,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       this.triggerRegionUpdatedEvent(RegionUpdatedEvent),
       this.triggerRegionUpdatedEvent(RegionRemovedEvent),
       (canvasId) => this.getSemanticModeForCanvas(canvasId),
+      this.props.annotationDataContext,
     );
 
     const windowObjects: Mirador.WindowObject[] =
@@ -919,24 +935,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
           endpoint: this.annotationEndpoint,
         },
       },
-      availableAnnotationModes: [
-    {
-      id: 'annotateImage',
-      label: 'Image Region',
-      iri: 'http://www.researchspace.org/ontology/EX_Digital_Image_Region',
-    },
-    {
-      id: 'digitalSample',
-      label: 'Sampling Site',
-      iri: 'http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature',
-      p2TypeIri: 'http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site'
-    },
-    {
-      id: 'visualItem',
-      label: 'Visual Item',
-      iri: 'http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item',
-    }
-  ],
+      availableAnnotationModes: this.getAvailableSemanticModes(),
   //annotationModeDebugShowIri: true,
       showAnnotationTextLabels: true,
       annotationTextLabelMaxLength: 120,
@@ -1291,6 +1290,7 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
     private onUpdated: (regionIri: Rdf.Iri, oa: OARegionAnnotation) => void,
     private onRemoved: (regionIri: Rdf.Iri, oa: OARegionAnnotation) => void,
     private resolveSemanticModeForCanvas?: (canvasId?: string | null) => SemanticAnnotationMode | undefined,
+    private annotationDataContext?: any,
   ) {}
 
   private getCanvasIdFromAnnotation = (annotation: OARegionAnnotation): string | undefined => {
@@ -1330,12 +1330,14 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
   }
 
   create(annotation: OARegionAnnotation) {
-    console.log('Creating annotation:', annotation);
     const canvasId = this.getCanvasIdFromAnnotation(annotation);
     const semanticMode = this.resolveSemanticModeForCanvas ? this.resolveSemanticModeForCanvas(canvasId) : undefined;
     this.applySemanticModeToAnnotation(annotation, semanticMode);
-    
-    console.log('Creating annotation2:', annotation);
+
+    if (this.annotationDataContext) {
+      annotation.annotationDataContext = this.annotationDataContext;
+    }
+
     return this.endpoint.create(annotation)
       .onValue(regionIri => this.onCreated(regionIri, annotation));
   }

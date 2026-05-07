@@ -85,7 +85,26 @@ export const ImageRegionIsPrimaryAreaOf = Forms.normalizeFieldDefinition({
     $subject <http://www.cidoc-crm.org/extensions/crmdig/L49_is_primary_area_of> ?value .
   }`,
 });
-
+/* WIP */
+export const ImageRegionRepresentsVisualItem = Forms.normalizeFieldDefinition({
+  id: 'representsVisualItem',
+  xsdDatatype: vocabularies.xsd.anyURI,
+  insertPattern: `INSERT {
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P138_represents> ?visualItem .
+    ?visualItem <http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation> $subject .
+    ?visualItem crm:P1_is_identified_by ?visualItemAppellation . 
+    ?visualItemAppellation a crm:E41_Appellation . 
+    ?visualItemAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?visualItemAppellation crm:P190_has_symbolic_content ?visualItemLabel .
+  } WHERE { 
+      BIND(IRI(CONCAT(STR($subject),"/visual_item/",STRUUID())) as ?visualItem)  
+      BIND(IRI(CONCAT(STR(?visual_item),"/primary_appellation",STRUUID())) as ?visualItemAppellation)
+      BIND("Visual Item" as ?visualItemLabel)
+    }`,
+  selectPattern: `SELECT ?value WHERE {
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P138_represents> ?value .
+  }`,
+});
 //category the P2_type for SamplingSite
 export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition({
   id: 'represents',
@@ -142,7 +161,20 @@ export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition(
   
   } WHERE {
       BIND(REPLACE(REPLACE(STR(?value), "%20", " "),"%2F", "/") AS ?decoded)
-      BIND(STR(?decoded) as ?iriStr)
+      BIND(STR(?decoded) as ?decodedStr)
+
+      FILTER(CONTAINS(?decodedStr, "/object_iri/"))
+      # determine examination iri
+      BIND(
+        STRBEFORE(?decodedStr, "/object_iri/")
+        AS ?iriStr
+      )
+
+      BIND(
+        IRI(STRAFTER(?decodedStr, "/object_iri/"))
+        AS ?objectSampled
+      )
+
       FILTER(CONTAINS(?iriStr, "/annotation_label/"))
       BIND(IRI(REPLACE(?iriStr, "^(.*)/annotation_label/.*$", "$1")) AS ?annotationIri)
       BIND(REPLACE(?iriStr, "^.*/annotation_label/(.*)$", "$1") AS ?annotationLabel)
@@ -169,6 +201,61 @@ export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition(
     
   }`,
 });
+
+export const ImageRegionRepresentsXRFMeasurement = Forms.normalizeFieldDefinition({
+  id: 'representsXRFMeasurement',
+  xsdDatatype: vocabularies.xsd.anyURI,
+  range: '[ "http://www.cidoc-crm.org/cidoc-crm/extensions/crmdig/D11_Digital_Measurement_Event", "http://www.researchspace.org/resource/system/vocab/resource_type/measurement_xrf"]',
+  insertPattern: `INSERT {
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P138_represents> ?measurement .
+    ?measurement <http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation> $subject .
+    $subject <http://www.researchspace.org/ontology/PX_main_represents> ?measurement .
+    ?measurement <http://www.researchspace.org/ontology/PX_has_main_representation> $subject .
+
+    ?measurement crm:P9i_forms_part_of ?examinationIri . 
+    ?examinationIri crm:P9_consists_of ?measurement . 
+
+    ?measurement a <http://www.cidoc-crm.org/extensions/crmdig/D11_Digital_Measurement_Event> .
+    ?measurement crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/measurement_xrf> .
+
+    ?measurement crm:P1_is_identified_by ?measurementAppellation . 
+    ?measurementAppellation a crm:E41_Appellation . 
+    ?measurementAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?measurementAppellation crm:P190_has_symbolic_content ?measurementLabel .
+  } WHERE {
+      BIND(REPLACE(REPLACE(STR(?value), "%20", " "),"%2F", "/") AS ?decoded)
+      BIND(STR(?decoded) as ?decodedStr)
+
+      FILTER(CONTAINS(?decodedStr, "/examination_iri/"))
+      # determine examination iri
+      BIND(
+        STRBEFORE(?decodedStr, "/examination_iri/")
+        AS ?iriStr
+      )
+
+      BIND(
+        IRI(STRAFTER(?decodedStr, "/examination_iri/"))
+        AS ?examinationIri
+      )
+
+      FILTER(CONTAINS(?iriStr, "/annotation_label/"))
+      BIND(IRI(REPLACE(?iriStr, "^(.*)/annotation_label/.*$", "$1")) AS ?annotationIri)
+      BIND(REPLACE(?iriStr, "^.*/annotation_label/(.*)$", "$1") AS ?annotationLabel)
+
+      BIND(IRI(CONCAT(STR(?examinationIri),"/measurement/",STRUUID())) as ?measurement)           
+  	  BIND(URI(CONCAT(STR(?measurement), "/primary_appellation") ) as ?measurementAppellation)
+      BIND(CONCAT(?annotationLabel," ","XRF Measurement") as ?measurementLabel)
+    }`,
+  selectPattern: `SELECT ?value WHERE {
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P138_represents> ?value .
+    
+  }`,
+});
+
+// TODO
+// Add representation for Measurement, Mark, Visual Item, and Feature and what else Person, etc.
+// How do we model this can we just model it generically and say represents and if one of these other semantic annotation modes it uses the ImageRegionRepresentsEntity?!
+
 
 /* missing connection with the object or object part */
 /* the subject is the image annotation and all the details of that are attached by the other KPs */
@@ -201,5 +288,7 @@ export const ImageRegionFields: ReadonlyArray<Forms.FieldDefinition> = [
   ImageRegionValue,
   ImageRegionViewport,
   ImageRegionIsPrimaryAreaOf,
-  ImageRegionRepresentsSamplingSite
+  ImageRegionRepresentsSamplingSite,
+  ImageRegionRepresentsXRFMeasurement
+  //ImageRegionRepresentsVisualItem
 ];

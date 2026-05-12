@@ -1,3 +1,4 @@
+{{log "something in template" this}}
 <div class="page__grid-container resource-editView-page">
   <div class="page__content-container resource-editView-page__content">
 <div class='resource-editView-formHeader' style="margin-left:15px;margin-right:15px;min-height:80px;">
@@ -24,7 +25,7 @@
                   <i class="material-icons">refresh</i>
                 </button>
                 <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                    urlqueryparam-view='resource-editor' urlqueryparam-resource='[[this]]'>
+                                                    urlqueryparam-view='resource-editor' urlqueryparam-resource='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]'>
                                 <button type="button" class="btn btn-default btn-icon" title="Author Resource in Form">
                                     <rs-icon icon-type="rounded" icon-name="edit_note" symbol="true"></rs-icon>
                                 </button>
@@ -76,7 +77,12 @@
             </div>
           </div> -->
 
-          <div class="card-body resource-editView-panelBody resource-editView-vizPanel">
+           <inline-template template-iri='[[resolvePrefix "rsp:PreviewMediaTemplate"]]' 
+                                                                  options='{  "resource": "[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]"
+                                                                             
+                                                                            }' >
+                                                </inline-template>
+          <!-- <div class="card-body resource-editView-panelBody resource-editView-vizPanel">
             <ul class="nav nav-tabs resource-editView-vizTabs" role="tablist">
               <li role="presentation" class="active"><a href="#viz-overview" aria-controls="viz-overview" role="tab" data-toggle="tab">Overview</a></li>
               <li role="presentation"><a href="#viz-media" aria-controls="viz-media" role="tab" data-toggle="tab">Media</a></li>
@@ -88,8 +94,8 @@
                 <div class="resource-editView-toolStage resource-editView-toolStage--placeholder layout-slot">
                   <div class="resource-editView-toolPlaceholder-inner">
                     <i class="material-icons">dashboard_customize</i>
-                    <div class="resource-editView-toolPlaceholder-title">Overview tool slot</div>
-                    <div class="resource-editView-toolPlaceholder-text">Mount the default ResearchSpace viewer or entity-specific tool here.</div>
+                    <div class="resource-editView-toolPlaceholder-title"></div>
+                    <div class="resource-editView-toolPlaceholder-text"></div>
                   </div>
                 </div>
               </div>
@@ -99,7 +105,10 @@
                   <div class="resource-editView-toolPlaceholder-inner">
                     <i class="material-icons">perm_media</i>
                     <div class="resource-editView-toolPlaceholder-title">Media tool slot</div>
-                    <div class="resource-editView-toolPlaceholder-text">Mount a Mirador, IIIF, or media component here when available.</div>
+
+                    <div class="resource-editView-toolPlaceholder-text"> </div>
+
+
                   </div>
                 </div>
               </div>
@@ -134,7 +143,7 @@
               
             </div>
           </div>
-         <!-- <div class="card-body resource-editView-relationsSummary">
+          <div class="card-body resource-editView-relationsSummary">
             <div class="resource-editView-relationChip is-static">
               <span class="resource-editView-relationChip__label">Resource IRI</span>
               <span class="resource-editView-relationChip__count">1</span>
@@ -188,41 +197,9 @@
         </section>
 
         <section class="card rs-card resource-editView-panel">
-          <div class="card-header resource-editView-panelHeader resource-editView-panelHeader--compact">
-<div class="resource-editView-sectionHead">
-              <div class="resource-editView-sectionHead-main">
-                <i class="material-icons resource-editView-panelHeader-icon">info</i>
-                <span class="resource-editView-sectionHead-title">Details</span>
-              </div>
-            </div>
-          </div>
-      <div class="card-body resource-editView-detailsList">
-      <bs-tabs class="details-tabs">
-    
-        <bs-tab title='Summary' event-key='summary' mount-on-enter=true>
-            <div class="rs-resource-data-table table-responsive">
-                <table class="table table-hover">
-                [[#block "summary"]]
-                <tbody>
-                    <tr>
-                    <td>No further data available</td>
-                    <td></td>
-                    </tr>
-                </tbody>
-                [[/block]]
-                </table>
-            </div>
-        </bs-tab>
-  
-        <bs-tab title='Raw data' event-key='raw-data' mount-on-enter=true class="rawdata-tab">
-            <mp-field-visualization subject='[[this]]'
-                fields='[[fieldDefinitionsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE {?resource ?field ?o . ?field a <http://www.researchspace.org/resource/system/fields/Field> } ORDER BY DESC(?field)" resource=this.iri) ]]'
-                template='{{> template}}'>
-            <template id="template">{{> rsp:ResourceFieldBasedVisualization subject="[[this]]"}}</template>
-            </mp-field-visualization>
-        </bs-tab>
-  </bs-tabs>
-           </div> 
+          <inline-template template-iri='[[resolvePrefix "rsp:RawDataTemplate"]]' 
+                                                                  options='{"iri": "[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]"}' >
+                                                </inline-template>
          <!-- <div class="card-body resource-editView-detailsList">
             <div class="resource-editView-detailsRow">
               <div class="resource-editView-detailsRow__label">Label</div>

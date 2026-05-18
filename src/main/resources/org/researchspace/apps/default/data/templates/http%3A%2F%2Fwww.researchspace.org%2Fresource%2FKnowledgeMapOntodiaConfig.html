@@ -110,15 +110,24 @@ uses client-side templates:
                          <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/knowledge_map> .  
                       }
                       UNION {
+                        # NOTE (veniss/metapolis): the original master template
+                        # also listed the IRIs
+                        #   <…/ontology/PX_has_file_name>
+                        #   <…/ontology/PX_has_media_type>
+                        #   <…/extensions/crmdig/L49_is_primary_area_of>
+                        # here. They are not declared as <…/fields/Field> in the
+                        # assets repository, so the runtime cannot resolve them
+                        # through /rest/fields/definitions and they ultimately
+                        # cause OntodiaEntityMetadata.extractAuthoringMetadata
+                        # to throw a "missing field" exception when opening a
+                        # new Knowledge Map. Removed here. Discussed in detail
+                        # in VeNiss_queries/diagnose_km_fields.py.
                         VALUES (?value){
                               (<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)                           
                               (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
                               (<http://www.researchspace.org/pattern/system/entity/primary_appellation>)
                               (<http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1>)
                               (<http://www.researchspace.org/pattern/system/entity/main_image>)
-                              (<http://www.researchspace.org/ontology/PX_has_file_name>)
-                              (<http://www.researchspace.org/ontology/PX_has_media_type>)
-                              (<http://www.cidoc-crm.org/extensions/crmdig/L49_is_primary_area_of>)
                                	 } 
 
                         BIND(?value as ?field)

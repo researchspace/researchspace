@@ -311,12 +311,22 @@
   label-iri='http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1'
 ></ontodia-entity-metadata>
 
+<!-- NOTE (veniss/metapolis): the master template also lists
+       "http://www.cidoc-crm.org/cidoc-crm/P90a_has_lower_value_limit"
+       "http://www.cidoc-crm.org/cidoc-crm/P90b_has_upper_value_limit"
+     in `fields` here. Those IRIs are NOT declared as <…/fields/Field>
+     in the assets repository (verified, both prod & local), so the runtime
+     cannot resolve them through /rest/fields/definitions and
+     OntodiaEntityMetadata.extractAuthoringMetadata throws a "missing field"
+     exception when the user opens a new Knowledge Map. (The error message
+     reports the wrong IRI because of a bug at OntodiaEntityMetadata.ts:167
+     that prints `${labelIri}` instead of `${fieldIri}`.) Removed here to
+     keep the KM functional. Re-add them only after publishing the
+     corresponding fields:Field definitions in the assets repository. -->
 <ontodia-entity-metadata
   entity-type-iri="http://www.cidoc-crm.org/extensions/crmdig/D9_Data_Object"
   fields='[
-  "http://www.cidoc-crm.org/cidoc-crm/P90_has_value",
-  "http://www.cidoc-crm.org/cidoc-crm/P90a_has_lower_value_limit",
-  "http://www.cidoc-crm.org/cidoc-crm/P90b_has_upper_value_limit"]' 
+  "http://www.cidoc-crm.org/cidoc-crm/P90_has_value"]' 
   enable-ontodia-context-fields='true'
   type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
   label-iri='http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_contentMin1Max1'  

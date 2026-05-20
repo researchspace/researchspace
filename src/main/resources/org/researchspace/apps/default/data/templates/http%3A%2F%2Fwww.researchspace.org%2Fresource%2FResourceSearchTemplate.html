@@ -328,12 +328,16 @@
             </div>
 
             [[!-- View as dropdown/button --]]
-            <semantic-query query='SELECT ?resourceConfig ?viewid ?searchViewType ?searchViewLabel WHERE {
+            <semantic-query query='SELECT ?resourceConfig ?viewid ?searchViewType ?searchViewLabel ?searchDefaultViewType ?searchDefaultViewLabel WHERE {
                                     BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig)
                                     BIND("[[urlParam "viewid" escape=false]]" as ?viewid)
                                     ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_view_type> ?searchViewType.
                                     ?searchViewType crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/search_view_type> .
                                     ?searchViewType skos:prefLabel ?searchViewLabel .
+                                    OPTIONAL {
+                                      ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type> ?searchDefaultViewType.
+                                      ?searchDefaultViewType skos:prefLabel ?searchDefaultViewLabel .
+                                    }
                                   } '
 
                             template='{{> search-views}}'
@@ -347,12 +351,12 @@
                                       bs-style="default"
                                       class="btn-textAndIcon search-view-dropdown"
                                       pull-right=true
-                                      title="{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else}}List{{/if}}"
+                                      title="{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else if bindings.0.searchDefaultViewType.value}}{{bindings.0.searchDefaultViewLabel.value}}{{else}}List{{/if}}"
                         > 
                           <bs-dropdown-toggle>
                             <div>
                               <span class="color-secondary-light" style="font-weight: 400;">View as: </span>
-                              <span style="font-weight: 600;">{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else}}List{{/if}}</span>
+                              <span style="font-weight: 600;">{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else if bindings.0.searchDefaultViewType.value}}{{bindings.0.searchDefaultViewLabel.value}}{{else}}List{{/if}}</span>
                             </div>
                           </bs-dropdown-toggle>
 
@@ -382,6 +386,7 @@
                   {{/if}}
                 
               </template>
+              
             </semantic-query>
 
             [[!-- Refresh button --]]
@@ -693,10 +698,11 @@
             <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
 
             <mp-event-target-template-render id="[[urlParam 'viewid' escape=false]]-search-result-views" template="{{> resultViews}}">
-              <template id='resultViews'>
+              <template id='resultViews'>                     
+                {{#bind defaultSearchViewType="[[urlParam "resourcedefaultsearchview" escape=false]]"}}  
+                  {{#bind isSearchViewTypeNotSet=(not searchViewType)}} 
                   <semantic-search-result-holder>
-                    {{#if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid")}}
-                      
+                    {{#if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid"))) }}
                     [[!-- grid view --]]
                       <semantic-search-result>
                         <semantic-table id='semantic-search-result-grid'
@@ -731,9 +737,10 @@
 
                         [[> numberOfResults]]
                       </semantic-search-result>
-                    {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")}}
+                    
+                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")))}}
                       <div>no map results</div>
-                    {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")}}
+                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")))}}
                     
                     [[!-- timeline view: currently enabled only for crm:E21_Person and rdfs:subClassOf* crm:E2_Temporal_Entity  --]]
                       <div>
@@ -929,7 +936,7 @@
                           </semantic-search-result>
                         </semantic-search-result-context>
                       </div>
-                    {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")}}
+                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")))}}
 
                       [[!-- chart view --]]
                       <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept","http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
@@ -959,7 +966,7 @@
                         </semantic-search-result>
                       </semantic-search-result-context>
                     
-                    {{else}}
+                    {{else}}<div>
                       [[!-- list view --]]
                       <semantic-query query=' SELECT DISTINCT ?resourceConfig 
                                                               ?columnTitle1 ?columnTitle2 ?columnTitle3 ?columnTitle4
@@ -1544,9 +1551,11 @@
                           </semantic-search-result>
                         </template>
 
-                      </semantic-query>
+                      </semantic-query></div>
                     {{/if}}
                   </semantic-search-result-holder>
+                  {{/bind}}
+                {{/bind}}
               </template>
             </mp-event-target-template-render>
           </div>
@@ -1628,6 +1637,7 @@
                                       resourceOntologyClass="[[urlParam "resourceontologyclass" escape=false]]"
                                       resourceDescription=description.value
                                       resourceFormIRI="[[urlParam "resourceform" escape=false]]"
+                                      resourceVisualisationTemplateIRI="[[urlParam "resourcevisualisationtemplate" escape=false]]"
                                       allowResourceDelete=true
       }}
     </rs-resource-dropdown>

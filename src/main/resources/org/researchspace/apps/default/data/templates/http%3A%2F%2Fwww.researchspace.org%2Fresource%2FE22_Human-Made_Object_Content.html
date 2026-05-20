@@ -1,0 +1,548 @@
+{{log "something in template" this}}
+<div class="page__grid-container resource-editView-page">
+  <div class="page__content-container resource-editView-page__content">
+<div class='resource-editView-formHeader' style="margin-left:15px;margin-right:15px;min-height:80px;">
+      <div class="resource-editView-formHeader-title-container">
+        <h3 class="resource-editView-formHeader-title" style="margin-left:15px;">
+          <div class="link-draggable">
+
+            <mp-draggable iri='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]'>
+              <div class="text-truncate">
+                <mp-label iri='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]' class=""></mp-label>
+              </div>
+            </mp-draggable>
+          </div>
+        </h3>
+        <div class="color-base" style="font-size: 21px; padding-bottom: 3px;">|</div>
+        <div class="text-type-subheader"><i class="material-symbols-rounded" aria-hidden="true">bubble_chart</i><div>[[urlParam "resourcelabel"]]</div></div>
+      </div>
+
+      <div class="btn-inline-container" style="margin-right:15px;">        <button type="button" class="btn btn-default btn-icon" title="Info">
+                  <i class="material-icons">info_outline</i>
+                </button>
+
+                <button type="button" class="btn btn-default btn-icon" title="Refresh">
+                  <i class="material-icons">refresh</i>
+                </button>
+                <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                    urlqueryparam-view='resource-editor' urlqueryparam-resource='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]'>
+                                <button type="button" class="btn btn-default btn-icon" title="Author Resource in Form">
+                                    <rs-icon icon-type="rounded" icon-name="edit_note" symbol="true"></rs-icon>
+                                </button>
+                            </semantic-link-container>  
+                <button type="button" class="btn btn-default btn-icon" title="Share">
+                  <i class="material-icons">share</i>
+                </button>
+             <!--  <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                    urlqueryparam-view='knowledge-map' urlqueryparam-resource='[[this]]'>
+                                <button type="button" title="Author Resource in Knowledge Map">
+                                    <rs-icon icon-type="round" icon-name="account_tree"></rs-icon>
+                                </button>
+                            </semantic-link-container>
+
+                            <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
+                                data='{"iri": "{{iri}}"}' targets='["details-view", "open-details-sidebar"]'>
+                                <button type="button" title="Resource Details">
+                                    <rs-icon icon-type="rounded" icon-name="info" symbol="true"></rs-icon>
+                                </button>
+                            </mp-event-trigger> -->
+                            
+                                 
+        
+      </div>
+    </div>
+   
+    <div class="row resource-editView-layout">
+      <div class="col-sm-12 col-md-8 col-lg-8 resource-editView-mainColumn">
+
+        <section class="card rs-card resource-editView-panel mb-4">
+          <!-- <div class="card-header resource-editView-panelHeader">
+            <div class="row">
+              <div class="col-xs-12 col-sm-4">
+                <div class="resource-editView-panelHeader-title">
+                  <i class="material-icons resource-editView-panelHeader-icon">insights</i>
+                  <span>Visualization &amp; tools</span>
+                </div>
+              </div>
+              <div class="col-xs-10 col-sm-7">
+                <div class="resource-editView-panelHeader-subtitle text-muted">
+                  Generic ResearchSpace visualisation container.
+                </div>
+              </div>
+              <div class="col-xs-2 col-sm-1 text-right">
+                <button type="button" class="btn btn-link btn-icon resource-editView-panelHeader-expand">
+                  <i class="material-icons">open_in_full</i>
+                </button>
+              </div>
+            </div>
+          </div> -->
+
+           <inline-template template-iri='[[resolvePrefix "rsp:PreviewMediaTemplate"]]' 
+                                                                  options='{  "resource": "[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]"
+                                                                             
+                                                                            }' >
+                                                </inline-template>
+          <!-- <div class="card-body resource-editView-panelBody resource-editView-vizPanel">
+            <ul class="nav nav-tabs resource-editView-vizTabs" role="tablist">
+              <li role="presentation" class="active"><a href="#viz-overview" aria-controls="viz-overview" role="tab" data-toggle="tab">Overview</a></li>
+              <li role="presentation"><a href="#viz-media" aria-controls="viz-media" role="tab" data-toggle="tab">Media</a></li>
+              <li role="presentation"><a href="#viz-related" aria-controls="viz-related" role="tab" data-toggle="tab">Explore related</a></li>
+            </ul>
+
+            <div class="tab-content resource-editView-vizContent">
+              <div role="tabpanel" class="tab-pane active" id="viz-overview">
+                <div class="resource-editView-toolStage resource-editView-toolStage--placeholder layout-slot">
+                  <div class="resource-editView-toolPlaceholder-inner">
+                    <i class="material-icons">dashboard_customize</i>
+                    <div class="resource-editView-toolPlaceholder-title"></div>
+                    <div class="resource-editView-toolPlaceholder-text"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div role="tabpanel" class="tab-pane" id="viz-media">
+                <div class="resource-editView-toolStage resource-editView-toolStage--placeholder layout-slot">
+                  <div class="resource-editView-toolPlaceholder-inner">
+                    <i class="material-icons">perm_media</i>
+                    <div class="resource-editView-toolPlaceholder-title">Media tool slot</div>
+
+                    <div class="resource-editView-toolPlaceholder-text"> </div>
+
+
+                  </div>
+                </div>
+              </div>
+
+              <div role="tabpanel" class="tab-pane" id="viz-related">
+                <div class="resource-editView-toolStage resource-editView-toolStage--placeholder layout-slot">
+                  <div class="resource-editView-toolPlaceholder-inner">
+                    <i class="material-icons">hub</i>
+                    <div class="resource-editView-toolPlaceholder-title">Explore related slot</div>
+                    <div class="resource-editView-toolPlaceholder-text">Mount graph, map, or table tools here depending on the configured page layout.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card rs-card resource-editView-panel mb-4">
+          <div class="card-header resource-editView-panelHeader resource-editView-panelHeader--compact">
+            <div class="resource-editView-sectionHead">
+              <div class="resource-editView-sectionHead-main">
+                <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                              urlqueryparam-view='knowledge-map' 
+                              urlqueryparam-resource='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]'>
+        
+          <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>
+          <span>Knowledge map</span>
+        
+    </semantic-link-container>
+                <span class="resource-editView-sectionHead-subtitle text-muted">Key relationships connected to this resource.</span>
+              </div>
+              
+            </div>
+          </div>
+          <div class="card-body resource-editView-relationsSummary">
+            <div class="resource-editView-relationChip is-static">
+              <span class="resource-editView-relationChip__label">Resource IRI</span>
+              <span class="resource-editView-relationChip__count">1</span>
+            </div>
+            <div class="resource-editView-relationChip is-static">
+              <span class="resource-editView-relationChip__label">Default resource view</span>
+              <span class="resource-editView-relationChip__count">1</span>
+            </div>
+          </div>
+          -->
+        </section>
+
+        <section class="card rs-card resource-editView-panel">
+          <div class="card-header resource-editView-panelHeader resource-editView-panelHeader--compact">
+            <div class="resource-editView-sectionHead">
+              <div class="resource-editView-sectionHead-main">
+                <i class="material-icons resource-editView-panelHeader-icon">link</i>
+                <span class="resource-editView-sectionHead-title">Linked resources</span>
+                <span class="resource-editView-sectionHead-subtitle text-muted">Add a configured ResearchSpace table, list, or query component here.</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body resource-editView-linkedList">
+            <div class="resource-editView-emptyState">
+              <i class="material-icons">format_list_bulleted</i>
+              <div class="resource-editView-emptyState__title">Linked resources slot</div>
+              <div class="resource-editView-emptyState__text">Replace this block with the existing ResearchSpace component used to render linked resources for the current frame system.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="col-sm-12 col-md-4 col-lg-4 resource-editView-sideColumn">
+        <section class="card rs-card resource-editView-panel mb-4">
+          <div class="card-header resource-editView-panelHeader resource-editView-panelHeader--compact">
+            <div class="resource-editView-sectionHead">
+              <div class="resource-editView-sectionHead-main">
+                <i class="material-icons resource-editView-panelHeader-icon">history</i>
+                <span class="resource-editView-sectionHead-title">Recent activity</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body resource-editView-activityList">
+            <div class="resource-editView-emptyState resource-editView-emptyState--left">
+              <i class="material-icons">timeline</i>
+              <div class="resource-editView-emptyState__title">Recent activity slot</div>
+              <div class="resource-editView-emptyState__text">Replace this block with the existing ResearchSpace activity or provenance component if one is available in the target page context.<br/><br/></div>
+            </div>
+          </div>
+          <br/><br/>
+        </section>
+
+        <section class="card rs-card resource-editView-panel">
+          <inline-template template-iri='[[resolvePrefix "rsp:RawDataTemplate"]]' 
+                                                                  options='{"iri": "[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]"}' >
+                                                </inline-template>
+         <!-- <div class="card-body resource-editView-detailsList">
+            <div class="resource-editView-detailsRow">
+              <div class="resource-editView-detailsRow__label">Label</div>
+              <div class="resource-editView-detailsRow__value"><mp-label iri="https://dev.theheritageradar.com/resource/vocab/test_human_1/3c6985e0-a24b-46e8-a5a2-358e57f8a87c"></mp-label></div>
+            </div>
+            <div class="resource-editView-detailsRow">
+              <div class="resource-editView-detailsRow__label">IRI</div>
+              <div class="resource-editView-detailsRow__value resource-editView-kv__value--mono">https://dev.theheritageradar.com/resource/vocab/test_human_1/3c6985e0-a24b-46e8-a5a2-358e57f8a87c</div>
+            </div>
+            <div class="resource-editView-detailsRow">
+              <div class="resource-editView-detailsRow__label">Statements</div>
+              <div class="resource-editView-detailsRow__value"><a href="https://dev.theheritageradar.com/resource/vocab/test_human_1/3c6985e0-a24b-46e8-a5a2-358e57f8a87c/statements">Open statements</a></div>
+            </div>
+            <div class="resource-editView-detailsRow">
+              <div class="resource-editView-detailsRow__label">Resource page</div>
+              <div class="resource-editView-detailsRow__value"><a href="https://dev.theheritageradar.com/resource/vocab/test_human_1/3c6985e0-a24b-46e8-a5a2-358e57f8a87c">Open resource</a></div>
+            </div>
+          </div> -->
+        </section>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<style>
+  .resource-editView-page {
+    background: #f5f7fa;
+    min-height: 100%;
+    padding: 16px;
+  }
+
+  .resource-editView-page__content {
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+  .rs-card,
+  .resource-editView-formHeader {
+    background: #fff;
+    border: 1px solid #dfe5ec;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  }
+
+  .resource-editView-formHeader-body,
+  .resource-editView-panelBody,
+  .resource-editView-relationsSummary,
+  .resource-editView-linkedList,
+  .resource-editView-activityList,
+  .resource-editView-detailsList {
+    padding: 20px;
+  }
+
+  .resource-editView-panelHeader {
+    padding: 14px 20px;
+    border-bottom: 1px solid #e7edf3;
+    background: #fff;
+  }
+
+  .resource-editView-panelHeader--compact {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .resource-editView-formHeader-thumbnail {
+    height: 92px;
+    width: 92px;
+    border-radius: 6px;
+    background: #e8eff3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .resource-editView-formHeader-thumbnail--placeholder i {
+    font-size: 40px;
+    color: #40687a;
+  }
+
+  .resource-editView-formHeader-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .resource-editView-formHeader-title {
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 500;
+    color: #1f2d3d;
+  }
+
+  .resource-editView-formHeader-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    height: 100%;
+  }
+
+  .resource-editView-kv {
+    margin-bottom: 12px;
+  }
+
+  .resource-editView-kv__label,
+  .resource-editView-detailsRow__label {
+    font-size: 12px;
+    color: #68778a;
+    margin-bottom: 4px;
+  }
+
+  .resource-editView-kv__value,
+  .resource-editView-detailsRow__value {
+    color: #243748;
+  }
+
+  .resource-editView-kv__value--mono {
+    font-family: Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .resource-editView-panelHeader-title,
+  .resource-editView-sectionHead-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .resource-editView-panelHeader-subtitle,
+  .resource-editView-sectionHead-subtitle {
+    font-size: 12px;
+  }
+
+  .resource-editView-sectionHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .resource-editView-sectionHead-link {
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .resource-editView-vizTabs {
+    padding: 0 20px;
+    border-bottom: 1px solid #e7edf3;
+  }
+
+  .resource-editView-vizTabs > li > a {
+    color: #54657a;
+    font-weight: 500;
+    border: 0 !important;
+    padding-left: 0;
+    padding-right: 24px;
+    background: transparent !important;
+  }
+
+  .resource-editView-vizTabs > li.active > a,
+  .resource-editView-vizTabs > li.active > a:focus,
+  .resource-editView-vizTabs > li.active > a:hover {
+    color: #2ba67a;
+    border-bottom: 2px solid #2ba67a !important;
+  }
+
+  .resource-editView-vizContent {
+    padding: 16px 20px 20px;
+  }
+
+  .resource-editView-toolStage {
+    min-height: 340px;
+    border: 1px solid #dfe5ec;
+    border-radius: 6px;
+    background: #f8fafc;
+    overflow: hidden;
+  }
+
+  .resource-editView-toolStage--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .resource-editView-toolPlaceholder-inner,
+  .resource-editView-emptyState {
+    max-width: 420px;
+    padding: 24px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .resource-editView-emptyState--left {
+    margin: 0;
+    text-align: left;
+  }
+
+  .resource-editView-toolPlaceholder-inner i,
+  .resource-editView-emptyState i {
+    font-size: 40px;
+    color: #8aa0b2;
+    margin-bottom: 10px;
+  }
+
+  .resource-editView-toolPlaceholder-title,
+  .resource-editView-emptyState__title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #233243;
+  }
+
+  .resource-editView-toolPlaceholder-text,
+  .resource-editView-emptyState__text {
+    color: #68778a;
+  }
+
+  .resource-editView-relationsSummary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .resource-editView-relationChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #dfe5ec;
+    border-radius: 4px;
+    color: #2c4053;
+    background: #fff;
+    text-decoration: none;
+  }
+
+  .resource-editView-relationChip.is-static {
+    cursor: default;
+  }
+
+  .resource-editView-relationChip__count {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    background: #eef3f7;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  .resource-editView-detailsRow {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  .resource-editView-detailsRow + .resource-editView-detailsRow {
+    border-top: 1px solid #eef2f6;
+  }
+
+  .btn-icon {
+    min-width: 36px;
+    height: 36px;
+    padding: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-icon .material-icons {
+    font-size: 18px;
+  }
+
+  @media (max-width: 991px) {
+    .resource-editView-detailsRow {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    .resource-editView-formHeader-actions {
+      margin-top: 16px;
+      justify-content: flex-start;
+    }
+  }
+
+/* overflow visible problem */
+.resource-editView-formHeader-body { /* the element was .card-body.resource-editView-formHeader-body */
+  align-self: auto;
+}
+
+.resource-editView-panelBody { /* the element was .card-body.resource-editView-panelBody.resource-editView-vizPanel */
+  max-height: none;
+  height: auto;
+  overflow: visible;
+}
+
+.rs-card { /* the element was section.card.rs-card.resource-editView-panel.mb-4 */
+  height: auto;
+  overflow: visible;
+}
+
+.resource-editView-detailsList { /* the element was .card-body.resource-editView-detailsList */
+  max-height: none;
+  height: auto;
+  overflow: visible;
+}
+
+.rs-card { /* the element was section.card.rs-card.resource-editView-panel */
+  height: auto;
+  overflow: visible;
+}
+
+.resource-editView-vizContent { /* the element was .tab-content.resource-editView-vizContent */
+  flex-basis: auto;
+}
+
+/* related resource: _details.scss:117:1 */
+.details-tabs { /* the element was .details-tabs */
+  height: auto;
+  min-height: unset;
+}
+
+.resource-editView-formHeader-body { /* the element was .card-body.resource-editView-formHeader-body */
+  width: 100%;
+}
+
+.rs-card { /* the element was .resource-editView-formHeader.card.rs-card.mb-4 */
+  align-items: stretch;
+}
+
+.row { /* the element was .row.resource-editView-layout */
+  width: 100%;
+  max-width: none;
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+section {
+  margin-top:5px;
+}
+</style>

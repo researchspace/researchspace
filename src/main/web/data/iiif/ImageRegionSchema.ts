@@ -120,7 +120,8 @@ export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition(
     ?samplingSite crm:P56i_is_found_on ?objectSampled . 
     ?objectSampled crm:P56_bears_feature ?samplingSite . 
 
-    ?sampleTaking crm:P134_continued ?activityIri .
+    ?sampleTaking crm:P9i_forms_part_of ?activityIri .
+    ?activityIri crm:P9_consists_of ?sampleTaking .
 
     ?samplingSite a <http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature> .
     ?samplingSite crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site> .
@@ -141,6 +142,7 @@ export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition(
     ?sampleTaking crmsci:O4_sampled_at ?samplingPlace .
     ?samplingPlace crmsci:O4i_was_sampling_location_of ?sampleTaking .
     ?samplingPlace a crm:E53_Place .
+    ?samplingPlace crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/sampling_place> .
 
     ?samplingSite crm:P1_is_identified_by ?samplingSiteAppellation . 
     ?samplingSiteAppellation a crm:E41_Appellation . 
@@ -247,7 +249,7 @@ export const ImageRegionRepresentsXRFMeasurement = Forms.normalizeFieldDefinitio
 
       BIND(IRI(CONCAT(STR(?examinationIri),"/measurement/",STRUUID())) as ?measurement)           
   	  BIND(URI(CONCAT(STR(?measurement), "/primary_appellation") ) as ?measurementAppellation)
-      BIND(CONCAT(?annotationLabel," ","XRF Measurement") as ?measurementLabel)
+      BIND(CONCAT("XRF Measurement: "," ",?annotationLabel) as ?measurementLabel)
     }`,
   selectPattern: `SELECT ?value WHERE {
     $subject <http://www.cidoc-crm.org/cidoc-crm/P138_represents> ?value .

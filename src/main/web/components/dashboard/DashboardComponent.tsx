@@ -310,26 +310,36 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
         )
         .observe({
           value: ({ data }) => {
-            const {viewId, resourceIri, customLabel} = data as AddFrameEventData
-            
-            if (customLabel) { 
-              this.onAddNewItemHandler(data, customLabel)
+            // Accept the resource IRI under either `resourceIri` or `iri`.
+            // `Form.ResourceCreated` (and other RS form events) emit `{ iri }`,
+            // so a proxied AddFrame may arrive with `iri` instead of
+            // `resourceIri`. Normalising here decouples us from any payload-key
+            // rename in <mp-event-proxy> (whose `data-mapping` attribute is
+            // mangled to the `mapping` prop by the RS attribute parser).
+            let d: any = data;
+            if (d && !d.resourceIri && d.iri) {
+              d = { ...d, resourceIri: d.iri };
+            }
+            const {viewId, resourceIri, customLabel} = d as AddFrameEventData
+
+            if (customLabel) {
+              this.onAddNewItemHandler(d, customLabel)
             }
             else if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
-                value: (label) => {                 
-                  this.onAddNewItemHandler(data, label)
+                value: (label) => {
+                  this.onAddNewItemHandler(d, label)
                 },
                 error: (error) => {
                   console.log('LABEL NOT FOUND ',error)
-                  this.onAddNewItemHandler(data)
+                  this.onAddNewItemHandler(d)
                 },
-              })           
-            } else {      
-                      
+              })
+            } else {
+
                 const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
-                this.onAddNewItemHandler(data, view?.label)
-                           
+                this.onAddNewItemHandler(d, view?.label)
+
             }
           },
         });

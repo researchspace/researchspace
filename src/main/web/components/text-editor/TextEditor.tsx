@@ -40,7 +40,16 @@ import { DropArea } from 'platform/components/dnd/DropArea';
 import { Draggable } from 'platform/components/dnd';
 import { Spinner } from 'platform/components/ui/spinner';
 
-import { MARK, Block, schema, DEFAULT_BLOCK, Inline, RESOURCE_MIME_TYPE } from './EditorSchema';
+import {
+  MARK,
+  Block,
+  schema,
+  DEFAULT_BLOCK,
+  Inline,
+  RESOURCE_MIME_TYPE,
+  EMPTY_BLOCK_JSON,
+  createEmptyBlock,
+} from './EditorSchema';
 import { ResourceTemplateConfig } from './Config';
 import { SLATE_RULES } from './Serializer';
 import { Toolbar } from './Toolbar';
@@ -173,10 +182,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     value: Slate.Value.fromJS({
       document: {
         nodes: [
-          {
-            object: 'block' as const,
-            type: Block.empty,
-          },
+          _.cloneDeep(EMPTY_BLOCK_JSON),
         ],
       }
     }),
@@ -195,8 +201,150 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     this.state.documentIri = props.documentIri;
   }
 
+  private isEmptyBlockJson = (node: any): boolean =>
+    node && node.object === 'block' && node.type === Block.empty
+
+  private isEmbedBlockJson = (node: any): boolean =>
+    node && node.object === 'block' && node.type === Block.embed
+
+  private isEmptyBlockNode = (node: any): boolean =>
+    node && node.object === 'block' && node.type === Block.empty
+
+  private isEmbedBlockNode = (node: any): boolean =>
+    node && node.object === 'block' && node.type === Block.embed
+
+  private ensureDropTargetBlocksInJson = (value: any): any => {
+    const nodes = value && value.document && value.document.nodes;
+
+    if (!Array.isArray(nodes)) {
+      return value;
+    }
+
+    const normalisedNodes = [];
+    const pushEmptyIfNeeded = () => {
+      if (!this.isEmptyBlockJson(_.last(normalisedNodes))) {
+        normalisedNodes.push(_.cloneDeep(EMPTY_BLOCK_JSON));
+      }
+    };
+
+    if (nodes.length === 0) {
+      normalisedNodes.push(_.cloneDeep(EMPTY_BLOCK_JSON));
+    } else {
+      nodes.forEach(node => {
+        if (this.isEmbedBlockJson(node)) {
+          pushEmptyIfNeeded();
+        }
+
+        normalisedNodes.push(node);
+
+        if (this.isEmbedBlockJson(node)) {
+          pushEmptyIfNeeded();
+        }
+      });
+
+      if (!this.isEmptyBlockJson(_.first(normalisedNodes))) {
+        normalisedNodes.unshift(_.cloneDeep(EMPTY_BLOCK_JSON));
+      }
+
+      if (!this.isEmptyBlockJson(_.last(normalisedNodes))) {
+        normalisedNodes.push(_.cloneDeep(EMPTY_BLOCK_JSON));
+      }
+    }
+
+    value.document.nodes = normalisedNodes;
+    return value;
+  }
+
+  private needsDropTargetBlocksInValue = (value: Slate.Value): boolean => {
+    const nodes = value.document.nodes;
+
+    if (!nodes || nodes.size === 0) {
+      return true;
+    }
+
+    if (!this.isEmptyBlockNode(nodes.first()) || !this.isEmptyBlockNode(nodes.last())) {
+      return true;
+    }
+
+    for (let i = 0; i < nodes.size; i++) {
+      const node = nodes.get(i);
+
+      if (this.isEmbedBlockNode(node)) {
+        const previousNode = i > 0 ? nodes.get(i - 1) : null;
+        const nextNode = i < nodes.size - 1 ? nodes.get(i + 1) : null;
+
+        if (!this.isEmptyBlockNode(previousNode) || !this.isEmptyBlockNode(nextNode)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private ensureDropTargetBlocksInValue = (value: Slate.Value): Slate.Value => {
+    if (!this.needsDropTargetBlocksInValue(value)) {
+      return value;
+    }
+
+    return Slate.Value.fromJS(
+      this.ensureDropTargetBlocksInJson(value.toJSON())
+    );
+  }
+
+  private ensureDropTargetBlocksInEditor = (editor: Editor) => {
+    const { document } = editor.value;
+    const nodes = document.nodes;
+    const insertionIndexes = [];
+
+    if (!nodes || nodes.size === 0) {
+      insertionIndexes.push(0);
+    } else {
+      if (!this.isEmptyBlockNode(nodes.first())) {
+        insertionIndexes.push(0);
+      }
+
+      for (let i = 0; i < nodes.size; i++) {
+        const node = nodes.get(i);
+
+        if (this.isEmbedBlockNode(node)) {
+          const previousNode = i > 0 ? nodes.get(i - 1) : null;
+          const nextNode = i < nodes.size - 1 ? nodes.get(i + 1) : null;
+
+          if (!this.isEmptyBlockNode(previousNode)) {
+            insertionIndexes.push(i);
+          }
+
+          if (!this.isEmptyBlockNode(nextNode)) {
+            insertionIndexes.push(i + 1);
+          }
+        }
+      }
+
+      if (!this.isEmptyBlockNode(nodes.last())) {
+        insertionIndexes.push(nodes.size);
+      }
+    }
+
+    _.uniq(insertionIndexes)
+      .sort((a, b) => b - a)
+      .forEach(index => editor.insertNodeByKey(document.key, index, createEmptyBlock()));
+  }
+
+  private removeEmptyBlocksFromJson = (value: Slate.Value): any => {
+    const json = value.toJSON();
+    const nodes = json && json.document && json.document.nodes;
+
+    if (!Array.isArray(nodes)) {
+      return json;
+    }
+
+    json.document.nodes = nodes.filter(node => !this.isEmptyBlockJson(node));
+    return json;
+  }
+
   onChange = ({ value }: { value: Slate.Value }) => {
-    this.setState({ value });
+    this.setState({ value: this.ensureDropTargetBlocksInValue(value) });
   }
 
   // + drag and drop
@@ -224,18 +372,26 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
       .setBlocks({
         type: Block.embed, data: { attributes: { src: drop.value } }
       });
+    this.ensureDropTargetBlocksInEditor(editor);
 
     this.templateSelection = this.cancellation.deriveAndCancel(this.templateSelection);
     this.templateSelection.map(
       this.findTemplatesForResource(drop)
     ).observe({
       value: configs => {
-        const { availableTemplates } = this.state;
-        availableTemplates[drop.value] = configs;
+        const availableTemplates = {
+          ...this.state.availableTemplates,
+          [drop.value]: configs,
+        };
         const defaultTemplate = _.first(configs);
         this.setState(
           { availableTemplates },
           () => {
+            if (!defaultTemplate) {
+              this.ensureDropTargetBlocksInEditor(editor);
+              return;
+            }
+
             editor
               .moveToRangeOfNode(node)
               .setBlocks({
@@ -246,6 +402,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                   }
                 }
               });
+            this.ensureDropTargetBlocksInEditor(editor);
           }
         );
       }
@@ -472,7 +629,9 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
         }
       });
 
-    const value = slateHtml.deserialize(content, { toJSON: true });
+    const value = this.ensureDropTargetBlocksInJson(
+      slateHtml.deserialize(content, { toJSON: true })
+    );
   
     // load templates for embeds
     const embeds =
@@ -557,8 +716,11 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     const isEdit = !!documentIri
 
     const html = new Html({ rules: SLATE_RULES });
+    const serializableValue = Slate.Value.fromJS(
+      this.removeEmptyBlocksFromJson(value)
+    );
     const content =
-      this.wrapInHtml(title, html.serialize(value));
+      this.wrapInHtml(title, html.serialize(serializableValue));
 
     this.state.blockEmbedReferences = [];
     // load templates for embeds

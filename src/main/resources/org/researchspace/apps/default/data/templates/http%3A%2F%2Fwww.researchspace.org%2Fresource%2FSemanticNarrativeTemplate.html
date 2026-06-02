@@ -182,19 +182,63 @@
                               image-or-region='{{iri.value}}'
                               annotation-view-tooltip-template='
                                 {{{{raw}}}}                                
-                                  <div class="all-annotations" id="annotation-viewer-{{windowId}}">{{#each annotations}}<div class="annotation-display annotation-tooltip" data-anno-id="{{id}}"><div class="button-container">
-                                    {{#if id}}
-                                      <mp-template-item>
-                                        <mp-draggable iri="{{id}}">
-                                          <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
-                                                                    urlqueryparam-view="resource-editor"
-                                                                    urlqueryparam-resource-iri="{{id}}">
-                                            <div style="width: 100%;text-decoration: underline;font-weight: 600;cursor: pointer;color: #525156;">{{{annoText}}}</div>
-                                          </semantic-link-container>
-                                        </mp-draggable>
-                                      </mp-template-item>
-                                    {{/if}}</div></div>{{/each}}</div>
-                                {{{{/raw}}}}
+                                          <div class="all-annotations" id="annotation-viewer-{{windowId}}">
+                                            {{#each annotations}}
+                                              <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">                                              
+                                                  {{#if id}}
+                                                    <mp-template-item>
+                                                      <mp-draggable iri="{{id}}">
+                                                        <semantic-link-container  uri="http://www.researchspace.org/resource/ThinkingFrames" 
+                                                                                  urlqueryparam-view="resource-editor"
+                                                                                  urlqueryparam-resource-iri="{{id}}"
+                                                                          >
+                                                            <div style="width: 100%;    
+                                                                        text-decoration: underline;
+                                                                        font-weight: 600;
+                                                                        cursor: pointer;
+                                                                        color: #525156">{{{annoText}}}</div>
+                                                            <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">Image annotation</div>
+                                                        </semantic-link-container>
+                                                      </mp-draggable>
+                                                        <semantic-query query="SELECT DISTINCT ?resourceHasAnnotationRepresentation {
+                                                                            <{{id}}> rs:PX_main_represents|crm:P138_represents ?resourceHasAnnotationRepresentation .
+                                                                          } ">
+                                                      
+                                                      {{{{raw}}}}
+                                                        <template id="template">
+                                                            <div>
+                                                            
+                                                              <p style="font-size: 13px;line-height:1.2">This region is used as the visual representation for resource(s):</p>
+                                                              <ul style="padding-inline-start: 15px; margin: 5px 0;">
+                                                                {{#each bindings}}
+                                                                  <li>
+                                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                    urlqueryparam-resource="{{resourceHasAnnotationRepresentation.value}}"
+                                                                                    urlqueryparam-view="resource-editor"
+                                                                                    urlqueryparam-open-as-drag-and-drop="true"
+                                                                                    style="max-width: 100px;
+                                                                                    overflow: hidden;
+                                                                                    text-overflow: ellipsis;
+                                                                                    text-decoration: underline;
+                                                                                    cursor: pointer;
+                                                                                    color: #df83e6">
+                                                                        <div style="margin-bottom: 5px;"><mp-label iri="{{resourceHasAnnotationRepresentation.value}}"></mp-label></div>
+                                                                    </semantic-link>
+                                                                  </li>
+                                                                {{/each}}
+                                                            </ul>
+                                                            </div>
+                                                        </template>
+                                                      {{{{/raw}}}}
+                                                    </semantic-query>
+                                                    </mp-template-item>
+                                                  {{/if}}
+                                              
+                                               
+                                              </div>
+                                            {{/each}}
+                                          </div>
+                                        {{{{/raw}}}}
                               '>
             </rs-iiif-mirador>
           </template>

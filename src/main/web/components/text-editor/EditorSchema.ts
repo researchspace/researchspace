@@ -45,6 +45,21 @@ export const Block = {
 export type Block = keyof typeof Block;
 export const DEFAULT_BLOCK = Block.empty;
 
+export const EMPTY_BLOCK_JSON = {
+  object: 'block' as const,
+  type: Block.empty,
+  nodes: [
+    {
+      object: 'text' as const,
+      text: '',
+    },
+  ],
+};
+
+export function createEmptyBlock(): Slate.Block {
+  return Slate.Block.create(EMPTY_BLOCK_JSON as any);
+}
+
 export const Inline = {
   externalLink: 'externalLink',
   internalLink: 'internalLink'
@@ -83,8 +98,7 @@ export const schema: Slate.SchemaProperties = {
       const { code, node, index } = error;
       switch (code) {
         case 'child_min_invalid': {
-          const block = Slate.Block.create(Block.empty);
-          return editor.insertNodeByKey(node.key, index, block);
+          return editor.insertNodeByKey(node.key, index, createEmptyBlock());
         }
       }
     },
@@ -107,6 +121,7 @@ export const schema: Slate.SchemaProperties = {
           match: [
             {
               object: 'text',
+              text: (s: string) => s !== '',
             } as any,
             {
               object: 'inline',
@@ -114,7 +129,15 @@ export const schema: Slate.SchemaProperties = {
             },
           ]
         },
-      ]
+      ],
+      
+      normalize: (editor: Slate.Editor, error: Slate.SlateError) => {
+        switch (error.code) {
+          case 'child_text_invalid' as any:
+            return editor.setNodeByKey(error.node.key, Block.empty);
+        }
+      }
+
     },
     [Block.h1]: {
       nodes: [{ match: { object: 'text' } }]
@@ -143,9 +166,7 @@ export const schema: Slate.SchemaProperties = {
       normalize: (editor: Slate.Editor, error: Slate.SlateError) => {
         switch (error.code) {
           case 'child_text_invalid' as any:
-            console.log('changing empty to block')
-            editor.setNodeByKey(error.node.key, Block.p);
-            return;
+            return editor.setNodeByKey(error.node.key, Block.p);
         }
       }
     },

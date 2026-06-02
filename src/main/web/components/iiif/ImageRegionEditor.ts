@@ -1336,6 +1336,8 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
 
     if (this.annotationDataContext) {
       annotation.annotationDataContext = this.annotationDataContext;
+      annotation.annotationDataContext["semanticMode"] = semanticMode["id"];
+      annotation.annotationDataContext["semanticModeLabel"] = semanticMode["label"];
     }
 
     return this.endpoint.create(annotation)

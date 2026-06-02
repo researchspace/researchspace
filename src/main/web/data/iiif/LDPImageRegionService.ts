@@ -42,7 +42,7 @@ import {
   ImageRegionFields,
   ImageRegionRepresentsSamplingSite,
   ImageRegionRepresentsVisualItem,
-  ImageRegionRepresentsXRFMeasurement
+  ImageRegionRepresentsDigitalMeasurement
 } from './ImageRegionSchema';
 
 const IIIF_PRESENTATION_CONTEXT = require('./ld-resources/iiif-context.json');
@@ -303,26 +303,31 @@ export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation
         })
       );
     } else if (field.id === ImageRegionRepresentsVisualItem.id){
-       values = Immutable.List<Forms.FieldValue>(
-        annotation.on.map((on) => {
-          const value = Rdf.iri(on.full);
-          return Forms.FieldValue.fromLabeled({ value });
-        })
-      );
-    }
-    else if (field.id === ImageRegionRepresentsXRFMeasurement.id) {
         const rdfResourceType = getAnnotationRepresentsResourcesOfType(annotation);// this depends on the semantic annotation mode of the viewer
         const rdfResourceP2Type = annotation?.representsResourcesOfP2Type;
-        const examinationIri = annotation?.annotationDataContext?.examinationIri; 
+        const objectIri = annotation?.annotationDataContext?.objectIri;
+     
+        const parts = [
+          rdfResourceType ? `rdfType=${rdfResourceType}` : undefined,
+          rdfResourceP2Type ? `p2Type=${rdfResourceP2Type}` : undefined,
+          objectIri ? `objectIri=${objectIri}` : undefined
+        ].filter((x): x is string => Boolean(x));
+
+        const semanticAnnotationModeEncoding = parts.length ? `&${parts.join("&")}` : ""; 
 
         let isMatch = false; 
-        if (field.range && rdfResourceType && rdfResourceP2Type) { 
+        if (field.range) { 
           try {
             const rangeValue = (field.range as any).value || field.range;
             const rangeStr = typeof rangeValue === 'string' ? rangeValue : String(rangeValue);
             const parsedRange = JSON.parse(rangeStr); 
             if (Array.isArray(parsedRange)) {
-              isMatch = parsedRange.includes(rdfResourceType) && parsedRange.includes(rdfResourceP2Type); 
+              if (rdfResourceType && rdfResourceP2Type)
+                isMatch = parsedRange.includes(rdfResourceType) && parsedRange.includes(rdfResourceP2Type); 
+              else if (rdfResourceType && !rdfResourceP2Type)
+                isMatch = parsedRange.includes(rdfResourceType)
+              else  
+                isMatch = false;
             } else {
               isMatch = false;//parsedRange === rdfResourceType; 
             }
@@ -334,25 +339,76 @@ export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation
         if (isMatch) {
             //values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
             values = Immutable.List<Forms.FieldValue>(
-            annotation.on.map((on) => {
-              
-              if (examinationIri) {
-                /* this is a hack, but this way we are passing on the examination information to the KP */
-                const value = Rdf.iri(on.full+"/annotation_label/"+URI.encode(textResource.chars)+"/examination_iri/"+examinationIri); 
-                return Forms.FieldValue.fromLabeled({ value:value});
-              }             
+            annotation.on.map((on) => {                
+              const value = Rdf.iri(on.full+"&annotationLabel="+URI.encode(textResource.chars)+semanticAnnotationModeEncoding+"&");
+              return Forms.FieldValue.fromLabeled({ value:value});                           
             })         
           );
+        }       
+    }
+    else if (field.id === ImageRegionRepresentsDigitalMeasurement.id) { 
+        const rdfResourceType = getAnnotationRepresentsResourcesOfType(annotation);// this depends on the semantic annotation mode of the viewer
+        const rdfResourceP2Type = annotation?.representsResourcesOfP2Type;
+        const examinationIri = annotation?.annotationDataContext?.examinationIri; 
+        const objectIri = annotation?.annotationDataContext?.objectIri;
+
+        /* Get parameter that indicates if is a Measurement on a Sample, Full Object, or a Physical Feature of a particular object */
+        /* If on a physical feature or sample the assumption is that they don't already exist */
+        const measurementOnFullObject = annotation?.annotationDataContext?.semanticMode.includes("Full")?1:undefined; 
+        const measurementOnObjectPhysicalFeature = (!annotation?.annotationDataContext?.semanticMode.includes("Full") && !annotation?.annotationDataContext?.semanticMode.includes("Sample"))?1:undefined; 
+        const measurementOnObjectSample = annotation?.annotationDataContext?.semanticMode.includes("Sample")?1:undefined; 
+        
+        const parts = [
+          rdfResourceType ? `rdfType=${rdfResourceType}` : undefined,
+          rdfResourceP2Type ? `p2Type=${rdfResourceP2Type}` : undefined,
+          examinationIri ? `examinationIri=${examinationIri}` : undefined,
+          objectIri ? `objectIri=${objectIri}` : undefined,
+          measurementOnFullObject ? `measurementOnFullObject=${measurementOnFullObject}` : undefined,
+          measurementOnObjectPhysicalFeature ? `measurementOnObjectPhysicalFeature=${measurementOnObjectPhysicalFeature}` : undefined,
+          measurementOnObjectSample ? `measurementOnObjectSample=${measurementOnObjectSample}` : undefined
+        ].filter((x): x is string => Boolean(x));
+
+        const semanticAnnotationModeEncoding = parts.length ? `&${parts.join("&")}` : "";
+
+        let isMatch = false; 
+        if (field.range) { 
+          try {
+            const rangeValue = (field.range as any).value || field.range;
+            const rangeStr = typeof rangeValue === 'string' ? rangeValue : String(rangeValue);
+            const parsedRange = JSON.parse(rangeStr); 
+            if (Array.isArray(parsedRange)) {
+              if (rdfResourceType && rdfResourceP2Type)
+                isMatch = parsedRange.includes(rdfResourceType) && parsedRange.includes(rdfResourceP2Type); 
+              else if (rdfResourceType && !rdfResourceP2Type)
+                isMatch = parsedRange.includes(rdfResourceType)
+              else  
+                isMatch = false;
+            } else {
+              isMatch = false;//parsedRange === rdfResourceType; 
+            }
+          } catch (e) {
+            console.error('Failed to parse field.range JSON string', e);
+            isMatch = false;
+          }
         }
+        if (isMatch) {
+            //values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
+            values = Immutable.List<Forms.FieldValue>(
+            annotation.on.map((on) => {                
+              const value = Rdf.iri(on.full+"&annotationLabel="+URI.encode(textResource.chars)+semanticAnnotationModeEncoding+"&");
+              return Forms.FieldValue.fromLabeled({ value:value});                           
+            })         
+          );
+        }       
     }
     else if (field.id === ImageRegionRepresentsSamplingSite.id) {
         const rdfResourceType = getAnnotationRepresentsResourcesOfType(annotation);// this depends on the semantic annotation mode of the viewer
         const rdfResourceP2Type = annotation?.representsResourcesOfP2Type;
         const activityIri = annotation?.annotationDataContext?.activityIri;
-        const activityType = annotation?.annotationDataContext?.activityType; console.log("extr context");console.dir(annotation.annotationDataContext,{"depth":null});
+        const activityType = annotation?.annotationDataContext?.activityType;
 
         let isMatch = false; 
-        if (field.range && rdfResourceType && rdfResourceP2Type) { console.log("going in");
+        if (field.range && rdfResourceType && rdfResourceP2Type) { 
           try {
             const rangeValue = (field.range as any).value || field.range;
             const rangeStr = typeof rangeValue === 'string' ? rangeValue : String(rangeValue);

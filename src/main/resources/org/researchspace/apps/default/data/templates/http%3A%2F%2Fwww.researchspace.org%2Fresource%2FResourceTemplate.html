@@ -1,3 +1,17 @@
+[[#if (urlParam "frame")]]
+<style>
+  .rs-application .page.page-local-overwrite {
+    padding-top: 0;
+  }
+</style>
 {{#bind viewId=dashboardId}}
-    [[> rsp:ResourceContent]]
+<div class="page page-local-overwrite">
+    [[> rsp:ResourceContent iri=(urlParam "resourceIri") config="{{(getResourceConfigurationValue iri 'resourceconfig')}}" resourceLabel="{{(getResourceConfigurationValue iri 'resourcelabel')}}"]]
+</div>
 {{/bind}}
+[[else]]
+[[!-- Resource Page --]]
+<div class="page">
+  [[> rsp:ResourceContent iri=(urlParam "uri") config="{{(getResourceConfigurationValue iri 'resourceconfig')}}" resourceLabel="{{(getResourceConfigurationValue iri 'resourcelabel')}}"]]
+</div>
+[[/if]]

@@ -54,8 +54,15 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
         configBuilder.setCookieSpec(CookieSpecs.STANDARD);
 
         RequestConfig requestConfig = configBuilder.build();
+        String userAgent = this.config.getEnvironmentConfig().getHttpUserAgent();
         HttpClientBuilder mpHttpClientBuilder = HttpClientBuilder.create().setMaxConnPerRoute(maxConnections)
-                .setMaxConnTotal(maxConnections).setDefaultRequestConfig(requestConfig);
+                .setMaxConnTotal(maxConnections).setDefaultRequestConfig(requestConfig)
+                .setUserAgent(userAgent);
+
+        // Force POST for SPARQL queries to avoid HTTP 431 errors from servers
+        // with low header size limits. SPARQLProtocolSession reads this system property.
+        Integer maxUrlLength = this.config.getEnvironmentConfig().getSparqlMaxUrlLength();
+        System.setProperty("rdf4j.sparql.url.maxlength", String.valueOf(maxUrlLength));
 
         this.setHttpClientBuilder(mpHttpClientBuilder);
     }

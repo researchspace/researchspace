@@ -37,7 +37,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 
 import com.github.jknack.handlebars.Options;
 
-import org.eclipse.rdf4j.rio.ntriples.NTriplesUtil;
+import org.eclipse.rdf4j.rio.helpers.NTriplesUtil;
 import org.researchspace.cache.LabelCache;
 import org.researchspace.data.json.JsonUtil;
 import org.researchspace.repository.RepositoryManager;

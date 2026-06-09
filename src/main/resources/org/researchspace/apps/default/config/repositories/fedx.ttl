@@ -1,0 +1,28 @@
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fedx: <http://rdf4j.org/config/federation#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+
+[] a config:Repository ;
+    config:rep.id "fedx" ;
+    rdfs:label "FedX Federation" ;
+    config:rep.impl [
+        config:rep.type "researchspace:FederationSailRepository" ;
+        config:sail.impl [
+            config:sail.type "researchspace:Federation" ;
+            fedx:config [
+                fedx:enableMonitoring true ;
+                fedx:logQueries true ;
+                fedx:logQueryPlan true
+            ] ;
+            fedx:member [
+                fedx:store "ResolvableRepository" ;
+                fedx:repositoryName "wikidata-sparql"
+            ] ;
+            fedx:member [
+                fedx:store "ResolvableRepository" ;
+                fedx:repositoryName "artresearch-sparql"
+            ] ;
+            ephedra:defaultMember "default"
+        ]
+    ] .

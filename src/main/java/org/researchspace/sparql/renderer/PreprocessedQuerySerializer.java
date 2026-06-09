@@ -78,7 +78,7 @@ import org.eclipse.rdf4j.query.algebra.Label;
 import org.eclipse.rdf4j.query.algebra.Lang;
 import org.eclipse.rdf4j.query.algebra.LangMatches;
 import org.eclipse.rdf4j.query.algebra.LeftJoin;
-import org.eclipse.rdf4j.query.algebra.Like;
+
 import org.eclipse.rdf4j.query.algebra.ListMemberOperator;
 import org.eclipse.rdf4j.query.algebra.Load;
 import org.eclipse.rdf4j.query.algebra.LocalName;
@@ -120,7 +120,7 @@ import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
-import org.eclipse.rdf4j.sail.federation.algebra.NaryJoin;
+import org.researchspace.federation.sparql.algebra.NaryJoin;
 import org.researchspace.sparql.renderer.SerializableParsedTupleQuery.QueryModifier;
 
 import com.google.common.collect.Lists;
@@ -830,12 +830,6 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
     }
 
     @Override
-    public void meet(Like node) throws RuntimeException {
-        super.meet(node);
-
-    }
-
-    @Override
     public void meet(ListMemberOperator node) throws RuntimeException {
         Iterator<ValueExpr> argIter = node.getArguments().iterator();
         ValueExpr operand = argIter.next();
@@ -955,15 +949,15 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
 
         for (ProjectionElemList proj : node.getProjections()) {
             for (ProjectionElem elem : proj.getElements()) {
-                if (valueMap.containsKey(elem.getSourceName())) {
-                    ValueExpr expr = valueMap.get(elem.getSourceName());
+                if (valueMap.containsKey(elem.getName())) {
+                    ValueExpr expr = valueMap.get(elem.getName());
                     if (expr instanceof BNodeGenerator) {
-                        builder.append("_:" + elem.getSourceName());
+                        builder.append("_:" + elem.getName());
                     } else {
-                        valueMap.get(elem.getSourceName()).visit(this);
+                        valueMap.get(elem.getName()).visit(this);
                     }
                 } else {
-                    builder.append("?" + elem.getSourceName());
+                    builder.append("?" + elem.getName());
                 }
                 builder.append(" ");
                 // elem.getSourceExpression().getExpr().visit(this);
@@ -1042,24 +1036,24 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
                 isDescribe = ((SerializableParsedConstructQuery) this.currentQueryProfile).describe;
             }
 
-            if (node.getSourceName() == null || node.getTargetName().equals(node.getSourceName())) {
-                if (isDescribe && this.currentQueryProfile.extensionElements.containsKey(node.getTargetName())) {
-                    ExtensionElem elem = this.currentQueryProfile.extensionElements.get(node.getTargetName());
+            if (node.getName() == null || (node.getProjectionAlias().isPresent() && node.getProjectionAlias().get().equals(node.getName()))) {
+                if (isDescribe && this.currentQueryProfile.extensionElements.containsKey(node.getProjectionAlias().orElse(null))) {
+                    ExtensionElem elem = this.currentQueryProfile.extensionElements.get(node.getProjectionAlias().orElse(null));
                     elem.getExpr().visit(this);
                     builder.append(" ");
                 } else {
                     builder.append("?");
-                    builder.append(node.getTargetName());
+                    builder.append(node.getProjectionAlias().orElse(null));
                     builder.append(" ");
                 }
             } else {
                 builder.append("(");
                 builder.append("?");
-                builder.append(node.getSourceName());
+                builder.append(node.getName());
                 builder.append(" ");
                 builder.append("AS ");
                 builder.append("?");
-                builder.append(node.getTargetName());
+                builder.append(node.getProjectionAlias().orElse(null));
                 builder.append(" ");
                 builder.append(") ");
             }
@@ -1070,7 +1064,7 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
                 builder.append(") ");
             } else {
                 builder.append("?");
-                builder.append(node.getTargetName());
+                builder.append(node.getProjectionAlias().orElse(null));
                 builder.append(" ");
             }
         }

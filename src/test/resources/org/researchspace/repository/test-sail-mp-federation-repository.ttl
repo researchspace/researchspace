@@ -1,26 +1,28 @@
-[] a <http://www.openrdf.org/config/repository#Repository> ;
-	<http://www.openrdf.org/config/repository#repositoryID> "test-sail-mp-federation-repository" ;
-	<http://www.w3.org/2000/01/rdf-schema#label> "Test Federation Sail Description" ;
-	<http://www.w3.org/2000/01/rdf-schema#comment> "Test Federation Sail Description with the main repository 'default' and the 'assets' and 'wikidata-text' repositories accessible as a service" ;
-	<http://www.openrdf.org/config/repository#repositoryImpl> [
-		<http://www.openrdf.org/config/repository#repositoryType> "openrdf:SailRepository" ;
-		<http://www.openrdf.org/config/repository/sail#sailImpl> [
-			<http://www.openrdf.org/config/sail#sailType> "researchspace:Federation";
-			<http://www.researchspace.org/resource/system/ephedra#defaultMember> "default" ;
-			<http://www.openrdf.org/config/sail/federation#member> [
-				<http://www.researchspace.org/resource/system/ephedra#delegateRepositoryID> "default" ;
-				<http://www.researchspace.org/resource/system/ephedra#serviceReference>
-						<http://www.researchspace.org/resource/system/repository/federation#default>
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix fed: <http://www.researchspace.org/resource/system/repository/federation#> .
+
+[] a config:Repository ;
+	config:rep.id "test-sail-mp-federation-repository" ;
+	rdfs:label "Test Federation Sail Description" ;
+	rdfs:comment "Test Federation Sail Description with the main repository 'default' and the 'assets' and 'wikidata-text' repositories accessible as a service" ;
+	config:rep.impl [
+		config:rep.type "openrdf:SailRepository" ;
+		config:sail.impl [
+			config:sail.type "researchspace:Federation";
+			ephedra:defaultMember "default" ;
+			config:fed.member [
+				ephedra:delegateRepositoryID "default" ;
+				ephedra:serviceReference fed:default
 			] ;
-			<http://www.openrdf.org/config/sail/federation#member> [
-				<http://www.researchspace.org/resource/system/ephedra#delegateRepositoryID> "wikidata-text" ;
-				<http://www.researchspace.org/resource/system/ephedra#serviceReference>
-						<http://www.researchspace.org/resource/system/repository/federation#wikidata-text>
+			config:fed.member [
+				ephedra:delegateRepositoryID "wikidata-text" ;
+				ephedra:serviceReference fed:wikidata-text
 			] ;
-			<http://www.openrdf.org/config/sail/federation#member> [
-				<http://www.researchspace.org/resource/system/ephedra#delegateRepositoryID> "assets" ;
-				<http://www.researchspace.org/resource/system/ephedra#serviceReference>
-						<http://www.researchspace.org/resource/system/repository/federation#assets>
+			config:fed.member [
+				ephedra:delegateRepositoryID "assets" ;
+				ephedra:serviceReference fed:assets
 			] .
 		];
 	].

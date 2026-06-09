@@ -26,14 +26,17 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.QueryParserUtil;
+import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
 import org.junit.Assert;
 import org.junit.Test;
 import org.researchspace.junit.AbstractIntegrationTest;
 import org.researchspace.sparql.renderer.MpSparqlQueryRenderer;
 import org.researchspace.sparql.visitors.ParametrizeVisitor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -51,13 +54,13 @@ public class ParametrizeVisitorTest extends AbstractIntegrationTest {
     @Test
     public void testSingleTriples() throws Exception {
         assertParametrizationResult("SELECT ?s ?p WHERE { ?s ?p ?iri . ?s ?p ?literal . }",
-                "SELECT ?s ?p WHERE { ?s ?p <test:iri> . ?s ?p \"TestLiteral\"^^<" + XMLSchema.STRING + "> . }");
+                "SELECT ?s ?p WHERE { ?s ?p <test:iri> . ?s ?p \"\"\"TestLiteral\"\"\"^^<" + XMLSchema.STRING + "> . }");
     }
 
     @Test
     public void testBind() throws Exception {
         assertParametrizationResult("SELECT ?s WHERE { BIND(?langLiteral AS ?s) . }",
-                "SELECT ?s WHERE {{} BIND(\"TestLangLiteral\"@en AS ?s) . }");
+                "SELECT ?s WHERE {{} BIND(\"\"\"TestLangLiteral\"\"\"@en AS ?s) . }");
     }
 
     @Test
@@ -70,7 +73,7 @@ public class ParametrizeVisitorTest extends AbstractIntegrationTest {
         assertParametrizationResult(
                 "SELECT ?s ?o WHERE { ?s ?p ?o . FILTER((?iri + \"s\"^^<" + XMLSchema.STRING + ">) = \"abc\"^^<"
                         + XMLSchema.STRING + ">) }",
-                "SELECT ?s ?o WHERE { ?s ?p ?o . FILTER((<test:iri> + \"s\"^^<" + XMLSchema.STRING + ">) = \"abc\"^^<"
+                "SELECT ?s ?o WHERE { ?s ?p ?o . FILTER((<test:iri> + \"\"\"s\"\"\"^^<" + XMLSchema.STRING + ">) = \"\"\"abc\"\"\"^^<"
                         + XMLSchema.STRING + ">) }");
     }
 
@@ -85,5 +88,24 @@ public class ParametrizeVisitorTest extends AbstractIntegrationTest {
         parsedQuery.getTupleExpr().visit(new ParametrizeVisitor(this.parameters));
         String rendered = new MpSparqlQueryRenderer().render(parsedQuery);
         Assert.assertEquals(expected.replaceAll("\\s+", ""), rendered.replaceAll("\\s+", ""));
+    }
+    @Test
+    public void testAliasedProjection() throws Exception {
+        String query = "SELECT (?s as ?subject) WHERE { ?s ?p ?o }";
+        SPARQLParser parser = new SPARQLParser();
+        ParsedQuery pq = parser.parseQuery(query, null);
+        
+        Map<String, Value> params = new HashMap<>();
+        params.put("s", SimpleValueFactory.getInstance().createIRI("http://example.org/subject"));
+        
+        ParametrizeVisitor visitor = new ParametrizeVisitor(params);
+        pq.getTupleExpr().visit(visitor);
+        
+        String rendered = new MpSparqlQueryRenderer().render(pq);
+        String expectedQuery = "SELECT ( <http://example.org/subject> AS ?subject) WHERE { <http://example.org/subject> ?p ?o . }";
+        // Normalize strings by removing whitespace
+        System.out.println("Expected: " + expectedQuery.replaceAll("\\s+", ""));
+        System.out.println("Actual:   " + rendered.replaceAll("\\s+", ""));
+        Assert.assertEquals(expectedQuery.replaceAll("\\s+", ""), rendered.replaceAll("\\s+", ""));
     }
 }

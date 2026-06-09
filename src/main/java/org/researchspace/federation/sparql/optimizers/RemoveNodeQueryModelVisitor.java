@@ -28,7 +28,7 @@ import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.UnaryTupleOperator;
 import org.eclipse.rdf4j.query.algebra.Union;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
-import org.eclipse.rdf4j.sail.federation.algebra.AbstractNaryTupleOperator;
+import org.researchspace.federation.sparql.algebra.AbstractNaryTupleOperator;
 import org.researchspace.federation.sparql.SparqlAlgebraUtils;
 
 /**
@@ -63,6 +63,8 @@ public class RemoveNodeQueryModelVisitor extends AbstractQueryModelVisitor<Excep
     public void meetOther(QueryModelNode node) throws Exception {
         if ((node instanceof AbstractNaryTupleOperator) && isInScope((TupleExpr) node)) {
             ((AbstractNaryTupleOperator) node).removeArg(this.toRemove);
+        } else if (node instanceof org.eclipse.rdf4j.federated.algebra.NTuple && isInScope((TupleExpr) node)) {
+             ((org.eclipse.rdf4j.federated.algebra.NTuple) node).getArgs().remove(this.toRemove);
         }
         super.meetOther(node);
     }

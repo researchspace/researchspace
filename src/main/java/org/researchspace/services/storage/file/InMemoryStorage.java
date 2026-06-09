@@ -102,6 +102,9 @@ public class InMemoryStorage implements ObjectStorage {
         }
         return Optional.ofNullable(foundRecord).flatMap(record -> {
             synchronized (record) {
+                if (record.revisions.isEmpty()) {
+                    return Optional.empty();
+                }
                 return Optional.ofNullable(revision == null ? record.revisions.get(record.revisions.lastKey())
                         : record.revisions.get(ObjectRevision.parseKey(revision)));
             }

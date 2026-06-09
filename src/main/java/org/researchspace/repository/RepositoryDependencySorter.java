@@ -32,6 +32,9 @@ import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
 import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
 import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
+import org.eclipse.rdf4j.federated.repository.FedXRepositoryConfig;
+import org.eclipse.rdf4j.federated.util.Vocabulary;
+import org.eclipse.rdf4j.model.Value;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -67,6 +70,13 @@ public class RepositoryDependencySorter {
                 if (sailImplConfig instanceof MpDelegatingImplConfig) {
                     delegateRepositoryIds.addAll(((MpDelegatingImplConfig) sailImplConfig).getDelegateRepositoryIDs());
                 }
+            } else if (implConfig instanceof FedXRepositoryConfig) {
+                 FedXRepositoryConfig fedXConfig = (FedXRepositoryConfig) implConfig;
+                 if (fedXConfig.getMembers() != null) {
+                     fedXConfig.getMembers().filter(null, Vocabulary.FEDX.REPOSITORY_NAME, null).objects().stream()
+                             .map(Value::stringValue)
+                             .forEach(delegateRepositoryIds::add);
+                 }
             }
             // default and/or assets repository configs not provided explicitly:
             // we ignore it as they will be initialized first anyway

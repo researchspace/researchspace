@@ -1,11 +1,15 @@
-[] a <http://www.openrdf.org/config/repository#Repository> ;
-	<http://www.openrdf.org/config/repository#repositoryID> "test-sail-mp-federation-repository" ;
-	<http://www.w3.org/2000/01/rdf-schema#label> "Test Federation Sail Description" ;
-	<http://www.w3.org/2000/01/rdf-schema#comment> "Test Federation Sail Description with the main repository 'default' and the 'assets' and 'wikidata-text' repositories accessible as a service" ;
-	<http://www.openrdf.org/config/repository#repositoryImpl> [
-		<http://www.openrdf.org/config/repository#repositoryType> "openrdf:SailRepository" ;
-		<http://www.openrdf.org/config/repository/sail#sailImpl> [
-			<http://www.openrdf.org/config/sail#sailType> "researchspace:WikidataTextSearch" ;
-			<http://www.researchspace.org/resource/system/ephedra#serviceURL> "https://www.wikidata.org/w/api.php" . # this is the default value, so the serviceURL property can be skipped.
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+
+[] a config:Repository ;
+	config:rep.id "test-sail-mp-federation-repository" ;
+	rdfs:label "Test Federation Sail Description" ;
+	rdfs:comment "Test Federation Sail Description with the main repository 'default' and the 'assets' and 'wikidata-text' repositories accessible as a service" ;
+	config:rep.impl [
+		config:rep.type "openrdf:SailRepository" ;
+		config:sail.impl [
+			config:sail.type "researchspace:WikidataTextSearch" ;
+			ephedra:serviceURL "https://www.wikidata.org/w/api.php" . # this is the default value, so the serviceURL property can be skipped.
 		];
 	].

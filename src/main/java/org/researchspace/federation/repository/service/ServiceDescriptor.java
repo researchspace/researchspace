@@ -243,15 +243,11 @@ public class ServiceDescriptor {
 
     protected StatementPattern parseStatementPattern(Resource resource, Model model,
             Map<Resource, Parameter> paramMap) {
-        StatementPattern pattern = new StatementPattern();
-
         Value subj = Models.object(model.filter(resource, SP.SUBJECT_PROPERTY, null)).get();
         Value predicate = Models.object(model.filter(resource, SP.PREDICATE_PROPERTY, null)).get();
         Value obj = Models.object(model.filter(resource, SP.OBJECT_PROPERTY, null)).get();
 
-        pattern.setSubjectVar(parseToVar(subj));
-        pattern.setPredicateVar(parseToVar(predicate));
-        pattern.setObjectVar(parseToVar(obj));
+        StatementPattern pattern = new StatementPattern(org.eclipse.rdf4j.query.algebra.StatementPattern.Scope.DEFAULT_CONTEXTS, parseToVar(subj), parseToVar(predicate), parseToVar(obj), null);
 
         if ((subj instanceof Resource) && paramMap.containsKey(subj)) {
             paramMap.get(subj).subjectPatterns.add(pattern);

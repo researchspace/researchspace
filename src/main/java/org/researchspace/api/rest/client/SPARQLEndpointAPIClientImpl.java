@@ -61,7 +61,7 @@ public class SPARQLEndpointAPIClientImpl implements SPARQLEndpointAPIClient {
     void init(final String endpointURL, final String user, final String password) throws RepositoryException {
 
         repo = new SPARQLRepository(endpointURL);
-        repo.initialize();
+        repo.init();
 
         // set authentication credentials, if specified
         if (user != null && !user.isEmpty() && password != null) {

@@ -176,6 +176,42 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
     }
 
     /**************************** SPARQL HTTP CLIENT PARAMETERS ***************/
+
+    /**
+     * Default User-Agent header for all outgoing HTTP requests
+     * (SPARQL endpoints and REST services).
+     *
+     * <p>Services like Wikidata and MediaWiki require a descriptive User-Agent.
+     * The recommended format per Wikimedia policy is:</p>
+     * <pre>ClientName/version (contact-url; contact-email)</pre>
+     * <p>For example:</p>
+     * <pre>MyProject/1.0 (https://example.org/myproject; admin@example.org)</pre>
+     *
+     * <p>Per-repository overrides are available via {@code repo:userAgent}
+     * in REST service configs.</p>
+     */
+    @ConfigurationParameter
+    public String getHttpUserAgent() {
+        return getString("httpUserAgent", "ResearchSpace/1.0 (https://www.researchspace.org/)");
+    }
+
+    /**
+     * Maximum URL length for SPARQL query GET requests.
+     * When the full URL (endpoint + encoded query) exceeds this threshold,
+     * the query is sent as POST with the query in the request body instead.
+     *
+     * <p>Default is {@code 0}, which forces POST for all SPARQL queries.
+     * This avoids HTTP 431 "Request Header Fields Too Large" errors from servers
+     * with low header size limits (e.g. Jetty's default 8KB).</p>
+     *
+     * <p>Set to {@code 4083} to restore the RDF4J default behavior
+     * (GET for short queries, POST for long ones).</p>
+     */
+    @ConfigurationParameter
+    public Integer getSparqlMaxUrlLength() {
+        return getInteger("sparqlMaxUrlLength", 0);
+    }
+
     @ConfigurationParameter
     public Integer getMaxSparqlHttpConnections() {
         return getInteger("maxSparqlHttpConnections", 10);

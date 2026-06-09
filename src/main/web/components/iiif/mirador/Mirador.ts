@@ -155,8 +155,8 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
   `
  );
 
-/*  Mirador Buttons in annotation popup 
-<div>
+/*  Mirador Buttons in annotation popup */
+`<div>
 {{#if showUpdate}}
   <a href="#edit" class="edit">
     <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
@@ -167,7 +167,7 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
   <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
   </a>
 {{/if}}
-</div>  */
+</div>`
 
 Mirador.AnnotationTooltip.prototype.viewerTemplate = defaultAnnotationViewerTemplate;
 Mirador.AnnotationTooltip.prototype.editorTemplate = globalHandlebars.compile(

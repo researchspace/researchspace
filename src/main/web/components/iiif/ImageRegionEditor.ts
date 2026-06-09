@@ -22,6 +22,7 @@ import * as D from 'react-dom-factories';
 import * as PropTypes from 'prop-types';
 import {
   isEqual, toPairs, some, find, last, size,
+  forEach,
 } from 'lodash';
 import * as Maybe from 'data.maybe';
 import * as Kefir from 'kefir';
@@ -37,7 +38,8 @@ import * as ImageApi from '../../data/iiif/ImageAPI';
 import { queryIIIFImageOrRegion, ImageOrRegionInfo, parseImageSubarea } from '../../data/iiif/ImageAnnotationService';
 import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
-import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestResource, AddResourceImagesEvent, RegionCreatedEvent, RegionUpdatedEvent, RegionRemovedEvent, HighlightRegion, RemoveRegion } from './ImageRegionEditorEvents';
+import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestResource, AddResourceImagesEvent, RegionCreatedEvent, RegionUpdatedEvent, RegionRemovedEvent, HighlightRegion, RemoveRegion, ShowRegionEvent, HideRegionEvent, ToggleRegionEvent, ToggleRegionsEvent, RegionVisibilityChangedEvent } from './ImageRegionEditorEvents';
+import type { RegionTarget } from './ImageRegionEditorEvents';
 
 import { renderMirador, removeMirador, scrollToRegions, scrollToRegion } from './mirador/Mirador';
 import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
@@ -61,6 +63,14 @@ export interface ImageRegionEditorConfig {
    * way as platform templates and can't be used with <template> tag
    */
   annotationViewTooltipTemplate?: string;
+
+  semanticAnnotationMode?: SemanticAnnotationMode[];
+
+  /**
+   * Additional data passed from the configuration that will be merged into the
+   * OARegionAnnotation payload so it can be consumed in the service layer.
+   */
+  annotationDataContext?: any;
 }
 
 export interface ImageRegionEditorProps extends ImageRegionEditorConfig {
@@ -77,13 +87,21 @@ interface ImageRegionEditorState {
   allImages: IiifManifestResource[];
 }
 
+export interface SemanticAnnotationMode {
+  id: string;
+  label: string;
+  iri: string;
+  p2TypeIri?: string;
+}
+
 /**
  * @example
  * <div style='height: 700px'>
  *   <rs-iiif-mirador image-or-region='http://example.com/AN00230/AN00230725_001_l.jpg'
  *     image-id-pattern='BIND(REPLACE(str(?imageIRI),
  *       "^.+/[A-Z0]*([1-9][0-9]*)_.*$", "$1") AS ?imageID)'
- *     iiif-server-url='http://example.com/IIIF'>
+ *     iiif-server-url='http://example.com/IIIF'
+ *     semantic-annotation-mode='[{"id":"annotateImage","label":"Image Region","iri":"http://www.researchspace.org/ontology/EX_Digital_Image_Region"},{"id":"digitalSample","label":"Sampling Site","iri":"http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature","p2TypeIri":"http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site"},{"id":"visualItem","label":"Visual Item","iri":"http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item"}]'>
  *   </rs-iiif-mirador>
  * </div>
  */
@@ -101,13 +119,20 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     imageOrRegion: PropTypes.any.isRequired,
     imageIdPattern: PropTypes.string.isRequired,
     iiifServerUrl: PropTypes.string.isRequired,
+    semanticAnnotationMode: PropTypes.array,
+    annotationDataContext: PropTypes.object,
   };
 
   private miradorElement: HTMLElement;
   private miradorInstance: Mirador.Instance;
+  private semanticModeByCanvas = new Map<string, SemanticAnnotationMode>();
+  private semanticModeHandlers = new Map<string, Function>();
+  private canvasIdUpdatedHandlers = new Map<string, Function>();
+  private slotsUpdatedSemanticHandler?: Function;
+  private windowUpdatedSemanticHandler?: Function;
 
   constructor(props: ImageRegionEditorProps, context: any) {
-    super(props, context);
+    super(props, context); 
     this.state = {
       loading: true,
       allImages: this.normalizeImageProps(props),
@@ -130,11 +155,98 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     this.queryAllImagesInfo();
   }
 
+  private getRegionsForResource(resourceIri: string, allImages: IiifManifestResource[] = this.state.allImages) {
+    const resource = allImages.find(r => r.resourceIri === resourceIri);
+    if (!resource) {
+      return undefined;
+    }
+
+    const existingRegions = resource.regions || [];
+    const regionsByIri = new Map(existingRegions.map(region => [region.regionIri, { ...region }]));
+
+    if (!this.miradorInstance || !this.miradorInstance.viewer || !this.miradorInstance.viewer.workspace) {
+      return existingRegions.length > 0 ? Array.from(regionsByIri.values()) : undefined;
+    }
+
+    const windows = this.miradorInstance.viewer.workspace.windows || [];
+    const resourceImages = new Set(resource.images || []);
+
+    for (const window of windows) {
+      if (!resourceImages.has(window.canvasID) || !window.annotationsList) {
+        continue;
+      }
+
+      window.annotationsList.forEach(annotation => {
+        const regionIri = annotation['@id'];
+        if (!regionsByIri.has(regionIri)) {
+          const renderedVisibility = this.resolveRenderedRegionVisibility(window.canvasID, regionIri);
+          regionsByIri.set(regionIri, {
+            regionIri,
+            visibility: typeof renderedVisibility === 'boolean' ? renderedVisibility : true,
+          });
+        }
+      });
+    }
+
+    const regions = Array.from(regionsByIri.values());
+    return regions.length > 0 ? regions : undefined;
+  }
+
   private triggerManifestUpdatedEvent = (resources: IiifManifestResource[]) => {
+    const resourcesWithRegions = resources.map(resource => {
+      const resourceRegions = this.getRegionsForResource(resource.resourceIri, resources);
+      return {
+        ...resource,
+        regions: resourceRegions
+      };
+    });
+
+    this.setState({ allImages: resourcesWithRegions });
+
     trigger({
       eventType: ManifestUpdatedEvent,
       source: this.props.id,
-      data: { resources }
+      data: { resources: resourcesWithRegions}
+    });
+  }
+
+  private findResourceIriForImage(imageIri: string): string | undefined {
+    const resource = this.state.allImages.find(i => (i.images || []).includes(imageIri));
+    return resource && resource.resourceIri;
+  }
+
+  private resolveImageIriForRegion(regionIri: string, preferredImageIri?: string): string | undefined {
+    if (preferredImageIri) return preferredImageIri;
+    if (!regionIri || !this.miradorInstance || !this.miradorInstance.viewer || !this.miradorInstance.viewer.workspace) {
+      return undefined;
+    }
+
+    const windows = this.miradorInstance.viewer.workspace.windows || [];
+    const windowMatch = windows.find(window =>
+      Array.isArray(window.annotationsList) && window.annotationsList.some(annotation => annotation['@id'] === regionIri)
+    );
+    if (windowMatch && windowMatch.canvasID) {
+      return windowMatch.canvasID;
+    }
+
+    const resourceMatch = this.state.allImages.find(resource =>
+      Array.isArray(resource.regions) && resource.regions.some(region => region.regionIri === regionIri)
+    );
+    if (resourceMatch && Array.isArray(resourceMatch.images) && resourceMatch.images.length === 1) {
+      return resourceMatch.images[0];
+    }
+
+    return undefined;
+  }
+
+  private triggerRegionVisibilityChangedEvent = (payload: RegionTarget & { visible: boolean; resourceIri?: string }) => {
+    trigger({
+      eventType: RegionVisibilityChangedEvent,
+      source: this.props.id,
+      data: {
+        ...payload,
+        resourceIri: payload.resourceIri || this.findResourceIriForImage(payload.imageIri),
+      }
     });
   }
 
@@ -144,13 +256,41 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       const imageIri = oa.on[0].full;
       const resourceIri = this.state.allImages.find(i => i.images.includes(imageIri)).resourceIri;
       const regionLabel = getAnnotationTextResource(oa).chars;
+
+      let newImages = [...this.state.allImages];
+      const resourceIndex = newImages.findIndex(r => r.resourceIri === resourceIri);
+
+      if (resourceIndex !== -1) {
+        const resource = newImages[resourceIndex];
+        const miradorRegions = this.getRegionsForResource(resourceIri, newImages) || [];
+        let newRegions = [...miradorRegions];
+
+        if (eventType === RegionCreatedEvent) {
+          if (!newRegions.some(r => r.regionIri === regionIri.value)) {
+            newRegions.push({ regionIri: regionIri.value, visibility: true });
+          }
+        } else if (eventType === RegionRemovedEvent) {
+          newRegions = newRegions.filter(r => r.regionIri !== regionIri.value);
+        }
+
+        newImages[resourceIndex] = { ...resource, regions: newRegions };
+      }
+
+      this.setState({ allImages: newImages });
+
+      trigger({
+        eventType: ManifestUpdatedEvent,
+        source: this.props.id,
+        data: { resources: newImages }
+      });
+
       trigger({
         eventType,
         source: this.props.id,
         data: {
           resourceIri, imageIri, regionIri: regionIri.value, regionLabel
         }
-      });
+      });    
     }
 
   public shouldComponentUpdate(nextProps: ImageRegionEditorProps, nextState: ImageRegionEditorState) {
@@ -208,6 +348,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       return;
     }
 
+    this.cleanupSemanticModeListeners();
     removeMirador(this.miradorInstance, element);
 
     const iiifServerUrl = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
@@ -270,6 +411,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       return undefined;
     });
     this.listenToEvents();
+    this.bindSemanticModeListeners();
     this.triggerManifestUpdatedEvent(this.state.allImages);
 
     /**
@@ -428,6 +570,78 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         }
       });
 
+    this.cancellation
+      .map(
+        listen({
+          eventType: ShowRegionEvent,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => {
+          const data = event.data as any;
+          const regionIri = data && data.regionIri;
+          const imageIri = regionIri ? this.resolveImageIriForRegion(regionIri, data.imageIri) : undefined;
+          if (imageIri && regionIri) {
+            this.setRegionVisibility(imageIri, regionIri, true);
+          }
+        }
+      });
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: HideRegionEvent,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => {
+          const data = event.data as any;
+          const regionIri = data && data.regionIri;
+          const imageIri = regionIri ? this.resolveImageIriForRegion(regionIri, data.imageIri) : undefined;
+          if (imageIri && regionIri) {
+            this.setRegionVisibility(imageIri, regionIri, false);
+          }
+        }
+      });
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: ToggleRegionEvent,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => {
+          const data = event.data as any;
+          const regionIri = data && data.regionIri;
+          const imageIri = regionIri ? this.resolveImageIriForRegion(regionIri, data.imageIri) : undefined;
+          if (imageIri && regionIri) {
+            this.toggleRegionVisibility(imageIri, regionIri);
+          }
+        }
+      });
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: ToggleRegionsEvent,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => {
+          const regionIris = Array.isArray(event.data && (event.data as any).regionIris)
+            ? (event.data as any).regionIris
+            : [];
+          if (regionIris.length > 0) {
+            this.toggleRegionsVisibility(regionIris);
+          }
+        }
+      });
+
 
     this.cancellation
       .map(
@@ -492,6 +706,145 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       });
   }
 
+
+  private getAvailableSemanticModes = (): SemanticAnnotationMode[] => {
+    if (this.props.semanticAnnotationMode && this.props.semanticAnnotationMode.length > 0) {
+      return this.props.semanticAnnotationMode;
+    }
+    return [
+      {
+        id: 'annotateImage',
+        label: 'Image Region',
+        iri: 'http://www.researchspace.org/ontology/EX_Digital_Image_Region',
+      }
+    ];
+  };
+
+  private getDefaultSemanticMode = (): SemanticAnnotationMode | undefined =>
+    this.getAvailableSemanticModes()[0];
+
+  private getWindowById = (windowId: string): Mirador.Window | undefined =>
+    this.miradorInstance?.viewer?.workspace?.windows?.find(w => w.id === windowId);
+
+  private ensureSemanticModeForCanvas = (canvasId?: string | null) => {
+    if (!canvasId || this.semanticModeByCanvas.has(canvasId)) {
+      return;
+    }
+
+    const defaultMode = this.getDefaultSemanticMode();
+    if (defaultMode) {
+      this.semanticModeByCanvas.set(canvasId, defaultMode);
+    }
+  }
+
+  private bindSemanticModeListeners = () => {
+    if (!this.miradorInstance?.eventEmitter || !this.miradorInstance?.viewer?.workspace) {
+      return;
+    }
+
+    const bindWindow = (win: Mirador.Window) => {
+      if (!win || this.semanticModeHandlers.has(win.id)) {
+        return;
+      }
+
+      this.ensureSemanticModeForCanvas(win.canvasID);
+
+      const modeHandler = (_event: any, mode: SemanticAnnotationMode) => {
+        if (!mode || !mode.id) {
+          return;
+        }
+
+        const currentWindow = this.getWindowById(win.id);
+        const canvasId = currentWindow?.canvasID || win.canvasID;
+        if (!canvasId) {
+          return;
+        }
+
+        this.semanticModeByCanvas.set(canvasId, mode);
+      };
+
+      const canvasUpdatedHandler = (_event: any, payload?: { canvasID?: string; canvasId?: string }) => {
+        const currentWindow = this.getWindowById(win.id);
+        const canvasId = payload?.canvasID || payload?.canvasId || currentWindow?.canvasID || win.canvasID;
+        this.ensureSemanticModeForCanvas(canvasId);
+      };
+
+      this.miradorInstance.eventEmitter.subscribe(`semanticAnnotationModeChanged.${win.id}`, modeHandler);
+      this.miradorInstance.eventEmitter.subscribe(`currentCanvasIDUpdated.${win.id}`, canvasUpdatedHandler);
+
+      this.semanticModeHandlers.set(win.id, modeHandler);
+      this.canvasIdUpdatedHandlers.set(win.id, canvasUpdatedHandler);
+    };
+
+    this.miradorInstance.viewer.workspace.windows.forEach(bindWindow);
+
+    if (!this.slotsUpdatedSemanticHandler) {
+      this.slotsUpdatedSemanticHandler = () => {
+        this.miradorInstance?.viewer?.workspace?.windows?.forEach(bindWindow);
+      };
+      this.miradorInstance.eventEmitter.subscribe('slotsUpdated', this.slotsUpdatedSemanticHandler);
+    }
+
+    if (!this.windowUpdatedSemanticHandler) {
+      this.windowUpdatedSemanticHandler = (_event: any, payload?: { window?: Mirador.Window; id?: string; canvasID?: string }) => {
+        if (payload?.window) {
+          bindWindow(payload.window);
+          this.ensureSemanticModeForCanvas(payload.window.canvasID);
+          return;
+        }
+
+        if (payload?.id) {
+          const win = this.getWindowById(payload.id);
+          if (win) {
+            bindWindow(win);
+            this.ensureSemanticModeForCanvas(payload.canvasID || win.canvasID);
+          }
+          return;
+        }
+
+        this.miradorInstance?.viewer?.workspace?.windows?.forEach(bindWindow);
+      };
+      this.miradorInstance.eventEmitter.subscribe('windowUpdated', this.windowUpdatedSemanticHandler);
+    }
+  }
+
+  private cleanupSemanticModeListeners = () => {
+    if (!this.miradorInstance?.eventEmitter) {
+      this.semanticModeHandlers.clear();
+      this.canvasIdUpdatedHandlers.clear();
+      this.slotsUpdatedSemanticHandler = undefined;
+      this.windowUpdatedSemanticHandler = undefined;
+      return;
+    }
+
+    this.semanticModeHandlers.forEach((handler, windowId) => {
+      this.miradorInstance.eventEmitter.unsubscribe(`semanticAnnotationModeChanged.${windowId}`, handler);
+    });
+    this.canvasIdUpdatedHandlers.forEach((handler, windowId) => {
+      this.miradorInstance.eventEmitter.unsubscribe(`currentCanvasIDUpdated.${windowId}`, handler);
+    });
+
+    if (this.slotsUpdatedSemanticHandler) {
+      this.miradorInstance.eventEmitter.unsubscribe('slotsUpdated', this.slotsUpdatedSemanticHandler);
+    }
+    if (this.windowUpdatedSemanticHandler) {
+      this.miradorInstance.eventEmitter.unsubscribe('windowUpdated', this.windowUpdatedSemanticHandler);
+    }
+
+    this.semanticModeHandlers.clear();
+    this.canvasIdUpdatedHandlers.clear();
+    this.slotsUpdatedSemanticHandler = undefined;
+    this.windowUpdatedSemanticHandler = undefined;
+  }
+
+  private getSemanticModeForCanvas = (canvasId?: string | null): SemanticAnnotationMode | undefined => {
+    if (!canvasId) {
+      return this.getDefaultSemanticMode();
+    }
+
+    return this.semanticModeByCanvas.get(canvasId) || this.getDefaultSemanticMode();
+  }
+
   private queryManifestParameters({
     iri,
     images,
@@ -546,6 +899,8 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       this.triggerRegionUpdatedEvent(RegionCreatedEvent),
       this.triggerRegionUpdatedEvent(RegionUpdatedEvent),
       this.triggerRegionUpdatedEvent(RegionRemovedEvent),
+      (canvasId) => this.getSemanticModeForCanvas(canvasId),
+      this.props.annotationDataContext,
     );
 
     const windowObjects: Mirador.WindowObject[] =
@@ -580,6 +935,12 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
           endpoint: this.annotationEndpoint,
         },
       },
+      availableAnnotationModes: this.getAvailableSemanticModes(),
+  //annotationModeDebugShowIri: true,
+      showAnnotationTextLabels: true,
+      annotationTextLabelMaxLength: 120,
+      annotationTextLabelPinOffsetX: -15,
+      annotationTextLabelPinOffsetY: -20,
       availableAnnotationDrawingTools: ['Rectangle', 'Ellipse', 'Freehand', 'Polygon', 'Pin'],
       windowObjects,
       annotationBodyEditor: {
@@ -596,6 +957,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
+    this.cleanupSemanticModeListeners();
     removeMirador(this.miradorInstance, this.miradorElement);
   }
 
@@ -637,6 +999,288 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       // make observable active (hot)
     });
   }
+
+  private updateRegionVisibilityState(
+    updates: Array<{ imageIri: string, regionIri: string, visible: boolean }>,
+    onCommitted?: (newAllImages: IiifManifestResource[]) => void
+  ): IiifManifestResource[] {
+    const newAllImages = this.state.allImages.map(resource => {
+      const resourceImages = resource.images || [];
+      const relevantUpdates = updates.filter(update => resourceImages.includes(update.imageIri));
+      if (relevantUpdates.length === 0) {
+        return resource;
+      }
+
+      const regionsByIri = new Map((resource.regions || []).map(region => [region.regionIri, { ...region }]));
+
+      relevantUpdates.forEach(update => {
+        const existingRegion = regionsByIri.get(update.regionIri);
+        regionsByIri.set(update.regionIri, existingRegion
+          ? { ...existingRegion, visibility: update.visible }
+          : { regionIri: update.regionIri, visibility: update.visible });
+      });
+
+      return { ...resource, regions: Array.from(regionsByIri.values()) };
+    });
+    this.setState({ allImages: newAllImages }, () => {
+      if (onCommitted) {
+        onCommitted(newAllImages);
+      }
+    });
+    return newAllImages;
+  }
+
+  private getAnnotationLayer(window: Mirador.Window) {
+    const imageView = window && window.focusModules && window.focusModules.ImageView;
+    return imageView && imageView.annotationsLayer ? (imageView.annotationsLayer as any) : null;
+  }
+
+  private getAnnotationShapesMap(layer: any) {
+    if (!layer) return null;
+    return layer.drawTool ? layer.drawTool.annotationsToShapesMap : (layer.annotationsToShapesMap || null);
+  }
+
+  private applyShapeVisibility(shape: any, visible: boolean) {
+    if (!shape) return;
+
+    if (typeof shape.setVisible === 'function') {
+      shape.setVisible(visible);
+    }
+
+    shape.visible = visible;
+
+    if ('_visible' in shape) {
+      shape._visible = visible;
+    }
+  }
+
+  private redrawAndSyncAnnotationLayer(layer: any) {
+    if (!layer) return;
+
+    const paperScope = (layer.drawTool && layer.drawTool.paperScope) ||
+      (layer.drawTool && layer.drawTool.svgOverlay && layer.drawTool.svgOverlay.paperScope) ||
+      (layer.svgOverlay && layer.svgOverlay.paperScope) ||
+      layer.paperScope;
+
+    if (paperScope && paperScope.view) {
+      paperScope.view.draw();
+    }
+
+    if (layer.drawTool && typeof layer.drawTool.renderAnnotationTextLabels === 'function') {
+      layer.drawTool.renderAnnotationTextLabels();
+    } else if (layer.drawTool && typeof layer.drawTool.syncAnnotationTextLabels === 'function') {
+      layer.drawTool.syncAnnotationTextLabels();
+    }
+  }
+
+  private resolveRenderedRegionVisibility(imageIri: string, regionIri: string): boolean | undefined {
+    if (!this.miradorInstance || !this.miradorInstance.viewer || !this.miradorInstance.viewer.workspace) {
+      return undefined;
+    }
+
+    const windows = this.miradorInstance.viewer.workspace.windows || [];
+    const window = windows.find(w => w && w.canvasID === imageIri);
+    if (!window) {
+      return undefined;
+    }
+
+    const layer = this.getAnnotationLayer(window);
+    const shapesMap = this.getAnnotationShapesMap(layer);
+    const shapes = shapesMap && shapesMap[regionIri];
+    if (!Array.isArray(shapes) || shapes.length === 0) {
+      return undefined;
+    }
+
+    return shapes.some(shape => !(shape && (shape.visible === false || shape._visible === false)));
+  }
+
+  private resolveRegionVisibility(imageIri: string, regionIri: string): boolean {
+    for (const resource of this.state.allImages) {
+      if (!(resource.images || []).includes(imageIri)) continue;
+      const region = resource.regions && resource.regions.find(r => r.regionIri === regionIri);
+      if (region && typeof region.visibility === 'boolean') {
+        return region.visibility;
+      }
+    }
+
+    const renderedVisibility = this.resolveRenderedRegionVisibility(imageIri, regionIri);
+    if (typeof renderedVisibility === 'boolean') {
+      return renderedVisibility;
+    }
+
+    return false;
+  }
+
+  private setRegionVisibility = (imageIri: string, regionIri: string, visible: boolean): IiifManifestResource[] => {
+    const newImages = this.updateRegionVisibilityState([{ imageIri, regionIri, visible }]);
+    const windows = this.miradorInstance.viewer.workspace.windows;
+    for (const window of windows) {
+      this.setRegionVisibilityInWindow(window, imageIri, regionIri, visible);
+    }
+    this.triggerRegionVisibilityChangedEvent({
+      imageIri,
+      regionIri,
+      visible,
+      resourceIri: this.findResourceIriForImage(imageIri),
+    });
+    return newImages;
+  }
+
+  private setAllRegionsVisibility = (visible: boolean): IiifManifestResource[] => {
+    const updates = [];
+    this.state.allImages.forEach(resource => {
+      if (resource.regions) {
+        resource.regions.forEach(region => {
+          (resource.images || []).forEach(imageIri => {
+            updates.push({ imageIri, regionIri: region.regionIri, visible });
+          });
+        });
+      }
+    });
+    const newImages = this.updateRegionVisibilityState(updates);
+
+    const windows = this.miradorInstance.viewer.workspace.windows;
+    for (const window of windows) {
+      const layer = this.getAnnotationLayer(window);
+      const shapesMap = this.getAnnotationShapesMap(layer);
+
+      if (shapesMap) {
+        Object.keys(shapesMap).forEach(key => {
+          const shapes = shapesMap[key];
+          if (shapes) {
+            shapes.forEach(shape => {
+              this.applyShapeVisibility(shape, visible);
+            });
+          }
+        });
+        this.redrawAndSyncAnnotationLayer(layer);
+      }
+    }
+
+    return newImages;
+  }
+
+  private toggleRegionVisibility = (imageIri: string, regionIri: string): IiifManifestResource[] => {
+    const current = this.resolveRegionVisibility(imageIri, regionIri);
+    return this.setRegionVisibility(imageIri, regionIri, !current);
+  }
+
+  private toggleRegionsVisibility(regionIris: string[]): IiifManifestResource[] {
+    const wantedRegionIris = Array.from(new Set((regionIris || []).filter(Boolean)));
+    const updates: Array<{ imageIri: string, regionIri: string, visible: boolean }> = [];
+    const resourceIriByImage = new Map<string, string>();
+    const seenTargets = new Set<string>();
+    const windows = this.miradorInstance.viewer.workspace.windows;
+
+    // Use the component state as the source of truth for current region visibility.
+    // ToggleRegionsEvent only provides region IRIs, so batch toggling must derive the
+    // current visibility from allImages[*].regions[*].visibility rather than from the
+    // viewer or ad-hoc image resolution.
+    this.state.allImages.forEach(resource => {
+      const resourceImages = resource.images || [];
+      const resourceRegions = resource.regions || [];
+
+      resourceRegions.forEach(region => {
+        if (!wantedRegionIris.includes(region.regionIri)) return;
+
+        resourceImages.forEach(imageIri => {
+          const key = `${imageIri}::${region.regionIri}`;
+          if (seenTargets.has(key)) return;
+          seenTargets.add(key);
+          resourceIriByImage.set(imageIri, resource.resourceIri);
+          updates.push({ imageIri, regionIri: region.regionIri, visible: !region.visibility });
+        });
+      });
+    });
+
+    // Backward-compatible fallback: if a selected region is not present in allImages yet,
+    // try to resolve it from the current viewer state.
+    wantedRegionIris.forEach(regionIri => {
+      const alreadyPlanned = updates.some(update => update.regionIri === regionIri);
+      if (alreadyPlanned) return;
+
+      const imageIri = this.resolveImageIriForRegion(regionIri);
+      if (!imageIri) return;
+
+      const key = `${imageIri}::${regionIri}`;
+      if (seenTargets.has(key)) return;
+      seenTargets.add(key);
+      updates.push({ imageIri, regionIri, visible: !this.resolveRegionVisibility(imageIri, regionIri) });
+    });
+
+    updates.forEach(({ imageIri, regionIri, visible }) => {
+      for (const window of windows) {
+        this.setRegionVisibilityInWindow(window, imageIri, regionIri, visible);
+      }
+    });
+
+    const newImages = this.updateRegionVisibilityState(updates, (committedImages) => {
+      updates.forEach(({ imageIri, regionIri, visible }) => {
+        this.triggerRegionVisibilityChangedEvent({
+          imageIri,
+          regionIri,
+          visible,
+          resourceIri: resourceIriByImage.get(imageIri) || this.findResourceIriForImage(imageIri),
+        });
+      });
+
+      this.triggerManifestUpdatedEvent(committedImages);
+    });
+
+    return newImages;
+  }
+
+  private setRegionVisibilityInWindow = (window: Mirador.Window, imageIri: string, regionIri: string, visible: boolean) => {
+    if (!window || window.canvasID !== imageIri) return;
+
+    const layer = this.getAnnotationLayer(window);
+    const shapesMap = this.getAnnotationShapesMap(layer);
+
+    if (!shapesMap) return;
+
+    const shapes = shapesMap[regionIri];
+    if (shapes) {
+      shapes.forEach(shape => {
+        this.applyShapeVisibility(shape, visible);
+      });
+      this.redrawAndSyncAnnotationLayer(layer);
+    }
+  }
+
+  private toggleAllRegionsVisibility = (): IiifManifestResource[] => {
+    const updates = [];
+    this.state.allImages.forEach(resource => {
+      if (resource.regions) {
+        resource.regions.forEach(region => {
+          (resource.images || []).forEach(imageIri => {
+            updates.push({ imageIri, regionIri: region.regionIri, visible: !region.visibility });
+          });
+        });
+      }
+    });
+    const newImages = this.updateRegionVisibilityState(updates);
+
+    const windows = this.miradorInstance.viewer.workspace.windows;
+    for (const window of windows) {
+      const layer = this.getAnnotationLayer(window);
+      const shapesMap = this.getAnnotationShapesMap(layer);
+
+      if (shapesMap) {
+        Object.keys(shapesMap).forEach(key => {
+          const shapes = shapesMap[key];
+          if (shapes) {
+            shapes.forEach(shape => {
+              const currentlyVisible = !(shape.visible === false || shape._visible === false);
+              this.applyShapeVisibility(shape, !currentlyVisible);
+            });
+          }
+        });
+        this.redrawAndSyncAnnotationLayer(layer);
+      }
+    }
+
+    return newImages;
+  }
 }
 
 class AnnotationEndpointProxy implements AnnotationEndpoint {
@@ -645,7 +1289,37 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
     private onCreated: (regionIri: Rdf.Iri, oa: OARegionAnnotation) => void,
     private onUpdated: (regionIri: Rdf.Iri, oa: OARegionAnnotation) => void,
     private onRemoved: (regionIri: Rdf.Iri, oa: OARegionAnnotation) => void,
+    private resolveSemanticModeForCanvas?: (canvasId?: string | null) => SemanticAnnotationMode | undefined,
+    private annotationDataContext?: any,
   ) {}
+
+  private getCanvasIdFromAnnotation = (annotation: OARegionAnnotation): string | undefined => {
+    const target = annotation?.on?.[0] as any;
+    return target?.full || target?.['@id'] || target?.source || undefined;
+  }
+
+  private applySemanticModeToAnnotation = (annotation: OARegionAnnotation, mode?: SemanticAnnotationMode) => {
+    if (!mode) {
+      return;
+    }
+
+    const annotationWithSemanticMode = annotation as any;
+    annotationWithSemanticMode.semanticMode = mode.id;
+    annotationWithSemanticMode.semanticModeLabel = mode.label;
+    annotationWithSemanticMode.representsResourcesOfType = mode.iri;
+    annotationWithSemanticMode.representsResourcesOfP2Type = mode?.p2TypeIri;
+
+    const resources = Array.isArray(annotationWithSemanticMode.resource)
+      ? annotationWithSemanticMode.resource
+      : (annotationWithSemanticMode.resource ? [annotationWithSemanticMode.resource] : []);
+
+    resources.forEach((resource: any) => {
+      if (resource && typeof resource === 'object') {
+        resource.semanticMode = mode.id;
+        resource.semanticModeLabel = mode.label;
+      }
+    });
+  }
 
   init = this.endpoint.init ? () =>  {
     this.endpoint.init();
@@ -656,6 +1330,16 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
   }
 
   create(annotation: OARegionAnnotation) {
+    const canvasId = this.getCanvasIdFromAnnotation(annotation);
+    const semanticMode = this.resolveSemanticModeForCanvas ? this.resolveSemanticModeForCanvas(canvasId) : undefined;
+    this.applySemanticModeToAnnotation(annotation, semanticMode);
+
+    if (this.annotationDataContext) {
+      annotation.annotationDataContext = this.annotationDataContext;
+      annotation.annotationDataContext["semanticMode"] = semanticMode["id"];
+      annotation.annotationDataContext["semanticModeLabel"] = semanticMode["label"];
+    }
+
     return this.endpoint.create(annotation)
       .onValue(regionIri => this.onCreated(regionIri, annotation));
   }

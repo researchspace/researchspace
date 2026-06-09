@@ -25,15 +25,35 @@ export interface IconProps extends HTMLAttributes<HTMLElement> {
   symbol?: boolean; // set to true if you want to use Material symbol instead of Material icon
   iconName: string;
   iconType: string;
+  toggledIconName?: string;
 }
 
-export class Icon extends React.Component<IconProps> {
+interface IconState {
+  toggled: boolean;
+}
+
+export class Icon extends React.Component<IconProps, IconState> {
+  constructor(props: IconProps) {
+    super(props);
+    this.state = { toggled: false };
+  }
+
+  handleClick = (e: React.MouseEvent<HTMLElement>) => {
+    if (this.props.toggledIconName) {
+      this.setState(prevState => ({ toggled: !prevState.toggled }));
+    }
+    if (this.props.onClick) {
+      this.props.onClick(e);
+    }
+  }
+
   render() {
-    const {symbol, iconName, iconType, className, ...iconProps} = this.props
+    const {symbol, iconName, iconType, className, toggledIconName, onClick, ...iconProps} = this.props
+    const currentIconName = (this.state.toggled && toggledIconName) ? toggledIconName : iconName;
     const CLASS_NAME = symbol ? 'material-symbols-' : 'material-icons-';
     const controlClass = classnames(`${CLASS_NAME}${iconType}`, className);
     return (
-        <i className={`${controlClass}`} {...iconProps} aria-hidden="true">{iconName}</i>
+        <i className={`${controlClass}`} onClick={this.handleClick} {...iconProps} aria-hidden="true">{currentIconName}</i>
     );
   }
 }

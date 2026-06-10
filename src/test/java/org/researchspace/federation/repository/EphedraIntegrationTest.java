@@ -1713,4 +1713,107 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         verify(getRequestedFor(urlPathEqualTo("/public/collection/v1/search"))
             .withQueryParam("q", equalTo("outer-scope-test")));
     }
+
+    /**
+     * The single-query pattern used by the import templates: a REST service
+     * member provides the result rows, a SPARQL repository member enriches them
+     * via OPTIONAL SERVICE, and multi-valued enrichment is collapsed with a
+     * top-level SAMPLE aggregation. Rows without enrichment must survive.
+     */
+    @Test
+    public void testRestServiceJoinedWithOptionalSparqlEnrichment() throws Exception {
+        stubFor(get(urlPathEqualTo("/service-a"))
+            .withQueryParam("id", equalTo("1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"name\": \"Alice\" }")));
+        stubFor(get(urlPathEqualTo("/service-a"))
+            .withQueryParam("id", equalTo("2"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"name\": \"Bob\" }")));
+
+        // SPARQL member knows two images for Alice and none for Bob. A real
+        // endpoint filters by the bindings sent with the request, so the stubs
+        // must honor that contract: queries mentioning only Bob get an empty
+        // result. (Stubs are matched newest-first, so a query mentioning both
+        // names gets the Alice rows — correct, as Bob has no data.)
+        String aliceJsonResponse =
+            "{" +
+            "  \"head\": { \"vars\": [\"depicted\", \"img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"depicted\": { \"type\": \"uri\", \"value\": \"http://example.org/person-by-name/Alice\" }," +
+            "        \"img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/alice-1.jpg\" } }," +
+            "      { \"depicted\": { \"type\": \"uri\", \"value\": \"http://example.org/person-by-name/Alice\" }," +
+            "        \"img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/alice-2.jpg\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        String emptyJsonResponse =
+            "{ \"head\": { \"vars\": [\"name\", \"img\"] }, \"results\": { \"bindings\": [] } }";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(emptyJsonResponse)));
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .withRequestBody(containing("Alice"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(aliceJsonResponse)));
+
+        Repository defaultRepo = repositoryManager.getDefault();
+        try (var conn = defaultRepo.getConnection()) {
+            var vf = SimpleValueFactory.getInstance();
+            conn.add(vf.createStatement(vf.createIRI("http://example.org/person/1"),
+                vf.createIRI("http://example.org/ns#hasId"), vf.createLiteral("1")));
+            conn.add(vf.createStatement(vf.createIRI("http://example.org/person/2"),
+                vf.createIRI("http://example.org/ns#hasId"), vf.createLiteral("2")));
+        }
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#> " +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+            "SELECT ?id ?name (SAMPLE(?img) AS ?image) WHERE { " +
+            "  ?person ex:hasId ?id . " +
+            "  ephedra:Prior ephedra:executeFirst \"true\"^^xsd:boolean . " +
+            "  SERVICE <http://example.org/ns#ServiceA> { " +
+            "    ?person ex:hasId ?id . " +
+            "    ?person ex:hasName ?name . " +
+            "  } " +
+            "  OPTIONAL { " +
+            "    BIND(IRI(CONCAT(\"http://example.org/person-by-name/\", ?name)) AS ?depicted) " +
+            "    FILTER(BOUND(?depicted)) " +
+            "    SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "      OPTIONAL { ?depicted ex:img ?img . } " +
+            "    } " +
+            "  } " +
+            "} GROUP BY ?id ?name";
+
+        var imageByName = new java.util.HashMap<String, String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    assertNotNull("name must be bound", bs.getValue("name"));
+                    imageByName.put(bs.getValue("name").stringValue(),
+                        bs.getValue("image") == null ? null : bs.getValue("image").stringValue());
+                }
+            }
+        }
+
+        assertEquals("One row per REST result is expected", 2, imageByName.size());
+        assertNotNull("Alice must be enriched with a sampled image", imageByName.get("Alice"));
+        assertTrue(imageByName.get("Alice").startsWith("http://example.org/img/alice-"));
+        assertTrue("Bob must survive the OPTIONAL without enrichment", imageByName.containsKey("Bob"));
+        assertNull("Bob has no image", imageByName.get("Bob"));
+    }
 }

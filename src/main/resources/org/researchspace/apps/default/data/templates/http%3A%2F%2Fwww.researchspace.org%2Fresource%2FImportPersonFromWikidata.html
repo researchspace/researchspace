@@ -31,11 +31,19 @@
     <div style="margin-top: 25px;">
       <semantic-search-result>
         <div class="wikipediaResultsTable">
+          <!-- The QLever Wikidata mirror also holds the wdt:P18 images, so the
+               whole table is served by this single query. -->
           <semantic-context repository='qlever-freiburg-wikidata'>
             <semantic-table id='semantic-search-result-table'
-                            query='SELECT DISTINCT ?subject ?person_label ?date_of_birth ?str ?year ?month ?day  WHERE {
+                            query='PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                   SELECT ?subject ?person_label ?date_of_birth ?str ?year ?month ?day
+                                          (SAMPLE(?_image) AS ?image)
+                                   WHERE {
                                     BIND(?subject as ?iri) .
-                                  } ORDER BY ?subject'
+                                    OPTIONAL { ?subject wdt:P18 ?_image . }
+                                  }
+                                  GROUP BY ?subject ?person_label ?date_of_birth ?str ?year ?month ?day
+                                  ORDER BY ?subject'
 
                             options='{"showFilter":true, "resultsPerPage":10}' 
                             column-configuration='[
@@ -69,43 +77,17 @@
               </template>
 
               <template id='images'>
-               <semantic-context repository='default'>
-                      <semantic-query query='
-                                        PREFIX wikibase: <http://wikiba.se/ontology#>
-                                        PREFIX bd: <http://www.bigdata.com/rdf#>
-                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
-                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                                        PREFIX wd: <http://www.wikidata.org/entity/>
-                                        PREFIX schema: <http://schema.org/>
+                <div>
+                  {{#if image.value}}
+                    <a href="{{image.value}}"
+                      title="{{image.value}}"
+                      target="_blank">
 
-                                        SELECT (SAMPLE(?_image) AS ?image) WHERE { 
-                                          SERVICE <https://query.wikidata.org/sparql> {  
-                                            BIND(IRI("{{subject.value}}") AS ?wikidataResourceURI) .
-                                            ?wikidataResourceURI wdt:P18 ?_image .
-                                          }
-                                        } LIMIT 1'
-
-                                        template='{{> image}}'
-                                        >
-                                          <template id='image'>
-                                            <div>
-                                              <a href="[[decodeUriComponent '{{bindings.0.image.value}}']]"
-                                                title="[[decodeUriComponent '{{bindings.0.image.value}}']]"
-                                                target="_blank">
-                                                
-                                                <img src="[[decodeUriComponent '{{bindings.0.image.value}}']]" 
-                                                    width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
-                                              </a>
-                                         [[!--   <mp-copy-to-clipboard text='{{bindings.0.image.value}}' message='Image IRI has been copied'> 
-                                                <div>
-                                                    <rs-icon icon-type="rounded" icon-name="content_copy" class="icon-left" symbol="true"></rs-icon>
-                                                    <span>Copy IRI</span>  
-                                                </div>                                          
-                                            </mp-copy-to-clipboard> --]]
-                                            </div>
-                                          </template>
-                                        </semantic-query>
-                    </semantic-context>
+                      <img src="{{image.value}}"
+                          width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
+                    </a>
+                  {{/if}}
+                </div>
               </template>
               
               <template id='actions'>

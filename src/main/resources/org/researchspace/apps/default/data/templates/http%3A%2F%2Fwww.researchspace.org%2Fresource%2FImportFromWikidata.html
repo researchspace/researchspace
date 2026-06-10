@@ -7,13 +7,15 @@
                                   debounce=500
                                   debounce=500
                                   query='PREFIX wikidataentity: <http://www.researchspace.org/resource/system/service/wikidataentity/>
-                                          SELECT ?subject WHERE { 
-                                            ?subject wikidataentity:search ?__token__ .
-                                            ?subject wikidataentity:language "en" .
-                                            ?subject wikidataentity:id ?wikidataId .
-                                            ?subject wikidataentity:concepturi ?concepturi .
-                                            ?subject wikidataentity:label ?wikidataEntityLabel .
-                                            ?subject wikidataentity:description ?description_original .
+                                          SELECT ?subject WHERE {
+                                            SERVICE wikidataentity:WikidataEntity {
+                                              ?subject wikidataentity:search ?__token__ .
+                                              ?subject wikidataentity:language "en" .
+                                              ?subject wikidataentity:id ?wikidataId .
+                                              ?subject wikidataentity:concepturi ?concepturi .
+                                              ?subject wikidataentity:label ?wikidataEntityLabel .
+                                              ?subject wikidataentity:description ?description_original .
+                                            }
                                             BIND(REPLACE(?description_original,"\"","") as ?description)
                                           }'
   ></semantic-search-query-keyword>
@@ -22,11 +24,39 @@
     <div style="margin-top: 25px;">
       <semantic-search-result>
         <div class="wikipediaResultsTable">
-          <semantic-context repository='wikidata-entity'>
+          <!-- A single federated query provides all row data: the entity search
+               results (injected from the keyword query above) are enriched with
+               type label, image and the domain check from the wikidata-sparql
+               federation member in one batched call. -->
+          <semantic-context repository='ephedra'>
             <semantic-table id='semantic-search-result-table'
-                            query='SELECT DISTINCT ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi WHERE {
+                            query='PREFIX wd: <http://www.wikidata.org/entity/>
+                                   PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                   PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                                   SELECT ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi
+                                          (SAMPLE(?_typeLabel) AS ?typeLabel)
+                                          (SAMPLE(?_image) AS ?image)
+                                          (SAMPLE(?_matchesDomain) AS ?matchesDomain)
+                                   WHERE {
                                     BIND(?subject as ?iri) .
-                                  } ORDER BY ?subject'
+                                    OPTIONAL {
+                                      BIND(IRI(CONCAT(STR(wd:), ?wikidataId)) AS ?wikidataEntity)
+                                      FILTER(BOUND(?wikidataEntity))
+                                      SERVICE <http://www.researchspace.org/resource/system/repository/federation#wikidata-sparql> {
+                                        OPTIONAL { ?wikidataEntity wdt:P31 ?_type . ?_type rdfs:label ?_typeLabel . FILTER(LANG(?_typeLabel) = "en") }
+                                        OPTIONAL { ?wikidataEntity wdt:P18 ?_image . }
+                                        {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
+                                          OPTIONAL { ?wikidataEntity wdt:P31 wd:Q5 . BIND(true AS ?_matchesDomain) }
+                                        {{else if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E74_Group")}}
+                                          OPTIONAL { ?wikidataEntity wdt:P31 ?_group . ?_group wdt:P279 wd:Q16334295 . BIND(true AS ?_matchesDomain) }
+                                        {{else}}
+                                          OPTIONAL { ?wikidataEntity wdt:P31 ?_anyType . BIND(true AS ?_matchesDomain) }
+                                        {{/if}}
+                                      }
+                                    }
+                                  }
+                                  GROUP BY ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi
+                                  ORDER BY ?subject'
 
                             options='{"showFilter":true, "resultsPerPage":10}' 
                             column-configuration='[
@@ -61,106 +91,31 @@
 
               <template id='type'>
                 <div>
-                  {{#if wikidataId.value}} 
-                    <semantic-context repository='default'>
-                      <semantic-query query='
-                                        PREFIX wikibase: <http://wikiba.se/ontology#>
-                                        PREFIX bd: <http://www.bigdata.com/rdf#>
-                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
-                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                                        PREFIX wd: <http://www.wikidata.org/entity/>
-                                        
-                                        SELECT ?typeLabel WHERE { 
-                                          BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?wikidataEntity) .
-                                          SERVICE <https://query.wikidata.org/sparql> {  
-                                              ?wikidataEntity wdt:P31 ?type .
-                                            SERVICE wikibase:label { 
-                                              bd:serviceParam wikibase:language "en".
-                                              ?type rdfs:label ?typeLabel .                                      
-                                            }
-                                          } 
-                                        }'
-                                      
-                          template='{{> template}}'
-                          no-result-template='{{> noResults}}'>
-
-                          <template id='template'>
-                              <strong>{{bindings.0.typeLabel.value}}</strong>
-                          </template>
-                          <template id='noResults'>
-                            <div></div>
-                          </template>
-                      </semantic-query>
-                    </semantic-context>
+                  {{#if typeLabel.value}}
+                    <strong>{{typeLabel.value}}</strong>
                   {{/if}}
                 </div>
               </template>
 
               <template id='images'>
                 <div>
-                  {{#if wikidataId.value}}
-                    <semantic-context repository='default'>
-                      <semantic-query query='
-                                        PREFIX wikibase: <http://wikiba.se/ontology#>
-                                        PREFIX bd: <http://www.bigdata.com/rdf#>
-                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
-                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                                        PREFIX wd: <http://www.wikidata.org/entity/>
-                                        PREFIX schema: <http://schema.org/>
+                  {{#if image.value}}
+                    <a href="{{image.value}}"
+                      title="{{image.value}}"
+                      target="_blank">
 
-                                        SELECT (SAMPLE(?_image) AS ?image) WHERE { 
-                                          SERVICE <https://query.wikidata.org/sparql> {  
-                                            BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?wikidataResourceURI) .
-                                            ?wikidataResourceURI wdt:P18 ?_image .
-                                          }
-                                        } LIMIT 1'
-
-                                        template='{{> image}}'
-                                        >
-                                          <template id='image'>
-                                            <div>
-                                              <a href="[[decodeUriComponent '{{bindings.0.image.value}}']]"
-                                                title="[[decodeUriComponent '{{bindings.0.image.value}}']]"
-                                                target="_blank">
-                                                
-                                                <img src="[[decodeUriComponent '{{bindings.0.image.value}}']]" 
-                                                    width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
-                                              </a>
-                                            </div>
-                                          </template>
-                                        </semantic-query>
-                    </semantic-context>
+                      <img src="{{image.value}}"
+                          width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
+                    </a>
                   {{/if}}
                 </div>
               </template>
-              
+
               <template id='actions'>
                 <div>
-                  {{#if wikidataId.value}} 
+                  {{#if matchesDomain.value}}
                     <semantic-context repository='default'>
-                      <semantic-if query='PREFIX wikibase: <http://wikiba.se/ontology#>
-                                          PREFIX bd: <http://www.bigdata.com/rdf#>
-                                          PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
-                                          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                                          PREFIX wd: <http://www.wikidata.org/entity/>
-                      
-                                          ASK { 
-                                            SERVICE <https://query.wikidata.org/sparql> { 
-                                              {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
-                                                <{{concepturi.value}}> wdt:P31 wd:Q5 .
-                                              {{else if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E74_Group")}}
-                                                <{{concepturi.value}}> wdt:P31 ?group .
-                                                ?group wdt:P279 wd:Q16334295 .
-                                              {{else}}
-                                                <{{concepturi.value}}> wdt:P31 ?type .
-                                              {{/if}}
-                                            }
-                                          }'
-
-                                    then='{{> then}}'>
-
-                        <template id='then'> 
-                          <div> 
+                          <div>
                             <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
                               <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
                                                 type='apiResourceImportInModal' 
@@ -214,9 +169,6 @@
                               </semantic-query>
                             </div>
                           </div>
-                        </template>
-                      </semantic-if>
-
                     </semantic-context>
                   {{/if}}
                 </div>

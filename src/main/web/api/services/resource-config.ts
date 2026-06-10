@@ -58,6 +58,8 @@ CONSTRUCT {
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_description> ?resourceDescription .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplateIRI .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type> ?resourceDefaultSearchViewType .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?resourceOrderPattern .
@@ -90,6 +92,14 @@ CONSTRUCT {
   }
   
   OPTIONAL {
+    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplateIRI .
+  }
+
+  OPTIONAL {
+    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type> ?resourceDefaultSearchViewType .
+  }
+
+  OPTIONAL {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
   }
 
@@ -112,7 +122,7 @@ CONSTRUCT {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?resourceSearchKPCategory .
   }
   OPTIONAL {
-    ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> .
+    ?resourceConfiguration <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> .
     BIND(true as ?systemConfig)
   }
   OPTIONAL {
@@ -122,7 +132,7 @@ CONSTRUCT {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?displayInFinder.
   }
   OPTIONAL { 
-    ?navigationMenuItem crm:P67_refers_to ?resourceConfiguration ;
+    ?navigationMenuItem <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> ?resourceConfiguration ;
         a <http://www.researchspace.org/resource/system/FinderNavigationItem> .
   }
 } 
@@ -156,6 +166,12 @@ CONSTRUCT {
         const resourceFormIRI =
           Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_form')], pg).map(l => l.value).getOrElse(undefined);
         
+        const resourceVisualisationTemplateIRI =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation')], pg).map(l => l.value).getOrElse(undefined);
+
+        const resourceDefaultSearchViewType =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type')], pg).map(l => l.value).getOrElse(undefined);
+          
         const resourceMembershipProperty =
           Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property')], pg).map(l => l.value).getOrElse(undefined);
         
@@ -192,7 +208,8 @@ CONSTRUCT {
         return [
           configIri.value,
           {
-            resourceLabel, resourceOntologyClass, p2HasType, resourceDescription, restrictionPattern, resourceFormIRI, 
+            resourceLabel, resourceOntologyClass, p2HasType, resourceDescription, restrictionPattern, 
+            resourceFormIRI, resourceVisualisationTemplateIRI, resourceDefaultSearchViewType,      
             resourceMembershipProperty, resourceBroaderProperty, resourceOrderPattern, 
             resourceLabelPattern, resourceIcon, resourceSearchKPCategory, isSystemConfig, 
             listInAuthorityDocument, displayInFinder, hasResourceType, navigationMenuItem
@@ -240,7 +257,7 @@ function cacheGet(key: string, ttlMs: number): string | null {
     const entry = JSON.parse(raw) as CacheEntry;
     if (Date.now() - entry.timestamp > ttlMs) {
       storage.remove(key);
-      console.log(`Cache expired for key: ${key}`);
+      //console.log(`Cache expired for key: ${key}`);
       return null;
     }
     return entry.value;
@@ -261,7 +278,7 @@ export function getResourceConfiguration(
   // 1) Try TTL-checked cache
   const cached = cacheGet(hash.toString(), TTL_MS);
   if (cached !== null) {
-   console.log('Returning cached configuration for', cached+" "+iri.value);
+   //console.log('Returning cached configuration for', cached+" "+iri.value);
    return cached;
   }
 

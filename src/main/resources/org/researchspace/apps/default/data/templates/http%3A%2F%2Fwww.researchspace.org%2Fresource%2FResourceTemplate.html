@@ -4,33 +4,14 @@
     padding-top: 0;
   }
 </style>
+{{#bind viewId=dashboardId}}
 <div class="page page-local-overwrite">
-    [[> rsp:ResourceContent]]
+    [[> rsp:ResourceContent iri=(urlParam "resourceIri") config="{{(getResourceConfigurationValue iri 'resourceconfig')}}" resourceLabel="{{(getResourceConfigurationValue iri 'resourcelabel')}}"]]
 </div>
-
+{{/bind}}
 [[else]]
-[[!-- Breadcrumb --]]
-<ol class="page-breadcrumb">
-    <li>
-        <mp-link title="Home" url="/">Home</mp-link>
-    </li>
-  
-   [[#block "activeBreadcrumb"]]
-   <with-types iri='[[this]]'
-        template='{{> template}}'
-        [[> rsp:TypeMappings]]
-    >
-        <template id='template'>
-            <li class="active"> 
-                {{directTypesLabels}}: <mp-label iri='[[this]]'></mp-label>
-            </li>
-        </template>
-   </with-types>
-   [[/block]]
-</ol>
-
 [[!-- Resource Page --]]
 <div class="page">
-  [[> rsp:ResourceContent]]
+  [[> rsp:ResourceContent iri=(urlParam "uri") config="{{(getResourceConfigurationValue iri 'resourceconfig')}}" resourceLabel="{{(getResourceConfigurationValue iri 'resourcelabel')}}"]]
 </div>
 [[/if]]

@@ -12,6 +12,7 @@
                                               ?subject osm:display_name ?placeName.
                                               ?subject osm:geotext ?geoText.
                                               ?subject osm:wikidata ?wikidataId .
+                                              ?subject osm:ordinal ?ordinal .
                                             }
                                           }'
   ></semantic-search-query-keyword>
@@ -31,7 +32,7 @@
                                    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
                                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                                    PREFIX schema: <http://schema.org/>
-                                   SELECT ?subject ?placeName ?wikidataId ?geoText ?osmPlaceURI
+                                   SELECT ?subject ?placeName ?wikidataId ?geoText ?osmPlaceURI ?ordinal
                                           (SAMPLE(?_placeLabel) AS ?placeLabel)
                                           (SAMPLE(?_placeDescription) AS ?placeDescription)
                                           (SAMPLE(?_placeImage) AS ?placeImage)
@@ -47,8 +48,8 @@
                                        }
                                      }
                                    }
-                                   GROUP BY ?subject ?placeName ?wikidataId ?geoText ?osmPlaceURI
-                                   ORDER BY ?subject'
+                                   GROUP BY ?subject ?placeName ?wikidataId ?geoText ?osmPlaceURI ?ordinal
+                                   ORDER BY ?ordinal'
 
                             options='{"showFilter":false, "resultsPerPage":4}'
                             column-configuration='[

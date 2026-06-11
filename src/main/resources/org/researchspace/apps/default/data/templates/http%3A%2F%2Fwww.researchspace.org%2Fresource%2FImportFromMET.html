@@ -7,10 +7,10 @@
                                   debounce=500
                                   debounce=500
                                   query='PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
-                                         SELECT ?subject ?objectid WHERE { 
+                                         SELECT ?subject ?objectid WHERE {
                                            service met:METCollectionSearchService {
                                              ?subject met:q ?__token__ .
-                                             ?subject met:objectIDs ?objectid.                                                                                       
+                                             ?subject met:objectIDs ?objectid.
                                            }
                                          }'
   ></semantic-search-query-keyword>
@@ -20,12 +20,22 @@
       <semantic-search-result>
         <div class="METapiResultsTable">
           <semantic-context repository='ephedra'>
+            <!-- IMPORTANT: no ORDER BY here. The MET search returns the FULL
+                 list of matching object ids (thousands for broad terms, no
+                 pagination) and every row costs one HTTP call to the
+                 per-object details API. LIMIT keeps that affordable only
+                 because the REST join is lazy - an ORDER BY would have to
+                 consume ALL rows before sorting, firing a details request for
+                 every single search hit (and getting the server briefly
+                 banned by the MET WAF). The lazy join preserves the search
+                 response order and DISTINCT is streaming, so rows already
+                 arrive in API relevance order. -->
             <semantic-table id='semantic-search-result-table'
                             query='prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
-                                   SELECT DISTINCT ?subject ?id ?name ?title ?objectType ?primaryImageSmall ?accessionNumber ?artistName ?artistRole  WHERE {
+                                   SELECT DISTINCT ?subject ?id ?name ?title ?objectType ?primaryImageSmall ?accessionNumber ?artistName ?artistRole WHERE {
                                     BIND(?objectid as ?id)
                                     BIND(?subject as ?iri) .
-                                    service met:METObjectDescriptionService {                                           
+                                    service met:METObjectDescriptionService {
                                         ?subject met:objectid ?id .
                                         ?subject met:objectName ?objectType .
                                         ?subject met:title ?rawTitle .
@@ -89,30 +99,19 @@
             <template id='actions'>
               <div> 
                 <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
-                  <semantic-context repository='default'>
-                    <semantic-query query='SELECT DISTINCT ?MetResourceURI WHERE {
-                                            BIND(IRI(CONCAT("https://www.metmuseum.org/art/collection/search/", STR({{id.value}}))) AS ?MetResourceURI)
+                  <mp-event-trigger id='{{viewId}}-select-api-resource-trigger'
+                                    type='apiResourceImportInModal'
+                                    data='{"apiResourceURI": "https://www.metmuseum.org/art/collection/search/{{id.value}}",
+                                            "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}",
+                                            "apiResourceMuseumId": "{{accessionNumber.value}}",
+                                            "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/accession_number",
+                                            "apiResourceSystemId": "{{id.value}}",
+                                            "apiResourceArtistName": "{{artistName.value}}",
+                                            "apiResourceArtistRole": "{{artistRole.value}}"
                                           }'
-                                          
-                                    template='{{> template}}'>
-                            
-                      <template id='template'>
-                        <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
-                                          type='apiResourceImportInModal' 
-                                          data='{"apiResourceURI": "{{bindings.0.MetResourceURI.value}}", 
-                                                  "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}", 
-                                                  "apiResourceMuseumId": "{{accessionNumber.value}}",
-                                                  "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/accession_number", 
-                                                  "apiResourceSystemId": "{{id.value}}",
-                                                  "apiResourceArtistName": "{{artistName.value}}",
-                                                  "apiResourceArtistRole": "{{artistRole.value}}"
-                                                }' 
-                                    >
-                          <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
-                        </mp-event-trigger>
-                      </template>
-                    </semantic-query>
-                  </semantic-context>
+                              >
+                    <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
+                  </mp-event-trigger>
 
                   <semantic-context repository='default'>
                     

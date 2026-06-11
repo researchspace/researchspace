@@ -19,12 +19,20 @@
 
 package org.researchspace.repository.sparql;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.http.HttpConnection;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.http.client.SharedHttpClientSessionManager;
 import org.researchspace.config.Configuration;
 
@@ -35,6 +43,39 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  *
  */
 public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionManager {
+
+    private static final Logger logger = LogManager.getLogger(MpSharedHttpClientSessionManager.class);
+
+    /**
+     * Closes stale pooled connections and retries the request once. Servers and
+     * load balancers close idle keep-alive connections; reusing one surfaces as
+     * NoHttpResponseException ("failed to respond") even though the request was
+     * never processed. Mirrors rdf4j's SharedHttpClientSessionManager.RetryHandlerStale,
+     * which our custom HttpClientBuilder otherwise replaces.
+     */
+    private static class RetryHandlerStale implements HttpRequestRetryHandler {
+        @Override
+        public boolean retryRequest(IOException ioe, int count, HttpContext context) {
+            if (count > 1) {
+                return false;
+            }
+            HttpConnection conn = HttpClientContext.adapt(context).getConnection();
+            if (conn != null) {
+                synchronized (this) {
+                    if (conn.isStale()) {
+                        try {
+                            logger.warn("Closing stale connection");
+                            conn.close();
+                            return true;
+                        } catch (IOException e) {
+                            logger.error("Error closing stale connection", e);
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+    }
 
     private final ExecutorService executor;
     private final Configuration config;
@@ -55,9 +96,25 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
 
         RequestConfig requestConfig = configBuilder.build();
         String userAgent = this.config.getEnvironmentConfig().getHttpUserAgent();
-        HttpClientBuilder mpHttpClientBuilder = HttpClientBuilder.create().setMaxConnPerRoute(maxConnections)
-                .setMaxConnTotal(maxConnections).setDefaultRequestConfig(requestConfig)
-                .setUserAgent(userAgent);
+
+        // Remote endpoints and load balancers close idle keep-alive connections;
+        // without revalidation a pooled connection that died while idle surfaces
+        // as NoHttpResponseException ("failed to respond") on the next query.
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal(maxConnections);
+        connectionManager.setDefaultMaxPerRoute(maxConnections);
+        connectionManager.setValidateAfterInactivity(1000);
+
+        // Note: deliberately no evictExpiredConnections()/evictIdleConnections() —
+        // those spawn an IdleConnectionEvictor background thread that outlives
+        // webapp reloads (the servlet container kills the classloader, the thread
+        // then dies with NoClassDefFoundError). Connection staleness is fully
+        // handled by validateAfterInactivity + RetryHandlerStale above.
+        HttpClientBuilder mpHttpClientBuilder = HttpClientBuilder.create()
+                .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(requestConfig)
+                .setUserAgent(userAgent)
+                .setRetryHandler(new RetryHandlerStale());
 
         // Force POST for SPARQL queries to avoid HTTP 431 errors from servers
         // with low header size limits. SPARQLProtocolSession reads this system property.
@@ -73,5 +130,14 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
         session.setQueryURL(queryEndpointUrl);
         session.setUpdateURL(updateEndpointUrl);
         return session;
+    }
+
+    @Override
+    public void shutDown() {
+        // closes the HTTP client (and with it the connection pool)
+        super.shutDown();
+        // the background executor threads are non-daemon and would otherwise
+        // survive webapp reloads
+        executor.shutdownNow();
     }
 }

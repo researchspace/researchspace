@@ -442,6 +442,14 @@ public class RepositoryManager implements RepositoryManagerInterface {
         getAssetRepository().shutDown();
         initializedRepositories.clear();
 
+        // close the shared HTTP client and its executor threads, otherwise they
+        // survive webapp reloads
+        try {
+            this.client.shutDown();
+        } catch (Throwable t) {
+            logger.warn("Error while shutting down the HTTP client session manager: {}", t.getMessage());
+        }
+
         if (unregisterShutdownHook) {
             // unregister shutdown hook as everything is done
             removeShutdownHook(hookReference.get());

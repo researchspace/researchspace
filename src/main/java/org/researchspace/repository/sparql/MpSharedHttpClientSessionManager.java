@@ -47,16 +47,20 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
     private static final Logger logger = LogManager.getLogger(MpSharedHttpClientSessionManager.class);
 
     /**
-     * Closes stale pooled connections and retries the request once. Servers and
+     * Closes stale pooled connections and retries the request. Servers and
      * load balancers close idle keep-alive connections; reusing one surfaces as
      * NoHttpResponseException ("failed to respond") even though the request was
      * never processed. Mirrors rdf4j's SharedHttpClientSessionManager.RetryHandlerStale,
-     * which our custom HttpClientBuilder otherwise replaces.
+     * which our custom HttpClientBuilder otherwise replaces - but allows a few
+     * retries instead of one: after an endpoint restart the pool can hold
+     * SEVERAL stale connections (one per previously concurrent request), and
+     * each retry may lease the next stale one. Only stale connections are
+     * retried, so genuine failures still propagate immediately.
      */
     private static class RetryHandlerStale implements HttpRequestRetryHandler {
         @Override
         public boolean retryRequest(IOException ioe, int count, HttpContext context) {
-            if (count > 1) {
+            if (count > 3) {
                 return false;
             }
             HttpConnection conn = HttpClientContext.adapt(context).getConnection();

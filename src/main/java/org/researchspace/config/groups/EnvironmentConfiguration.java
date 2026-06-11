@@ -200,16 +200,21 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
      * When the full URL (endpoint + encoded query) exceeds this threshold,
      * the query is sent as POST with the query in the request body instead.
      *
-     * <p>Default is {@code 0}, which forces POST for all SPARQL queries.
-     * This avoids HTTP 431 "Request Header Fields Too Large" errors from servers
-     * with low header size limits (e.g. Jetty's default 8KB).</p>
+     * <p>Default is {@code 4083} (RDF4J's default, comfortably under Jetty's
+     * 8KB request-header limit): short queries are sent as GET and long ones
+     * as POST. GET is idempotent, so Apache HttpClient transparently retries a
+     * query that hit a keep-alive connection the server closed while idle -
+     * which is why short queries recover from idle connections without a
+     * visible lag.</p>
      *
-     * <p>Set to {@code 4083} to restore the RDF4J default behavior
-     * (GET for short queries, POST for long ones).</p>
+     * <p>Set to {@code 0} to force POST for <em>all</em> queries on servers
+     * with very small request-header limits (avoids HTTP 431 "Request Header
+     * Fields Too Large"); note this disables the transparent GET retry, so
+     * idle-closed connections then surface on the next query.</p>
      */
     @ConfigurationParameter
     public Integer getSparqlMaxUrlLength() {
-        return getInteger("sparqlMaxUrlLength", 0);
+        return getInteger("sparqlMaxUrlLength", 4083);
     }
 
     @ConfigurationParameter

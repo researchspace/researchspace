@@ -57,7 +57,7 @@ public class RestServiceErrorPropagationTest extends AbstractIntegrationTest {
 
         repositoryManager.reinitializeRepositories(
                 java.util.Arrays.asList("service-a", "service-b", "ephedra", "service-old", "ephedra-old",
-                        "met-search", "met-object", "sparql-repo"));
+                        "met-search", "met-object", "sparql-repo", "search-service"));
     }
 
     @Test

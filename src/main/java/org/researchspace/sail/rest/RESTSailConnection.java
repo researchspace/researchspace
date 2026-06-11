@@ -53,6 +53,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.Create;
@@ -191,8 +192,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
     logger.trace("### [START] Parsing JSONArray ###");
 
-    for (Object object : array) {
-      bindingSets.add(createBindingSetFromJSONObject(object, outputParameters));
+    for (int i = 0; i < array.size(); i++) {
+      bindingSets.add(createBindingSetFromJSONObject(array.get(i), outputParameters, i));
     }
 
     logger.trace("### [END] Parsing JSONArray");
@@ -210,7 +211,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
     logger.trace("### [START] Parsing JSONObject ###");
     List<BindingSet> bindingSets = Lists.newArrayList();
 
-    bindingSets.add(createBindingSetFromJSONObject(map, outputParameters));
+    bindingSets.add(createBindingSetFromJSONObject(map, outputParameters, 0));
 
     logger.trace("### [END] Parsing JSONObject ###");
     return bindingSets;
@@ -222,7 +223,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
    * @param outputParameters
    * @return
    */
-  private MapBindingSet createBindingSetFromJSONObject(Object object, Map<IRI, String> outputParameters) {
+  private MapBindingSet createBindingSetFromJSONObject(Object object, Map<IRI, String> outputParameters,
+      int rowIndex) {
     MapBindingSet mapBindingSet = new MapBindingSet();
 
     for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
@@ -232,6 +234,14 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
       Parameter parameter = getSail().getServiceDescriptor().getOutputParameters().get(parameterName);
 
       IRI type = parameter.getValueType();
+
+      if (parameter.isRowIndex()) {
+        IRI indexType = type != null ? type : XSD.INTEGER;
+        logger.trace("Creating row index Literal({},{})", rowIndex, indexType);
+        mapBindingSet.addBinding(outputParameter.getValue(), VF.createLiteral(String.valueOf(rowIndex), indexType));
+        continue;
+      }
+
       String jsonPath = parameter.getJsonPath();
       Object value = JsonPath.using(this.jsonPathConfig).parse(object).read(jsonPath);
       if (value != null) {

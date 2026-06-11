@@ -60,9 +60,9 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
 
         // Re-initialize Repositories to pick up new configs from ClassPathStorage
         repositoryManager.reinitializeRepositories(java.util.Arrays.asList(
-            "service-a", "service-b", "ephedra", 
+            "service-a", "service-b", "ephedra",
             "service-old", "ephedra-old",
-            "met-search", "met-object", "sparql-repo"));
+            "met-search", "met-object", "sparql-repo", "search-service"));
     }
 
     /**
@@ -1815,5 +1815,221 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         assertTrue(imageByName.get("Alice").startsWith("http://example.org/img/alice-"));
         assertTrue("Bob must survive the OPTIONAL without enrichment", imageByName.containsKey("Bob"));
         assertNull("Bob has no image", imageByName.get("Bob"));
+    }
+
+    /**
+     * The Wikidata import templates rely on a SERVICE clause nested INSIDE a
+     * federation member SERVICE clause (e.g. SERVICE wikibase:mwapi executed
+     * by query.wikidata.org). The federation must not try to resolve the
+     * inner SERVICE itself: the whole member body, including the nested
+     * SERVICE and any sibling patterns, has to be sent verbatim to the member
+     * endpoint in a single request, and the endpoint's row order has to be
+     * preserved (the templates sort by a relevance ordinal computed remotely).
+     */
+    @Test
+    public void testNestedServiceIsPassedThroughToSparqlMember() throws Exception {
+        String jsonResponse =
+            "{" +
+            "  \"head\": { \"vars\": [\"entity\", \"score\", \"img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"entity\": { \"type\": \"uri\", \"value\": \"http://example.org/entity/1\" }," +
+            "        \"score\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"0\" }," +
+            "        \"img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/1.jpg\" } }," +
+            "      { \"entity\": { \"type\": \"uri\", \"value\": \"http://example.org/entity/2\" }," +
+            "        \"score\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"1\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(jsonResponse)));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        // Mirrors the Wikidata import template: a magic-service SERVICE clause
+        // (like wikibase:mwapi) nested inside the member SERVICE, followed by
+        // a type-filter triple and OPTIONAL enrichment, all owned by the member.
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "SELECT ?entity ?score (SAMPLE(?img) AS ?image) WHERE { " +
+            "  SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "    SERVICE <http://example.org/magicsearch> { " +
+            "      ?entity ex:score ?score . " +
+            "    } " +
+            "    ?entity ex:type ex:Agent . " +
+            "    OPTIONAL { ?entity ex:img ?img . } " +
+            "  } " +
+            "} GROUP BY ?entity ?score ORDER BY ?score";
+
+        var entities = new java.util.ArrayList<String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    entities.add(tqr.next().getValue("entity").stringValue());
+                }
+            }
+        }
+
+        assertEquals(java.util.List.of(
+            "http://example.org/entity/1", "http://example.org/entity/2"), entities);
+
+        // Exactly one request: the federation must not evaluate the inner
+        // SERVICE itself or split the member body into per-pattern queries.
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
+        // ...and the nested SERVICE clause must arrive at the member verbatim
+        // ("magicsearch" survives the form-urlencoding of the query parameter).
+        wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("magicsearch")));
+        // The query prologue must be forwarded too, or prefixed names inside
+        // the member body (wdt:, wikibase:, mwapi:, ...) would not parse at
+        // the remote endpoint. WireMock returns canned results without parsing
+        // the query, so this has to be asserted explicitly.
+        wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("PREFIX")));
+    }
+
+    private void stubSearchServiceWithThreeOrderedHits() {
+        stubFor(get(urlPathEqualTo("/search-service"))
+            .withQueryParam("q", equalTo("leo"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"search\": [" +
+                    "{ \"entity\": \"http://example.org/entity/1\", \"name\": \"Alpha\" }," +
+                    "{ \"entity\": \"http://example.org/entity/2\", \"name\": \"Beta\" }," +
+                    "{ \"entity\": \"http://example.org/entity/3\", \"name\": \"Gamma\" } ] }")));
+    }
+
+    /**
+     * A search-style REST service returns its hits as an ordered JSON array
+     * (relevance ranking, like wbsearchentities). A descriptor column flagged
+     * with {@code ephedra:rowIndex true} must bind the 0-based array position,
+     * so that queries can ORDER BY it to restore the ranking after joins and
+     * GROUP BY (the federation join does not preserve row order).
+     */
+    @Test
+    public void testRestServiceOrdinalColumn() throws Exception {
+        stubSearchServiceWithThreeOrderedHits();
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "SELECT ?entity ?name ?ordinal WHERE { " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"leo\" . " +
+            "    ?res ex:hasEntity ?entity . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            "}";
+
+        var ordinalByName = new java.util.HashMap<String, Integer>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    assertTrue("entity must be minted as an IRI (rdfs:Resource column)",
+                        bs.getValue("entity") instanceof org.eclipse.rdf4j.model.IRI);
+                    assertNotNull("ordinal must be bound", bs.getValue("ordinal"));
+                    ordinalByName.put(bs.getValue("name").stringValue(),
+                        ((org.eclipse.rdf4j.model.Literal) bs.getValue("ordinal")).intValue());
+                }
+            }
+        }
+
+        assertEquals(3, ordinalByName.size());
+        assertEquals(Integer.valueOf(0), ordinalByName.get("Alpha"));
+        assertEquals(Integer.valueOf(1), ordinalByName.get("Beta"));
+        assertEquals(Integer.valueOf(2), ordinalByName.get("Gamma"));
+    }
+
+    /**
+     * The Wikidata import template shape: REST search results are joined to a
+     * federation SPARQL member with a REQUIRED pattern (hard domain filter)
+     * plus OPTIONAL enrichment. This inner join must take the vectored bound
+     * join path - ONE member request with a VALUES clause for all search hits
+     * (bound join block size is 100 by default), NOT one request per hit (the
+     * per-binding blow-up of conditional left joins). Non-matching entities
+     * are dropped, and the REST relevance ordinal orders the final result.
+     */
+    @Test
+    public void testRestSearchFilteredAndEnrichedBySparqlMemberInSingleBatch() throws Exception {
+        stubSearchServiceWithThreeOrderedHits();
+
+        // The member knows entities 1 and 3 as ex:Agent (entity 2 is not an
+        // agent and must be filtered out); an image exists only for entity 1.
+        // Vectored evaluation projects ?__rowIdx (from the VALUES clause), and
+        // the endpoint echoes it back so results join to their input row:
+        // row 0 = entity/1, row 2 = entity/3.
+        String memberJson =
+            "{" +
+            "  \"head\": { \"vars\": [\"__rowIdx\", \"_img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"__rowIdx\": { \"type\": \"literal\", \"value\": \"0\" }," +
+            "        \"_img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/1.jpg\" } }," +
+            "      { \"__rowIdx\": { \"type\": \"literal\", \"value\": \"2\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(memberJson)));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#> " +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+            "SELECT ?entity ?name ?ordinal (SAMPLE(?_img) AS ?image) WHERE { " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"leo\" . " +
+            "    ?res ex:hasEntity ?entity . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            // the hint attaches to the PREVIOUS join operand: the REST search
+            // runs first, its rows drive the bound join into the SPARQL member
+            "  ephedra:Prior ephedra:executeFirst \"true\"^^xsd:boolean . " +
+            "  SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "    ?entity ex:type ex:Agent . " +
+            "    OPTIONAL { ?entity ex:img ?_img . } " +
+            "  } " +
+            "} GROUP BY ?entity ?name ?ordinal ORDER BY ?ordinal";
+
+        var names = new java.util.ArrayList<String>();
+        var imageByName = new java.util.HashMap<String, String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    names.add(bs.getValue("name").stringValue());
+                    imageByName.put(bs.getValue("name").stringValue(),
+                        bs.getValue("image") == null ? null : bs.getValue("image").stringValue());
+                }
+            }
+        }
+
+        assertEquals("Non-agent entity 2 must be filtered out; relevance order kept",
+            java.util.List.of("Alpha", "Gamma"), names);
+        assertEquals("http://example.org/img/1.jpg", imageByName.get("Alpha"));
+        assertNull("Gamma has no image but survives the OPTIONAL", imageByName.get("Gamma"));
+
+        // One REST call, and ONE batched member request carrying all bindings
+        // in a VALUES clause - not one request per search hit.
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/search-service")));
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
+        wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("VALUES")));
     }
 }

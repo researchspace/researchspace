@@ -67,6 +67,7 @@ public class ServiceDescriptor {
         private String parameterName;
         private String jsonPath;
         private String inputJsonPath;
+        private boolean rowIndex = false;
         private Resource parameterId;
         private Resource rootNode;
         private IRI valueType;
@@ -91,6 +92,14 @@ public class ServiceDescriptor {
 
         public String getJsonPath() {
             return jsonPath;
+        }
+
+        /**
+         * Whether this output column binds the 0-based row position in the
+         * service response array instead of a {@code jsonPath} value.
+         */
+        public boolean isRowIndex() {
+            return rowIndex;
         }
 
         public void setJsonPath(String jsonPath) {
@@ -228,6 +237,9 @@ public class ServiceDescriptor {
         if (inputJsonPathOptional.isPresent()) {
             parameter.inputJsonPath = inputJsonPathOptional.get().stringValue();
         }
+
+        Models.objectLiteral(model.filter(resource, MpRepositoryVocabulary.ROW_INDEX, null))
+                .ifPresent(lit -> parameter.rowIndex = lit.booleanValue());
 
         for (Statement stmt : model.filter(resource, null, null)) {
             parameter.propertiesMap.put(stmt.getPredicate(), stmt.getObject());

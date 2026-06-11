@@ -1,80 +1,102 @@
 <semantic-search>
+  <!-- One wbsearchentities call (wikidata-entity REST service, relevance
+       ranked) drives ONE batched query to the QLever Wikidata SPARQL member:
+       the inner join below takes FedX's vectored bound join path (all search
+       hits in a single VALUES clause), the REQUIRED type path hard-filters
+       entities that do not match the import domain, and the OPTIONALs fetch
+       type label and image. The ?ordinal column (ephedra:rowIndex) preserves
+       the search relevance ranking through the join and GROUP BY.
+
+       Notes on the query shape:
+       - ephedra:Prior ephedra:executeFirst attaches to the PREVIOUS join
+         operand: the REST search runs first and its rows drive the bound
+         join into the SPARQL member.
+       - The member SERVICE must stay an inner join. Wrapping it in
+         OPTIONAL { BIND .. FILTER .. SERVICE .. } gives the left join a
+         condition, which FedX can only evaluate per binding - one Wikidata
+         request per search hit instead of one per search.
+       - The domain filters use Wikidata umbrella classes:
+           E21_Person -> human (Q5)
+           E74_Group  -> organization (Q43229) / group of humans (Q16334295)
+           E39_Actor  -> agent (Q24229398), the common superclass of person
+                         and organization
+         Other domains stay unfiltered (all-OPTIONAL member body keeps every
+         search hit). QLever evaluates the wdt:P279* paths efficiently; the
+         same paths time out on query.wikidata.org without vendor hints. -->
   <semantic-search-query-keyword  domain='<{{domain}}>'
                                   placeholder="Search {{label}}"
                                   min-search-term-length=2
                                   tokenize-lucene-query=false
                                   escape-lucene-syntax=false
                                   debounce=500
-                                  debounce=500
                                   query='PREFIX wikidataentity: <http://www.researchspace.org/resource/system/service/wikidataentity/>
-                                          SELECT ?subject WHERE {
-                                            SERVICE wikidataentity:WikidataEntity {
-                                              ?subject wikidataentity:search ?__token__ .
-                                              ?subject wikidataentity:language "en" .
-                                              ?subject wikidataentity:id ?wikidataId .
-                                              ?subject wikidataentity:concepturi ?concepturi .
-                                              ?subject wikidataentity:label ?wikidataEntityLabel .
-                                              ?subject wikidataentity:description ?description_original .
-                                            }
-                                            BIND(REPLACE(?description_original,"\"","") as ?description)
-                                          }'
+                                         PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+                                         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+                                         PREFIX wd: <http://www.wikidata.org/entity/>
+                                         PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                                         SELECT ?subject WHERE {
+                                           SERVICE wikidataentity:WikidataEntity {
+                                             ?_res wikidataentity:search ?__token__ .
+                                             ?_res wikidataentity:language "en" .
+                                             ?_res wikidataentity:concepturi ?subject .
+                                             ?_res wikidataentity:label ?wikidataEntityLabel .
+                                             ?_res wikidataentity:description ?description_original .
+                                             ?_res wikidataentity:ordinal ?ordinal .
+                                           }
+                                           ephedra:Prior ephedra:executeFirst "true"^^xsd:boolean .
+                                           SERVICE <http://www.researchspace.org/resource/system/repository/federation#wikidata-sparql> {
+                                             {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
+                                               ?subject wdt:P31/wdt:P279* wd:Q5 .
+                                             {{else if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E74_Group")}}
+                                               { ?subject wdt:P31/wdt:P279* wd:Q43229 . }
+                                               UNION
+                                               { ?subject wdt:P31/wdt:P279* wd:Q16334295 . }
+                                             {{else if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E39_Actor")}}
+                                               ?subject wdt:P31/wdt:P279* wd:Q24229398 .
+                                             {{/if}}
+                                             OPTIONAL { ?subject wdt:P31 ?_type . ?_type rdfs:label ?_typeLabel . FILTER(LANG(?_typeLabel) = "en") }
+                                             OPTIONAL { ?subject wdt:P18 ?_image . }
+                                           }
+                                           BIND(REPLACE(?description_original, "\"", "") AS ?description)
+                                         }'
   ></semantic-search-query-keyword>
   <!-- add label-->
   <semantic-search-result-holder>
     <div style="margin-top: 25px;">
       <semantic-search-result>
         <div class="wikipediaResultsTable">
-          <!-- A single federated query provides all row data: the entity search
-               results (injected from the keyword query above) are enriched with
-               type label, image and the domain check from the wikidata-sparql
-               federation member in one batched call. -->
+          <!-- The keyword query above already delivers all row data; this
+               query only aggregates (an entity can have several P31 types)
+               and restores the entity search ranking. -->
           <semantic-context repository='ephedra'>
             <semantic-table id='semantic-search-result-table'
-                            query='PREFIX wd: <http://www.wikidata.org/entity/>
-                                   PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                                   PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                                   SELECT ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi
+                            query='SELECT ?subject ?wikidataEntityLabel ?description ?ordinal
                                           (SAMPLE(?_typeLabel) AS ?typeLabel)
                                           (SAMPLE(?_image) AS ?image)
-                                          (SAMPLE(?_matchesDomain) AS ?matchesDomain)
                                    WHERE {
                                     BIND(?subject as ?iri) .
-                                    OPTIONAL {
-                                      BIND(IRI(CONCAT(STR(wd:), ?wikidataId)) AS ?wikidataEntity)
-                                      FILTER(BOUND(?wikidataEntity))
-                                      SERVICE <http://www.researchspace.org/resource/system/repository/federation#wikidata-sparql> {
-                                        OPTIONAL { ?wikidataEntity wdt:P31 ?_type . ?_type rdfs:label ?_typeLabel . FILTER(LANG(?_typeLabel) = "en") }
-                                        OPTIONAL { ?wikidataEntity wdt:P18 ?_image . }
-                                        {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
-                                          OPTIONAL { ?wikidataEntity wdt:P31 wd:Q5 . BIND(true AS ?_matchesDomain) }
-                                        {{else if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E74_Group")}}
-                                          OPTIONAL { ?wikidataEntity wdt:P31 ?_group . ?_group wdt:P279 wd:Q16334295 . BIND(true AS ?_matchesDomain) }
-                                        {{else}}
-                                          OPTIONAL { ?wikidataEntity wdt:P31 ?_anyType . BIND(true AS ?_matchesDomain) }
-                                        {{/if}}
-                                      }
-                                    }
                                   }
-                                  GROUP BY ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi
-                                  ORDER BY ?subject'
+                                  GROUP BY ?subject ?wikidataEntityLabel ?description ?ordinal
+                                  ORDER BY ?ordinal'
 
-                            options='{"showFilter":true, "resultsPerPage":10}' 
+                            options='{"showFilter":true, "resultsPerPage":10}'
                             column-configuration='[
                                                     {"displayName": "Name", "variableName": "wikidataEntityLabel", "cellTemplate": "{{> resourceName}}" },
                                                     {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}"},
                                                     {"displayName": "Resource type", "cellTemplate": "{{> type}}"},
                                                     {"displayName": "Image", "cellTemplate": "{{> images}}"},
                                                     {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
-                                                  ]'   
+                                                  ]'
             >
 
               <template id='resourceName'>
                 <div>
-                  {{#if wikidataId.value}}
-                    <a class="text-link-action" 
-                        target="_blank" 
-                        href="http://www.wikidata.org/entity/{{wikidataId.value}}"
-                        title="http://www.wikidata.org/entity/{{wikidataId.value}}">
+                  {{#if subject.value}}
+                    <a class="text-link-action"
+                        target="_blank"
+                        href="{{subject.value}}"
+                        title="{{subject.value}}">
                       {{wikidataEntityLabel.value}}
                     </a>
                   {{else}}
@@ -113,27 +135,26 @@
 
               <template id='actions'>
                 <div>
-                  {{#if matchesDomain.value}}
                     <semantic-context repository='default'>
                           <div>
                             <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
-                              <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
-                                                type='apiResourceImportInModal' 
-                                                data='{"apiResourceURI": "{{concepturi.value}}", 
-                                                        "apiResourceName": "{{wikidataEntityLabel.value}}", 
+                              <mp-event-trigger id='{{viewId}}-select-api-resource-trigger'
+                                                type='apiResourceImportInModal'
+                                                data='{"apiResourceURI": "{{subject.value}}",
+                                                        "apiResourceName": "{{wikidataEntityLabel.value}}",
                                                         "apiResourceDescription": "{{description.value}}"
-                                                      }' 
+                                                      }'
                                           >
                                 <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
                               </mp-event-trigger>
 
                               <semantic-query query='SELECT DISTINCT ?existingRecord ?existingRecordLabel WHERE {
-                                                      BIND(<{{concepturi.value}}> as ?wikidataResourceURI)
+                                                      BIND(<{{subject.value}}> as ?wikidataResourceURI)
 
                                                       OPTIONAL {
                                                         ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
                                                         ?entityFormRecord a crmdig:D1_Digital_Object .
-                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> .
                                                         ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
                                                         ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
                                                         ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
@@ -143,23 +164,23 @@
                                                         ?wikidataResourceURI a crmdig:D1_Digital_Object .
                                                         ?wikidataResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
 
-                                                        ?existingRecord crm:P1_is_identified_by ?appellation . 
-                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                        ?existingRecord crm:P1_is_identified_by ?appellation .
+                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                         ?appellation crm:P190_has_symbolic_content ?existingRecordLabel .
                                                       }
                                                     }'
-                                                    
+
                                               template='{{> template}}'>
-                                      
+
                                 <template id='template'>
                                   <bs-dropdown-button pull-right=true id='{{viewId}}-open-record-dropdown-{{__semanticTableIndex.value}}' title="Open record">
                                     {{#each bindings}}
-                                      <mp-event-trigger id='{{../viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                      <mp-event-trigger id='{{../viewId}}-openExistingRecord-in-new-frame-trigger'
                                                           type='Dashboard.AddFrame'
-                                                          data='{"viewId":"resource-editor", 
+                                                          data='{"viewId":"resource-editor",
                                                                 "resourceIri":"{{existingRecord.value}}",
                                                                 "entityTypeConfig": "{{domainConfig}}",
-                                                                "mode":"edit" }' 
+                                                                "mode":"edit" }'
                                                           targets='["thinking-frames"]'>
                                           <bs-menu-item draggable='true'>{{existingRecordLabel.value}}</bs-menu-item>
                                       </mp-event-trigger>
@@ -170,7 +191,6 @@
                             </div>
                           </div>
                     </semantic-context>
-                  {{/if}}
                 </div>
               </template>
 
@@ -180,6 +200,5 @@
       </semantic-search-result>
     </div>
   </semantic-search-result-holder>
-  
-</semantic-search>
 
+</semantic-search>

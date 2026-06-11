@@ -1,0 +1,73 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix ex: <http://example.org/ns#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Search-style REST service: one request returns an ORDERED array of hits
+# (like wbsearchentities). The ordinal column exposes the array position so
+# that queries can restore the service's relevance ranking after joins and
+# aggregation.
+ex:SearchService a ephedra:Service ;
+   rdfs:label "Search service returning an ordered result array" ;
+
+   spin:constraint [
+      a spl:Argument ;
+      spl:predicate ex:_q ;
+      spl:valueType xsd:string
+   ] ;
+
+   spin:column [
+      a spin:Column ;
+      rdfs:comment "row anchor" ;
+      spl:predicate ex:_results ;
+      spl:valueType rdfs:Resource ;
+      ephedra:jsonPath "$.search[*]"
+   ] ;
+
+   spin:column [
+      a spin:Column ;
+      spl:predicate ex:_entity ;
+      spl:valueType rdfs:Resource ;
+      ephedra:jsonPath "$.entity"
+   ] ;
+
+   spin:column [
+      a spin:Column ;
+      spl:predicate ex:_sname ;
+      spl:valueType xsd:string ;
+      ephedra:jsonPath "$.name"
+   ] ;
+
+   spin:column [
+      a spin:Column ;
+      rdfs:comment "0-based position of the row in the response array" ;
+      spl:predicate ex:_sordinal ;
+      spl:valueType xsd:integer ;
+      ephedra:rowIndex true
+   ] ;
+
+   ephedra:hasSPARQLPattern (
+      [
+         sp:subject ex:_results ;
+         sp:predicate ex:q ;
+         sp:object ex:_q
+      ]
+      [
+         sp:subject ex:_results ;
+         sp:predicate ex:hasEntity ;
+         sp:object ex:_entity
+      ]
+      [
+         sp:subject ex:_results ;
+         sp:predicate ex:hasName ;
+         sp:object ex:_sname
+      ]
+      [
+         sp:subject ex:_results ;
+         sp:predicate ex:hasOrdinal ;
+         sp:object ex:_sordinal
+      ]
+   ) .

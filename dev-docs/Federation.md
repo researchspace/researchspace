@@ -233,6 +233,7 @@ Location: `src/main/java/org/researchspace/federation/`
 | `QueryHintAwareSparqlFederationEvalStrategy.java` | **Core** - query hints + REST detection + ExclusiveGroup/ExclusiveSubquery bind join |
 | `QueryHintAwareJoinOptimizer.java` | Join ordering with query hints + single-source NJoin pushdown |
 | `SynchronousRestServiceJoin.java` | **Key** - Lazy evaluation for REST services |
+| `GuardedServiceBindLeftJoin.java` (in `org.eclipse.rdf4j.federated.evaluation.join`) | Batched VALUES left join for `OPTIONAL { SERVICE <member> }`, with optional left-evaluable guard condition |
 | `ExclusiveSubquery.java` | Wraps single-source NJoin trees (including NUnion) for subquery pushdown |
 | `ExclusiveGroupQueryBuilder.java` | Builds VALUES-based SPARQL queries for ExclusiveGroup bind joins |
 
@@ -732,10 +733,12 @@ through the bind-join path (the condition would be silently dropped — see the
 **one remote query per left binding**. 50 search hits → 50 requests to the
 member endpoint, >10s per search (this was the Wikidata import slowness).
 
-**Solution**: write the member SERVICE as a **required inner join** — it then
-takes the vectored bound join path (`ControlledWorkerBindJoin` →
+**Solution**: two batched shapes, depending on the desired semantics.
+
+**(a) Hard filter** — write the member SERVICE as a **required inner join**;
+it takes the vectored bound join path (`ControlledWorkerBindJoin` →
 `evaluateService(service, List<BindingSet>)` → one VALUES query per
-`boundJoinBlockSize`=100 bindings):
+`boundJoinBlockSize`=100 bindings). Non-matching rows are dropped:
 
 ```sparql
 SERVICE :SearchService { ?x :q "leonardo"; :entity ?entity; :ordinal ?ordinal . }
@@ -746,16 +749,63 @@ SERVICE <federation#wikidata-sparql> {
 }
 ```
 
-- A **required** pattern in the member body drops non-matching rows (desired
-  for domain filtering); an **all-OPTIONAL** body keeps every row (pure
-  enrichment). Choose per use case — both stay on the batched path.
+**(b) Keep unmatched rows** — `OPTIONAL { SERVICE <member> { ... } }`.
+Upstream FedX evaluates SERVICE clauses in left joins per binding (it excludes
+`FedXService` from the bind left join path entirely); our
+`GuardedServiceBindLeftJoin` batches them instead — one VALUES query (with a
+`?__index` column joined back by `BindLeftJoinIteration`) per block, unmatched
+rows re-emitted NULL-extended. Batching is **semantics-preserving**: a VALUES
+row with UNDEF behaves exactly like per-binding evaluation with the variable
+unbound.
+
+> [!CAUTION]
+> **Never let the join variable be unbound.** Per standard SPARQL semantics an
+> unbound join variable makes the service patterns unanchored: the row
+> cross-products against the *whole remote dataset* (this is true with or
+> without batching — it is what the query means). Keep the variable always
+> bound with a sentinel that matches nothing remotely:
+>
+> ```sparql
+> BIND(IRI(CONCAT(STR(wd:), COALESCE(?wikidataId, "Q0-NO-WIKIDATA-TAG"))) AS ?osmPlaceURI)
+> OPTIONAL {
+>   SERVICE <federation#wikidata-sparql> {
+>     OPTIONAL { ?osmPlaceURI rdfs:label ?_label . FILTER(LANG(?_label) = "en") }
+>   }
+> }
+> ```
+>
+> Rows with the sentinel come back unenriched and survive the OPTIONAL. The
+> engine logs a WARNING whenever an input row reaches a member-service left
+> join with an unbound join variable.
+
+A LeftJoin **condition** (`OPTIONAL { FILTER(...) SERVICE ... }`) is handled
+per row, fully standard-compliant:
+
+- *locally decidable* (every condition variable is either bound in the row —
+  a compatible merge never re-binds it — or not producible by the service
+  body — the merge can never bind it): evaluated against the row; `true` rows
+  join the batch with the condition discharged, `false`/error rows pass
+  through unextended;
+- *undecidable* (a condition variable is unbound AND the service body could
+  bind it, e.g. `FILTER(BOUND(?x))` with `?x` used in the body): the row falls
+  back to strict per-binding evaluation — the bottom-up cross-product
+  semantics — and a WARNING is logged;
+- condition referencing variables not producible by the left side at all:
+  the whole join keeps the strict `ControlledWorkerLeftJoin` path (one member
+  request per row) and a WARNING is logged.
+
 - Row order does NOT survive the parallel join + GROUP BY; project an
   `ephedra:rowIndex` column from the REST service and `ORDER BY` it to restore
   the search ranking.
 
 **Result**: 1 REST call + 1 member request per search (was 1 + 50).
 
-Pinned by `EphedraIntegrationTest.testRestSearchFilteredAndEnrichedBySparqlMemberInSingleBatch`.
+Pinned by `EphedraIntegrationTest.testRestSearchFilteredAndEnrichedBySparqlMemberInSingleBatch`,
+`testOptionalServiceJoinWithoutConditionIsBatched`,
+`testGuardedConditionalOptionalServiceJoinIsBatched`,
+`testGuardOnVariableNotProducibleByServiceIsDecidedLocally` and
+`testUnboundGuardVariableFallsBackToStrictPerRowEvaluation` (the strict
+cross-product fallback for undecidable guards).
 
 ---
 

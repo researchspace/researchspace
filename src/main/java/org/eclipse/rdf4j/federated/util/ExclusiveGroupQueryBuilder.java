@@ -15,6 +15,7 @@ import org.eclipse.rdf4j.federated.algebra.ExclusiveTupleExpr;
 import org.eclipse.rdf4j.federated.evaluation.iterator.BoundJoinVALUESConversionIteration;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.Dataset;
+import org.eclipse.rdf4j.query.algebra.Service;
 import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -106,6 +107,74 @@ public class ExclusiveGroupQueryBuilder {
         query.append(whereBody);
         query.append(" }");
 
+        return query.toString();
+    }
+
+    /**
+     * Build a VALUES-based SPARQL query for a bound LEFT join of a SERVICE
+     * clause body, to be executed directly at the member endpoint.
+     * <p>
+     * The service body is forwarded verbatim (prologue included) via
+     * {@link Service#getSelectQueryString(Set)}; a {@code VALUES} clause with
+     * the input rows and a {@code ?__index} column is injected right after the
+     * WHERE brace. The endpoint echoes {@code ?__index} back, which lets
+     * {@code BindLeftJoinIteration} join result rows to their input row and
+     * re-emit unmatched input rows NULL-extended.
+     * </p>
+     * <p>
+     * For example, with input rows binding {@code ?entity} and a service body
+     * of {@code OPTIONAL { ?entity ex:img ?img }}:
+     * <pre>
+     * SELECT ?img ?__index WHERE {
+     *   VALUES (?__index ?entity) { ("0" &lt;http://...&gt;) ("1" UNDEF) }
+     *   OPTIONAL { ?entity ex:img ?img }
+     * }
+     * </pre>
+     */
+    public static String buildServiceBoundLeftJoinVALUES(Service service, List<BindingSet> bindings) {
+        Set<String> serviceVars = service.getServiceVars();
+
+        // variables shared between the input rows and the service body go into VALUES
+        Set<String> relevantVars = new LinkedHashSet<>();
+        for (BindingSet bs : bindings) {
+            for (String name : bs.getBindingNames()) {
+                if (serviceVars.contains(name)) {
+                    relevantVars.add(name);
+                }
+            }
+        }
+
+        // project the free service variables plus the index column
+        Set<String> projectionVars = new LinkedHashSet<>(serviceVars);
+        projectionVars.removeAll(relevantVars);
+        projectionVars.add(BoundJoinVALUESConversionIteration.INDEX_BINDING_NAME);
+
+        String queryString = service.getSelectQueryString(projectionVars);
+
+        StringBuilder values = new StringBuilder();
+        values.append(" VALUES (?").append(BoundJoinVALUESConversionIteration.INDEX_BINDING_NAME);
+        for (String var : relevantVars) {
+            values.append(" ?").append(var);
+        }
+        values.append(") { ");
+        int index = 0;
+        for (BindingSet b : bindings) {
+            values.append("(\"").append(index).append("\" ");
+            for (String var : relevantVars) {
+                if (b.hasBinding(var)) {
+                    QueryStringUtil.appendValue(values, b.getValue(var)).append(" ");
+                } else {
+                    values.append("UNDEF ");
+                }
+            }
+            values.append(") ");
+            index++;
+        }
+        values.append("} ");
+
+        // the first '{' is the WHERE brace (the prologue contains no braces)
+        StringBuilder query = new StringBuilder(queryString);
+        query.insert(query.indexOf("{") + 1, values);
         return query.toString();
     }
 

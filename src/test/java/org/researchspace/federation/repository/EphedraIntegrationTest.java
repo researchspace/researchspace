@@ -2032,4 +2032,370 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("VALUES")));
     }
+
+    /**
+     * OPTIONAL { SERVICE <member> { ... } } without a condition: FedX upstream
+     * evaluates SERVICE clauses in left joins once per left binding (it
+     * excludes FedXService from the bind left join path). Our strategy must
+     * batch them: ONE member request with a VALUES clause carrying all rows
+     * and an index variable, unmatched rows surviving NULL-extended.
+     */
+    @Test
+    public void testOptionalServiceJoinWithoutConditionIsBatched() throws Exception {
+        stubSearchServiceWithThreeOrderedHits();
+
+        // Member knows entities 1 and 3 as agents; an image only for entity 1.
+        // The bound left join projects ?__index from the VALUES clause; a row
+        // for index 2 without further bindings = matched but no image.
+        String memberJson =
+            "{" +
+            "  \"head\": { \"vars\": [\"__index\", \"_img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"0\" }," +
+            "        \"_img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/1.jpg\" } }," +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"2\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(memberJson)));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#> " +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+            "SELECT ?entity ?name ?ordinal (SAMPLE(?_img) AS ?image) WHERE { " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"leo\" . " +
+            "    ?res ex:hasEntity ?entity . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            "  ephedra:Prior ephedra:executeFirst \"true\"^^xsd:boolean . " +
+            "  OPTIONAL { " +
+            "    SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "      ?entity ex:type ex:Agent . " +
+            "      OPTIONAL { ?entity ex:img ?_img . } " +
+            "    } " +
+            "  } " +
+            "} GROUP BY ?entity ?name ?ordinal ORDER BY ?ordinal";
+
+        var names = new java.util.ArrayList<String>();
+        var imageByName = new java.util.HashMap<String, String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    names.add(bs.getValue("name").stringValue());
+                    imageByName.put(bs.getValue("name").stringValue(),
+                        bs.getValue("image") == null ? null : bs.getValue("image").stringValue());
+                }
+            }
+        }
+
+        assertEquals("All rows survive the OPTIONAL, relevance order kept",
+            java.util.List.of("Alpha", "Beta", "Gamma"), names);
+        assertEquals("http://example.org/img/1.jpg", imageByName.get("Alpha"));
+        assertNull("Beta is no agent: survives NULL-extended", imageByName.get("Beta"));
+        assertNull("Gamma is an agent without image", imageByName.get("Gamma"));
+
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
+        wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("VALUES")));
+    }
+
+    /**
+     * The guarded enrichment shape:
+     *
+     * <pre>
+     * OPTIONAL { FILTER(condition over left vars) SERVICE <member> { ... } }
+     * </pre>
+     *
+     * When all condition variables are BOUND in a left row, the condition
+     * value cannot be changed by the right side (a compatible merge never
+     * re-binds a variable), so the engine decides it locally - fully
+     * standard-compliant: rows failing it pass through unextended and are
+     * never sent to the member, rows passing it are batched into ONE VALUES
+     * request with the condition discharged.
+     */
+    @Test
+    public void testGuardedConditionalOptionalServiceJoinIsBatched() throws Exception {
+        stubSearchServiceWithThreeOrderedHits();
+
+        String memberJson =
+            "{" +
+            "  \"head\": { \"vars\": [\"__index\", \"_img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"0\" }," +
+            "        \"_img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/1.jpg\" } }," +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"1\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(memberJson)));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        // Beta fails the guard: it must pass through unenriched and must not
+        // appear in the VALUES clause sent to the member. Alpha and Gamma are
+        // batched (indexes 0 and 1 within the guarded block).
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#> " +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+            "SELECT ?entity ?name ?ordinal (SAMPLE(?_img) AS ?image) WHERE { " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"leo\" . " +
+            "    ?res ex:hasEntity ?entity . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            "  ephedra:Prior ephedra:executeFirst \"true\"^^xsd:boolean . " +
+            "  OPTIONAL { " +
+            "    FILTER(?name != \"Beta\") " +
+            "    SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "      OPTIONAL { ?entity ex:img ?_img . } " +
+            "    } " +
+            "  } " +
+            "} GROUP BY ?entity ?name ?ordinal ORDER BY ?ordinal";
+
+        var names = new java.util.ArrayList<String>();
+        var imageByName = new java.util.HashMap<String, String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    names.add(bs.getValue("name").stringValue());
+                    imageByName.put(bs.getValue("name").stringValue(),
+                        bs.getValue("image") == null ? null : bs.getValue("image").stringValue());
+                }
+            }
+        }
+
+        assertEquals("Guard-failing row passes through; relevance order kept",
+            java.util.List.of("Alpha", "Beta", "Gamma"), names);
+        assertEquals("http://example.org/img/1.jpg", imageByName.get("Alpha"));
+        assertNull("Beta failed the guard: unenriched", imageByName.get("Beta"));
+        assertNull("Gamma matched without image", imageByName.get("Gamma"));
+
+        // ONE batched request that does NOT include the guarded-out row.
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
+        wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("VALUES")));
+        wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("entity/1")));
+        wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("entity/3")));
+        wireMockRule.verify(0, getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("entity/2")));
+    }
+
+    /**
+     * Standard-compliance of the guard: when a condition variable is UNBOUND
+     * in a left row, the right side may still bind it, so the engine must NOT
+     * decide the condition locally. Such rows fall back to strict per-binding
+     * evaluation (with a logged warning): the SERVICE body is evaluated with
+     * the variable free, its solutions merge with the row, and the condition
+     * is applied to the merged solutions - the bottom-up SPARQL semantics.
+     * Bound rows are still batched. This is the behavior that makes queries
+     * with potentially-unbound join variables slow and surprising: templates
+     * must keep such variables always bound (COALESCE sentinel).
+     */
+    @Test
+    public void testUnboundGuardVariableFallsBackToStrictPerRowEvaluation() throws Exception {
+        // three hits; Beta has NO entity value -> ?entity stays unbound
+        stubFor(get(urlPathEqualTo("/search-service"))
+            .withQueryParam("q", equalTo("mixed"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"search\": [" +
+                    "{ \"entity\": \"http://example.org/entity/1\", \"name\": \"Alpha\" }," +
+                    "{ \"name\": \"Beta\" }," +
+                    "{ \"entity\": \"http://example.org/entity/3\", \"name\": \"Gamma\" } ] }")));
+
+        // strict per-row request (no VALUES): the service body with ?entity
+        // free - a real endpoint returns ALL its statements; the canned
+        // response stands for that unanchored scan
+        String strictJson =
+            "{" +
+            "  \"head\": { \"vars\": [\"entity\", \"_img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"entity\": { \"type\": \"uri\", \"value\": \"http://example.org/entity/9\" }," +
+            "        \"_img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/9.jpg\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(strictJson)));
+        // batched request (VALUES present): Alpha (index 0) has an image
+        String batchJson =
+            "{" +
+            "  \"head\": { \"vars\": [\"__index\", \"_img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"0\" }," +
+            "        \"_img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/1.jpg\" } }," +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"1\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("VALUES"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(batchJson)));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#> " +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+            "SELECT ?name ?ordinal (SAMPLE(?_img) AS ?image) WHERE { " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"mixed\" . " +
+            "    ?res ex:hasEntity ?entity . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            "  ephedra:Prior ephedra:executeFirst \"true\"^^xsd:boolean . " +
+            "  OPTIONAL { " +
+            "    FILTER(BOUND(?entity)) " +
+            "    SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "      OPTIONAL { ?entity ex:img ?_img . } " +
+            "    } " +
+            "  } " +
+            "} GROUP BY ?name ?ordinal ORDER BY ?ordinal";
+
+        var imageByName = new java.util.HashMap<String, String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    imageByName.put(bs.getValue("name").stringValue(),
+                        bs.getValue("image") == null ? null : bs.getValue("image").stringValue());
+                }
+            }
+        }
+
+        assertEquals(3, imageByName.size());
+        assertEquals("http://example.org/img/1.jpg", imageByName.get("Alpha"));
+        // Beta's unbound ?entity merged with the service solution per strict
+        // bottom-up semantics: BOUND(?entity) became true, the row was
+        // cross-product-extended. Surprising, but standard - and the reason
+        // queries must keep join variables always bound.
+        assertEquals("http://example.org/img/9.jpg", imageByName.get("Beta"));
+        assertNull("Gamma matched without image", imageByName.get("Gamma"));
+
+        // one batched request (Alpha+Gamma) + one strict per-row request (Beta)
+        wireMockRule.verify(2, getRequestedFor(urlPathEqualTo("/sparql")));
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("VALUES")));
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", notMatching(".*VALUES.*")));
+    }
+
+    /**
+     * A condition variable that is unbound in a row but NOT producible by the
+     * service body can never be bound by the merge either, so the condition
+     * IS locally decidable (standard-compliant): the row passes through
+     * unextended without any member request, no strict fallback needed.
+     */
+    @Test
+    public void testGuardOnVariableNotProducibleByServiceIsDecidedLocally() throws Exception {
+        stubFor(get(urlPathEqualTo("/search-service"))
+            .withQueryParam("q", equalTo("mixed"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"search\": [" +
+                    "{ \"entity\": \"http://example.org/entity/1\", \"name\": \"Alpha\" }," +
+                    "{ \"name\": \"Beta\" }," +
+                    "{ \"entity\": \"http://example.org/entity/3\", \"name\": \"Gamma\" } ] }")));
+
+        String batchJson =
+            "{" +
+            "  \"head\": { \"vars\": [\"__index\", \"_img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"0\" }," +
+            "        \"_img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/1.jpg\" } }," +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"1\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(batchJson)));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        // The guard references ?entity, which the service body does not use
+        // (it joins on the copied ?e2): for Beta the condition is decidably
+        // false even though ?entity is unbound.
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#> " +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+            "SELECT ?name ?ordinal (SAMPLE(?_img) AS ?image) WHERE { " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"mixed\" . " +
+            "    ?res ex:hasEntity ?entity . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            "  ephedra:Prior ephedra:executeFirst \"true\"^^xsd:boolean . " +
+            "  BIND(?entity AS ?e2) " +
+            "  OPTIONAL { " +
+            "    FILTER(BOUND(?entity)) " +
+            "    SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "      OPTIONAL { ?e2 ex:img ?_img . } " +
+            "    } " +
+            "  } " +
+            "} GROUP BY ?name ?ordinal ORDER BY ?ordinal";
+
+        var imageByName = new java.util.HashMap<String, String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    imageByName.put(bs.getValue("name").stringValue(),
+                        bs.getValue("image") == null ? null : bs.getValue("image").stringValue());
+                }
+            }
+        }
+
+        assertEquals(3, imageByName.size());
+        assertEquals("http://example.org/img/1.jpg", imageByName.get("Alpha"));
+        assertNull("Beta decidably fails the guard: unenriched", imageByName.get("Beta"));
+        assertNull("Gamma matched without image", imageByName.get("Gamma"));
+
+        // ONE batched request; no strict per-row fallback
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("VALUES")));
+    }
 }

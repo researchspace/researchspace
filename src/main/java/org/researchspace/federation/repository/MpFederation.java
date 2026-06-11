@@ -218,4 +218,25 @@ public class MpFederation extends FedX {
         }
         return false;
     }
+
+    /**
+     * Resolve the repository behind an ephedra service member SERVICE URI
+     * (config:fed.member serviceReference), or {@code null} if the URI does
+     * not map to a registered member repository.
+     *
+     * @param serviceUri the SERVICE clause URI
+     * @return the member repository, or null
+     */
+    public Repository getServiceMemberRepository(String serviceUri) {
+        try {
+            IRI serviceIri = SimpleValueFactory.getInstance().createIRI(serviceUri);
+            String repoId = config.getRepositoryIDMappings().get(serviceIri);
+            if (repoId != null && repositoryManagerProvider != null) {
+                return repositoryManagerProvider.get().getRepository(repoId);
+            }
+        } catch (Exception e) {
+            logger.debug("Error resolving service member repository: {}", serviceUri, e);
+        }
+        return null;
+    }
 }

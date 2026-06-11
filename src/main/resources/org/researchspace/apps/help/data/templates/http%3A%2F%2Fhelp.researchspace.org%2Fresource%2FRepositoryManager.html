@@ -308,14 +308,32 @@ SELECT * WHERE {
     incoming rows into a single request using a <code>VALUES</code> clause (up to <code>fedx:boundJoinBlockSize</code>
     rows per request). A required pattern inside the member body additionally acts as a server-side filter,
     while <code>OPTIONAL</code> patterns inside the body enrich rows without dropping them.</p>
+    <p>If unmatched rows must be kept (enrichment rather than filtering), use
+    <code>OPTIONAL { SERVICE &lt;member&gt; { ... } }</code> — this is batched the same way.</p>
     <div class="alert alert-warning">
-      <strong>Avoid wrapping a member SERVICE in a conditional OPTIONAL</strong> such as
-      <code>OPTIONAL { BIND(...) FILTER(...) SERVICE &lt;member&gt; { ... } }</code>. The FILTER becomes a
-      left-join condition, which forces the federation to evaluate the SERVICE <em>once per input row</em> —
-      50 search results then trigger 50 separate requests to the remote endpoint instead of one.
-      If unmatched rows must be kept, make the member body all-<code>OPTIONAL</code> inside a required
-      SERVICE instead.
+      <strong>Never let the join variable be unbound.</strong> Per standard SPARQL semantics, a row whose
+      join variable is unbound makes the SERVICE patterns unanchored: the row joins with <em>every</em>
+      solution of the remote dataset. Keep the variable always bound with a sentinel value that matches
+      nothing remotely (the platform logs a warning whenever an unbound join variable reaches a
+      federated SERVICE join):
     </div>
+    <mp-code-block mode='SPARQL'>
+    <![CDATA[
+# always bound: a sentinel IRI for rows without a wikidata id matches nothing remotely
+BIND(IRI(CONCAT("http://www.wikidata.org/entity/", COALESCE(?wikidataId, "Q0-NOTHING"))) AS ?entity)
+OPTIONAL {
+  SERVICE <http://...federation-member> {
+    OPTIONAL { ?entity rdfs:label ?label . }
+  }
+}
+      ]]>
+    </mp-code-block>
+    <p>A FILTER at the top of such an OPTIONAL is evaluated per row <em>before</em> contacting the member
+    whenever its variables are bound in the row (or cannot be bound by the SERVICE body): rows failing it
+    pass through unenriched without any remote request, the rest go out in a single batched request. If the
+    FILTER references a variable that is unbound <em>and</em> used inside the SERVICE body, standard SPARQL
+    semantics force per-row evaluation with unanchored remote patterns — the platform logs a warning;
+    restructure the query with the sentinel pattern above instead.</p>
 
     <h4>REST Service Handling</h4>
     <p>Ephedra automatically detects REST-backed services and uses <strong>bounded prefetching</strong> to balance parallelism with LIMIT awareness. 

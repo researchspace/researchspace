@@ -24,7 +24,17 @@
           <!-- A single federated query provides all row data: the Nominatim search
                results (injected from the keyword query above) are enriched with
                label, description and image from the wikidata-sparql federation
-               member in one batched call. The cells below only render bindings. -->
+               member in one batched call; ORDER BY ?ordinal restores Nominatim's
+               relevance ranking. The cells below only render bindings.
+
+               ?osmPlaceURI is ALWAYS bound: places without a wikidata tag get a
+               sentinel IRI (wd:Q0-NO-WIKIDATA-TAG) that matches nothing at the
+               endpoint, so they come back unenriched but survive the OPTIONAL.
+               Per SPARQL semantics an UNBOUND join variable would instead make
+               the service patterns unanchored and cross-product the row against
+               the whole remote dataset - never leave it unbound (the engine
+               logs a warning if it ever is). The cells only use ?osmPlaceURI
+               for rows that have a real ?wikidataId. -->
           <semantic-context repository='ephedra'>
             <semantic-table id='semantic-search-result-table'
                             class-name="table-striped"
@@ -38,9 +48,8 @@
                                           (SAMPLE(?_placeImage) AS ?placeImage)
                                    WHERE {
                                      BIND(?subject as ?iri) .
+                                     BIND(IRI(CONCAT(STR(wd:), COALESCE(?wikidataId, "Q0-NO-WIKIDATA-TAG"))) AS ?osmPlaceURI)
                                      OPTIONAL {
-                                       BIND(IRI(CONCAT(STR(wd:), ?wikidataId)) AS ?osmPlaceURI)
-                                       FILTER(BOUND(?osmPlaceURI))
                                        SERVICE <http://www.researchspace.org/resource/system/repository/federation#wikidata-sparql> {
                                          OPTIONAL { ?osmPlaceURI rdfs:label ?_placeLabel . FILTER(LANG(?_placeLabel) = "en") }
                                          OPTIONAL { ?osmPlaceURI schema:description ?_placeDescription . FILTER(LANG(?_placeDescription) = "en") }

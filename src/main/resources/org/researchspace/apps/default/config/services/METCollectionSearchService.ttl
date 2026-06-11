@@ -26,6 +26,11 @@ PREFIX : <http://www.researchspace.org/resource/system/services/metcollectiononl
            sp:predicate :objectIDs ;
            sp:object :_objectIDs
         ]
+        [
+           sp:subject :_results ;
+           sp:predicate :ordinal ;
+           sp:object :_ordinal
+        ]
     );
 
     spin:constraint [
@@ -49,5 +54,13 @@ PREFIX : <http://www.researchspace.org/resource/system/services/metcollectiononl
         spl:predicate :_objectIDs ;
         spl:valueType xsd:string ;
         ephedra:jsonPath "$"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "0-based position of the hit in the search response (relevance rank)" ;
+        spl:predicate :_ordinal ;
+        spl:valueType xsd:integer ;
+        ephedra:rowIndex true
     ] .
 

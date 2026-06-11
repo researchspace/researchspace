@@ -65,7 +65,19 @@ PREFIX : <http://www.researchspace.org/resource/system/service/vam/>
       sp:predicate :hasIIIFImageUrl ;
       sp:object :_iiif_image_base_url
     ]
-    
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasSummaryDescription ;
+      sp:object :_summaryDescription
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasOrdinal ;
+      sp:object :_ordinal
+    ]
+
   );
 
   spin:constraint [
@@ -144,5 +156,21 @@ PREFIX : <http://www.researchspace.org/resource/system/service/vam/>
     spl:predicate :_iiif_image_base_url ;
     spl:valueType rdfs:Resource;
     ephedra:jsonPath "$._images._iiif_image_base_url"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "Summary description (requires data_profile=full on the search endpoint)" ;
+    spl:predicate :_summaryDescription ;
+    spl:valueType xsd:String ;
+    ephedra:jsonPath "$.summaryDescription"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "0-based position of the hit in the search response (relevance rank)" ;
+    spl:predicate :_ordinal ;
+    spl:valueType xsd:integer ;
+    ephedra:rowIndex true
   ] .
       

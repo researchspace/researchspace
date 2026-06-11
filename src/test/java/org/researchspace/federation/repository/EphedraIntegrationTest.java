@@ -2398,4 +2398,50 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("VALUES")));
     }
+
+    /**
+     * An input parameter flagged with {@code ephedra:rowLimit true} bounds the
+     * number of rows parsed from the service response WITHOUT being sent to
+     * the remote API. This is the declared "top N hits" bound for search APIs
+     * that return their full unpaginated result list (like the MET search):
+     * it caps what enters the SPARQL engine, so downstream per-row joins and
+     * ORDER BY cannot fan out beyond N.
+     */
+    @Test
+    public void testRestServiceRowLimitBoundsResponseRows() throws Exception {
+        stubSearchServiceWithThreeOrderedHits();
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "SELECT ?name ?ordinal WHERE { " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"leo\" . " +
+            "    ?res ex:limit \"2\" . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            "}";
+
+        var names = new java.util.ArrayList<String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    names.add(tqr.next().getValue("name").stringValue());
+                }
+            }
+        }
+
+        assertEquals("Only the first two response rows must be parsed",
+            java.util.List.of("Alpha", "Beta"), names);
+
+        // the search request goes out with the search term but WITHOUT the
+        // row limit parameter (it is a local bound, not an API parameter)
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/search-service"))
+            .withQueryParam("q", equalTo("leo")));
+        wireMockRule.verify(0, getRequestedFor(urlPathEqualTo("/search-service"))
+            .withQueryParam("slimit", matching(".+")));
+    }
 }

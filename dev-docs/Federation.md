@@ -588,21 +588,35 @@ LIMIT 20
 - With ORDER BY on REST variable: ALL 30k HTTP calls required (slow ⚠️)
 
 **Workarounds**:
-1. **Remove ORDER BY**: If ordering isn't critical, omit it to benefit from lazy evaluation.
+1. **Bound the source with `ephedra:rowLimit`** (preferred): declare an input
+   argument flagged `ephedra:rowLimit true` on the search service descriptor
+   and set it in the query (`?subject met:limit "50"`). The value caps the
+   number of rows parsed from the service response — a declared "top N hits"
+   bound that is NOT sent to the remote API — so downstream per-row joins and
+   ORDER BY cannot fan out beyond N. With the source bounded, `ORDER BY` an
+   `ephedra:rowIndex` ordinal is safe and free (it sorts N already-fetched
+   rows). This is what the MET import does.
+2. **Remove ORDER BY**: If ordering isn't critical, omit it to benefit from lazy evaluation.
    Lazy REST joins preserve the first service's response order and DISTINCT is
    streaming, so results already arrive in the search API's relevance order.
-2. **Client-side sorting**: Retrieve unordered results with LIMIT, then sort in application code
-3. **Accept the performance**: For correctness, all results must be fetched before sorting
+3. **Client-side sorting**: Retrieve unordered results with LIMIT, then sort in application code
+4. **Accept the performance**: For correctness, all results must be fetched before sorting
 
 > [!CAUTION]
-> "ORDER BY a variable from the *first* service" is NOT a workaround, even
-> though that service returns all its rows in one call (e.g. an
+> "ORDER BY a variable from the *first* service" is NOT a workaround on its
+> own, even though that service returns all its rows in one call (e.g. an
 > `ephedra:rowIndex` ordinal): the ORDER operator still consumes the ENTIRE
 > child iteration before sorting, which drives the downstream per-row service
-> through every row regardless of LIMIT. Adding `ORDER BY ?ordinal` to the MET
-> import did exactly this — one search for a broad term fired a details
-> request for every one of thousands of matching object ids and got the
-> deployment IP 403-banned by the MET WAF.
+> through every row regardless of the final LIMIT. Adding `ORDER BY ?ordinal`
+> to the MET import without a source bound did exactly this — one search for a
+> broad term fired a details request for every one of thousands of matching
+> object ids and got the deployment IP 403-banned by the MET WAF. Always pair
+> the ordinal with an `ephedra:rowLimit` bound (workaround 1).
+>
+> Note the query's own LIMIT cannot be pushed into the source automatically:
+> downstream joins may drop rows (non-matching details,
+> `ephedra:ignoreHttpErrors`) or multiply them, so "first N final results" is
+> not "first N search hits" — the bound has to be declared query semantics.
 
 > [!NOTE]
 > The old MpFederation implementation appeared to handle this case faster, but it was due to a bug: a race condition caused early termination, returning results sorted from only a subset of the data (e.g., 122 out of 30,000 items). The current implementation is **correct** - it fetches all results before sorting to ensure proper ORDER BY semantics.
@@ -986,6 +1000,7 @@ ex:SearchService a ephedra:Service ;
 | `ephedra:userAgent` | sail | Custom User-Agent header |
 | `ephedra:jsonPath` | column | JSONPath to extract the column value (relative to the row anchor) |
 | `ephedra:rowIndex` | column | If true, binds the 0-based position of the row in the response array instead of reading a `jsonPath`. Typed by the column's `spl:valueType` (default `xsd:integer`). Lets queries `ORDER BY` the service's own result ranking after joins/aggregation. |
+| `ephedra:rowLimit` | argument | If true, the input argument's value caps the number of rows parsed from the service response and is NOT sent to the remote API. The declared "top N hits" bound for search APIs returning their full result list — bounds downstream per-row joins and makes `ORDER BY` over the rows safe. |
 
 ### External Wikidata Endpoints
 

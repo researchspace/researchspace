@@ -341,12 +341,31 @@ LIMIT 20
 
     <p><strong>Workarounds:</strong></p>
     <ul>
-      <li><strong>Remove ORDER BY</strong>: If ordering isn't critical, omit it to benefit from lazy evaluation and fast LIMIT</li>
+      <li><strong>Bound the search with <code>ephedra:rowLimit</code> (preferred)</strong>: declare an input argument
+      flagged <code>ephedra:rowLimit true</code> on the search service descriptor and set it in the query:
+      <mp-code-block mode='text/turtle'>
+      <![CDATA[
+spin:constraint [
+  a spl:Argument ;
+  rdfs:comment "local bound on the number of response rows; never sent to the API" ;
+  spl:predicate :_limit ;
+  spl:valueType xsd:integer ;
+  ephedra:rowLimit true
+] ;
+        ]]>
+      </mp-code-block>
+      The value (e.g. <code>?subject :limit "50"</code>) caps how many response rows are parsed — a declared
+      "top N hits" bound that is <em>not</em> sent to the remote API — so downstream per-row services and ORDER BY
+      cannot fan out beyond N. With the source bounded, ordering by an <code>ephedra:rowIndex</code> ordinal is safe
+      and costs nothing extra.</li>
+      <li><strong>Remove ORDER BY</strong>: If ordering isn't critical, omit it to benefit from lazy evaluation and
+      fast LIMIT. Lazy REST joins preserve the first service's response order, so results already arrive in the
+      search API's relevance order</li>
       <li><strong>ORDER BY the service's own ranking</strong>: Declare an <code>ephedra:rowIndex</code> column on the
-      <em>first</em> service (see above) and order by it — the first service returns all its rows in one HTTP call.
-      <strong>Only safe when no per-row REST service is joined downstream</strong>: ORDER BY still consumes ALL rows
-      before sorting, so a per-object detail service behind it fires one request per search hit regardless of LIMIT.
-      In that case rely on the join preserving the first service's response order instead (lazy REST joins do)</li>
+      <em>first</em> service (see above) and order by it — <strong>but only together with an
+      <code>ephedra:rowLimit</code> bound when a per-row REST service is joined downstream</strong>: ORDER BY consumes
+      ALL rows before sorting, so an unbounded per-object detail service behind it fires one request per search hit
+      regardless of LIMIT</li>
       <li><strong>Client-side sorting</strong>: Retrieve unordered results with LIMIT, then sort in your application code</li>
       <li><strong>ORDER BY on search parameters</strong>: If the first service supports sorting (e.g., via a sort parameter),
       use that instead of SPARQL ORDER BY</li>

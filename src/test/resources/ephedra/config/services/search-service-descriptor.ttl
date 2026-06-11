@@ -19,6 +19,14 @@ ex:SearchService a ephedra:Service ;
       spl:valueType xsd:string
    ] ;
 
+   spin:constraint [
+      a spl:Argument ;
+      rdfs:comment "bounds the number of response rows; never sent to the remote API" ;
+      spl:predicate ex:_slimit ;
+      spl:valueType xsd:integer ;
+      ephedra:rowLimit true
+   ] ;
+
    spin:column [
       a spin:Column ;
       rdfs:comment "row anchor" ;
@@ -54,6 +62,11 @@ ex:SearchService a ephedra:Service ;
          sp:subject ex:_results ;
          sp:predicate ex:q ;
          sp:object ex:_q
+      ]
+      [
+         sp:subject ex:_results ;
+         sp:predicate ex:limit ;
+         sp:object ex:_slimit
       ]
       [
          sp:subject ex:_results ;

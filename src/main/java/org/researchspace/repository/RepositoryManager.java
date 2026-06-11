@@ -58,8 +58,6 @@ import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryFactory;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
 import org.eclipse.rdf4j.sail.nativerdf.config.NativeStoreConfig;
 import org.eclipse.rdf4j.federated.repository.FedXRepositoryConfig;
-import org.eclipse.rdf4j.federated.util.Vocabulary;
-import org.eclipse.rdf4j.model.Value;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.Configuration;
 import org.researchspace.data.rdf.container.LDPApiInternalRegistry;
@@ -671,12 +669,8 @@ public class RepositoryManager implements RepositoryManagerInterface {
                         delegates = ((MpDelegatingImplConfig) sailConfig).getDelegateRepositoryIDs();
                     }
                 } else if (implConfig instanceof FedXRepositoryConfig) {
-                    FedXRepositoryConfig fedXConfig = (FedXRepositoryConfig) implConfig;
-                    if (fedXConfig.getMembers() != null) {
-                        fedXConfig.getMembers().filter(null, Vocabulary.FEDX.REPOSITORY_NAME, null).objects().stream()
-                                .map(Value::stringValue)
-                                .forEach(delegates::add);
-                    }
+                    delegates.addAll(
+                            RepositoryDependencySorter.getResolvableFedXMembers((FedXRepositoryConfig) implConfig));
                 }
                 for (String delegate : delegates) {
                     if (configs.containsKey(delegate)) {

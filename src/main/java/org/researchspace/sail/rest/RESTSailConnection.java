@@ -256,6 +256,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
     if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
       String errorMessage = "Request failed with HTTP status code " + response.getStatus() + ": "
           + response.getStatusInfo().getReasonPhrase();
+      response.close();
 
       // Check if we should ignore HTTP errors and return empty results
       if (getSail().getConfig().isIgnoreHttpErrors()) {

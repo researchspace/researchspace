@@ -22,9 +22,11 @@ package org.researchspace.repository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -335,5 +337,27 @@ public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
 
         assertMemorySailTestConfig(map.get("test-sail-memory-repository"));
         assertNativeSailTestConfig(map.get("test-sail-native-repository"));
+    }
+
+    /**
+     * A single broken configuration file (unparseable turtle, invalid config)
+     * must be skipped with a warning instead of aborting the loading of all
+     * other repository configurations at startup.
+     */
+    @Test
+    public void testBrokenConfigFilesDoNotPreventOtherConfigsFromLoading() throws Exception {
+        URL memoryFile = RepositoryConfigUtilsTest.class.getResource(MEMORY_STORE_CONFIG_FILE);
+        writeConfigToStorage("test-sail-memory-repository", memoryFile.openStream());
+        writeConfigToStorage("broken",
+                new ByteArrayInputStream("this is not valid turtle".getBytes(StandardCharsets.UTF_8)));
+        writeConfigToStorage("noimpl",
+                new ByteArrayInputStream("<urn:x> <tag:rdf4j.org,2023:config/rep.id> \"noimpl\" ."
+                        .getBytes(StandardCharsets.UTF_8)));
+
+        Map<String, RepositoryConfig> map = RepositoryConfigUtils
+                .readInitialRepositoryConfigsFromStorage(storage.getPlatformStorage());
+
+        assertEquals(1, map.size());
+        assertMemorySailTestConfig(map.get("test-sail-memory-repository"));
     }
 }

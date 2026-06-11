@@ -85,11 +85,7 @@ public class MpFederation extends FedX {
     public MpFederation(MpFederationConfig config) {
         super(new ArrayList<>());
         this.config = config;
-        
-        // Apply FedX configuration - apply legacy config options for backwards compatibility
-        FedXConfig fedXConfig = config.getFedXConfig();
-        fedXConfig.withEnableServiceAsBoundJoin(config.isUseBoundJoin());
-        
+
         this.setFederationEvaluationStrategy(new QueryHintAwareFederationEvaluationStrategyFactory());
         
         logger.debug("MpFederation initialized with restServicePrefetchSize={}", 

@@ -63,6 +63,9 @@ class MpSparqlQueryRendererUtils {
         s = s.replace("\"", "\\\"");
         s = s.replace("\n", "\\n");
         s = s.replace("\r", "\\r");
+        s = s.replace("\t", "\\t");
+        s = s.replace("\b", "\\b");
+        s = s.replace("\f", "\\f");
         return s;
     }
 

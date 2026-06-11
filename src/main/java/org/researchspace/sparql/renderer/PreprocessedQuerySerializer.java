@@ -36,6 +36,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.algebra.Add;
+import org.eclipse.rdf4j.query.algebra.AggregateFunctionCall;
 import org.eclipse.rdf4j.query.algebra.And;
 import org.eclipse.rdf4j.query.algebra.ArbitraryLengthPath;
 import org.eclipse.rdf4j.query.algebra.Avg;
@@ -108,10 +109,12 @@ import org.eclipse.rdf4j.query.algebra.Slice;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Str;
 import org.eclipse.rdf4j.query.algebra.Sum;
+import org.eclipse.rdf4j.query.algebra.TripleRef;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.Union;
 import org.eclipse.rdf4j.query.algebra.ValueConstant;
 import org.eclipse.rdf4j.query.algebra.ValueExpr;
+import org.eclipse.rdf4j.query.algebra.ValueExprTripleRef;
 import org.eclipse.rdf4j.query.algebra.Var;
 import org.eclipse.rdf4j.query.algebra.ZeroLengthPath;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
@@ -421,6 +424,11 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
         } else {
             builder.append("DEFAULT ");
         }
+    }
+
+    @Override
+    public void meet(AggregateFunctionCall node) throws RuntimeException {
+        writeAsAggregationFunction("<" + node.getIRI() + ">", node.getArg(), node.isDistinct());
     }
 
     @Override
@@ -1036,14 +1044,14 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
                 isDescribe = ((SerializableParsedConstructQuery) this.currentQueryProfile).describe;
             }
 
-            if (node.getName() == null || (node.getProjectionAlias().isPresent() && node.getProjectionAlias().get().equals(node.getName()))) {
-                if (isDescribe && this.currentQueryProfile.extensionElements.containsKey(node.getProjectionAlias().orElse(null))) {
-                    ExtensionElem elem = this.currentQueryProfile.extensionElements.get(node.getProjectionAlias().orElse(null));
+            if (!node.getProjectionAlias().isPresent() || node.getProjectionAlias().get().equals(node.getName())) {
+                if (isDescribe && this.currentQueryProfile.extensionElements.containsKey(node.getName())) {
+                    ExtensionElem elem = this.currentQueryProfile.extensionElements.get(node.getName());
                     elem.getExpr().visit(this);
                     builder.append(" ");
                 } else {
                     builder.append("?");
-                    builder.append(node.getProjectionAlias().orElse(null));
+                    builder.append(node.getName());
                     builder.append(" ");
                 }
             } else {
@@ -1053,7 +1061,7 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
                 builder.append(" ");
                 builder.append("AS ");
                 builder.append("?");
-                builder.append(node.getProjectionAlias().orElse(null));
+                builder.append(node.getProjectionAlias().get());
                 builder.append(" ");
                 builder.append(") ");
             }
@@ -1064,7 +1072,7 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
                 builder.append(") ");
             } else {
                 builder.append("?");
-                builder.append(node.getProjectionAlias().orElse(null));
+                builder.append(node.getName());
                 builder.append(" ");
             }
         }
@@ -1102,6 +1110,9 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
     @Override
     public void meet(Service node) throws RuntimeException {
         builder.append("SERVICE ");
+        if (node.isSilent()) {
+            builder.append("SILENT ");
+        }
         node.getServiceRef().visit(this);
         builder.append(" { \n");
         node.getServiceExpr().visit(this);
@@ -1152,6 +1163,13 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
     }
 
     @Override
+    public void meet(TripleRef node) throws RuntimeException {
+        // An RDF-star triple reference pattern is not rendered standalone:
+        // it is rendered inline as << ... >> at the position where its
+        // expression variable is used (see meet(Var)).
+    }
+
+    @Override
     public void meet(Union node) throws RuntimeException {
         builder.append("{\n");
         node.getLeftArg().visit(this);
@@ -1166,13 +1184,26 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
     }
 
     @Override
+    public void meet(ValueExprTripleRef node) throws RuntimeException {
+        builder.append("<< ");
+        node.getSubjectVar().visit(this);
+        builder.append(" ");
+        node.getPredicateVar().visit(this);
+        builder.append(" ");
+        node.getObjectVar().visit(this);
+        builder.append(" >>");
+    }
+
+    @Override
     public void meet(Var node) throws RuntimeException {
 
         if (node.hasValue()) {
             this.meet(node.getValue());
         } else {
             if (node.isAnonymous()) {
-                if (currentQueryProfile.extensionElements.containsKey(node.getName())) {
+                if (currentQueryProfile != null && currentQueryProfile.tripleRefs.containsKey(node.getName())) {
+                    renderTripleRef(currentQueryProfile.tripleRefs.get(node.getName()));
+                } else if (currentQueryProfile.extensionElements.containsKey(node.getName())) {
                     ExtensionElem elem = currentQueryProfile.extensionElements.get(node.getName());
                     elem.getExpr().visit(this);
                 } else if (currentQueryProfile.nonAnonymousVars.containsKey(node.getName())) {
@@ -1206,9 +1237,22 @@ public class PreprocessedQuerySerializer extends AbstractQueryModelVisitor<Runti
                 arg.visit(this);
             }
 
+        } else if (node instanceof ValueExprTripleRef) {
+            // ValueExprTripleRef dispatches its visit through meetOther
+            this.meet((ValueExprTripleRef) node);
         } else {
             super.meetOther(node);
         }
+    }
+
+    private void renderTripleRef(TripleRef node) {
+        builder.append("<< ");
+        node.getSubjectVar().visit(this);
+        builder.append(" ");
+        node.getPredicateVar().visit(this);
+        builder.append(" ");
+        node.getObjectVar().visit(this);
+        builder.append(" >>");
     }
 
     /**

@@ -122,6 +122,15 @@ public class MpRepositoryVocabulary {
      * ordering (e.g. search relevance) after joins and aggregation.
      */
     public static final IRI ROW_INDEX = VF.createIRI(FEDERATION_NAMESPACE, "rowIndex");
+    /**
+     * Marks a REST service descriptor input argument as a local row bound: its
+     * value caps the number of rows parsed from the service response and it is
+     * NOT sent to the remote API. The declared "top N hits" bound for search
+     * APIs that return their full unpaginated result list - it limits what
+     * enters the SPARQL engine, so downstream per-row joins and ORDER BY
+     * cannot fan out beyond N.
+     */
+    public static final IRI ROW_LIMIT = VF.createIRI(FEDERATION_NAMESPACE, "rowLimit");
     public static final IRI HTTP_METHOD = VF.createIRI(FEDERATION_NAMESPACE, "httpMethod");
     public static final IRI HTTP_HEADER = VF.createIRI(FEDERATION_NAMESPACE, "httpHeader");
     public static final IRI NAME = VF.createIRI(FEDERATION_NAMESPACE, "name");

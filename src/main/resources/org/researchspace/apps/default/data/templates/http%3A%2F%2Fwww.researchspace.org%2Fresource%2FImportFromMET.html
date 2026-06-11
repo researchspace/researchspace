@@ -10,7 +10,9 @@
                                          SELECT ?subject ?objectid WHERE {
                                            service met:METCollectionSearchService {
                                              ?subject met:q ?__token__ .
+                                             ?subject met:limit "50" .
                                              ?subject met:objectIDs ?objectid.
+                                             ?subject met:ordinal ?ordinal.
                                            }
                                          }'
   ></semantic-search-query-keyword>
@@ -20,19 +22,19 @@
       <semantic-search-result>
         <div class="METapiResultsTable">
           <semantic-context repository='ephedra'>
-            <!-- IMPORTANT: no ORDER BY here. The MET search returns the FULL
+            <!-- IMPORTANT: the met:limit "50" bound in the keyword query above
+                 is what keeps this affordable. The MET search returns the FULL
                  list of matching object ids (thousands for broad terms, no
                  pagination) and every row costs one HTTP call to the
-                 per-object details API. LIMIT keeps that affordable only
-                 because the REST join is lazy - an ORDER BY would have to
-                 consume ALL rows before sorting, firing a details request for
-                 every single search hit (and getting the server briefly
-                 banned by the MET WAF). The lazy join preserves the search
-                 response order and DISTINCT is streaming, so rows already
-                 arrive in API relevance order. -->
+                 per-object details API; the rowLimit input caps the parsed
+                 hits at 50 BEFORE they reach the engine, so the details join
+                 and the ORDER BY below can never fan out beyond 50 requests.
+                 Never add an ORDER BY here without such a source bound: it
+                 would consume the entire id list through the details API
+                 (which once got a server 403-banned by the MET WAF). -->
             <semantic-table id='semantic-search-result-table'
                             query='prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
-                                   SELECT DISTINCT ?subject ?id ?name ?title ?objectType ?primaryImageSmall ?accessionNumber ?artistName ?artistRole WHERE {
+                                   SELECT DISTINCT ?subject ?id ?name ?title ?objectType ?primaryImageSmall ?accessionNumber ?artistName ?artistRole ?ordinal WHERE {
                                     BIND(?objectid as ?id)
                                     BIND(?subject as ?iri) .
                                     service met:METObjectDescriptionService {
@@ -48,7 +50,7 @@
                                         ?subject met:artistRole ?artistRole .
                                     }
                                     BIND(REPLACE(STR(?rawTitle),"\"","") as ?title)
-                                  } LIMIT 50'
+                                  } ORDER BY ?ordinal'
 
                             options='{"showFilter":true, "resultsPerPage":10}' 
                             column-configuration='[

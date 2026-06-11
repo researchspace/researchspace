@@ -1076,6 +1076,485 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
     }
 
     /**
+     * Tests that an unmatched left row survives an OPTIONAL when the left side
+     * produces exactly ONE binding and the OPTIONAL body is a multi-pattern
+     * ExclusiveGroup on the default member.
+     * <p>
+     * Left join semantics require that left rows without a match in the OPTIONAL
+     * are returned with the optional variables unbound. A single left binding
+     * must not degrade to inner-join semantics.
+     */
+    @Test
+    public void testOptionalKeepsUnmatchedLeftRowWithSingleBinding() throws Exception {
+        // SERVICE returns exactly ONE objectID with no matching record locally
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("single-left-row-test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": 1, \"objectIDs\": [99] }")));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+            "SELECT ?objectid ?existingRecord ?label WHERE { " +
+            "  SERVICE met:METCollectionSearchService { " +
+            "    ?x met:q \"single-left-row-test\"; " +
+            "       met:objectIDs ?objectid. " +
+            "  } " +
+            "  OPTIONAL { " +
+            "    ?existingRecord ex:hasObjectId ?objectid . " +
+            "    ?existingRecord ex:hasLabel ?label . " +
+            "  } " +
+            "}";
+
+        int resultCount = 0;
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    resultCount++;
+                    assertEquals("99", bs.getValue("objectid").stringValue());
+                    assertNull("existingRecord should be unbound (no match)",
+                        bs.getValue("existingRecord"));
+                    assertNull("label should be unbound (no match)",
+                        bs.getValue("label"));
+                }
+            }
+        }
+
+        assertEquals("The single unmatched left row must survive the OPTIONAL", 1, resultCount);
+    }
+
+    /**
+     * Tests that an unmatched left row survives an OPTIONAL when the left side
+     * produces exactly ONE binding and the OPTIONAL body is a single-source
+     * complex pattern (UNION + statement patterns), i.e. an ExclusiveSubquery.
+     */
+    @Test
+    public void testOptionalKeepsUnmatchedLeftRowWithSingleBindingSubquery() throws Exception {
+        // SERVICE returns exactly ONE objectID with no matching record locally
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("single-left-row-subquery-test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": 1, \"objectIDs\": [99] }")));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+            "SELECT ?objectid ?existingRecord ?identifier WHERE { " +
+            "  SERVICE met:METCollectionSearchService { " +
+            "    ?x met:q \"single-left-row-subquery-test\"; " +
+            "       met:objectIDs ?objectid. " +
+            "  } " +
+            "  OPTIONAL { " +
+            "    ?existingRecord ex:P1 ?identifier . " +
+            "    ?identifier ex:P2 ex:crn . " +
+            "    { ?identifier ex:P190 ?objectid } " +
+            "    UNION " +
+            "    { ?identifier <http://www.w3.org/2000/01/rdf-schema#label> ?objectid } " +
+            "  } " +
+            "}";
+
+        int resultCount = 0;
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    resultCount++;
+                    assertEquals("99", bs.getValue("objectid").stringValue());
+                    assertNull("existingRecord should be unbound (no match)",
+                        bs.getValue("existingRecord"));
+                    assertNull("identifier should be unbound (no match)",
+                        bs.getValue("identifier"));
+                }
+            }
+        }
+
+        assertEquals("The single unmatched left row must survive the OPTIONAL", 1, resultCount);
+    }
+
+    /**
+     * Tests that input bindings are preserved in the results when a single-source
+     * complex pattern (ExclusiveSubquery wrapping UNION + statement pattern) is
+     * evaluated per-binding in an inner join.
+     * <p>
+     * The SERVICE produces exactly one binding for {@code ?objectid}; the value is
+     * substituted into the SPARQL text sent to the endpoint, so the endpoint result
+     * rows do not contain {@code ?objectid}. The evaluation must re-insert the input
+     * bindings into each result row, otherwise {@code ?objectid} ends up unbound in
+     * the final results.
+     */
+    @Test
+    public void testExclusiveSubqueryPreservesInputBindings() throws Exception {
+        // SERVICE returns exactly ONE objectID
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("preserve-bindings-test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": 1, \"objectIDs\": [1] }")));
+
+        // Local data matching the first UNION branch
+        Repository defaultRepo = repositoryManager.getDefault();
+        var vf = SimpleValueFactory.getInstance();
+        try (var conn = defaultRepo.getConnection()) {
+            var identifier = vf.createIRI("http://example.org/identifier/1");
+            var record = vf.createIRI("http://example.org/record/1");
+            conn.add(vf.createStatement(
+                identifier, vf.createIRI("http://example.org/ns#P190"), vf.createLiteral("1")));
+            conn.add(vf.createStatement(
+                record, vf.createIRI("http://example.org/ns#P1"), identifier));
+        }
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        // The braced group is a single-source NJoin(NUnion, pattern), which the
+        // optimizer replaces with an ExclusiveSubquery. The FILTER keeps the group
+        // as a separate node from the top-level join, so the subquery is evaluated
+        // per left binding with the SERVICE result as input bindings.
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+            "SELECT ?objectid ?existingRecord ?identifier WHERE { " +
+            "  SERVICE met:METCollectionSearchService { " +
+            "    ?x met:q \"preserve-bindings-test\"; " +
+            "       met:objectIDs ?objectid. " +
+            "  } " +
+            "  { " +
+            "    { ?identifier ex:P190 ?objectid } " +
+            "    UNION " +
+            "    { ?identifier <http://www.w3.org/2000/01/rdf-schema#label> ?objectid } " +
+            "    ?existingRecord ex:P1 ?identifier . " +
+            "    FILTER(?identifier != ?existingRecord) " +
+            "  } " +
+            "}";
+
+        int resultCount = 0;
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    resultCount++;
+                    assertNotNull("objectid from the left side must be present in the result row",
+                        bs.getValue("objectid"));
+                    assertEquals("1", bs.getValue("objectid").stringValue());
+                    assertEquals("http://example.org/record/1",
+                        bs.getValue("existingRecord").stringValue());
+                    assertEquals("http://example.org/identifier/1",
+                        bs.getValue("identifier").stringValue());
+                }
+            }
+        }
+
+        assertEquals("Should get exactly one result row", 1, resultCount);
+    }
+
+    /**
+     * Tests an OPTIONAL whose right side (a multi-pattern ExclusiveGroup) shares
+     * NO variables with the left side — a legal cross-product left join.
+     * <p>
+     * The VALUES-based bind join must still emit the {@code ?__index} column for
+     * each input binding even when no variables are shared, otherwise the result
+     * conversion fails (rows without {@code ?__index}).
+     */
+    @Test
+    public void testOptionalWithNoSharedVariables() throws Exception {
+        // SERVICE returns 3 objectIDs (>1 so the VALUES bind join path engages)
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("no-shared-vars-test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": 3, \"objectIDs\": [1,2,3] }")));
+
+        // One unrelated record in the default repo — matches every left row
+        Repository defaultRepo = repositoryManager.getDefault();
+        var vf = SimpleValueFactory.getInstance();
+        try (var conn = defaultRepo.getConnection()) {
+            var unrelated = vf.createIRI("http://example.org/unrelated/1");
+            conn.add(vf.createStatement(
+                unrelated, vf.createIRI("http://example.org/ns#hasUnrelatedP"), vf.createLiteral("y1")));
+            conn.add(vf.createStatement(
+                unrelated, vf.createIRI("http://example.org/ns#hasUnrelatedQ"), vf.createLiteral("z1")));
+        }
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        // OPTIONAL body shares no variables with the SERVICE result
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+            "SELECT ?objectid ?y ?z WHERE { " +
+            "  SERVICE met:METCollectionSearchService { " +
+            "    ?x met:q \"no-shared-vars-test\"; " +
+            "       met:objectIDs ?objectid. " +
+            "  } " +
+            "  OPTIONAL { " +
+            "    ?ur ex:hasUnrelatedP ?y . " +
+            "    ?ur ex:hasUnrelatedQ ?z . " +
+            "  } " +
+            "}";
+
+        int resultCount = 0;
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    resultCount++;
+                    assertNotNull("objectid should be bound", bs.getValue("objectid"));
+                    assertEquals("y1", bs.getValue("y").stringValue());
+                    assertEquals("z1", bs.getValue("z").stringValue());
+                }
+            }
+        }
+
+        assertEquals("Each left row must join with the unrelated match (cross product)",
+            3, resultCount);
+    }
+
+    /**
+     * Same as {@link #testOptionalWithNoSharedVariables()} but with an OPTIONAL
+     * body that is a single-source complex pattern (UNION + statement pattern),
+     * i.e. an ExclusiveSubquery.
+     */
+    @Test
+    public void testOptionalWithNoSharedVariablesSubquery() throws Exception {
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("no-shared-vars-subquery-test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": 3, \"objectIDs\": [1,2,3] }")));
+
+        Repository defaultRepo = repositoryManager.getDefault();
+        var vf = SimpleValueFactory.getInstance();
+        try (var conn = defaultRepo.getConnection()) {
+            var unrelated = vf.createIRI("http://example.org/unrelated/1");
+            conn.add(vf.createStatement(
+                unrelated, vf.createIRI("http://example.org/ns#pA"), vf.createLiteral("y1")));
+            conn.add(vf.createStatement(
+                unrelated, vf.createIRI("http://example.org/ns#qC"), vf.createLiteral("z1")));
+        }
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+            "SELECT ?objectid ?y ?z WHERE { " +
+            "  SERVICE met:METCollectionSearchService { " +
+            "    ?x met:q \"no-shared-vars-subquery-test\"; " +
+            "       met:objectIDs ?objectid. " +
+            "  } " +
+            "  OPTIONAL { " +
+            "    { ?ur ex:pA ?y } UNION { ?ur ex:pB ?y } " +
+            "    ?ur ex:qC ?z . " +
+            "  } " +
+            "}";
+
+        int resultCount = 0;
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    resultCount++;
+                    assertNotNull("objectid should be bound", bs.getValue("objectid"));
+                    assertEquals("y1", bs.getValue("y").stringValue());
+                    assertEquals("z1", bs.getValue("z").stringValue());
+                }
+            }
+        }
+
+        assertEquals("Each left row must join with the unrelated match (cross product)",
+            3, resultCount);
+    }
+
+    /**
+     * Tests OPTIONAL with a FILTER on the optional body (the FILTER becomes the
+     * LeftJoin condition in the algebra).
+     * <p>
+     * Per SPARQL semantics, a left row whose optional match fails the filter must
+     * still appear in the results — with the optional variables unbound. Left rows
+     * with no match at all must also appear. No left row may be lost, and the
+     * optional variables may only be bound where the filter passed.
+     */
+    @Test
+    public void testOptionalWithFilterCondition() throws Exception {
+        runOptionalFilterScenario("optional-filter-test",
+            "  OPTIONAL { " +
+            "    ?existingRecord ex:hasObjectId ?objectid . " +
+            "    ?existingRecord ex:hasLabel ?label . " +
+            "    FILTER(?label != \"Record 2\") " +
+            "  } ");
+    }
+
+    /**
+     * Same as {@link #testOptionalWithFilterCondition()} but with the FILTER in a
+     * nested group inside the OPTIONAL, so it is pushed into the ExclusiveGroup as
+     * a filter expression instead of becoming the LeftJoin condition.
+     */
+    @Test
+    public void testOptionalWithPushedFilter() throws Exception {
+        runOptionalFilterScenario("optional-pushed-filter-test",
+            "  OPTIONAL { { " +
+            "    ?existingRecord ex:hasObjectId ?objectid . " +
+            "    ?existingRecord ex:hasLabel ?label . " +
+            "    FILTER(?label != \"Record 2\") " +
+            "  } } ");
+    }
+
+    private void runOptionalFilterScenario(String searchTerm, String optionalClause) throws Exception {
+        // SERVICE returns 6 objectIDs; records exist for 1,2,3; the filter rejects record 2
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo(searchTerm))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": 6, \"objectIDs\": [1,2,3,4,5,6] }")));
+
+        Repository defaultRepo = repositoryManager.getDefault();
+        var vf = SimpleValueFactory.getInstance();
+        try (var conn = defaultRepo.getConnection()) {
+            for (int id : new int[]{1, 2, 3}) {
+                conn.add(vf.createStatement(
+                    vf.createIRI("http://example.org/record/" + id),
+                    vf.createIRI("http://example.org/ns#hasObjectId"),
+                    vf.createLiteral(String.valueOf(id))
+                ));
+                conn.add(vf.createStatement(
+                    vf.createIRI("http://example.org/record/" + id),
+                    vf.createIRI("http://example.org/ns#hasLabel"),
+                    vf.createLiteral("Record " + id)
+                ));
+            }
+        }
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+            "SELECT ?objectid ?existingRecord ?label WHERE { " +
+            "  SERVICE met:METCollectionSearchService { " +
+            "    ?x met:q \"" + searchTerm + "\"; " +
+            "       met:objectIDs ?objectid. " +
+            "  } " +
+            optionalClause +
+            "}";
+
+        int resultCount = 0;
+        java.util.Set<String> boundLabels = new java.util.HashSet<>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    resultCount++;
+                    if (bs.getValue("label") != null) {
+                        boundLabels.add(bs.getValue("label").stringValue());
+                    } else {
+                        assertNull("existingRecord must be unbound when label is unbound",
+                            bs.getValue("existingRecord"));
+                    }
+                }
+            }
+        }
+
+        assertEquals("ALL left rows must appear (none may be lost to the filter)",
+            6, resultCount);
+        assertEquals("Optional vars must be bound only where the filter passed",
+            new java.util.HashSet<>(java.util.Arrays.asList("Record 1", "Record 3")), boundLabels);
+    }
+
+    /**
+     * Tests that a single-source complex pattern (ExclusiveSubquery) evaluated
+     * per-binding works inside a federated CONSTRUCT query.
+     * <p>
+     * The SPARQL string built for an ExclusiveSubquery is always a SELECT query,
+     * so it must be sent to the endpoint as a tuple query regardless of the
+     * top-level query type. Preparing the SELECT string as a graph query fails
+     * with a parse error. Additionally, the input bindings ({@code ?objectid})
+     * must be re-inserted into the result rows, otherwise the constructed triple
+     * is incomplete and silently dropped.
+     */
+    @Test
+    public void testExclusiveSubqueryInConstructQuery() throws Exception {
+        // SERVICE returns exactly ONE objectID
+        stubFor(get(urlPathEqualTo("/public/collection/v1/search"))
+            .withQueryParam("q", equalTo("construct-subquery-test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"total\": 1, \"objectIDs\": [1] }")));
+
+        // Local data matching the first UNION branch
+        Repository defaultRepo = repositoryManager.getDefault();
+        var vf = SimpleValueFactory.getInstance();
+        try (var conn = defaultRepo.getConnection()) {
+            var identifier = vf.createIRI("http://example.org/identifier/1");
+            var record = vf.createIRI("http://example.org/record/1");
+            conn.add(vf.createStatement(
+                identifier, vf.createIRI("http://example.org/ns#P190"), vf.createLiteral("1")));
+            conn.add(vf.createStatement(
+                record, vf.createIRI("http://example.org/ns#P1"), identifier));
+        }
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        assertNotNull("Ephedra repository should be initialized", ephedraRepo);
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> " +
+            "CONSTRUCT { ?existingRecord ex:found ?objectid } WHERE { " +
+            "  SERVICE met:METCollectionSearchService { " +
+            "    ?x met:q \"construct-subquery-test\"; " +
+            "       met:objectIDs ?objectid. " +
+            "  } " +
+            "  { " +
+            "    { ?identifier ex:P190 ?objectid } " +
+            "    UNION " +
+            "    { ?identifier <http://www.w3.org/2000/01/rdf-schema#label> ?objectid } " +
+            "    ?existingRecord ex:P1 ?identifier . " +
+            "    FILTER(?identifier != ?existingRecord) " +
+            "  } " +
+            "}";
+
+        int statementCount = 0;
+        try (var conn = ephedraRepo.getConnection()) {
+            var gq = conn.prepareGraphQuery(query);
+            try (var gqr = gq.evaluate()) {
+                while (gqr.hasNext()) {
+                    var st = gqr.next();
+                    statementCount++;
+                    assertEquals("http://example.org/record/1", st.getSubject().stringValue());
+                    assertEquals("http://example.org/ns#found", st.getPredicate().stringValue());
+                    assertEquals("1", st.getObject().stringValue());
+                }
+            }
+        }
+
+        assertEquals("CONSTRUCT should produce exactly one statement", 1, statementCount);
+    }
+
+    /**
      * Tests that join ordering inside OPTIONAL correctly considers outer-scope
      * bound variables.
      * <p>

@@ -35,6 +35,7 @@ import org.eclipse.rdf4j.federated.evaluation.iterator.BindLeftJoinIteration;
 import org.eclipse.rdf4j.federated.evaluation.iterator.FilteringIteration;
 import org.eclipse.rdf4j.federated.evaluation.join.ControlledWorkerBindJoin;
 import org.eclipse.rdf4j.federated.evaluation.join.ControlledWorkerJoin;
+import org.eclipse.rdf4j.federated.evaluation.join.ControlledWorkerLeftJoin;
 import org.eclipse.rdf4j.federated.evaluation.join.JoinExecutorBase;
 import org.eclipse.rdf4j.federated.optimizer.DefaultFedXCostModel;
 import org.eclipse.rdf4j.federated.optimizer.GenericInfoOptimizer;
@@ -216,7 +217,15 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
     }
 
     /**
-     * Override to count left join calls for testing/debugging.
+     * Override to count left join calls for testing/debugging and to keep
+     * conditional OPTIONALs out of the bind join path.
+     * <p>
+     * A LeftJoin condition ({@code OPTIONAL { ... FILTER(...) }}) is not passed to
+     * {@code ControlledWorkerBindLeftJoin} (the bind path only receives the right
+     * argument), so routing such joins through the bind path would silently drop
+     * the filter. Fall back to {@code ControlledWorkerLeftJoin}, which evaluates
+     * the condition per binding (see {@code ParallelLeftJoinTask}).
+     * </p>
      */
     @Override
     protected CloseableIteration<BindingSet> executeLeftJoin(
@@ -227,6 +236,14 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         if (debugCountersEnabled) {
             leftJoinCallCount.incrementAndGet();
         }
+
+        if (leftJoin.hasCondition()) {
+            ControlledWorkerLeftJoin join = new ControlledWorkerLeftJoin(joinScheduler, this,
+                    leftIter, leftJoin, bindings, queryInfo);
+            executor.execute(join);
+            return join;
+        }
+
         return super.executeLeftJoin(joinScheduler, leftIter, leftJoin, bindings, queryInfo);
     }
 
@@ -363,10 +380,9 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
 
         ExclusiveGroup group = (ExclusiveGroup) stmt;
 
-        // Optimization: single binding doesn't need VALUES batching
-        if (bindings.size() == 1) {
-            return stmt.evaluate(bindings.get(0));
-        }
+        // Note: no single-binding shortcut here — evaluating the group directly would
+        // apply inner-join semantics and lose unmatched left rows. Left join semantics
+        // require BindLeftJoinIteration to re-emit unmatched left bindings.
 
         if (log.isDebugEnabled()) {
             log.debug("Evaluating ExclusiveGroup left bind join with {} bindings", bindings.size());
@@ -386,17 +402,15 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
             result = evaluateAtStatementSources(preparedQuery, group.getStatementSources(),
                     group.getQueryInfo());
 
-            // Apply filter and/or convert to left join semantics
+            // Apply filter and/or convert to left join semantics. The filter must run
+            // BEFORE the left join conversion: a left row whose match fails the filter
+            // has to be re-emitted as an unmatched (NULL-extended) row by
+            // BindLeftJoinIteration, not dropped. Filtering after the conversion would
+            // also drop NULL-extended rows (the filter vars are unbound there).
             if (filterExpr != null) {
-                result = new BindLeftJoinIteration(result, bindings);
                 result = new FilteringIteration(filterExpr, result, this);
-                if (!result.hasNext()) {
-                    result.close();
-                    return new EmptyIteration<>();
-                }
-            } else {
-                result = new BindLeftJoinIteration(result, bindings);
             }
+            result = new BindLeftJoinIteration(result, bindings);
 
             return result;
         } catch (Throwable t) {
@@ -491,8 +505,10 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
             ExclusiveSubquery subquery, List<BindingSet> bindings, boolean leftJoin)
             throws QueryEvaluationException {
 
-        // Optimization: single binding doesn't need VALUES batching
-        if (bindings.size() == 1) {
+        // Optimization: single binding doesn't need VALUES batching. Only valid for
+        // inner joins — for left joins unmatched left rows must be re-emitted by
+        // BindLeftJoinIteration below.
+        if (!leftJoin && bindings.size() == 1) {
             return subquery.evaluate(bindings.get(0));
         }
 

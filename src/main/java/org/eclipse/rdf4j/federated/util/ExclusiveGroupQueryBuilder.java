@@ -77,29 +77,31 @@ public class ExclusiveGroupQueryBuilder {
             }
         }
 
-        if (!boundVarNames.isEmpty()) {
-            query.append(" VALUES (");
-            for (String var : boundVarNames) {
-                query.append("?").append(var).append(" ");
-            }
-            query.append(" ?__index) { ");
-
-            int index = 0;
-            for (BindingSet b : bindings) {
-                query.append("(");
-                for (String var : boundVarNames) {
-                    if (b.hasBinding(var)) {
-                        // Uses QueryStringUtil.appendValue (protected, same-package)
-                        QueryStringUtil.appendValue(query, b.getValue(var)).append(" ");
-                    } else {
-                        query.append("UNDEF ");
-                    }
-                }
-                query.append("\"").append(index).append("\") ");
-                index++;
-            }
-            query.append(" } ");
+        // Always emit the VALUES clause — even when no variables are shared with the
+        // input bindings (cross-product join), the ?__index column is required by
+        // BindLeftJoinIteration / BoundJoinVALUESConversionIteration, mirroring
+        // QueryStringUtil.selectQueryStringBoundJoinVALUES.
+        query.append(" VALUES (");
+        for (String var : boundVarNames) {
+            query.append("?").append(var).append(" ");
         }
+        query.append(" ?__index) { ");
+
+        int index = 0;
+        for (BindingSet b : bindings) {
+            query.append("(");
+            for (String var : boundVarNames) {
+                if (b.hasBinding(var)) {
+                    // Uses QueryStringUtil.appendValue (protected, same-package)
+                    QueryStringUtil.appendValue(query, b.getValue(var)).append(" ");
+                } else {
+                    query.append("UNDEF ");
+                }
+            }
+            query.append("\"").append(index).append("\") ");
+            index++;
+        }
+        query.append(" } ");
 
         query.append(whereBody);
         query.append(" }");

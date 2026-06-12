@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.query.algebra.BindingSetAssignment;
 import org.eclipse.rdf4j.query.algebra.ExtensionElem;
 import org.eclipse.rdf4j.query.algebra.Projection;
 import org.eclipse.rdf4j.query.algebra.Slice;
+import org.eclipse.rdf4j.query.algebra.TripleRef;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.Var;
 
@@ -45,6 +46,12 @@ public class AbstractSerializableParsedQuery {
     public Map<String, ExtensionElem> extensionElements = Maps.newHashMap();
     public Dataset dataset = null;
     public Map<String, Var> nonAnonymousVars = Maps.newHashMap();
+    /**
+     * RDF-star triple reference patterns by the name of their expression
+     * variable: rendered inline as {@code << ... >>} where the expression
+     * variable is used.
+     */
+    public Map<String, TripleRef> tripleRefs = Maps.newHashMap();
 
     public AbstractSerializableParsedQuery() {
         super();

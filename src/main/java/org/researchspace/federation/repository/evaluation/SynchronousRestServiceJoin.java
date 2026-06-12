@@ -69,9 +69,12 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
     
     // Only accessed from consumer thread (getNextElement and handleClose)
     private CloseableIteration<BindingSet> currentRightIter;
-    
+
     // The prefetcher task handle - used for cancellation
     private volatile Future<?> prefetcherTask;
+
+    // First error encountered by the prefetcher; rethrown to the consumer
+    private volatile Throwable prefetchError;
 
     /**
      * Create a new prefetching join with a shared executor.
@@ -121,6 +124,7 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
      * thread-safe access to the left iterator. Results are passed to the consumer
      * via the thread-safe {@code resultQueue}.</p>
      */
+    @SuppressWarnings("removal")
     private void prefetchLoop() {
         try {
             while (!isClosed() && leftIter.hasNext()) {
@@ -134,16 +138,16 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
                 
                 // Make HTTP call synchronously in this prefetcher thread
                 // (we don't submit another task - just do the work here)
+                CloseableIteration<BindingSet> result = null;
                 try {
                     int callNum = httpCallCount.incrementAndGet();
                     if (log.isTraceEnabled()) {
-                        log.trace("SynchronousRestServiceJoin: HTTP call #{} for binding: {}", 
+                        log.trace("SynchronousRestServiceJoin: HTTP call #{} for binding: {}",
                                 callNum, mergedBindings);
                     }
-                    
-                    @SuppressWarnings("removal")
-                    CloseableIteration<BindingSet> result = strategy.evaluate(rightArg, mergedBindings);
-                    
+
+                    result = strategy.evaluate(rightArg, mergedBindings);
+
                     // Add to queue, blocking if full
                     // This provides natural backpressure - if consumer is slow, we wait here
                     if (!isClosed()) {
@@ -154,18 +158,22 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
                         break;
                     }
                 } catch (InterruptedException e) {
+                    closeQuietly(result);
                     Thread.currentThread().interrupt();
                     break;
                 } catch (Exception e) {
+                    closeQuietly(result);
                     if (!isClosed()) {
-                        log.warn("Error evaluating REST service: {}", e.getMessage());
-                        // Continue with next binding - don't fail the whole query
+                        // the consumer rethrows this; silently continuing would
+                        // produce incomplete query results
+                        prefetchError = e;
                     }
+                    break;
                 }
             }
         } catch (Exception e) {
             if (!isClosed()) {
-                log.error("Prefetch loop error: {}", e.getMessage(), e);
+                prefetchError = e;
             }
         } finally {
             prefetcherDone.set(true);
@@ -210,16 +218,18 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
                 
                 if (next == END_MARKER) {
                     // End of results
+                    throwIfPrefetchFailed();
                     if (log.isDebugEnabled()) {
                         log.debug("SynchronousRestServiceJoin completed: {} HTTP calls, {} results returned",
                                 httpCallCount.get(), processedCount.get());
                     }
                     return null;
                 }
-                
+
                 if (next == null) {
                     // Timeout - check if prefetcher is done
                     if (prefetcherDone.get() && resultQueue.isEmpty()) {
+                        throwIfPrefetchFailed();
                         if (log.isDebugEnabled()) {
                             log.debug("SynchronousRestServiceJoin completed: {} HTTP calls, {} results returned",
                                     httpCallCount.get(), processedCount.get());
@@ -237,6 +247,19 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
         }
         
         return null;
+    }
+
+    /**
+     * Rethrows the first error encountered by the prefetcher thread, if any.
+     */
+    private void throwIfPrefetchFailed() throws QueryEvaluationException {
+        Throwable error = prefetchError;
+        if (error != null) {
+            if (error instanceof QueryEvaluationException) {
+                throw (QueryEvaluationException) error;
+            }
+            throw new QueryEvaluationException("REST service evaluation failed: " + error.getMessage(), error);
+        }
     }
 
     /**

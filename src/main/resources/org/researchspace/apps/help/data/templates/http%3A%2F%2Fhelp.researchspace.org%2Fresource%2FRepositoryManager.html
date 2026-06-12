@@ -252,7 +252,7 @@
         <tr><td><code>fedx:joinWorkerThreads</code></td><td>20</td><td>Thread pool size for parallel join operations</td></tr>
         <tr><td><code>fedx:unionWorkerThreads</code></td><td>20</td><td>Thread pool size for parallel union operations</td></tr>
         <tr><td><code>fedx:leftJoinWorkerThreads</code></td><td>10</td><td>Thread pool size for LEFT JOIN operations</td></tr>
-        <tr><td><code>fedx:boundJoinBlockSize</code></td><td>25</td><td>Number of bindings per VALUES clause in bound join</td></tr>
+        <tr><td><code>fedx:boundJoinBlockSize</code></td><td><strong>100</strong></td><td>Number of bindings per VALUES clause in bound join. ResearchSpace default is 100 (FedX default is 25), so e.g. 50 search results are joined into a SPARQL member with a single batched request.</td></tr>
         <tr><td><code>fedx:enableServiceAsBoundJoin</code></td><td>true</td><td>Use VALUES clause for SERVICE evaluation</td></tr>
         <tr><td><code>fedx:logQueryPlan</code></td><td>false</td><td>Log optimized query plan via SLF4J (auto-enables monitoring)</td></tr>
         <tr><td><code>fedx:sourceSelectionCacheSpec</code></td><td>-</td><td>Guava CacheBuilderSpec for source selection cache</td></tr>
@@ -271,6 +271,70 @@
       </tbody>
     </table>
     
+    <h4>Query Hints</h4>
+    <p>Join order can be controlled with query hints — plain triples in the <code>ephedra:</code> namespace
+    that are extracted from the query before optimization:</p>
+    <mp-code-block mode='SPARQL'>
+    <![CDATA[
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT * WHERE {
+  SERVICE <http://...search-service> { ... }
+  ephedra:Prior ephedra:executeFirst "true"^^xsd:boolean .   # applies to the SERVICE clause above
+  SERVICE <http://...federation-member> { ... }
+}
+      ]]>
+    </mp-code-block>
+    <table class="table table-striped">
+      <thead>
+        <tr><th>Hint</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ephedra:Prior ephedra:executeFirst "true"^^xsd:boolean</code></td><td>Evaluate the preceding pattern or SERVICE clause first</td></tr>
+        <tr><td><code>ephedra:Prior ephedra:executeLast "true"^^xsd:boolean</code></td><td>Evaluate the preceding pattern or SERVICE clause last</td></tr>
+        <tr><td><code>ephedra:Query ephedra:disableJoinReordering "true"^^xsd:boolean</code></td><td>Keep the textual join order for the whole query</td></tr>
+      </tbody>
+    </table>
+    <div class="alert alert-warning">
+      <strong><code>ephedra:Prior</code> refers to the preceding element</strong> in the same group.
+      A hint placed as the <em>first</em> element of a group attaches to nothing and is silently ignored.
+      Always place the hint <em>after</em> the pattern or SERVICE clause it applies to.
+    </div>
+
+    <h4>Joining SERVICE Results Efficiently</h4>
+    <p>When the results of one SERVICE clause (e.g. a REST search) are joined into a SPARQL federation member,
+    write the member SERVICE as a <strong>required (inner) join</strong>. The federation then batches all
+    incoming rows into a single request using a <code>VALUES</code> clause (up to <code>fedx:boundJoinBlockSize</code>
+    rows per request). A required pattern inside the member body additionally acts as a server-side filter,
+    while <code>OPTIONAL</code> patterns inside the body enrich rows without dropping them.</p>
+    <p>If unmatched rows must be kept (enrichment rather than filtering), use
+    <code>OPTIONAL { SERVICE &lt;member&gt; { ... } }</code> — this is batched the same way.</p>
+    <div class="alert alert-warning">
+      <strong>Never let the join variable be unbound.</strong> Per standard SPARQL semantics, a row whose
+      join variable is unbound makes the SERVICE patterns unanchored: the row joins with <em>every</em>
+      solution of the remote dataset. Keep the variable always bound with a sentinel value that matches
+      nothing remotely (the platform logs a warning whenever an unbound join variable reaches a
+      federated SERVICE join):
+    </div>
+    <mp-code-block mode='SPARQL'>
+    <![CDATA[
+# always bound: a sentinel IRI for rows without a wikidata id matches nothing remotely
+BIND(IRI(CONCAT("http://www.wikidata.org/entity/", COALESCE(?wikidataId, "Q0-NOTHING"))) AS ?entity)
+OPTIONAL {
+  SERVICE <http://...federation-member> {
+    OPTIONAL { ?entity rdfs:label ?label . }
+  }
+}
+      ]]>
+    </mp-code-block>
+    <p>A FILTER at the top of such an OPTIONAL is evaluated per row <em>before</em> contacting the member
+    whenever its variables are bound in the row (or cannot be bound by the SERVICE body): rows failing it
+    pass through unenriched without any remote request, the rest go out in a single batched request. If the
+    FILTER references a variable that is unbound <em>and</em> used inside the SERVICE body, standard SPARQL
+    semantics force per-row evaluation with unanchored remote patterns — the platform logs a warning;
+    restructure the query with the sentinel pattern above instead.</p>
+
     <h4>REST Service Handling</h4>
     <p>Ephedra automatically detects REST-backed services and uses <strong>bounded prefetching</strong> to balance parallelism with LIMIT awareness. 
     It maintains up to <code>restServicePrefetchSize</code> HTTP calls in-flight at any time. When <code>LIMIT</code> is reached, 

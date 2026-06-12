@@ -13,7 +13,12 @@
           config:sail.type "researchspace:RESTSail";
           ephedra:serviceURL "https://collectionapi.metmuseum.org/public/collection/v1/objects/{objectid}";
           ephedra:implementsService <http://www.researchspace.org/resource/system/services/metcollectiononline/METObjectDescriptionService>;
-          ephedra:httpMethod "GET"
+          ephedra:httpMethod "GET";
+          # one search triggers up to LIMIT per-object detail calls: stay well
+          # below the MET API guidance (80 req/s) and don't let a single bad
+          # object (404/403) fail the whole result table
+          ephedra:requestRateLimit "20"^^xsd:int;
+          ephedra:ignoreHttpErrors true
         ]
     ] .
 

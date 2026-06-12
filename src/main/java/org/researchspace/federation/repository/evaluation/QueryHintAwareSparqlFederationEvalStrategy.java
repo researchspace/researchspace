@@ -35,6 +35,8 @@ import org.eclipse.rdf4j.federated.evaluation.iterator.BindLeftJoinIteration;
 import org.eclipse.rdf4j.federated.evaluation.iterator.FilteringIteration;
 import org.eclipse.rdf4j.federated.evaluation.join.ControlledWorkerBindJoin;
 import org.eclipse.rdf4j.federated.evaluation.join.ControlledWorkerJoin;
+import org.eclipse.rdf4j.federated.evaluation.join.ControlledWorkerLeftJoin;
+import org.eclipse.rdf4j.federated.evaluation.join.GuardedServiceBindLeftJoin;
 import org.eclipse.rdf4j.federated.evaluation.join.JoinExecutorBase;
 import org.eclipse.rdf4j.federated.optimizer.DefaultFedXCostModel;
 import org.eclipse.rdf4j.federated.optimizer.GenericInfoOptimizer;
@@ -45,6 +47,9 @@ import org.eclipse.rdf4j.query.algebra.LeftJoin;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.algebra.helpers.collectors.VarNameCollector;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.researchspace.federation.repository.MpFederation;
 import org.researchspace.federation.repository.optimizers.BoundJoinExclusiveGroupOptimizer;
 import org.researchspace.federation.repository.optimizers.MpQueryHintsSyncOptimizer;
@@ -216,7 +221,29 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
     }
 
     /**
-     * Override to count left join calls for testing/debugging.
+     * Override to count left join calls for testing/debugging, to batch
+     * {@code OPTIONAL { SERVICE <member> ... } } clauses, and to keep
+     * non-guard conditional OPTIONALs out of the bind join path.
+     * <p>
+     * Upstream FedX excludes {@link FedXService} right arguments from the bind
+     * left join path (one member request per left binding). For SERVICE
+     * clauses that resolve to a non-REST federation member we batch instead:
+     * {@link GuardedServiceBindLeftJoin} sends blocks of left rows to the
+     * member in a single VALUES query.
+     * </p>
+     * <p>
+     * A LeftJoin condition ({@code OPTIONAL { FILTER(...) SERVICE ... }})
+     * whose variables are all producible by the LEFT side is handled per row
+     * by {@link GuardedServiceBindLeftJoin}, preserving standard SPARQL
+     * semantics: rows where the condition is decidable locally are batched or
+     * passed through, rows with unbound condition variables fall back to
+     * strict per-binding evaluation with a WARNING (see the class doc).
+     * Any other condition is not passed to the bind path (it would silently be
+     * dropped), so those joins fall back to {@code ControlledWorkerLeftJoin},
+     * which evaluates the condition per binding (see
+     * {@code ParallelLeftJoinTask}); a WARNING is logged since this means one
+     * member request per input row.
+     * </p>
      */
     @Override
     protected CloseableIteration<BindingSet> executeLeftJoin(
@@ -227,7 +254,154 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         if (debugCountersEnabled) {
             leftJoinCallCount.incrementAndGet();
         }
+
+        TupleExpr rightArg = leftJoin.getRightArg();
+        boolean serviceBindLeftJoin = rightArg instanceof FedXService
+                && queryInfo.getFederationContext().getConfig().isEnableOptionalAsBindJoin()
+                && resolveServiceMemberRepository((FedXService) rightArg) != null;
+
+        if (leftJoin.hasCondition()) {
+            if (serviceBindLeftJoin && isLeftEvaluableCondition(leftJoin)) {
+                GuardedServiceBindLeftJoin join = new GuardedServiceBindLeftJoin(joinScheduler, this,
+                        leftIter, leftJoin, bindings, queryInfo);
+                executor.execute(join);
+                return join;
+            }
+
+            if (serviceBindLeftJoin) {
+                log.warn("OPTIONAL SERVICE condition {} references variables not producible by the left side; "
+                        + "evaluating the member SERVICE once per input row (no batching). Restructure the query "
+                        + "so the condition only uses variables computed before the OPTIONAL.",
+                        leftJoin.getCondition());
+            }
+
+            ControlledWorkerLeftJoin join = new ControlledWorkerLeftJoin(joinScheduler, this,
+                    leftIter, leftJoin, bindings, queryInfo);
+            executor.execute(join);
+            return join;
+        }
+
+        if (serviceBindLeftJoin) {
+            GuardedServiceBindLeftJoin join = new GuardedServiceBindLeftJoin(joinScheduler, this,
+                    leftIter, leftJoin, bindings, queryInfo);
+            executor.execute(join);
+            return join;
+        }
+
         return super.executeLeftJoin(joinScheduler, leftIter, leftJoin, bindings, queryInfo);
+    }
+
+    /**
+     * Whether the LeftJoin condition references only variables that the left
+     * side can produce, i.e. it can be evaluated per left row as a guard.
+     */
+    private boolean isLeftEvaluableCondition(LeftJoin leftJoin) {
+        Set<String> conditionVars = VarNameCollector.process(leftJoin.getCondition());
+        return leftJoin.getLeftArg().getBindingNames().containsAll(conditionVars);
+    }
+
+    /**
+     * Resolve the repository behind a member SERVICE clause, or null if the
+     * SERVICE does not target a non-REST ephedra member (REST services cannot
+     * process VALUES clauses and keep their one-at-a-time evaluation).
+     */
+    private Repository resolveServiceMemberRepository(FedXService service) {
+        Var serviceRef = service.getService().getServiceRef();
+        if (serviceRef == null || !serviceRef.hasValue()) {
+            return null;
+        }
+        if (!(this.federationContext.getFederation() instanceof MpFederation)) {
+            return null;
+        }
+        MpFederation federation = (MpFederation) this.federationContext.getFederation();
+        String serviceUri = serviceRef.getValue().stringValue();
+        if (federation.isRestBackedService(serviceUri)) {
+            return null;
+        }
+        return federation.getServiceMemberRepository(serviceUri);
+    }
+
+    /**
+     * Warn (once per query) when input rows carry no binding for a variable
+     * that the service body shares with other rows: those rows are emitted as
+     * UNDEF in the VALUES clause and - per standard SPARQL semantics, which
+     * batching preserves exactly - join with EVERY service solution, i.e. the
+     * service patterns are unanchored for them. Queries should keep such
+     * variables always bound (e.g. BIND(COALESCE(...)) with a sentinel value).
+     */
+    private void warnOnUndefJoinVariables(FedXService serviceExpr, List<BindingSet> bindings) {
+        java.util.Set<String> serviceVars = serviceExpr.getService().getServiceVars();
+        java.util.Set<String> relevant = new HashSet<>();
+        for (BindingSet bs : bindings) {
+            for (String name : bs.getBindingNames()) {
+                if (serviceVars.contains(name)) {
+                    relevant.add(name);
+                }
+            }
+        }
+        for (BindingSet bs : bindings) {
+            for (String var : relevant) {
+                if (!bs.hasBinding(var)) {
+                    log.warn("Bound left join on SERVICE {}: input row {} has no binding for join variable ?{}; "
+                            + "per SPARQL semantics it joins with EVERY service solution (unanchored remote "
+                            + "pattern). Keep the variable always bound, e.g. BIND(COALESCE(...) AS ?{}) with a "
+                            + "sentinel value.",
+                            serviceExpr.getService().getServiceRef(), bs, var, var);
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Evaluate a SERVICE clause as a bound LEFT join: one VALUES query at the
+     * member endpoint for the whole block of left rows; unmatched rows are
+     * re-emitted NULL-extended by {@link BindLeftJoinIteration} based on the
+     * echoed {@code ?__index} variable.
+     */
+    public CloseableIteration<BindingSet> evaluateServiceBoundLeftJoin(FedXService serviceExpr,
+            List<BindingSet> bindings) throws QueryEvaluationException {
+
+        Repository repo = resolveServiceMemberRepository(serviceExpr);
+        if (repo == null) {
+            throw new QueryEvaluationException("SERVICE "
+                    + serviceExpr.getService().getServiceRef()
+                    + " does not resolve to a federation member repository");
+        }
+
+        String preparedQuery = org.eclipse.rdf4j.federated.util.ExclusiveGroupQueryBuilder
+                .buildServiceBoundLeftJoinVALUES(serviceExpr.getService(), bindings);
+
+        warnOnUndefJoinVariables(serviceExpr, bindings);
+
+        if (log.isDebugEnabled()) {
+            log.debug("Service bound left join with {} bindings: {}", bindings.size(), preparedQuery);
+        }
+
+        RepositoryConnection conn = repo.getConnection();
+        CloseableIteration<BindingSet> result = null;
+        try {
+            result = conn.prepareTupleQuery(preparedQuery).evaluate();
+            return new BindLeftJoinIteration(result, bindings) {
+                @Override
+                protected void handleClose() {
+                    try {
+                        super.handleClose();
+                    } finally {
+                        conn.close();
+                    }
+                }
+            };
+        } catch (Throwable t) {
+            if (result != null) {
+                result.close();
+            }
+            conn.close();
+            if (t instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new QueryEvaluationException(t);
+        }
     }
 
     /**
@@ -363,10 +537,9 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
 
         ExclusiveGroup group = (ExclusiveGroup) stmt;
 
-        // Optimization: single binding doesn't need VALUES batching
-        if (bindings.size() == 1) {
-            return stmt.evaluate(bindings.get(0));
-        }
+        // Note: no single-binding shortcut here — evaluating the group directly would
+        // apply inner-join semantics and lose unmatched left rows. Left join semantics
+        // require BindLeftJoinIteration to re-emit unmatched left bindings.
 
         if (log.isDebugEnabled()) {
             log.debug("Evaluating ExclusiveGroup left bind join with {} bindings", bindings.size());
@@ -386,17 +559,15 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
             result = evaluateAtStatementSources(preparedQuery, group.getStatementSources(),
                     group.getQueryInfo());
 
-            // Apply filter and/or convert to left join semantics
+            // Apply filter and/or convert to left join semantics. The filter must run
+            // BEFORE the left join conversion: a left row whose match fails the filter
+            // has to be re-emitted as an unmatched (NULL-extended) row by
+            // BindLeftJoinIteration, not dropped. Filtering after the conversion would
+            // also drop NULL-extended rows (the filter vars are unbound there).
             if (filterExpr != null) {
-                result = new BindLeftJoinIteration(result, bindings);
                 result = new FilteringIteration(filterExpr, result, this);
-                if (!result.hasNext()) {
-                    result.close();
-                    return new EmptyIteration<>();
-                }
-            } else {
-                result = new BindLeftJoinIteration(result, bindings);
             }
+            result = new BindLeftJoinIteration(result, bindings);
 
             return result;
         } catch (Throwable t) {
@@ -491,8 +662,10 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
             ExclusiveSubquery subquery, List<BindingSet> bindings, boolean leftJoin)
             throws QueryEvaluationException {
 
-        // Optimization: single binding doesn't need VALUES batching
-        if (bindings.size() == 1) {
+        // Optimization: single binding doesn't need VALUES batching. Only valid for
+        // inner joins — for left joins unmatched left rows must be re-emitted by
+        // BindLeftJoinIteration below.
+        if (!leftJoin && bindings.size() == 1) {
             return subquery.evaluate(bindings.get(0));
         }
 

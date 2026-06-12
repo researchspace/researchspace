@@ -123,9 +123,9 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
 
   /**
    * If true, HTTP errors (4xx, 5xx) will be ignored and return empty results
-   * instead of failing the query. Default is true.
+   * instead of failing the query. Default is false.
    */
-  private boolean ignoreHttpErrors = true;
+  private boolean ignoreHttpErrors = false;
 
   public RESTSailConfig() {
     super(RESTSailFactory.SAIL_TYPE);
@@ -234,9 +234,9 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
       }
     }
 
-    // Export ignoreHttpErrors
-    if (isIgnoreHttpErrors() == false) {
-      model.add(implNode, MpRepositoryVocabulary.IGNORE_HTTP_ERRORS, vf.createLiteral(false));
+    // Export ignoreHttpErrors (only when it differs from the default)
+    if (isIgnoreHttpErrors()) {
+      model.add(implNode, MpRepositoryVocabulary.IGNORE_HTTP_ERRORS, vf.createLiteral(true));
     }
 
     return implNode;

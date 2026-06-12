@@ -233,6 +233,7 @@ Location: `src/main/java/org/researchspace/federation/`
 | `QueryHintAwareSparqlFederationEvalStrategy.java` | **Core** - query hints + REST detection + ExclusiveGroup/ExclusiveSubquery bind join |
 | `QueryHintAwareJoinOptimizer.java` | Join ordering with query hints + single-source NJoin pushdown |
 | `SynchronousRestServiceJoin.java` | **Key** - Lazy evaluation for REST services |
+| `GuardedServiceBindLeftJoin.java` (in `org.eclipse.rdf4j.federated.evaluation.join`) | Batched VALUES left join for `OPTIONAL { SERVICE <member> }`, with optional left-evaluable guard condition |
 | `ExclusiveSubquery.java` | Wraps single-source NJoin trees (including NUnion) for subquery pushdown |
 | `ExclusiveGroupQueryBuilder.java` | Builds VALUES-based SPARQL queries for ExclusiveGroup bind joins |
 
@@ -271,17 +272,36 @@ This allows different join strategies for REST vs SPARQL endpoints.
 
 #### 2. Query Hints
 
-Support for `executeFirst` and `executeLast` hints to control join order:
+Support for `executeFirst` and `executeLast` hints to control join order. Hints
+are plain triples in the `ephedra:` namespace, extracted (and removed) by
+`QueryHintsExtractor` before join optimization:
 
 ```sparql
-PREFIX hint: <http://www.bigdata.com/queryHints#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT * WHERE {
-  ?s ?p ?o .
-  HINT %hint:executeFirst "true" .
-  
-  SERVICE <http://...> { ... }  # Will execute first
+  SERVICE <http://...search-service> { ... }
+  ephedra:Prior ephedra:executeFirst "true"^^xsd:boolean .   # applies to the SERVICE above
+  SERVICE <http://...other-member> { ... }
 }
 ```
+
+Available hints:
+
+| Hint triple | Effect |
+|---|---|
+| `ephedra:Prior ephedra:executeFirst "true"^^xsd:boolean` | Evaluate the **preceding** join operand first |
+| `ephedra:Prior ephedra:executeLast "true"^^xsd:boolean` | Evaluate the **preceding** join operand last |
+| `ephedra:Query ephedra:disableJoinReordering "true"^^xsd:boolean` | Keep the textual join order for the whole query |
+
+> [!WARNING]
+> `ephedra:Prior` attaches to the **preceding sibling in the same join group**
+> (`QueryHintsExtractor.getPreviousJoinOperand`). A hint placed as the *first*
+> element of a group attaches to nothing and is **silently dropped** — the
+> cost-based optimizer is then free to reorder, e.g. evaluating a SPARQL member
+> SERVICE before the REST search that was supposed to drive it (with no
+> bindings, so the member gets an unconstrained query). Always place the hint
+> *after* the pattern or SERVICE clause it applies to.
 
 #### 3. Synchronous REST Service Join
 
@@ -437,7 +457,7 @@ FedX caches the results of source-selection ASK probes in a `SourceSelectionMemo
       config:rep.id "wikidata-sparql" ;
       config:rep.impl [
          config:rep.type "researchspace:SPARQLRepository" ;
-         config:sparql.queryEndpoint <https://query.wikidata.org/sparql>
+         config:sparql.queryEndpoint <https://qlever.dev/api/wikidata>
       ] .
    ```
 2. Use `researchspace:FederationSailRepository` with both `config:fed.member` (Ephedra services) and `fedx:member` (SPARQL endpoints) as direct members:
@@ -568,10 +588,35 @@ LIMIT 20
 - With ORDER BY on REST variable: ALL 30k HTTP calls required (slow ⚠️)
 
 **Workarounds**:
-1. **Remove ORDER BY**: If ordering isn't critical, omit it to benefit from lazy evaluation
-2. **ORDER BY on first service variable**: If you can order by a variable from the first service (which returns all values in one call), sorting doesn't block lazy evaluation
+1. **Bound the source with `ephedra:rowLimit`** (preferred): declare an input
+   argument flagged `ephedra:rowLimit true` on the search service descriptor
+   and set it in the query (`?subject met:limit "50"`). The value caps the
+   number of rows parsed from the service response — a declared "top N hits"
+   bound that is NOT sent to the remote API — so downstream per-row joins and
+   ORDER BY cannot fan out beyond N. With the source bounded, `ORDER BY` an
+   `ephedra:rowIndex` ordinal is safe and free (it sorts N already-fetched
+   rows). This is what the MET import does.
+2. **Remove ORDER BY**: If ordering isn't critical, omit it to benefit from lazy evaluation.
+   Lazy REST joins preserve the first service's response order and DISTINCT is
+   streaming, so results already arrive in the search API's relevance order.
 3. **Client-side sorting**: Retrieve unordered results with LIMIT, then sort in application code
 4. **Accept the performance**: For correctness, all results must be fetched before sorting
+
+> [!CAUTION]
+> "ORDER BY a variable from the *first* service" is NOT a workaround on its
+> own, even though that service returns all its rows in one call (e.g. an
+> `ephedra:rowIndex` ordinal): the ORDER operator still consumes the ENTIRE
+> child iteration before sorting, which drives the downstream per-row service
+> through every row regardless of the final LIMIT. Adding `ORDER BY ?ordinal`
+> to the MET import without a source bound did exactly this — one search for a
+> broad term fired a details request for every one of thousands of matching
+> object ids and got the deployment IP 403-banned by the MET WAF. Always pair
+> the ordinal with an `ephedra:rowLimit` bound (workaround 1).
+>
+> Note the query's own LIMIT cannot be pushed into the source automatically:
+> downstream joins may drop rows (non-matching details,
+> `ephedra:ignoreHttpErrors`) or multiply them, so "first N final results" is
+> not "first N search hits" — the bound has to be declared query semantics.
 
 > [!NOTE]
 > The old MpFederation implementation appeared to handle this case faster, but it was due to a bug: a race condition caused early termination, returning results sorted from only a subset of the data (e.g., 122 out of 30,000 items). The current implementation is **correct** - it fetches all results before sorting to ensure proper ORDER BY semantics.
@@ -680,6 +725,131 @@ The `|` expands to `NUnion(P190, rdfs:label)`, yielding a tree: `NJoin(NUnion, E
 
 **Result**: 80 queries → 40 (Phase 1) → **1 query** (Phase 2, with `boundJoinBlockSize=100`).
 
+---
+
+### Issue 9: Per-Row Evaluation of Conditional OPTIONAL + SERVICE
+
+**Problem**: The "enrich search results from a SPARQL member, but keep rows
+that have no match" pattern was historically written as:
+
+```sparql
+SERVICE :SearchService { ?x :q "leonardo"; :id ?wikidataId . }   # 50 hits
+OPTIONAL {
+  BIND(IRI(CONCAT(STR(wd:), ?wikidataId)) AS ?entity)
+  FILTER(BOUND(?entity))
+  SERVICE <federation#wikidata-sparql> { OPTIONAL { ?entity wdt:P18 ?img } }
+}
+```
+
+The `FILTER` becomes a **LeftJoin condition**. Conditional left joins cannot go
+through the bind-join path (the condition would be silently dropped — see the
+`executeLeftJoin` override), so FedX falls back to `ControlledWorkerLeftJoin`:
+**one remote query per left binding**. 50 search hits → 50 requests to the
+member endpoint, >10s per search (this was the Wikidata import slowness).
+
+**Solution**: two batched shapes, depending on the desired semantics.
+
+**(a) Hard filter** — write the member SERVICE as a **required inner join**;
+it takes the vectored bound join path (`ControlledWorkerBindJoin` →
+`evaluateService(service, List<BindingSet>)` → one VALUES query per
+`boundJoinBlockSize`=100 bindings). Non-matching rows are dropped:
+
+```sparql
+SERVICE :SearchService { ?x :q "leonardo"; :entity ?entity; :ordinal ?ordinal . }
+ephedra:Prior ephedra:executeFirst "true"^^xsd:boolean .
+SERVICE <federation#wikidata-sparql> {
+  ?entity wdt:P31/wdt:P279* wd:Q24229398 .       # required pattern = hard filter
+  OPTIONAL { ?entity wdt:P18 ?img . }            # enrichment stays optional
+}
+```
+
+**(b) Keep unmatched rows** — `OPTIONAL { SERVICE <member> { ... } }`.
+Upstream FedX evaluates SERVICE clauses in left joins per binding (it excludes
+`FedXService` from the bind left join path entirely); our
+`GuardedServiceBindLeftJoin` batches them instead — one VALUES query (with a
+`?__index` column joined back by `BindLeftJoinIteration`) per block, unmatched
+rows re-emitted NULL-extended. Batching is **semantics-preserving**: a VALUES
+row with UNDEF behaves exactly like per-binding evaluation with the variable
+unbound.
+
+> [!CAUTION]
+> **Never let the join variable be unbound.** Per standard SPARQL semantics an
+> unbound join variable makes the service patterns unanchored: the row
+> cross-products against the *whole remote dataset* (this is true with or
+> without batching — it is what the query means). Keep the variable always
+> bound with a sentinel that matches nothing remotely:
+>
+> ```sparql
+> BIND(IRI(CONCAT(STR(wd:), COALESCE(?wikidataId, "Q0-NO-WIKIDATA-TAG"))) AS ?osmPlaceURI)
+> OPTIONAL {
+>   SERVICE <federation#wikidata-sparql> {
+>     OPTIONAL { ?osmPlaceURI rdfs:label ?_label . FILTER(LANG(?_label) = "en") }
+>   }
+> }
+> ```
+>
+> Rows with the sentinel come back unenriched and survive the OPTIONAL. The
+> engine logs a WARNING whenever an input row reaches a member-service left
+> join with an unbound join variable.
+
+A LeftJoin **condition** (`OPTIONAL { FILTER(...) SERVICE ... }`) is handled
+per row, fully standard-compliant:
+
+- *locally decidable* (every condition variable is either bound in the row —
+  a compatible merge never re-binds it — or not producible by the service
+  body — the merge can never bind it): evaluated against the row; `true` rows
+  join the batch with the condition discharged, `false`/error rows pass
+  through unextended;
+- *undecidable* (a condition variable is unbound AND the service body could
+  bind it, e.g. `FILTER(BOUND(?x))` with `?x` used in the body): the row falls
+  back to strict per-binding evaluation — the bottom-up cross-product
+  semantics — and a WARNING is logged;
+- condition referencing variables not producible by the left side at all:
+  the whole join keeps the strict `ControlledWorkerLeftJoin` path (one member
+  request per row) and a WARNING is logged.
+
+- Row order does NOT survive the parallel join + GROUP BY; project an
+  `ephedra:rowIndex` column from the REST service and `ORDER BY` it to restore
+  the search ranking.
+
+**Result**: 1 REST call + 1 member request per search (was 1 + 50).
+
+Pinned by `EphedraIntegrationTest.testRestSearchFilteredAndEnrichedBySparqlMemberInSingleBatch`,
+`testOptionalServiceJoinWithoutConditionIsBatched`,
+`testGuardedConditionalOptionalServiceJoinIsBatched`,
+`testGuardOnVariableNotProducibleByServiceIsDecidedLocally` and
+`testUnboundGuardVariableFallsBackToStrictPerRowEvaluation` (the strict
+cross-product fallback for undecidable guards).
+
+---
+
+### SERVICE Clause Evaluation Contracts (verified by tests)
+
+Facts about how a `SERVICE <federation#member>` clause is evaluated that
+templates and tests rely on (member SERVICE refs resolve to rdf4j's
+`RepositoryFederatedService`, registered in `MpFederationSailRepository`):
+
+1. **The member body is forwarded verbatim, prologue included.** The query
+   sent to the member is built from the Service node's raw expression string
+   plus the original query's PREFIX declarations — NOT re-rendered from
+   algebra. A SERVICE clause **nested inside** the member body (e.g.
+   `SERVICE wikibase:mwapi { ... }` for endpoint-specific magic services) is
+   passed through untouched, in a single request, preserving endpoint row
+   order. Pinned by `EphedraIntegrationTest.testNestedServiceIsPassedThroughToSparqlMember`.
+
+2. **Vectored evaluation projects `?__rowIdx`.** With >1 input binding,
+   `RepositoryFederatedService` injects
+   `VALUES (?__rowIdx ?boundVar ...) { ("0" <...>) ... }` and expects the
+   endpoint to **echo `?__rowIdx` back** — results are joined to their input
+   row by that variable (`ServiceJoinConversionIteration`), and join vars are
+   not re-projected. WireMock stubs for member endpoints must therefore
+   include `__rowIdx` in canned responses, or rows will cross-product.
+
+3. **With a single (or empty) input binding** the member query is sent without
+   VALUES — a canned-response stub then matches every input row. Test stubs
+   must honor the endpoint contract (only return rows for the bindings
+   actually requested), otherwise tests pass against behavior no real endpoint
+   exhibits.
 
 ## Configuration Reference
 
@@ -761,29 +931,96 @@ All properties use the `fedx:` namespace (`http://rdf4j.org/config/federation#`)
 
 ### Service Descriptor
 
-```turtle
-@prefix sp: <http://spinrdf.org/sp#> .
-@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+The descriptor declares the SPARQL pattern vocabulary of a REST service, its
+input arguments (`spin:constraint`/`spl:Argument` → HTTP request parameters)
+and output columns (`spin:column`/`spin:Column` → values extracted from the
+JSON response). Parameter IRIs must start with `_`; the local name minus the
+underscore becomes the HTTP parameter name (`:_q` → `?q=...`).
 
-<http://example.org/MyService> a ephedra:Service ;
-    rdfs:label "My Service" ;
-    ephedra:hasSail [
-        a ephedra:RESTSail ;
-        ephedra:httpMethod "GET" ;
-        ephedra:url "https://api.example.org/search" ;
-        # ... parameter mappings
-    ] .
+```turtle
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX ex: <http://example.org/ns#>
+
+ex:SearchService a ephedra:Service ;
+   rdfs:label "Search service returning an ordered result array" ;
+   spin:constraint [
+      a spl:Argument ;
+      spl:predicate ex:_q ;
+      spl:valueType xsd:string
+   ] ;
+   spin:column [                       # row anchor: defines the JSON root path
+      a spin:Column ;
+      spl:predicate ex:_results ;
+      spl:valueType rdfs:Resource ;
+      ephedra:jsonPath "$.search[*]"
+   ] ;
+   spin:column [
+      a spin:Column ;
+      spl:predicate ex:_entity ;
+      spl:valueType rdfs:Resource ;    # rdfs:Resource => an IRI is minted
+      ephedra:jsonPath "$.entity"
+   ] ;
+   spin:column [                       # 0-based row position (relevance rank)
+      a spin:Column ;
+      spl:predicate ex:_ordinal ;
+      spl:valueType xsd:integer ;
+      ephedra:rowIndex true
+   ] ;
+   ephedra:hasSPARQLPattern (
+      [ sp:subject ex:_results ; sp:predicate ex:q ; sp:object ex:_q ]
+      [ sp:subject ex:_results ; sp:predicate ex:hasEntity ; sp:object ex:_entity ]
+      [ sp:subject ex:_results ; sp:predicate ex:hasOrdinal ; sp:object ex:_ordinal ]
+   ) .
 ```
+
+> [!CAUTION]
+> Only `spl:valueType rdfs:Resource` makes `RESTSailConnection` mint an IRI.
+> Any other value — including the lookalike `rdf:Resource` — produces a
+> **typed literal**, which silently breaks joining the value into SPARQL
+> federation members and `<{{binding.value}}>` substitution in templates
+> (this exact typo shipped in the wikidata-entity descriptor for years).
+> Note that `Rio.parse` resolves well-known prefixes (`rdf:`, `xsd:`, ...)
+> even when not declared in the file, so the typo is NOT a parse error.
 
 ### REST Service Configuration Properties
 
-| Property | Description |
-|----------|-------------|
-| `ephedra:httpMethod` | HTTP method: GET, POST |
-| `ephedra:serviceURL` | Base URL of the REST service |
-| `ephedra:inputFormat` | Input format for POST: JSON, FORM |
-| `ephedra:mediaType` | Response content type expected |
-| `ephedra:jsonPath` | JSONPath to extract results |
-| `ephedra:ignoreHttpErrors` | If true, HTTP 4xx/5xx return empty instead of failing |
-| `ephedra:requestRateLimit` | Max requests per second (rate limiting) |
-| `ephedra:userAgent` | Custom User-Agent header |
+| Property | Level | Description |
+|----------|-------|-------------|
+| `ephedra:httpMethod` | sail | HTTP method: GET, POST |
+| `ephedra:serviceURL` | sail | Base URL of the REST service |
+| `ephedra:inputFormat` | sail | Input format for POST: JSON, FORM |
+| `ephedra:mediaType` | sail | Response content type expected |
+| `ephedra:ignoreHttpErrors` | sail | If true, HTTP 4xx/5xx return empty instead of failing |
+| `ephedra:requestRateLimit` | sail | Max requests per second (rate limiting) |
+| `ephedra:userAgent` | sail | Custom User-Agent header |
+| `ephedra:jsonPath` | column | JSONPath to extract the column value (relative to the row anchor) |
+| `ephedra:rowIndex` | column | If true, binds the 0-based position of the row in the response array instead of reading a `jsonPath`. Typed by the column's `spl:valueType` (default `xsd:integer`). Lets queries `ORDER BY` the service's own result ranking after joins/aggregation. |
+| `ephedra:rowLimit` | argument | If true, the input argument's value caps the number of rows parsed from the service response and is NOT sent to the remote API. The declared "top N hits" bound for search APIs returning their full result list — bounds downstream per-row joins and makes `ORDER BY` over the rows safe. |
+
+### External Wikidata Endpoints
+
+Findings from the Wikidata import work (June 2026), relevant when adding
+SPARQL members for public endpoints:
+
+- **`https://qlever.dev/api/wikidata`** (QLever mirror; what `wikidata-sparql`
+  points at): evaluates transitive property paths (`wdt:P31/wdt:P279*`)
+  natively and fast, handles the vectored `VALUES (?__rowIdx ...)` queries,
+  no vendor extensions needed. Trade-off: the dataset lags ~1 day behind live
+  Wikidata, so a required filter drops entities created very recently.
+  The old `qlever.cs.uni-freiburg.de/api/*` URLs answer **308 redirects**
+  which Apache HttpClient 4.x does not follow for POST — use `qlever.dev`.
+- **`https://query.wikidata.org/sparql`** (WDQS, Blazegraph): plain
+  `wdt:P31/wdt:P279* <umbrella>` paths **time out** (Blazegraph materializes
+  the umbrella class's entire subclass closure) unless the vendor hint
+  `hint:Prior hint:gearing "forward"` is added. Offers `SERVICE wikibase:mwapi`
+  (entity search inside SPARQL, with relevance ordinals) — Blazegraph-only,
+  and WMF is phasing Blazegraph out. Aggressively rate-limits (429) and
+  requires a meaningful User-Agent.
+- Useful Wikidata umbrella classes for type filtering: human `Q5`,
+  organization `Q43229`, group of humans `Q16334295`, and agent `Q24229398`
+  (common superclass of person and organization — "people and organizations").

@@ -40,6 +40,8 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.sail.config.AbstractSailImplConfig;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.researchspace.repository.MpDelegatingImplConfig;
 import org.researchspace.repository.MpRepositoryVocabulary;
@@ -67,6 +69,14 @@ import com.google.common.collect.Lists;
  * @author Andriy Nikolov <an@metaphacts.com>
  */
 public class MpFederationConfig extends AbstractSailImplConfig implements MpDelegatingImplConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(MpFederationConfig.class);
+
+    /**
+     * The only fedx:store type supported for fedx:member entries: repositories
+     * resolved by ID through the platform {@link RepositoryManager}.
+     */
+    private static final String RESOLVABLE_REPOSITORY_STORE = "ResolvableRepository";
 
     /**
      * Legacy IRI for the config block within ephedra namespace (deprecated, use fedx:config)
@@ -173,7 +183,9 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
     public Collection<String> getDelegateRepositoryIDs() {
         Set<String> res = memberConfigs.stream().map(repoConfig -> repoConfig.getDelegateRepositoryId())
                 .collect(Collectors.toSet());
-        res.add(this.defaultMember);
+        if (this.defaultMember != null) {
+            res.add(this.defaultMember);
+        }
         res.addAll(fedxMemberRepositoryIds);
         return res;
     }
@@ -188,7 +200,7 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
 
     @Override
     public void validate() throws SailConfigException {
-        if (memberConfigs.isEmpty()) {
+        if (memberConfigs.isEmpty() && fedxMemberRepositoryIds.isEmpty()) {
             throw new SailConfigException("No federation members were configured.");
         }
         if (this.defaultMember == null) {
@@ -226,12 +238,22 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
             model.add(res, MpRepositoryVocabulary.ENABLE_QUERY_HINTS,
                     SimpleValueFactory.getInstance().createLiteral(this.enableQueryHints));
         }
-        
+        for (String fedxMemberId : fedxMemberRepositoryIds) {
+            BNode memberNode = vf.createBNode();
+            model.add(memberNode, Vocabulary.FEDX.STORE, vf.createLiteral(RESOLVABLE_REPOSITORY_STORE));
+            model.add(memberNode, Vocabulary.FEDX.REPOSITORY_NAME, vf.createLiteral(fedxMemberId));
+            model.add(res, FedXRepositoryConfig.MEMBER, memberNode);
+        }
+        if (restServicePrefetchSize != DEFAULT_REST_SERVICE_PREFETCH_SIZE) {
+            model.add(res, MpRepositoryVocabulary.REST_SERVICE_PREFETCH_SIZE,
+                    vf.createLiteral(restServicePrefetchSize));
+        }
+
         // Export FedX config if present
         if (fedXConfig != null) {
             exportFedXConfig(model, res);
         }
-        
+
         return res;
     }
 
@@ -255,7 +277,12 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USE_ASYNCHRONOUS_PARALLEL_JOIN, null))
                 .ifPresent(lit -> setUseAsyncParallelJoin(lit.booleanValue()));
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USE_BOUND_JOIN, null))
-                .ifPresent(lit -> setUseBoundJoin(lit.booleanValue()));
+                .ifPresent(lit -> {
+                    setUseBoundJoin(lit.booleanValue());
+                    // legacy option maps onto FedX's enableServiceAsBoundJoin; an explicit
+                    // fedx:config value parsed below still takes precedence
+                    fedXConfig.withEnableServiceAsBoundJoin(lit.booleanValue());
+                });
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USE_COMPETING_JOIN, null))
                 .ifPresent(lit -> setUseCompetingJoin(lit.booleanValue()));
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.ENABLE_QUERY_HINTS, null))
@@ -264,8 +291,17 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REST_SERVICE_PREFETCH_SIZE, null))
                 .ifPresent(lit -> setRestServicePrefetchSize(lit.intValue()));
 
-        // Parse fedx:member entries (ResolvableRepository members for FedX source selection)
+        // Parse fedx:member entries (ResolvableRepository members for FedX source selection).
+        // Other member types (e.g. RemoteRepository) are not resolvable through the local
+        // RepositoryManager and must not become local repository dependencies.
         Models.objectResources(model.filter(implNode, FedXRepositoryConfig.MEMBER, null)).forEach(memberNode -> {
+            boolean resolvable = Models.objectLiteral(model.filter(memberNode, Vocabulary.FEDX.STORE, null))
+                    .map(lit -> RESOLVABLE_REPOSITORY_STORE.equals(lit.stringValue())).orElse(false);
+            if (!resolvable) {
+                logger.warn("Ignoring fedx:member without fedx:store \"{}\" (other member types are not supported)",
+                        RESOLVABLE_REPOSITORY_STORE);
+                return;
+            }
             Models.objectLiteral(model.filter(memberNode, Vocabulary.FEDX.REPOSITORY_NAME, null))
                     .ifPresent(lit -> fedxMemberRepositoryIds.add(lit.stringValue()));
         });

@@ -6,6 +6,7 @@
 package org.researchspace.federation.repository;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.rdf4j.federated.cache.SourceSelectionCache;
 import org.eclipse.rdf4j.model.IRI;
@@ -27,16 +28,23 @@ public class SourceSelectionPlatformCache implements PlatformCache {
 
     private static final String CACHE_ID_PREFIX = "federation.SourceSelectionCache.";
 
+    /**
+     * Repository reinitialization creates and registers the new federation
+     * instance before the old one is shut down and deregistered, so the cache
+     * ID must differ between instances of the same federation.
+     */
+    private static final AtomicLong INSTANCE_COUNTER = new AtomicLong();
+
     private final SourceSelectionCache delegate;
     private final String cacheId;
 
     /**
      * @param delegate      the FedX source selection cache to wrap
-     * @param federationId  unique identifier for the federation instance (e.g. repository ID)
+     * @param federationId  identifier of the federation (e.g. its default member repository ID)
      */
     public SourceSelectionPlatformCache(SourceSelectionCache delegate, String federationId) {
         this.delegate = delegate;
-        this.cacheId = CACHE_ID_PREFIX + federationId;
+        this.cacheId = CACHE_ID_PREFIX + federationId + "-" + INSTANCE_COUNTER.incrementAndGet();
     }
 
     @Override

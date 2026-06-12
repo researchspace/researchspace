@@ -12,7 +12,7 @@
       config:rep.type "researchspace:FederationSailRepository";
       config:sail.impl [
           fedx:config [
-              fedx:logQueryPlan true
+              fedx:logQueryPlan false
           ] ;
           config:sail.type "researchspace:Federation";
           config:fed.member [
@@ -54,6 +54,15 @@
             config:fed.member [
                 ephedra:delegateRepositoryID "tna-discovery-range-search";
                 ephedra:serviceReference <http://www.researchspace.org/resource/system/services/tnadiscovery/TNADiscoverySearchRangeService>
+            ];
+          # Wikidata SPARQL endpoint, addressable as a SERVICE so that queries can
+          # join REST service results with Wikidata data in a single federated
+          # query (goes through the platform HTTP client with the configured
+          # httpUserAgent, unlike SERVICE <https://query.wikidata.org/sparql>
+          # executed by the default triplestore).
+          config:fed.member [
+                ephedra:delegateRepositoryID "wikidata-sparql";
+                ephedra:serviceReference <http://www.researchspace.org/resource/system/repository/federation#wikidata-sparql>
             ];
 
           ephedra:defaultMember "default"

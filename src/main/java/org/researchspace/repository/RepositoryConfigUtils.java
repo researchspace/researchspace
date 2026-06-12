@@ -41,6 +41,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.CONFIG;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
 import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
@@ -332,9 +333,13 @@ public class RepositoryConfigUtils {
                             "Name of repository configuration file is \"%s\", but need to be equal to the repository id as specified in the configuration (repositoryID=\"%s\").",
                             fileNameId, repConfig.getID()));
                 }
+                repConfig.validate();
                 map.put(repConfig.getID(), repConfig);
-            } catch (IOException | RepositoryConfigException e) {
-                logger.warn("Error while creating the repository config object from the configuration model:{}",
+            } catch (IOException | RDF4JException e) {
+                // RDF4JException covers RepositoryConfigException as well as unchecked
+                // parse/config errors (RDFParseException, SailConfigException, ...);
+                // one broken file must not prevent the remaining repositories from loading
+                logger.warn("Skipping repository configuration file \"{}\": {}", configFile.getPath(),
                         e.getMessage());
             }
         }

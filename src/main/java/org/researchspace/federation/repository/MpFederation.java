@@ -85,11 +85,7 @@ public class MpFederation extends FedX {
     public MpFederation(MpFederationConfig config) {
         super(new ArrayList<>());
         this.config = config;
-        
-        // Apply FedX configuration - apply legacy config options for backwards compatibility
-        FedXConfig fedXConfig = config.getFedXConfig();
-        fedXConfig.withEnableServiceAsBoundJoin(config.isUseBoundJoin());
-        
+
         this.setFederationEvaluationStrategy(new QueryHintAwareFederationEvaluationStrategyFactory());
         
         logger.debug("MpFederation initialized with restServicePrefetchSize={}", 
@@ -221,5 +217,26 @@ public class MpFederation extends FedX {
             logger.debug("Error checking if service is REST-backed: {}", serviceUri, e);
         }
         return false;
+    }
+
+    /**
+     * Resolve the repository behind an ephedra service member SERVICE URI
+     * (config:fed.member serviceReference), or {@code null} if the URI does
+     * not map to a registered member repository.
+     *
+     * @param serviceUri the SERVICE clause URI
+     * @return the member repository, or null
+     */
+    public Repository getServiceMemberRepository(String serviceUri) {
+        try {
+            IRI serviceIri = SimpleValueFactory.getInstance().createIRI(serviceUri);
+            String repoId = config.getRepositoryIDMappings().get(serviceIri);
+            if (repoId != null && repositoryManagerProvider != null) {
+                return repositoryManagerProvider.get().getRepository(repoId);
+            }
+        } catch (Exception e) {
+            logger.debug("Error resolving service member repository: {}", serviceUri, e);
+        }
+        return null;
     }
 }

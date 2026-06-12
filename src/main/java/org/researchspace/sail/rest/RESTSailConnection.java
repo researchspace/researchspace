@@ -53,6 +53,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.Create;
@@ -130,7 +131,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
           Optional<Parameter> param = getSail().getSubjectParameter();
           String rootPath = param.isPresent() ? param.get().getJsonPath() : "$";
           logger.trace("rootPath" + rootPath);
-          results = executeJson(stringResponse, rootPath, parametersHolder.getOutputVariables());
+          results = executeJson(stringResponse, rootPath, parametersHolder.getOutputVariables(),
+              resolveRowLimit(parametersHolder));
           break;
 
         case RESTSailConfig.XML:
@@ -155,7 +157,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
    * @param outputParameters
    * @return
    */
-  private List<BindingSet> executeJson(String res, String rootPath, Map<IRI, String> outputParameters) {
+  private List<BindingSet> executeJson(String res, String rootPath, Map<IRI, String> outputParameters,
+      int rowLimit) {
     logger.trace("Response: " + res);
 
     ObjectMapper objectMapper = new ObjectMapper();
@@ -170,7 +173,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
     if (root instanceof List) {
       // likely a JSON array
       logger.trace("Root is a JSON array. Iterating over array properties...");
-      results = iterateJsonArray((List<?>) root, outputParameters);
+      results = iterateJsonArray((List<?>) root, outputParameters, rowLimit);
     } else if (root instanceof Map) {
       // likely a JSON object
       logger.trace("Root is a JSON object. Iterating over object properties...");
@@ -181,18 +184,59 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
   }
 
   /**
-   * 
+   * Resolve the value of a {@code ephedra:rowLimit} input argument, if the
+   * query provided one. The bound caps the number of response rows parsed and
+   * is never sent to the remote API (see {@link #httpInputParameters}).
+   *
+   * @return the row bound, or -1 when none is set
+   */
+  private int resolveRowLimit(ServiceParametersHolder parametersHolder) {
+    for (Map.Entry<String, Parameter> entry : getSail().getServiceDescriptor().getInputParameters().entrySet()) {
+      if (entry.getValue().isRowLimit()) {
+        String value = parametersHolder.getInputParameters().get(entry.getKey());
+        if (value != null) {
+          try {
+            return Integer.parseInt(value);
+          } catch (NumberFormatException e) {
+            throw new SailException("Invalid " + entry.getKey() + " row limit value: " + value, e);
+          }
+        }
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Input parameters to send to the remote API: all of the query's inputs
+   * except local row bounds ({@code ephedra:rowLimit} arguments).
+   */
+  private Map<String, String> httpInputParameters(ServiceParametersHolder parametersHolder) {
+    Map<String, Parameter> declared = getSail().getServiceDescriptor().getInputParameters();
+    Map<String, String> result = new java.util.LinkedHashMap<>();
+    for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
+      Parameter declaredParam = declared.get(entry.getKey());
+      if (declaredParam != null && declaredParam.isRowLimit()) {
+        continue;
+      }
+      result.put(entry.getKey(), entry.getValue());
+    }
+    return result;
+  }
+
+  /**
+   *
    * @param array
    * @param outputParameters
    * @return
    */
-  private List<BindingSet> iterateJsonArray(List<?> array, Map<IRI, String> outputParameters) {
+  private List<BindingSet> iterateJsonArray(List<?> array, Map<IRI, String> outputParameters, int rowLimit) {
     List<BindingSet> bindingSets = new ArrayList<>();
 
     logger.trace("### [START] Parsing JSONArray ###");
 
-    for (Object object : array) {
-      bindingSets.add(createBindingSetFromJSONObject(object, outputParameters));
+    int rows = rowLimit >= 0 ? Math.min(rowLimit, array.size()) : array.size();
+    for (int i = 0; i < rows; i++) {
+      bindingSets.add(createBindingSetFromJSONObject(array.get(i), outputParameters, i));
     }
 
     logger.trace("### [END] Parsing JSONArray");
@@ -210,7 +254,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
     logger.trace("### [START] Parsing JSONObject ###");
     List<BindingSet> bindingSets = Lists.newArrayList();
 
-    bindingSets.add(createBindingSetFromJSONObject(map, outputParameters));
+    bindingSets.add(createBindingSetFromJSONObject(map, outputParameters, 0));
 
     logger.trace("### [END] Parsing JSONObject ###");
     return bindingSets;
@@ -222,7 +266,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
    * @param outputParameters
    * @return
    */
-  private MapBindingSet createBindingSetFromJSONObject(Object object, Map<IRI, String> outputParameters) {
+  private MapBindingSet createBindingSetFromJSONObject(Object object, Map<IRI, String> outputParameters,
+      int rowIndex) {
     MapBindingSet mapBindingSet = new MapBindingSet();
 
     for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
@@ -232,6 +277,14 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
       Parameter parameter = getSail().getServiceDescriptor().getOutputParameters().get(parameterName);
 
       IRI type = parameter.getValueType();
+
+      if (parameter.isRowIndex()) {
+        IRI indexType = type != null ? type : XSD.INTEGER;
+        logger.trace("Creating row index Literal({},{})", rowIndex, indexType);
+        mapBindingSet.addBinding(outputParameter.getValue(), VF.createLiteral(String.valueOf(rowIndex), indexType));
+        continue;
+      }
+
       String jsonPath = parameter.getJsonPath();
       Object value = JsonPath.using(this.jsonPathConfig).parse(object).read(jsonPath);
       if (value != null) {
@@ -256,6 +309,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
     if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
       String errorMessage = "Request failed with HTTP status code " + response.getStatus() + ": "
           + response.getStatusInfo().getReasonPhrase();
+      response.close();
 
       // Check if we should ignore HTTP errors and return empty results
       if (getSail().getConfig().isIgnoreHttpErrors()) {
@@ -324,7 +378,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
   protected Response submitGet(WebTarget targetResource, ServiceParametersHolder parametersHolder) {
     try {
-      for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
+      for (Entry<String, String> entry : httpInputParameters(parametersHolder).entrySet()) {
         targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
       }
 
@@ -348,10 +402,10 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
       logger.trace("Submitting POST request");
       if (StringUtils.equals(mediaType, MediaType.APPLICATION_JSON)) {
-        Object body = getJsonBody(parametersHolder.getInputParameters());
+        Object body = getJsonBody(httpInputParameters(parametersHolder));
         return request.post(Entity.json(body));
       } else if (StringUtils.equals(mediaType, MediaType.APPLICATION_FORM_URLENCODED)) {
-        MultivaluedMap<String, String> formData = getHashMapBody(parametersHolder.getInputParameters());
+        MultivaluedMap<String, String> formData = getHashMapBody(httpInputParameters(parametersHolder));
         return request.post(Entity.form(formData));
       } else {
         throw new IllegalArgumentException("RESTSail doesn't support media type: " + mediaType);

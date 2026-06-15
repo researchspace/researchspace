@@ -24,12 +24,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.http.HttpConnection;
-import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,20 +46,28 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
     private static final Logger logger = LogManager.getLogger(MpSharedHttpClientSessionManager.class);
 
     /**
-     * Closes stale pooled connections and retries the request. Servers and
-     * load balancers close idle keep-alive connections; reusing one surfaces as
-     * NoHttpResponseException ("failed to respond") even though the request was
-     * never processed. Mirrors rdf4j's SharedHttpClientSessionManager.RetryHandlerStale,
-     * which our custom HttpClientBuilder otherwise replaces - but allows a few
-     * retries instead of one: after an endpoint restart the pool can hold
-     * SEVERAL stale connections (one per previously concurrent request), and
-     * each retry may lease the next stale one. Only stale connections are
-     * retried, so genuine failures still propagate immediately.
+     * Keeps Apache HttpClient's standard idempotent retry and adds a single
+     * backstop retry for non-idempotent requests on a stale connection.
+     *
+     * <p>Short SPARQL queries are sent as GET (see
+     * {@code EnvironmentConfiguration#getSparqlMaxUrlLength}); GET is
+     * idempotent, so the inherited {@link DefaultHttpRequestRetryHandler}
+     * transparently retries one that hit a keep-alive connection the server
+     * had closed while idle - this is what silently absorbed idle connections
+     * before the upgrade. Only long queries go as POST, which is not retried
+     * by the default handler; for those we retry once if the failed connection
+     * turns out to be stale. Logged at DEBUG: a recovered retry is routine.</p>
      */
-    private static class RetryHandlerStale implements HttpRequestRetryHandler {
+    private static class IdempotentOrStaleRetryHandler extends DefaultHttpRequestRetryHandler {
         @Override
         public boolean retryRequest(IOException ioe, int count, HttpContext context) {
-            if (count > 3) {
+            // GET and other idempotent methods: HttpClient's standard retry.
+            if (super.retryRequest(ioe, count, context)) {
+                return true;
+            }
+            // Non-idempotent (POST) backstop: retry once on a server-closed
+            // idle keep-alive connection ("failed to respond").
+            if (count > 1) {
                 return false;
             }
             HttpConnection conn = HttpClientContext.adapt(context).getConnection();
@@ -68,11 +75,11 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
                 synchronized (this) {
                     if (conn.isStale()) {
                         try {
-                            logger.warn("Closing stale connection");
+                            logger.debug("Closing stale connection and retrying request");
                             conn.close();
                             return true;
                         } catch (IOException e) {
-                            logger.error("Error closing stale connection", e);
+                            logger.debug("Error closing stale connection", e);
                         }
                     }
                 }
@@ -101,27 +108,18 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
         RequestConfig requestConfig = configBuilder.build();
         String userAgent = this.config.getEnvironmentConfig().getHttpUserAgent();
 
-        // Remote endpoints and load balancers close idle keep-alive connections;
-        // without revalidation a pooled connection that died while idle surfaces
-        // as NoHttpResponseException ("failed to respond") on the next query.
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(maxConnections);
-        connectionManager.setDefaultMaxPerRoute(maxConnections);
-        connectionManager.setValidateAfterInactivity(1000);
-
-        // Note: deliberately no evictExpiredConnections()/evictIdleConnections() —
-        // those spawn an IdleConnectionEvictor background thread that outlives
-        // webapp reloads (the servlet container kills the classloader, the thread
-        // then dies with NoClassDefFoundError). Connection staleness is fully
-        // handled by validateAfterInactivity + RetryHandlerStale above.
         HttpClientBuilder mpHttpClientBuilder = HttpClientBuilder.create()
-                .setConnectionManager(connectionManager)
+                .setMaxConnPerRoute(maxConnections)
+                .setMaxConnTotal(maxConnections)
                 .setDefaultRequestConfig(requestConfig)
                 .setUserAgent(userAgent)
-                .setRetryHandler(new RetryHandlerStale());
+                .setRetryHandler(new IdempotentOrStaleRetryHandler());
 
-        // Force POST for SPARQL queries to avoid HTTP 431 errors from servers
-        // with low header size limits. SPARQLProtocolSession reads this system property.
+        // Short SPARQL queries go as GET (idempotent, so a connection the server
+        // closed while idle is retried transparently); only long queries - which
+        // risk HTTP 431 from servers with small header limits - go as POST.
+        // SPARQLProtocolSession reads this system property; see
+        // EnvironmentConfiguration#getSparqlMaxUrlLength.
         Integer maxUrlLength = this.config.getEnvironmentConfig().getSparqlMaxUrlLength();
         System.setProperty("rdf4j.sparql.url.maxlength", String.valueOf(maxUrlLength));
 

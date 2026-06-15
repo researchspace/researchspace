@@ -1760,11 +1760,7 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
                 .withHeader("Content-Type", "application/sparql-results+json")
                 .withBody(emptyJsonResponse)));
         stubFor(any(urlPathEqualTo("/sparql"))
-<<<<<<< HEAD
-            .withRequestBody(containing("Alice"))
-=======
             .withQueryParam("query", containing("Alice"))
->>>>>>> rdf4j-update
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/sparql-results+json")
@@ -1883,30 +1879,17 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
 
         // Exactly one request: the federation must not evaluate the inner
         // SERVICE itself or split the member body into per-pattern queries.
-<<<<<<< HEAD
-        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/sparql")));
-        // ...and the nested SERVICE clause must arrive at the member verbatim
-        // ("magicsearch" survives the form-urlencoding of the query parameter).
-        wireMockRule.verify(postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("magicsearch")));
-=======
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
         // ...and the nested SERVICE clause must arrive at the member verbatim
         // ("magicsearch" survives the form-urlencoding of the query parameter).
         wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("magicsearch")));
->>>>>>> rdf4j-update
         // The query prologue must be forwarded too, or prefixed names inside
         // the member body (wdt:, wikibase:, mwapi:, ...) would not parse at
         // the remote endpoint. WireMock returns canned results without parsing
         // the query, so this has to be asserted explicitly.
-<<<<<<< HEAD
-        wireMockRule.verify(postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("PREFIX")));
-=======
         wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("PREFIX")));
->>>>>>> rdf4j-update
     }
 
     private void stubSearchServiceWithThreeOrderedHits() {
@@ -2045,15 +2028,9 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         // One REST call, and ONE batched member request carrying all bindings
         // in a VALUES clause - not one request per search hit.
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/search-service")));
-<<<<<<< HEAD
-        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/sparql")));
-        wireMockRule.verify(postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("VALUES")));
-=======
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
         wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("VALUES")));
->>>>>>> rdf4j-update
     }
 
     /**
@@ -2129,15 +2106,9 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         assertNull("Beta is no agent: survives NULL-extended", imageByName.get("Beta"));
         assertNull("Gamma is an agent without image", imageByName.get("Gamma"));
 
-<<<<<<< HEAD
-        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/sparql")));
-        wireMockRule.verify(postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("VALUES")));
-=======
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
         wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("VALUES")));
->>>>>>> rdf4j-update
     }
 
     /**
@@ -2221,17 +2192,6 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         assertNull("Gamma matched without image", imageByName.get("Gamma"));
 
         // ONE batched request that does NOT include the guarded-out row.
-<<<<<<< HEAD
-        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/sparql")));
-        wireMockRule.verify(postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("VALUES")));
-        wireMockRule.verify(postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("entity%2F1")));
-        wireMockRule.verify(postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("entity%2F3")));
-        wireMockRule.verify(0, postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("entity%2F2")));
-=======
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
         wireMockRule.verify(getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("VALUES")));
@@ -2241,7 +2201,6 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
             .withQueryParam("query", containing("entity/3")));
         wireMockRule.verify(0, getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("entity/2")));
->>>>>>> rdf4j-update
     }
 
     /**
@@ -2299,11 +2258,7 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
             "  }" +
             "}";
         stubFor(any(urlPathEqualTo("/sparql"))
-<<<<<<< HEAD
-            .withRequestBody(containing("VALUES"))
-=======
             .withQueryParam("query", containing("VALUES"))
->>>>>>> rdf4j-update
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/sparql-results+json")
@@ -2353,19 +2308,11 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         assertNull("Gamma matched without image", imageByName.get("Gamma"));
 
         // one batched request (Alpha+Gamma) + one strict per-row request (Beta)
-<<<<<<< HEAD
-        wireMockRule.verify(2, postRequestedFor(urlPathEqualTo("/sparql")));
-        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("VALUES")));
-        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(notMatching(".*VALUES.*")));
-=======
         wireMockRule.verify(2, getRequestedFor(urlPathEqualTo("/sparql")));
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("VALUES")));
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", notMatching(".*VALUES.*")));
->>>>>>> rdf4j-update
     }
 
     /**
@@ -2447,15 +2394,9 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         assertNull("Gamma matched without image", imageByName.get("Gamma"));
 
         // ONE batched request; no strict per-row fallback
-<<<<<<< HEAD
-        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/sparql")));
-        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/sparql"))
-            .withRequestBody(containing("VALUES")));
-=======
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql")));
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", containing("VALUES")));
->>>>>>> rdf4j-update
     }
 
     /**

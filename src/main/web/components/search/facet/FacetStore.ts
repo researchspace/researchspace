@@ -37,6 +37,7 @@ import {
   VariableRenameBinder,
   QueryVisitor,
   cloneQuery,
+  SparqlTypeGuards,
 } from 'platform/api/sparql';
 import { Action } from 'platform/components/utils';
 import { SemanticContext } from 'platform/api/components';
@@ -76,6 +77,43 @@ import { FacetContext } from 'platform/components/semantic/search/web-components
 import * as LabelsService from 'platform/api/services/resource-label';
 import { BuiltInEvents, trigger } from 'platform/api/events';
 
+/**
+ * Temporary hard-coded query-planning metadata.
+ *
+ * Replace this value with the full IRI of the expensive facet relation.
+ * This constant can be removed after facetQueryOrder is supplied by the
+ * semantic search profile.
+ */
+const EXPENSIVE_FACET_RELATION_IRI = 'http://www.researchspace.org/pattern/graceful17/event_start_date';
+const LAST_FACET_QUERY_ORDER = -1;
+
+type FacetValuePatternWithDeferredRelation = FacetValuePattern & {
+  /**
+   * Relation patterns intentionally omitted from valuesQuery and appended
+   * after all selected facet patterns by executeValuesQuery().
+   */
+  deferredRelationPatterns?: Array<SparqlJs.Pattern>;
+};
+
+type ResourceFacetValueWithDeferredRelation = ResourceFacetValue & FacetValuePatternWithDeferredRelation;
+type DateRangeFacetValueWithDeferredRelation = DateRangeFacetValue & FacetValuePatternWithDeferredRelation;
+type LiteralFacetValueWithDeferredRelation = LiteralFacetValue & FacetValuePatternWithDeferredRelation;
+type NumericRangeFacetValueWithDeferredRelation = NumericRangeFacetValue & FacetValuePatternWithDeferredRelation;
+
+function normalizeFacetRelationIri(value: string): string {
+  return value.replace(/^<|>$/g, '');
+}
+
+function hardCodedFacetQueryOrder(relation: Relation): number | undefined {
+  if (relation.facetQueryOrder !== undefined) {
+    return relation.facetQueryOrder;
+  }
+
+  return normalizeFacetRelationIri(relation.iri.value) === normalizeFacetRelationIri(EXPENSIVE_FACET_RELATION_IRI)
+    ? LAST_FACET_QUERY_ORDER
+    : undefined;
+}
+
 export interface FacetStoreConfig {
   domain: Category;
   availableDomains: AvailableDomains;
@@ -104,6 +142,31 @@ export interface FacetViewState {
   valuesTemplate: { resource: string; literal: string };
   relationType: 'resource' | 'date-range' | 'literal' | 'numeric-range';
   selectorMode: 'stack' | 'dropdown';
+}
+
+/**
+ * Recursively removes redundant top-level SPARQL group patterns.
+ *
+ * Relation query patterns are parsed through synthetic SELECT queries and
+ * historically often include their own outer `{ ... }`. This may leave one or
+ * more nested `group` nodes in the SPARQL.js AST. When serialised, each such
+ * node becomes an additional `{ ... }` group graph pattern.
+ *
+ * Only plain `group` nodes are flattened. Scope-bearing patterns such as
+ * UNION, OPTIONAL, MINUS, SERVICE and GRAPH are retained unchanged.
+ */
+function flattenTopLevelFacetGroups(patterns: Array<SparqlJs.Pattern>): Array<SparqlJs.Pattern> {
+  const flattened: Array<SparqlJs.Pattern> = [];
+
+  patterns.forEach((pattern) => {
+    if (SparqlTypeGuards.isGroupPattern(pattern)) {
+      flattened.push(...flattenTopLevelFacetGroups(pattern.patterns));
+    } else {
+      flattened.push(pattern);
+    }
+  });
+
+  return flattened;
 }
 
 /**
@@ -444,6 +507,13 @@ export class FacetStore {
       })
       .map(this.buildFacetRelationBinding) as Relations;
 
+    //if (this.config.config.checkRelationAvailability === false) {
+    relations.forEach((relation) => {
+      relation.available = true;
+    });
+
+    return Kefir.constant(relations);
+  //}
     const facetEnabledQuery = SparqlUtil.parseQuery<SparqlJs.AskQuery>('ASK { FILTER(?__relationPattern__) }');
     facetEnabledQuery.where.unshift(...baseQuery.where);
     facetEnabledQuery.where = facetEnabledQuery.where.concat(this.generateQueryClause(baseQuery, conjuntcs));
@@ -477,9 +547,16 @@ export class FacetStore {
 
   private fetchRelation(enabledBaseQuery: SparqlJs.AskQuery, relation: Relation) {
     const valuesQuery = this.getFacetValuesQueryForRelation(this.config, relation).valuesQuery;
-    const parsedPattern = SparqlUtil.parseQuery<SparqlJs.SelectQuery>(valuesQuery).where;
+    const parsedPattern = flattenTopLevelFacetGroups(
+      SparqlUtil.parseQuery<SparqlJs.SelectQuery>(valuesQuery).where
+    );
     const facetQuery = cloneQuery(enabledBaseQuery);
+
     new PatternBinder('__relationPattern__', parsedPattern).sparqlQuery(facetQuery);
+
+    // PatternBinder injects the relation pattern after generateQueryClause has
+    // already run, so normalise the completed ASK query before serialisation.
+    facetQuery.where = flattenTopLevelFacetGroups(facetQuery.where);
 
     const parametrized = SparqlClient.setBindings(facetQuery, { [FACET_VARIABLES.RELATION_VAR]: relation.iri });
 
@@ -512,15 +589,22 @@ export class FacetStore {
    * $domain - for relation domain category
    * $range - for relation range category
    */
-  private buildFacetRelationBinding(relation: Relation): Relation {
+  private buildFacetRelationBinding = (relation: Relation): Relation => {
     const tuple: any = {
       $relation: relation.tuple,
       $domain: relation.hasDomain.tuple,
       $range: relation.hasRange.tuple,
       available: undefined,
     };
-    return { ...relation, tuple };
-  }
+
+    // Promote the query-order metadata to the top-level relation object before
+    // replacing tuple. The selected relation is later retained in selectedValues
+    // and copied into the facet AST, so this property remains available whenever
+    // a results, relation-availability or facet-values query is regenerated.
+    const facetQueryOrder = this.getFacetQueryOrder(relation);
+
+    return { ...relation, facetQueryOrder, tuple };
+  };
 
   /**
    * Makes bindings for category from search profile, available at '$category' varibale, in the
@@ -584,9 +668,16 @@ export class FacetStore {
     baseQuery: SparqlJs.SelectQuery,
     conjuncts: F.Conjuncts,
     relation: Relation,
-    relationConfig: ResourceFacetValue
+    relationConfig: ResourceFacetValueWithDeferredRelation
   ): Kefir.Property<Array<Resource>> {
-    return this.executeValuesQuery(baseQuery, conjuncts, relation, relationConfig.valuesQuery, true)
+    return this.executeValuesQuery(
+      baseQuery,
+      conjuncts,
+      relation,
+      relationConfig.valuesQuery,
+      relationConfig.deferredRelationPatterns,
+      true
+    )
       .map((res) =>
         res.results.bindings.map((binding) => ({
           iri: binding[FACET_VARIABLES.VALUE_RESOURCE_VAR] as Rdf.Iri,
@@ -610,9 +701,15 @@ export class FacetStore {
     baseQuery: SparqlJs.SelectQuery,
     conjuncts: F.Conjuncts,
     relation: Relation,
-    relationConfig: DateRangeFacetValue
+    relationConfig: DateRangeFacetValueWithDeferredRelation
   ): Kefir.Property<Array<F.DateRange>> {
-    return this.executeValuesQuery(baseQuery, conjuncts, relation, relationConfig.valuesQuery).map((res) =>
+    return this.executeValuesQuery(
+      baseQuery,
+      conjuncts,
+      relation,
+      relationConfig.valuesQuery,
+      relationConfig.deferredRelationPatterns
+    ).map((res) =>
       res.results.bindings
         .map((binding) => ({
           begin: moment(binding[FACET_VARIABLES.VALUE_DATE_RANGE_BEGIN_VAR].value, moment.ISO_8601),
@@ -626,9 +723,15 @@ export class FacetStore {
     baseQuery: SparqlJs.SelectQuery,
     conjuncts: F.Conjuncts,
     relation: Relation,
-    relationConfig: LiteralFacetValue
+    relationConfig: LiteralFacetValueWithDeferredRelation
   ): Kefir.Property<Array<F.Literal>> {
-    return this.executeValuesQuery(baseQuery, conjuncts, relation, relationConfig.valuesQuery).map((res) =>
+    return this.executeValuesQuery(
+      baseQuery,
+      conjuncts,
+      relation,
+      relationConfig.valuesQuery,
+      relationConfig.deferredRelationPatterns
+    ).map((res) =>
       res.results.bindings.map((binding) => ({
         literal: binding[FACET_VARIABLES.VALUE_LITERAL] as Rdf.Literal,
         tuple: binding,
@@ -640,9 +743,15 @@ export class FacetStore {
     baseQuery: SparqlJs.SelectQuery,
     conjuncts: F.Conjuncts,
     relation: Relation,
-    relationConfig: NumericRangeFacetValue
+    relationConfig: NumericRangeFacetValueWithDeferredRelation
   ): Kefir.Property<Array<F.NumericRange>> {
-    return this.executeValuesQuery(baseQuery, conjuncts, relation, relationConfig.valuesQuery).map((res) =>
+    return this.executeValuesQuery(
+      baseQuery,
+      conjuncts,
+      relation,
+      relationConfig.valuesQuery,
+      relationConfig.deferredRelationPatterns
+    ).map((res) =>
       res.results.bindings.map((binding) => ({
         begin: parseFloat(binding[FACET_VARIABLES.VALUE_NUMERIC_RANGE_BEGIN_VAR].value),
         end: parseFloat(binding[FACET_VARIABLES.VALUE_NUMERIC_RANGE_END_VAR].value),
@@ -656,15 +765,42 @@ export class FacetStore {
     conjuncts: F.Conjuncts,
     relation: Relation,
     facetValuesQuery: string,
+    deferredRelationPatterns: Array<SparqlJs.Pattern> = [],
     isResourceQuery = false
   ) {
+    const projectionVariable = this.getProjectionVariable(baseQuery);
     const facetsQuery = rewriteProjectionVariable(
       SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(facetValuesQuery),
-      this.getProjectionVariable(baseQuery)
+      projectionVariable
     );
-    facetsQuery.where.unshift(...baseQuery.where);
-    facetsQuery.where = facetsQuery.where.concat(
-      this.generateQueryClause(baseQuery, this.excludeClauseForRelation(conjuncts, relation.iri))
+
+    const selectedFacetPatterns = this.generateQueryClause(
+      baseQuery,
+      this.excludeClauseForRelation(conjuncts, relation.iri)
+    );
+
+    // Deferred patterns were created before the facet-values query projection
+    // variable was known, so apply the same ?subject rewrite here.
+    const rewrittenDeferredPatterns =
+      deferredRelationPatterns.length === 0
+        ? []
+        : rewriteProjectionVariable(
+            {
+              prefixes: {},
+              type: 'query',
+              queryType: 'SELECT',
+              variables: ['*'],
+              where: _.cloneDeep(deferredRelationPatterns),
+            } as SparqlJs.SelectQuery,
+            projectionVariable
+          ).where;
+
+    facetsQuery.where = flattenTopLevelFacetGroups(
+      ([] as Array<SparqlJs.Pattern>)
+        .concat(baseQuery.where)
+        .concat(facetsQuery.where)
+        .concat(selectedFacetPatterns)
+        .concat(rewrittenDeferredPatterns)
     );
 
     // If we have a threshold for the number of displayed facet values,
@@ -703,11 +839,19 @@ export class FacetStore {
   private generateQuery(baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts): SparqlJs.SelectQuery {
     const patterns = this.generateQueryClause(baseQuery, conjuncts);
     const query = _.clone(baseQuery);
-    query.where = query.where.concat(patterns);
+
+    // The base search query may already contain redundant top-level group
+    // patterns. Normalise the complete SELECT WHERE clause after appending
+    // the facet patterns, mirroring the final normalisation used for ASK.
+    query.where = flattenTopLevelFacetGroups(query.where.concat(patterns));
+
     return query;
   }
 
-  private getFacetValuesQueryForRelation(config: FacetStoreConfig, relation: Relation): FacetValuePattern {
+  private getFacetValuesQueryForRelation(
+    config: FacetStoreConfig,
+    relation: Relation
+  ): FacetValuePatternWithDeferredRelation {
     const { valueCategories, valueRelations } = config.config;
     const rangeIri = relation.hasRange.iri.toString();
     const relationIri = relation.iri.toString();
@@ -728,27 +872,58 @@ export class FacetStore {
     return variables[0] as string;
   }
 
+  /**
+   * Returns explicit relation metadata when available and otherwise applies
+   * the temporary hard-coded rule for the expensive facet.
+   *
+   * Keeping the hard-coded fallback here also covers relations restored from
+   * an initial AST, which may not have passed through buildFacetRelationBinding.
+   */
+  private getFacetQueryOrder(relation: Relation): number | undefined {
+    return hardCodedFacetQueryOrder(relation);
+  }
+
+  private isLastFacetRelation(relation: Relation): boolean {
+    return this.getFacetQueryOrder(relation) === LAST_FACET_QUERY_ORDER;
+  }
+
   private generateQueryClause(baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts): Array<SparqlJs.Pattern> {
-    if (this.config.availableDomains) {
-      return this.config.availableDomains
-        .map((projectionVariable, iri) => {
-          const filteredConjuncts = conjuncts.filter((conjunct) => conjunct.relation.hasDomain.iri.equals(iri));
-          return conjunctsToQueryPatterns(
-            this.config.baseConfig,
-            projectionVariable,
-            this.config.domain,
-            filteredConjuncts
-          );
-        })
-        .flatten()
-        .toArray();
-    }
-    return conjunctsToQueryPatterns(
-      this.config.baseConfig,
-      this.getProjectionVariable(baseQuery),
-      this.config.domain,
-      conjuncts
-    );
+    // Use a stable partition rather than a numeric sort: -1 is a sentinel
+    // meaning "defer", not a conventional ascending order value.
+    const regularConjuncts = conjuncts.filter((conjunct) => !this.isLastFacetRelation(conjunct.relation));
+    const lastConjuncts = conjuncts.filter((conjunct) => this.isLastFacetRelation(conjunct.relation));
+
+    const generatePatterns = (orderedConjuncts: F.Conjuncts): Array<SparqlJs.Pattern> => {
+      if (this.config.availableDomains) {
+        return this.config.availableDomains
+          .map((projectionVariable, iri) => {
+            const filteredConjuncts = orderedConjuncts.filter((conjunct) =>
+              conjunct.relation.hasDomain.iri.equals(iri)
+            );
+            return conjunctsToQueryPatterns(
+              this.config.baseConfig,
+              projectionVariable,
+              this.config.domain,
+              filteredConjuncts
+            );
+          })
+          .flatten()
+          .toArray() as Array<SparqlJs.Pattern>;
+      }
+
+      return conjunctsToQueryPatterns(
+        this.config.baseConfig,
+        this.getProjectionVariable(baseQuery),
+        this.config.domain,
+        orderedConjuncts
+      );
+    };
+
+    // Generate the two partitions separately so deferred facets remain
+    // globally last even when relations are grouped by available domain.
+    const patterns = generatePatterns(regularConjuncts).concat(generatePatterns(lastConjuncts));
+
+    return flattenTopLevelFacetGroups(patterns);
   }
 
   private removeConjunct = (conjunct: SearchModel.RelationConjunct) => {
@@ -766,7 +941,10 @@ type PatternKind = PatterConfig['kind'];
  * Generates a default query for facet values using {@link SemanticFacetConfig.defaultValueQuery}
  * as base template and parametrizes it with relation pattern.
  */
-function generateFacetValuePatternFromRelation(config: FacetStoreConfig, relation: Relation): FacetValuePattern {
+function generateFacetValuePatternFromRelation(
+  config: FacetStoreConfig,
+  relation: Relation
+): FacetValuePatternWithDeferredRelation {
   const relationPatterns = tryGetRelationPatterns(config.baseConfig, relation).filter((p) =>
     _.some(['resource', 'literal', 'date-range', 'numeric-range'], (kind) => kind === p.kind)
   ) as PatterConfig[];
@@ -790,17 +968,27 @@ function generateFacetValuePatternFromRelation(config: FacetStoreConfig, relatio
   const parsed = SparqlUtil.parsePatterns(queryPattern, query.prefixes);
 
   const facetRelationPattern = transformRelationPatternForFacetValues(parsed, kind);
-  new PatternBinder(FACET_VARIABLES.RELATION_PATTERN_VAR, facetRelationPattern).sparqlQuery(query);
+  const deferRelationPattern = hardCodedFacetQueryOrder(relation) === LAST_FACET_QUERY_ORDER;
+
+  // Normally the relation pattern replaces the placeholder immediately.
+  // For the expensive opened facet, remove only the placeholder and carry
+  // the relation pattern separately so executeValuesQuery() can append it last.
+  new PatternBinder(
+    FACET_VARIABLES.RELATION_PATTERN_VAR,
+    deferRelationPattern ? [] : facetRelationPattern
+  ).sparqlQuery(query);
 
   const valuesQuery = SparqlUtil.serializeQuery(query);
+  const deferredRelationPatterns = deferRelationPattern ? facetRelationPattern : undefined;
+
   return kind === 'resource'
-    ? { kind: 'resource', valuesQuery }
+    ? { kind: 'resource', valuesQuery, deferredRelationPatterns }
     : kind === 'literal'
-    ? { kind: 'literal', valuesQuery }
+    ? { kind: 'literal', valuesQuery, deferredRelationPatterns }
     : kind === 'date-range'
-    ? { kind: 'date-range', valuesQuery }
+    ? { kind: 'date-range', valuesQuery, deferredRelationPatterns }
     : kind === 'numeric-range'
-    ? { kind: 'numeric-range', valuesQuery }
+    ? { kind: 'numeric-range', valuesQuery, deferredRelationPatterns }
     : assertHandledEveryPatternKind(kind);
 }
 

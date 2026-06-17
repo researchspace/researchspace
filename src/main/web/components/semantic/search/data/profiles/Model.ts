@@ -7,7 +7,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -30,6 +30,14 @@ export type Categories = OrderedMap<Rdf.Iri, Category>;
 export interface Relation extends Resource {
   readonly hasRange: Category;
   readonly hasDomain: Category;
+
+  /**
+   * Controls the placement of this relation's facet pattern in generated
+   * queries. The temporary hard-coded implementation uses -1 to defer an
+   * expensive facet until after ordinary selected facets.
+   */
+  readonly facetQueryOrder?: number;
+
   available?: boolean;
   hashCode: () => number;
   equals: (other: Relation) => boolean;

@@ -9,6 +9,6 @@ export const ResourceConfigurationFunctions = {
   },
 
   getResourceConfiguration: function(iri:string) {       
-    return getResourceConfiguration(Rdf.iri(iri),"default");
+    return getResourceConfiguration(Rdf.iri(iri),"fedx");
   }
 };

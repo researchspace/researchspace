@@ -459,7 +459,7 @@ export class DashboardComponent extends Component<Props, State> {
   
     // check if an item with the same resourceIri and viewId is already in the tabset
     // This allows matching items even when resourceIri is undefined
-    const itemIsAlreadyOpen = this.state.items.filter((i) => (i.resourceIri === item.resourceIri && i.viewId === item.viewId) && (item.viewId !== "resource-editor"));
+    const itemIsAlreadyOpen = this.state.items.filter((i) => (i.resourceIri === item.resourceIri && i.viewId === item.viewId && item.label === i.label) && (item.viewId !== "resource-editor"));
     
     // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
     if(itemIsAlreadyOpen.length > 0) { 

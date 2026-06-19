@@ -203,7 +203,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
         if (!groupedGraph.hasEdge(entry['source']+key)) {
             groupedGraph.addEdgeWithKey(entry['source']+key, entry['source'], key, {
                 label: entry['labels'].join(' '),
-                size: props.sizes.edges,
+                size: props.sizes?.edges ?? 5,
                 color: props.colours && props.colours.edge || DEFAULT_COLOUR_EDGE
             })
         }

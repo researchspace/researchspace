@@ -246,10 +246,10 @@ export function createGraphFromElements(elements: any[], props: SigmaGraphConfig
     for (const element of elements) {
         if (element.group == "nodes") {
             let color = props.colours && props.colours.node || DEFAULT_COLOUR_NODE;
-            const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
-            if (props.colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
+            const types = element.data?.['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'];
+            if (props.colours && Array.isArray(types)) {
                 for (const type of types) {
-                    if (props.colours[type.value]) {
+                    if (type?.value && props.colours[type.value]) {
                         color = props.colours[type.value];
                         break;
                     }

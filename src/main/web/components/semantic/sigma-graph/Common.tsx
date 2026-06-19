@@ -230,7 +230,7 @@ export function createGraphFromElements(elements: any[], props: SigmaGraphConfig
     
     random.assign(graph);
 
-    if (props.grouping.enabled) {
+    if (props.grouping?.enabled) {
         const groupedGraph = applyGroupingToGraph(graph, props);
         return groupedGraph;
     } else {

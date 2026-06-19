@@ -48,15 +48,18 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         };
       }
     
+    private onBeforeUnload = () => {
+        this.componentCleanup();
+    };
+
     componentDidMount() : void {
-        this.loadInitialGraphData(this.props);      
-        window.addEventListener('beforeunload', () => this.componentCleanup());
+        this.loadInitialGraphData(this.props);
+        window.addEventListener('beforeunload', this.onBeforeUnload);
     }
 
-    componentWillUnmount() : void {        
+    componentWillUnmount() : void {
         this.componentCleanup();
-        window.removeEventListener('beforeunload', () => this.componentCleanup()); // remove the event handler for normal unmounting
-        
+        window.removeEventListener('beforeunload', this.onBeforeUnload);
     }
 
     private componentCleanup() : void {

@@ -20,40 +20,73 @@ const DEFAULT_COLOUR_NODE = "#000";
 const DEFAULT_COLOUR_EDGE = "#aaa";
 
 export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGraphConfig) {
-    // Retrieve all predicate attributes that appear in the edges of the graph
-    const predicates = graph.edges().map((edge) => graph.getEdgeAttribute(edge, 'predicate')).filter((value, index, self) => self.indexOf(value) === index);
+    // Store nodes by shared source, type and predicate.
+    const nodesBySourceTypeAndPredicate: Record<string, {
+        nodes: string[];
+        predicate: any;
+        labels: any[];
+        source: string;
+        types: any[];
+        typeLabels: any;
+    }> = Object.create(null);
 
-    // Store nodes by shared type and predicate in a map
-    const nodesBySourceTypeAndPredicate = {};
-
-    // Iterate through nodes of the graph and group nodes that share a source node, type and predicate
+    /*
+     * Group each node's incoming edges locally by source and predicate.
+     *
+     * This avoids first computing every predicate in the graph and then
+     * scanning all predicates for every node/source pair. Each incoming edge
+     * is visited once, and a target node is added at most once to each
+     * source/type/predicate group, even when parallel edges share a predicate.
+     */
     for (const node of graph.nodes()) {
-        const types = graph.getNodeAttribute(node, 'types') || [];
-        const typesString = types.map((type) => type.value).sort().join('');
-    
-        // Iterate through source nodes
-        for (const source of graph.inNeighbors(node)) {
-            // Iterate through predicates
-            for (const predicate of predicates) {
-                // Check if there is an edge from the source to the node with the given predicate
-                const edges = graph.edges(source, node).filter((edge) => graph.getEdgeAttribute(edge, 'predicate') == predicate)
-                if (edges.length > 0) {
-                    // Check if the map already contains an entry for the current source node, type combination and predicate
-                    const key = source + typesString + predicate;
-                    if (nodesBySourceTypeAndPredicate[key]) {
-                        // Add the current node to the array of nodes that share the current source node, type combination and predicate
-                        nodesBySourceTypeAndPredicate[key]['nodes'].push(node);
-                    } else {
-                        // Create a new entry in the map for the current source node, type combination and predicate
-                        nodesBySourceTypeAndPredicate[key] = {
-                            'nodes': [node],
-                            'predicate': predicate,
-                            'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')),
-                            'source': source,
-                            'types': types,
-                            'typeLabels': graph.getNodeAttributes(node)['typeLabels']
-                        }
-                    }
+        const nodeAttributes = graph.getNodeAttributes(node);
+        const rawTypes = nodeAttributes.types;
+        const types = Array.isArray(rawTypes) ? rawTypes : [];
+        const typesString = types
+            .map((type: any) => type && typeof type === 'object' ? type.value : type)
+            .sort()
+            .join('');
+
+        const incomingEdgesBySourceAndPredicate = new Map<
+            string,
+            Map<any, string[]>
+        >();
+
+        for (const edge of graph.inEdges(node)) {
+            const source = graph.source(edge);
+            const predicate = graph.getEdgeAttribute(edge, 'predicate');
+
+            let edgesByPredicate = incomingEdgesBySourceAndPredicate.get(source);
+            if (!edgesByPredicate) {
+                edgesByPredicate = new Map<any, string[]>();
+                incomingEdgesBySourceAndPredicate.set(source, edgesByPredicate);
+            }
+
+            let matchingEdges = edgesByPredicate.get(predicate);
+            if (!matchingEdges) {
+                matchingEdges = [];
+                edgesByPredicate.set(predicate, matchingEdges);
+            }
+            matchingEdges.push(edge);
+        }
+
+        for (const [source, edgesByPredicate] of incomingEdgesBySourceAndPredicate) {
+            for (const [predicate, edges] of edgesByPredicate) {
+                // Keep the existing group key format to preserve graph-state compatibility.
+                const key = source + typesString + predicate;
+                const existingEntry = nodesBySourceTypeAndPredicate[key];
+
+                if (existingEntry) {
+                    existingEntry.nodes.push(node);
+                } else {
+                    nodesBySourceTypeAndPredicate[key] = {
+                        nodes: [node],
+                        predicate,
+                        labels: edges.map((edge) => graph.getEdgeAttribute(edge, 'label')),
+                        source,
+                        types,
+                        typeLabels: nodeAttributes.typeLabels
+                    };
                 }
             }
         }
@@ -61,7 +94,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
 
     // Create a new graph that will contain the grouped nodes
     const groupedGraph = new MultiDirectedGraph();
-    
+
     // If the number of nodes in entry contains less than the group size we remove the entry from the map
     // and add the nodes and corresponding edges to the grouped graph
     for(const key in nodesBySourceTypeAndPredicate) {
@@ -121,7 +154,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
             let y = graph.getNodeAttribute(entry['nodes'][0], 'y');
             if (x === undefined) x = Math.random();
             if (y === undefined) y = Math.random();
-            
+
             groupedGraph.addNode(key, {
                 grouped: true,
                 children: children,
@@ -147,7 +180,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
             })
         }
     }
-    
+
     return groupedGraph;
 }
 
@@ -303,7 +336,7 @@ export function loadGraphDataFromQuery(query: string, context: QueryContext) {
 }
 
 export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: string, groupNode: string)  {
-    const children = graph.getNodeAttribute(groupNode, "children");
+    const children = graph.getNodeAttribute(groupNode, "children") || [];
     const edges = graph.inEdges(groupNode);
     const groupNodeAttributes = graph.getNodeAttributes(groupNode);
     for (const child of children) {

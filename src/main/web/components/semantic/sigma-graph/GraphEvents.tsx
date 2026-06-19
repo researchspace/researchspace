@@ -326,7 +326,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             value: ( event ) => {
                 if (event.data.node) {
                     // Add < and > brackets to node IRI
-                    const node = "<" + event.data.node + ">";
+                    const rawNode = event.data.node;
+                    const node = rawNode.startsWith('<') && rawNode.endsWith('>') ? rawNode : `<${rawNode}>`;
                     if (sigma.getGraph().hasNode(node)) {
                         focusNodeRef.current(node);
                     }

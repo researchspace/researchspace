@@ -19,9 +19,8 @@ export const Panel: FC<{ title: JSX.Element | string; initiallyDeployed?: boolea
   useEffect(() => {
     if (isDeployed)
       setTimeout(() => {
-        if (dom.current) dom.current.parentElement!.scrollTo({ top: dom.current.offsetTop - 5, behavior: "smooth" });
+        if (dom.current && dom.current.parentElement) dom.current.parentElement.scrollTo({ top: dom.current.offsetTop - 5, behavior: "smooth" });
       }, DURATION);
-  }, [isDeployed]);
 
   return (
     <div className="panel" ref={dom}>

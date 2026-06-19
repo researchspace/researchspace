@@ -221,7 +221,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         let query = props.nodeQuery;
         let newElements = [];
 
-        query = query.replace(/\$subject|\?subject/g, node);
+        query = query.replace(/\$subject|\?subject/g, () => node);
 
         loadGraphDataFromQuery(query, props.context)
             .onValue((elements) => {

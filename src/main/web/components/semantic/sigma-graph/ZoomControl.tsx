@@ -88,17 +88,17 @@ const ZoomControl: React.FC<ZoomControlProps> = ({
     <>
       <div {...htmlProps}>
         <button onClick={() => zoomIn()} title={labels["zoomIn"] || "Zoom In"}>
-          {children[0]}
+          {children && children[0]}
         </button>
       </div>
       <div {...htmlProps}>
         <button onClick={() => zoomOut()} title={labels["zoomOut"] || "Zoom Out"}>
-          {children[1]}
+          {children && children[1]}
         </button>
       </div>
       <div {...htmlProps}>
         <button onClick={ resetFunction ? resetFunction : () => reset()} title={labels["reset"] || "See whole graph"}>
-          {children[2]}
+          {children && children[2]}
         </button>
       </div>
     </>

@@ -188,7 +188,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
                 children: children,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 typeLabels: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels'),
-                size: props.sizes.nodes * 1.5,
+                size: (props.sizes?.nodes ?? 10) * 1.5,
                 color: graph.getNodeAttribute(entry['nodes'][0], 'color'), // We just use the color of the first node
                 x: x,
                 y: y

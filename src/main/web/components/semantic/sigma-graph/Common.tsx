@@ -278,7 +278,7 @@ export function mergeGraphs(graph, newGraph) {
     const nodes = graph.nodes();
     const nodesToRelease = [];
     for (const node of nodes) {
-        if (graph.getNodeAttribute(node, 'grouped')) {
+        if (graph.hasNodeAttribute(node, 'grouped')) {
             // Look at children of group and check if they are already present in the graph
             const children = graph.getNodeAttribute(node, 'children');
             for (const child of children) {

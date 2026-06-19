@@ -126,7 +126,8 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
     // and add the nodes and corresponding edges to the grouped graph
     for(const key in nodesBySourceTypeAndPredicate) {
         const entry = nodesBySourceTypeAndPredicate[key];
-        if (entry['nodes'].length < props.grouping.threshold) {
+        const threshold = props.grouping?.threshold ?? 3;
+        if (entry['nodes'].length < threshold) {
             // Add source node to graph
             if (!groupedGraph.hasNode(entry['source'])) {
                 groupedGraph.addNode(entry['source'], graph.getNodeAttributes(entry['source']));

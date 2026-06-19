@@ -19,6 +19,33 @@ const SAVED_STATE_LOCAL_STORAGE_GRAPH = 'sigmaGraph-graph';
 const DEFAULT_COLOUR_NODE = "#000";
 const DEFAULT_COLOUR_EDGE = "#aaa";
 
+function isFiniteCoordinate(value: unknown): value is number {
+    return typeof value === "number" && Number.isFinite(value);
+}
+
+function getFallbackGraphPosition(graph: MultiDirectedGraph) {
+    let xTotal = 0;
+    let yTotal = 0;
+    let positionedNodes = 0;
+
+    graph.forEachNode((_node, attributes) => {
+        if (isFiniteCoordinate(attributes.x) && isFiniteCoordinate(attributes.y)) {
+            xTotal += attributes.x;
+            yTotal += attributes.y;
+            positionedNodes++;
+        }
+    });
+
+    if (positionedNodes === 0) {
+        return { x: 0, y: 0 };
+    }
+
+    return {
+        x: xTotal / positionedNodes,
+        y: yTotal / positionedNodes
+    };
+}
+
 export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGraphConfig) {
     // Store nodes by shared source, type and predicate.
     const nodesBySourceTypeAndPredicate: Record<string, {
@@ -292,18 +319,35 @@ export function getStateFromLocalStorage(key: string) {
     return null;
 }
 
-export function mergeGraphs(graph, newGraph) {
-     // Merge new graph with sigma graph
+export function mergeGraphs(graph: MultiDirectedGraph, newGraph: MultiDirectedGraph) {
+     // New graphs are laid out independently, so always clone their attributes.
+     // Invalid coordinates would poison Sigma's normalization/quadtree. Valid
+     // coordinates are retained; only missing, NaN or infinite values are replaced.
+     const fallbackPosition = getFallbackGraphPosition(graph);
+     let addedNodeIndex = 0;
+
      newGraph.forEachNode((node, attributes) => {
         if (!graph.hasNode(node)) {
-            graph.addNode(node, attributes);
+            const safeAttributes = { ...attributes };
+            const angle = addedNodeIndex * Math.PI * (3 - Math.sqrt(5));
+            const radius = 0.01 * Math.sqrt(addedNodeIndex + 1);
+
+            if (!isFiniteCoordinate(safeAttributes.x)) {
+                safeAttributes.x = fallbackPosition.x + Math.cos(angle) * radius;
+            }
+            if (!isFiniteCoordinate(safeAttributes.y)) {
+                safeAttributes.y = fallbackPosition.y + Math.sin(angle) * radius;
+            }
+
+            graph.addNode(node, safeAttributes);
+            addedNodeIndex++;
         }
-    })
+    });
     newGraph.forEachEdge((edge, attributes, source, target) => {
         if (!graph.hasEdge(edge)) {
-            graph.addEdgeWithKey(edge, source, target, attributes);
+            graph.addEdgeWithKey(edge, source, target, { ...attributes });
         }
-    })
+    });
     // If the new graph contains grouped nodes, it might be that a node that
     // is part of a group is already present as an individual node in the graph. 
     // In this case we need to remove the grouped node from its group and add a
@@ -344,9 +388,14 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
             // If additional data has been retrieved and
             // merged into the graph, the node might already exist
             if (!graph.hasNode(childNode)) {
-                child.attributes.x = groupNodeAttributes.x;
-                child.attributes.y = groupNodeAttributes.y;
-                graph.addNode(childNode, child.attributes);
+                const childAttributes = { ...child.attributes };
+                childAttributes.x = isFiniteCoordinate(groupNodeAttributes.x)
+                    ? groupNodeAttributes.x
+                    : Math.random();
+                childAttributes.y = isFiniteCoordinate(groupNodeAttributes.y)
+                    ? groupNodeAttributes.y
+                    : Math.random();
+                graph.addNode(childNode, childAttributes);
             }
             // Remove the child node from the children array            
             const newChildren = children.filter(c => c.node !== childNode);
@@ -354,8 +403,8 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
 
             // Update group node label
             const typeLabels = graph.getNodeAttribute(groupNode, "typeLabels")
-            const uniqueTypeLabels = typeLabels.filter((value, index, array) => array.indexOf(value) === index);
-            graph.setNodeAttribute(groupNode, "label", uniqueTypeLabels + ' (' + (children.length) + ')')
+            const uniqueTypeLabels = typeLabels?.filter((value, index, array) => array.indexOf(value) === index);
+            graph.setNodeAttribute(groupNode, "label", uniqueTypeLabels + ' (' + newChildren.length + ')')
             // Add edges from group source node to child node
             for (const edge of edges) {
                 const sourceNode = graph.source(edge);

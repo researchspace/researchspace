@@ -47,11 +47,37 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     // Configure layout
     const graph = useSigma().getGraph();
     const layoutSettings = inferSettings(graph);
-    const { start, stop, kill, isRunning } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
+    const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
+
+    const clearCustomBBox = () => {
+        if (sigma.getCustomBBox()) {
+            sigma.setCustomBBox(null);
+        }
+    };
+
+    const startLayout = () => {
+        try {
+            start();
+        } catch (e) {
+            console.warn("Failed to start layout:", e);
+        }
+    };
+
+    /**
+     * Complete a topology-changing graph operation while the ForceAtlas2 worker
+     * is stopped and Sigma is using a bounding box derived from the current graph.
+     */
+    const finishGraphMutation = (callback = () => { return undefined; }) => {
+        cleanGraph(sigma.getGraph());
+        clearCustomBBox();
+        sigma.refresh();
+        startLayout();
+        callback();
+    };
 
     const scatterGroupNode = (node: string, mode = 'replace') => {
-        handleGroupedNodeClicked(node, () => { return undefined}, mode);
-    }
+        handleGroupedNodeClicked(node, () => { return undefined; }, mode);
+    };
 
     const getEdgeLabelVisibilityString = () => {
         if (visibleEdgeLabels.length === edgeLabels.length) {
@@ -59,139 +85,180 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         } else {
             return ` (${visibleEdgeLabels.length}/${edgeLabels.length})`;
         }
-    }
+    };
 
     const focusNode = (node: string) => {
         highlightNode(node);
         camera.gotoNode(node);
-    }
+    };
 
     const highlightNode = (node: string) => {
-        for (const node of sigma.getGraph().nodes()) {
-            sigma.getGraph().setNodeAttribute(node, "highlighted", false);
+        for (const graphNode of sigma.getGraph().nodes()) {
+            sigma.getGraph().setNodeAttribute(graphNode, "highlighted", false);
         }
         sigma.getGraph().setNodeAttribute(node, "highlighted", true);
-    }
+    };
 
-    const handleGroupedNodeClicked = (node: string, callback = () => { return undefined}, mode: string | boolean = false) => {
+    const handleGroupedNodeClicked = (
+        node: string,
+        callback = () => { return undefined; },
+        mode: string | boolean = false
+    ) => {
         if (!mode) {
             mode = props.grouping.behaviour || null;
         }
-        if (!mode) {
-            return
+        if (!mode || (mode !== "expand" && mode !== "replace")) {
+            return;
         }
-        if (mode == "expand" || mode == "replace") {
-            const graph = sigma.getGraph();
-            const children = graph.getNodeAttribute(node, "children");
-            const incomingEdges = graph.inEdges(node);
-            for (const child of children) {
-                // Add child node to graph if it is not already there
+
+        // The worker and the frozen normalization bounds must not remain active
+        // while nodes and edges are added or removed.
+        stop();
+        clearCustomBBox();
+
+        const graph = sigma.getGraph();
+        const children = graph.getNodeAttribute(node, "children") || [];
+        const incomingEdges = graph.inEdges(node);
+        const groupNodeAttributes = graph.getNodeAttributes(node);
+        const groupX = Number.isFinite(groupNodeAttributes.x)
+            ? groupNodeAttributes.x
+            : Math.random();
+        const groupY = Number.isFinite(groupNodeAttributes.y)
+            ? groupNodeAttributes.y
+            : Math.random();
+
+        for (const child of children) {
             if (!graph.hasNode(child.node)) {
                 const attrs = { ...child.attributes };
-                const groupNodeAttributes = graph.getNodeAttributes(node);
-                if (attrs.x === undefined) attrs.x = groupNodeAttributes.x !== undefined ? groupNodeAttributes.x : Math.random();
-                if (attrs.y === undefined) attrs.y = groupNodeAttributes.y !== undefined ? groupNodeAttributes.y : Math.random();
+                attrs.x = Number.isFinite(attrs.x) ? attrs.x : groupX;
+                attrs.y = Number.isFinite(attrs.y) ? attrs.y : groupY;
                 graph.addNode(child.node, attrs);
             }
-            }
-            for (const child of children) {
-                for (const edge of incomingEdges) {
-                    const edgeAttributes = graph.getEdgeAttributes(edge);
-                    if (mode == "replace") {
-                        // Add edge from source node to child node
-                        const edgeSource = graph.source(edge);
-                        if (!graph.hasEdge(edgeSource+child.node)) {
-                            graph.addEdgeWithKey(edgeSource+child.node, edgeSource, child.node, edgeAttributes);
-                        }
-                    } else if (mode == "expand") {
-                        // Add edge from grouped node to child node
-                        if (!graph.hasEdge(node, child.node)) {
-                            graph.addEdge(node, child.node, edgeAttributes);
-                        }
+        }
+
+        for (const child of children) {
+            for (const edge of incomingEdges) {
+                const edgeAttributes = graph.getEdgeAttributes(edge);
+                if (mode === "replace") {
+                    const edgeSource = graph.source(edge);
+                    if (!graph.hasEdge(edgeSource + child.node)) {
+                        graph.addEdgeWithKey(
+                            edgeSource + child.node,
+                            edgeSource,
+                            child.node,
+                            edgeAttributes
+                        );
+                    }
+                } else {
+                    if (!graph.hasEdge(node, child.node)) {
+                        graph.addEdge(node, child.node, edgeAttributes);
                     }
                 }
             }
-            if (mode == "replace") {
-                // Remove the grouped node
-                graph.dropNode(node);
-            }
         }
-        callback();
-    }
 
-    const handleNodeClicked = (node: string, omitEvent = false, callback = () => { return undefined} ) => {
+        if (mode === "replace") {
+            graph.dropNode(node);
+        }
+
+        finishGraphMutation(callback);
+    };
+
+    const releaseNodeFromGroupSafely = (childNode: string, groupNode: string) => {
+        stop();
+        clearCustomBBox();
+        releaseNodeFromGroup(sigma.getGraph(), childNode, groupNode);
+        finishGraphMutation();
+    };
+
+    const handleNodeClicked = (
+        node: string,
+        omitEvent = false,
+        callback = () => { return undefined; }
+    ) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
-        const callbackWithCleaning = () => {
-            cleanGraph(sigma.getGraph());
-            if (!isRunning) {
-                try {
-                    start();
-                } catch (e) {
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    console.warn("Failed to start layout:", e);
-                }
-            }
+
+        if (attributes.grouped) {
+            handleGroupedNodeClicked(node, callback);
+        } else if (props.nodeQuery) {
+            // Keep the layout available while the query runs, but remove the
+            // drag-time custom box. loadMoreDataForNode stops the worker again
+            // immediately before mutating the graph.
+            clearCustomBBox();
+            startLayout();
+            loadMoreDataForNode(node, callback);
+        } else {
+            clearCustomBBox();
+            startLayout();
             callback();
         }
-        if (attributes.grouped) {
-            handleGroupedNodeClicked(node, callbackWithCleaning);
-        } else {     
-            // If node query is defined, load additional data
-            if (props.nodeQuery) {
-                loadMoreDataForNode(node, callbackWithCleaning)
-            }
-        }
+
         if (!omitEvent) {
-            // Fire event// Trigger external event
-            // Node IRIs are stored with < and > brackets, so we need to remove them
-            // when triggering the event
-            const data = { 
+            const data = {
                 id: node,
-                attributes: attributes,
-                nodes: attributes.children ? attributes.children.map( (childNode: { "node": string, "attributes": any }) => childNode.node.substring(1, childNode.node.length - 1)) : [ node.substring(1, node.length - 1) ]
-            }
+                attributes,
+                nodes: attributes.children
+                    ? attributes.children.map(
+                        (childNode: { node: string; attributes: any }) =>
+                            childNode.node.substring(1, childNode.node.length - 1)
+                    )
+                    : [node.substring(1, node.length - 1)]
+            };
             trigger({
                 eventType: NodeClicked,
                 source: node,
-                data: data
-            })
-            // Restart layout
-            start()
+                data
+            });
         }
-        sigma.refresh()
-    }
 
-    const loadMoreDataForNode = (node: string, callback = () => { return undefined; }) => {
-        let query = props.nodeQuery
-        let newElements = []
+        sigma.refresh();
+    };
 
-        // Use regex to replace all occurrences of $subject or ?subject with the node IRI
-        query = query.replace(/\$subject|\?subject/g, node)
-        
-        loadGraphDataFromQuery(query, props.context).onValue((elements) => {
-            newElements = elements
-        })
-        .onEnd(() => {
-            const graph = sigma.getGraph();
-            const newGraph = createGraphFromElements(newElements, props);
-            // Add new nodes and edges to the graph
-            mergeGraphs(graph, newGraph);
-            setEdgeLabelsNeedUpdate(true);
-            callback();            
-        })
-    }
+    const loadMoreDataForNode = (
+        node: string,
+        callback = () => { return undefined; }
+    ) => {
+        let query = props.nodeQuery;
+        let newElements = [];
+
+        query = query.replace(/\$subject|\?subject/g, node);
+
+        loadGraphDataFromQuery(query, props.context)
+            .onValue((elements) => {
+                newElements = elements;
+            })
+            .onEnd(() => {
+                // Prevent the layout worker from processing an intermediate graph
+                // while nodes, edges and groups are being changed.
+                stop();
+                clearCustomBBox();
+
+                const graph = sigma.getGraph();
+                const newGraph = createGraphFromElements(newElements, props);
+                mergeGraphs(graph, newGraph);
+                setEdgeLabelsNeedUpdate(true);
+
+                finishGraphMutation(callback);
+            });
+    };
 
     // External event listeners should remain registered across ordinary renders,
     // while still invoking the latest render's state and callback implementations.
     const activeNodeRef = React.useRef(activeNode);
+    const draggedNodeRef = React.useRef(draggedNode);
     const handleNodeClickedRef = React.useRef(handleNodeClicked);
     const focusNodeRef = React.useRef(focusNode);
     const scatterGroupNodeRef = React.useRef(scatterGroupNode);
+    const releaseNodeFromGroupSafelyRef = React.useRef(releaseNodeFromGroupSafely);
+    const stopRef = React.useRef(stop);
 
     activeNodeRef.current = activeNode;
+    draggedNodeRef.current = draggedNode;
     handleNodeClickedRef.current = handleNodeClicked;
     focusNodeRef.current = focusNode;
     scatterGroupNodeRef.current = scatterGroupNode;
+    releaseNodeFromGroupSafelyRef.current = releaseNodeFromGroupSafely;
+    stopRef.current = stop;
     
     // Control layout
     useEffect(() => {
@@ -216,7 +283,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 value: ( event ) => {
                     if (event.data.node)  {
                         // Add < and > brackets to node IRI
-                        const node = "<" + event.data.node + ">";
+                        const rawNode = event.data.node;
+                        const node = rawNode.startsWith('<') && rawNode.endsWith('>') ? rawNode : `<${rawNode}>`;
                         // Check if parent node exists in graph
                         if (!sigma.getGraph().hasNode(node)) {
                             // Node might be in group
@@ -228,7 +296,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                                     for (const child of children) {
                                         if (child.node == node) {
                                             // Parent node is in group, so we need to release it
-                                            releaseNodeFromGroup(sigma.getGraph(), node, possibleGroupNode);
+                                            releaseNodeFromGroupSafelyRef.current(node, possibleGroupNode);
                                             break;
                                         }
                                     }
@@ -284,52 +352,76 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         return () => cancellation.cancelAll();
     }, [props.id, sigma]);
 
-    // Listen to mouse events
+    // Listen to mouse events. Keep the Sigma listeners stable and remove them
+    // explicitly when the component unmounts or the Sigma instance changes.
     useEffect(() => {
-        sigma.on("enterNode", (e) => {
-            setActiveNode(e.node);
-            sigma.getGraph().setNodeAttribute(e.node, "highlighted", true);
-        });
-        sigma.on("leaveNode", (e) => { 
-            setActiveNode(null);
-            sigma.getGraph().removeNodeAttribute(e.node, "highlighted");
-        });
+        const handleEnterNode = ({ node }: { node: string }) => {
+            setActiveNode(node);
+            sigma.getGraph().setNodeAttribute(node, "highlighted", true);
+        };
 
-        // Register the events
+        const handleLeaveNode = ({ node }: { node: string }) => {
+            setActiveNode(null);
+            sigma.getGraph().removeNodeAttribute(node, "highlighted");
+        };
+
+        sigma.on("enterNode", handleEnterNode);
+        sigma.on("leaveNode", handleLeaveNode);
+
+        return () => {
+            sigma.off("enterNode", handleEnterNode);
+            sigma.off("leaveNode", handleLeaveNode);
+        };
+    }, [sigma]);
+
+    // Register the remaining pointer events once. Refs provide the latest state
+    // and callbacks without repeatedly registering new event handlers.
+    useEffect(() => {
         registerEvents({
             mouseup: () => {
-                if (draggedNode) {
+                // The custom box is only needed while dragging. Keeping it after
+                // mouseup makes subsequently added or layout-moved nodes normalize
+                // outside the frozen quadtree zone.
+                sigma.setCustomBBox(null);
+
+                const currentDraggedNode = draggedNodeRef.current;
+                if (currentDraggedNode) {
                     setDraggedNode(null);
-                    sigma.getGraph().removeNodeAttribute(draggedNode, "highlighted");
-                } 
-                if (activeNode) {
-                    handleNodeClicked(activeNode);
+                    sigma.getGraph().removeNodeAttribute(currentDraggedNode, "highlighted");
+                }
+
+                const currentActiveNode = activeNodeRef.current;
+                if (currentActiveNode) {
+                    handleNodeClickedRef.current(currentActiveNode);
                 }
             },
             mousedown: () => {
                 // Stop the layout
-                stop();
+                stopRef.current();
                 // Disable the autoscale at the first down interaction
                 if (!sigma.getCustomBBox()) {
-                    sigma.setCustomBBox(sigma.getBBox()) 
+                    sigma.setCustomBBox(sigma.getBBox());
                 }
-                if (activeNode) {
-                    setDraggedNode(activeNode);
+
+                const currentActiveNode = activeNodeRef.current;
+                if (currentActiveNode) {
+                    setDraggedNode(currentActiveNode);
                 }
             },
             mousemove: (e) => {
-                if (draggedNode) {
+                const currentDraggedNode = draggedNodeRef.current;
+                if (currentDraggedNode) {
                     // Get new position of node
                     const pos = sigma.viewportToGraph(e);
-                    sigma.getGraph().setNodeAttribute(draggedNode, "x", pos.x);
-                    sigma.getGraph().setNodeAttribute(draggedNode, "y", pos.y);
+                    sigma.getGraph().setNodeAttribute(currentDraggedNode, "x", pos.x);
+                    sigma.getGraph().setNodeAttribute(currentDraggedNode, "y", pos.y);
                     sigma.refresh();
-                    // Prevent sigma to move camera:
+                    // Prevent Sigma from moving the camera.
                     e.preventSigmaDefault();
                 }
             }
         });
-    }, [registerEvents, sigma, draggedNode, activeNode]);
+    }, [registerEvents, sigma]);
 
     // Control visibility of edges and nodes
     useEffect(() => {

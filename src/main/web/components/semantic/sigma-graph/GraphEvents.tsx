@@ -44,8 +44,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         [edgeLabels]
     );
     
-    const cancellation = new Cancellation();
-
     // Configure layout
     const graph = useSigma().getGraph();
     const layoutSettings = inferSettings(graph);
@@ -65,7 +63,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const focusNode = (node: string) => {
         highlightNode(node);
-        camera.gotoNode(node);console.log("focus node");console.dir(node,{"depth":null});
+        camera.gotoNode(node);
     }
 
     const highlightNode = (node: string) => {
@@ -182,6 +180,18 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             callback();            
         })
     }
+
+    // External event listeners should remain registered across ordinary renders,
+    // while still invoking the latest render's state and callback implementations.
+    const activeNodeRef = React.useRef(activeNode);
+    const handleNodeClickedRef = React.useRef(handleNodeClicked);
+    const focusNodeRef = React.useRef(focusNode);
+    const scatterGroupNodeRef = React.useRef(scatterGroupNode);
+
+    activeNodeRef.current = activeNode;
+    handleNodeClickedRef.current = handleNodeClicked;
+    focusNodeRef.current = focusNode;
+    scatterGroupNodeRef.current = scatterGroupNode;
     
     // Control layout
     useEffect(() => {
@@ -195,6 +205,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     // Listen to external events
     useEffect(() => {
+        const cancellation = new Cancellation();
+
         cancellation.map(
             listen({
                 eventType: TriggerNodeClicked,
@@ -224,12 +236,13 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                             }
                         } 
                         if (sigma.getGraph().hasNode(node)) {
-                            if(activeNode) {
-                                sigma.getGraph().setNodeAttribute(activeNode, "highlighted", false);
+                            const currentActiveNode = activeNodeRef.current;
+                            if (currentActiveNode) {
+                                sigma.getGraph().setNodeAttribute(currentActiveNode, "highlighted", false);
                             }
-                            handleNodeClicked(node, true, () => {         
+                            handleNodeClickedRef.current(node, true, () => {
                                 highlightNode(node);
-                            })
+                            });
                         }
                     } else {
                         console.log("No node defined");
@@ -247,7 +260,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                     // Add < and > brackets to node IRI
                     const node = "<" + event.data.node + ">";
                     if (sigma.getGraph().hasNode(node)) {
-                        focusNode(node);
+                        focusNodeRef.current(node);
                     }
                 }
             }
@@ -262,13 +275,14 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 if (event.data.id) {
                     const node = event.data.id
                     if (sigma.getGraph().hasNode(node)) {
-                        scatterGroupNode(node);
+                        scatterGroupNodeRef.current(node);
                     }
                 }
             }
         });
-        return undefined;
-    })
+
+        return () => cancellation.cancelAll();
+    }, [props.id, sigma]);
 
     // Listen to mouse events
     useEffect(() => {
@@ -319,16 +333,19 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     // Control visibility of edges and nodes
     useEffect(() => {
+        const graph = sigma.getGraph();
+        const activeNodeNeighbors =
+            activeNode && graph.hasNode(activeNode)
+                ? new Set(graph.neighbors(activeNode))
+                : undefined;
+
         setSettings({
           nodeReducer: (node, data) => {
-            const graph = sigma.getGraph();
             const newData: Attributes = { ...data, image: data.image || false};
     
-            if (activeNode) {
-              if (graph.hasNode(activeNode) && node != activeNode &&  !graph.neighbors(activeNode)) {
-                newData.color = "#E2E2E2";
-                newData.image = false;
-              }
+            if (activeNode && activeNodeNeighbors && node != activeNode && !activeNodeNeighbors.has(node)) {
+              newData.color = "#E2E2E2";
+              newData.image = false;
             }
 
             if (props.edgeFilter) {

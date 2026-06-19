@@ -220,13 +220,13 @@ export function createGraphFromElements(elements: any[], props: SigmaGraphConfig
         }
     }
 
-    graph.nodes().forEach((node, i) => {
+    /*graph.nodes().forEach((node, i) => {
         const angle = (i * 2 * Math.PI) / graph.order;
         const currentX = graph.getNodeAttribute(node, "x");
         const currentY = graph.getNodeAttribute(node, "y");
         if (currentX === undefined) graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
         if (currentY === undefined) graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
-    });
+    });*/
     
     random.assign(graph);
 
@@ -315,9 +315,10 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
                 child.attributes.y = groupNodeAttributes.y;
                 graph.addNode(childNode, child.attributes);
             }
-            // Remove the child node from the children array
-            children.splice(children.indexOf(child), 1)
-            graph.setNodeAttribute(groupNode, "children", children)
+            // Remove the child node from the children array            
+            const newChildren = children.filter(c => c.node !== childNode);
+            graph.setNodeAttribute(groupNode, "children", newChildren);
+
             // Update group node label
             const typeLabels = graph.getNodeAttribute(groupNode, "typeLabels")
             const uniqueTypeLabels = typeLabels.filter((value, index, array) => array.indexOf(value) === index);

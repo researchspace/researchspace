@@ -122,7 +122,7 @@ export interface SigmaGraphConfig {
     searchBox?: boolean;
 
     /**
-     * Sizes of the nodes and edges in pixe;s
+     * Sizes of the nodes and edges in pixels
      * Passed as a JSON object with the following properties:
      * - nodes: size of the nodes
      * - edges: size of the edges

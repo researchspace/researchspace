@@ -6,7 +6,7 @@
  */
 
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { listen, trigger } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
@@ -36,6 +36,13 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const [ edgeLabels, setEdgeLabels ] = useState<{label: string, visible: boolean}[]>([]);
     const [ edgeLabelsNeedUpdate, setEdgeLabelsNeedUpdate ] = useState<boolean>(false);
+
+    // Derive the labels visible to Sigma once per edgeLabels update rather than
+    // recalculating them for every node and edge processed by the reducers.
+    const visibleEdgeLabels = useMemo(
+        () => edgeLabels.filter(({ visible }) => visible).map(({ label }) => label),
+        [edgeLabels]
+    );
     
     const cancellation = new Cancellation();
 
@@ -49,7 +56,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     }
 
     const getEdgeLabelVisibilityString = () => {
-        const visibleEdgeLabels = edgeLabels.filter(d => d.visible);
         if (visibleEdgeLabels.length === edgeLabels.length) {
             return "";
         } else {
@@ -59,7 +65,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const focusNode = (node: string) => {
         highlightNode(node);
-        camera.gotoNode(node);
+        camera.gotoNode(node);console.log("focus node");console.dir(node,{"depth":null});
     }
 
     const highlightNode = (node: string) => {
@@ -124,7 +130,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                     start();
                 } catch (e) {
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const error = e;
+                    console.warn("Failed to start layout:", e);
                 }
             }
             callback();
@@ -329,9 +335,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 // Retrieve all edges for this node
                 const edges = sigma.getGraph().edges(node);
 
-                // Retrieve all labels for the visible edges
-                const visibleEdgeLabels = edgeLabels.filter(d => d.visible).map(d => d.label);
-
                 // Filter all edges whose label is not in visibleEdgeLabels
                 const visibleEdges = edges.filter((edge: string) => {
                     const edgeAttributes = sigma.getGraph().getEdgeAttributes(edge);
@@ -355,8 +358,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             }
 
             if (props.edgeFilter) {
-                const visibleEdgeLabels = edgeLabels.filter(d => d.visible).map(d => d.label);
-                if (! visibleEdgeLabels.includes(data.label)) {
+                if (!visibleEdgeLabels.includes(data.label)) {
                     newData.hidden = true;
                 }
             }
@@ -364,7 +366,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             return newData;
           },
         });
-    }, [activeNode, edgeLabels, setSettings, sigma]);
+    }, [activeNode, props.edgeFilter, setSettings, sigma, visibleEdgeLabels]);
 
     // Retrieve set of labels
     useEffect(() => {

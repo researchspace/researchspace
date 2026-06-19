@@ -305,12 +305,21 @@ export function clearStateFromLocalStorage() {
 }
 
 export function getStateFromLocalStorage(key: string) {
-    if (localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_KEY) == key) {
-        const compressed = localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_GRAPH)
-        const jsonGraph = JSON.parse(decompressFromEncodedURIComponent(compressed));
-        const graph = new MultiDirectedGraph();
-        graph.import(jsonGraph);
-        return graph
+    if (key && localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_KEY) === key) {
+        const compressed = localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_GRAPH);
+        if (compressed) {
+            try {
+                const decompressed = decompressFromEncodedURIComponent(compressed);
+                if (decompressed) {
+                    const jsonGraph = JSON.parse(decompressed);
+                    const graph = new MultiDirectedGraph();
+                    graph.import(jsonGraph);
+                    return graph;
+                }
+            } catch (e) {
+                console.error("Failed to restore graph from local storage:", e);
+            }
+        }
     }
 
     // If the query is not the same as the one in local storage, we clear the local storage

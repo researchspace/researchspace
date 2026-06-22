@@ -64,7 +64,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
     }
 
     private componentCleanup() : void {
-        if (this.props.persistGraph) {
+        if (this.props.persistGraph && this.state.graph) {
             saveStateIntoLocalStorage(this.state.graph, this.props.query);
         }
     }

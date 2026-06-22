@@ -425,11 +425,11 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
             if (props.edgeFilter) {
                 // Retrieve all edges for this node
-                const edges = sigma.getGraph().edges(node);
+                const edges = graph.edges(node);
 
                 // Filter all edges whose label is not in visibleEdgeLabels
                 const hasVisibleEdge = edges.some((edge: string) => {
-                    const edgeAttributes = sigma.getGraph().getEdgeAttributes(edge);
+                    const edgeAttributes = graph.getEdgeAttributes(edge);
                     return visibleEdgeLabels.has(edgeAttributes.label);
                 });
 

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 ResearchSpace contributors.
+ * 
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /* eslint-disable react/prop-types */
 // from https://github.com/jacomyal/sigma.js/blob/main/demo/src/views/Panel.tsx
 
@@ -17,10 +22,21 @@ export const Panel: FC<{ title: JSX.Element | string; initiallyDeployed?: boolea
   const dom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isDeployed)
-      setTimeout(() => {
-        if (dom.current && dom.current.parentElement) dom.current.parentElement.scrollTo({ top: dom.current.offsetTop - 5, behavior: "smooth" });
-      }, DURATION);
+    if (!isDeployed) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      if (dom.current && dom.current.parentElement) {
+        dom.current.parentElement.scrollTo({
+          top: dom.current.offsetTop - 5,
+          behavior: "smooth",
+        });
+      }
+    }, DURATION);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isDeployed]);
 
   return (
     <div className="panel" ref={dom}>

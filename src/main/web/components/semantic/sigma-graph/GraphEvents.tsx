@@ -11,8 +11,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { listen, trigger } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 
-import { inferSettings } from 'graphology-layout-forceatlas2'
-import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { ControlsContainer, useCamera, useRegisterEvents, useSigma, useSetSettings } from "@react-sigma/core";
 import { Attributes } from "graphology-types";
 
@@ -21,6 +19,7 @@ import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraph
 import { ScatterGroupNode, FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 import { EdgeFilterControl } from './EdgeFilterControl'
 import { Panel } from './ControlPanel'
+import { useGraphLayout } from './GraphLayoutContext';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
@@ -40,38 +39,30 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     // Derive the labels visible to Sigma once per edgeLabels update rather than
     // recalculating them for every node and edge processed by the reducers.
     const visibleEdgeLabels = useMemo(
-        () => edgeLabels.filter(({ visible }) => visible).map(({ label }) => label),
+        () => new Set(
+            edgeLabels
+                .filter(({ visible }) => visible)
+                .map(({ label }) => label)
+        ),
         [edgeLabels]
     );
     
-    // Configure layout
-    const graph = useSigma().getGraph();
-    const layoutSettings = inferSettings(graph);
-    const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
-
-    const clearCustomBBox = () => {
-        if (sigma.getCustomBBox()) {
-            sigma.setCustomBBox(null);
-        }
-    };
-
-    const startLayout = () => {
-        try {
-            start();
-        } catch (e) {
-            console.warn("Failed to start layout:", e);
-        }
-    };
+    const {
+        selectedLayout,
+        applyLayout,
+        startSelectedWorkerLayout,
+        stopAllWorkerLayouts,
+        clearCustomBBox,
+    } = useGraphLayout();
 
     /**
-     * Complete a topology-changing graph operation while the ForceAtlas2 worker
-     * is stopped and Sigma is using a bounding box derived from the current graph.
+     * Complete a topology-changing graph operation while all layout workers are
+     * stopped, then reapply the currently selected layout to the new topology.
      */
     const finishGraphMutation = (callback = () => { return undefined; }) => {
         cleanGraph(sigma.getGraph());
         clearCustomBBox();
-        sigma.refresh();
-        startLayout();
+        applyLayout(selectedLayout);
         callback();
     };
 
@@ -80,10 +71,10 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     };
 
     const getEdgeLabelVisibilityString = () => {
-        if (visibleEdgeLabels.length === edgeLabels.length) {
+        if (visibleEdgeLabels.size === edgeLabels.length) {
             return "";
         } else {
-            return ` (${visibleEdgeLabels.length}/${edgeLabels.length})`;
+            return ` (${visibleEdgeLabels.size}/${edgeLabels.length})`;
         }
     };
 
@@ -104,20 +95,19 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         callback = () => { return undefined; },
         mode: string | boolean = false
     ) => {
-        if (!mode) {
-            mode = props.grouping.behaviour || null;
-        }
-        if (!mode || (mode !== "expand" && mode !== "replace")) {
+        const effectiveMode = mode || props.grouping?.behaviour;
+        if (effectiveMode !== "expand" && effectiveMode !== "replace") {
             return;
         }
 
         // The worker and the frozen normalization bounds must not remain active
         // while nodes and edges are added or removed.
-        stop();
+        stopAllWorkerLayouts();
         clearCustomBBox();
 
         const graph = sigma.getGraph();
-        const children = graph.getNodeAttribute(node, "children") || [];
+        const rawChildren = graph.getNodeAttribute(node, "children");
+        const children = Array.isArray(rawChildren) ? rawChildren : [];
         const incomingEdges = graph.inEdges(node);
         const groupNodeAttributes = graph.getNodeAttributes(node);
         const groupX = Number.isFinite(groupNodeAttributes.x)
@@ -139,7 +129,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         for (const child of children) {
             for (const edge of incomingEdges) {
                 const edgeAttributes = graph.getEdgeAttributes(edge);
-                if (mode === "replace") {
+                if (effectiveMode === "replace") {
                     const edgeSource = graph.source(edge);
                     if (!graph.hasEdge(edgeSource + child.node)) {
                         graph.addEdgeWithKey(
@@ -157,7 +147,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             }
         }
 
-        if (mode === "replace") {
+        if (effectiveMode === "replace") {
             graph.dropNode(node);
         }
 
@@ -165,7 +155,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     };
 
     const releaseNodeFromGroupSafely = (childNode: string, groupNode: string) => {
-        stop();
+        stopAllWorkerLayouts();
         clearCustomBBox();
         releaseNodeFromGroup(sigma.getGraph(), childNode, groupNode);
         finishGraphMutation();
@@ -185,11 +175,11 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             // drag-time custom box. loadMoreDataForNode stops the worker again
             // immediately before mutating the graph.
             clearCustomBBox();
-            startLayout();
+            startSelectedWorkerLayout();
             loadMoreDataForNode(node, callback);
         } else {
             clearCustomBBox();
-            startLayout();
+            startSelectedWorkerLayout();
             callback();
         }
 
@@ -218,10 +208,14 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         node: string,
         callback = () => { return undefined; }
     ) => {
-        let query = props.nodeQuery;
-        let newElements = [];
+        const queryTemplate = props.nodeQuery;
+        if (!queryTemplate) {
+            callback();
+            return;
+        }
 
-        query = query.replace(/\$subject|\?subject/g, () => node);
+        const query = queryTemplate.replace(/\$subject|\?subject/g, node);
+        let newElements: any[] = [];
 
         loadGraphDataFromQuery(query, props.context)
             .onValue((elements) => {
@@ -230,7 +224,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             .onEnd(() => {
                 // Prevent the layout worker from processing an intermediate graph
                 // while nodes, edges and groups are being changed.
-                stop();
+                stopAllWorkerLayouts();
                 clearCustomBBox();
 
                 const graph = sigma.getGraph();
@@ -250,7 +244,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const focusNodeRef = React.useRef(focusNode);
     const scatterGroupNodeRef = React.useRef(scatterGroupNode);
     const releaseNodeFromGroupSafelyRef = React.useRef(releaseNodeFromGroupSafely);
-    const stopRef = React.useRef(stop);
+    const stopAllWorkerLayoutsRef = React.useRef(stopAllWorkerLayouts);
+    const startSelectedWorkerLayoutRef = React.useRef(startSelectedWorkerLayout);
 
     activeNodeRef.current = activeNode;
     draggedNodeRef.current = draggedNode;
@@ -258,17 +253,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     focusNodeRef.current = focusNode;
     scatterGroupNodeRef.current = scatterGroupNode;
     releaseNodeFromGroupSafelyRef.current = releaseNodeFromGroupSafely;
-    stopRef.current = stop;
-    
-    // Control layout
-    useEffect(() => {
-        try {
-            start();
-        } catch (e) {
-            console.error("ForceAtlas2 layout error:", e);
-        }
-        return () => kill();
-    }, [start, kill]);
+    stopAllWorkerLayoutsRef.current = stopAllWorkerLayouts;
+    startSelectedWorkerLayoutRef.current = startSelectedWorkerLayout;
 
     // Listen to external events
     useEffect(() => {
@@ -283,8 +269,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 value: ( event ) => {
                     if (event.data.node)  {
                         // Add < and > brackets to node IRI
-                        const rawNode = event.data.node;
-                        const node = rawNode.startsWith('<') && rawNode.endsWith('>') ? rawNode : `<${rawNode}>`;
+                        const node = "<" + event.data.node + ">";
                         // Check if parent node exists in graph
                         if (!sigma.getGraph().hasNode(node)) {
                             // Node might be in group
@@ -292,14 +277,10 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                             const nodes = sigma.getGraph().nodes();
                             for (const possibleGroupNode of nodes) {
                                 const children = sigma.getGraph().getNodeAttribute(possibleGroupNode, "children");
-                                if (children) {
-                                    for (const child of children) {
-                                        if (child.node == node) {
-                                            // Parent node is in group, so we need to release it
-                                            releaseNodeFromGroupSafelyRef.current(node, possibleGroupNode);
-                                            break;
-                                        }
-                                    }
+                                if (Array.isArray(children) && children.some((child) => child.node === node)) {
+                                    // Parent node is in group, so release it before handling the click.
+                                    releaseNodeFromGroupSafelyRef.current(node, possibleGroupNode);
+                                    break;
                                 }
                             }
                         } 
@@ -326,8 +307,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             value: ( event ) => {
                 if (event.data.node) {
                     // Add < and > brackets to node IRI
-                    const rawNode = event.data.node;
-                    const node = rawNode.startsWith('<') && rawNode.endsWith('>') ? rawNode : `<${rawNode}>`;
+                    const node = "<" + event.data.node + ">";
                     if (sigma.getGraph().hasNode(node)) {
                         focusNodeRef.current(node);
                     }
@@ -394,11 +374,13 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 const currentActiveNode = activeNodeRef.current;
                 if (currentActiveNode) {
                     handleNodeClickedRef.current(currentActiveNode);
+                } else {
+                    startSelectedWorkerLayoutRef.current();
                 }
             },
             mousedown: () => {
-                // Stop the layout
-                stopRef.current();
+                // Stop every continuous layout while dragging.
+                stopAllWorkerLayoutsRef.current();
                 // Disable the autoscale at the first down interaction
                 if (!sigma.getCustomBBox()) {
                     sigma.setCustomBBox(sigma.getBBox());
@@ -446,13 +428,13 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 const edges = sigma.getGraph().edges(node);
 
                 // Filter all edges whose label is not in visibleEdgeLabels
-                const visibleEdges = edges.filter((edge: string) => {
+                const hasVisibleEdge = edges.some((edge: string) => {
                     const edgeAttributes = sigma.getGraph().getEdgeAttributes(edge);
-                    return visibleEdgeLabels.includes(edgeAttributes.label);
+                    return visibleEdgeLabels.has(edgeAttributes.label);
                 });
 
                 // If there are no visible edges, hide the node
-                if (visibleEdges.length === 0) {
+                if (!hasVisibleEdge) {
                     newData.hidden = true;
                 }     
             }
@@ -468,7 +450,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             }
 
             if (props.edgeFilter) {
-                if (!visibleEdgeLabels.includes(data.label)) {
+                if (!visibleEdgeLabels.has(data.label)) {
                     newData.hidden = true;
                 }
             }
@@ -478,42 +460,44 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         });
     }, [activeNode, props.edgeFilter, setSettings, sigma, visibleEdgeLabels]);
 
-    // Retrieve set of labels
+    // Retrieve the distinct labels after initialisation and topology changes.
     useEffect(() => {
-        const currentEdgeLabels: string[] = [];
-        sigma.getGraph().forEachEdge((edge: string, attributes: Attributes) => {
-            if (attributes.label && !currentEdgeLabels.includes(attributes.label)) {
-                currentEdgeLabels.push(attributes.label);
+        const currentLabels = new Set<string>();
+
+        sigma.getGraph().forEachEdge((_edge: string, attributes: Attributes) => {
+            if (typeof attributes.label === "string" && attributes.label.length > 0) {
+                currentLabels.add(attributes.label);
             }
         });
-        const newEdgeLabels = currentEdgeLabels.map((label) => {
-            if (edgeLabels.find((d) => d.label === label)) {
-                return edgeLabels.find((d) => d.label === label);
-            } else {
-                return {label, visible: true};
-            }
-        })
-        // Order labels alphabetically
-        newEdgeLabels.sort((a, b) => a.label.localeCompare(b.label));
-        setEdgeLabels(newEdgeLabels);
+
+        setEdgeLabels((previousLabels) => {
+            const previousVisibility = new Map(
+                previousLabels.map(({ label, visible }) => [label, visible])
+            );
+
+            return Array.from(currentLabels)
+                .sort((a, b) => a.localeCompare(b))
+                .map((label) => ({
+                    label,
+                    visible: previousVisibility.has(label)
+                        ? previousVisibility.get(label) as boolean
+                        : true
+                }));
+        });
         setEdgeLabelsNeedUpdate(false);
-    }, [sigma, edgeLabelsNeedUpdate, activeNode]);
+    }, [sigma, edgeLabelsNeedUpdate]);
 
-    if ( props.edgeFilter ) {
-
-        // Generate a string based on how many of the edge labels are visible
-        // If all are visible, return an empty string
-        // If not all are visible but, for example, 4 out of 14, return 4/14
-        
-
-        return <ControlsContainer position="bottom-right">
-            <Panel title={"Filter" + getEdgeLabelVisibilityString()}>
-                <EdgeFilterControl 
-                    edgeLabels={edgeLabels}
-                    setEdgeLabels={setEdgeLabels}
-                />
-            </Panel>
-        </ControlsContainer>
+    if (props.edgeFilter) {
+        return (
+            <ControlsContainer position="bottom-right">
+                <Panel title={"Filter" + getEdgeLabelVisibilityString()}>
+                    <EdgeFilterControl
+                        edgeLabels={edgeLabels}
+                        setEdgeLabels={setEdgeLabels}
+                    />
+                </Panel>
+            </ControlsContainer>
+        );
     }
 
     return null;

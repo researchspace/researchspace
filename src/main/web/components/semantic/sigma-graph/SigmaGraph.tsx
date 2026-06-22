@@ -21,6 +21,7 @@ import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
 import { GraphControls } from './GraphControls'
+import { GraphLayoutProvider } from './GraphLayoutContext'
 import { clearStateFromLocalStorage, createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
 import ArrowEdgeProgram from './programs/edge.arrow'
 
@@ -156,18 +157,20 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     graph={ this.state.graph } 
                     style={{ height: `${height}`, width: `${width}` }}
                     settings={ sigmaSettings }
-                >   
-                    <GraphEvents 
-                        context={ this.context.semanticContext} 
-                        colours={ colours }
-                        edgeFilter={ edgeFilter }
-                        grouping={ grouping } 
-                        nodeQuery={ nodeQuery }
-                        persistGraph={ persistGraph }
-                        sizes={ sizes } 
-                    />
-                    {searchBox &&  <ControlsContainer position="bottom-left"><SearchControl /> </ControlsContainer>}
-                    {controls && <GraphControls position="top-left" reset={() => this.newKey()}/>}
+                >
+                    <GraphLayoutProvider>
+                        <GraphEvents
+                            context={ this.context.semanticContext}
+                            colours={ colours }
+                            edgeFilter={ edgeFilter }
+                            grouping={ grouping }
+                            nodeQuery={ nodeQuery }
+                            persistGraph={ persistGraph }
+                            sizes={ sizes }
+                        />
+                        {searchBox && <ControlsContainer position="bottom-left"><SearchControl /></ControlsContainer>}
+                        {controls && <GraphControls position="top-left" reset={() => this.newKey()}/>} 
+                    </GraphLayoutProvider>
                 </SigmaContainer>
 
             )

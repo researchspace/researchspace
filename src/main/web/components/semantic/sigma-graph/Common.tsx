@@ -233,7 +233,7 @@ export function createGraphFromElements(elements: any[], props: SigmaGraphConfig
     const nodeSize = props.sizes.nodes || 10;
     const edgeSize = props.sizes.edges || 5;
     // Order elements by <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> key
-    elements.sort((a, b) => {
+    elements = [...elements].sort((a, b) => {
         if (a.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'] && b.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
             return a.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'][0].value.localeCompare(b.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'][0].value);
         } else if (a.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
@@ -243,7 +243,7 @@ export function createGraphFromElements(elements: any[], props: SigmaGraphConfig
         } else {
             return 0;
         }
-    })
+    });
     for (const element of elements) {
         if (element.group == "nodes") {
             let color = props.colours && props.colours.node || DEFAULT_COLOUR_NODE;

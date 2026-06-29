@@ -1,6 +1,6 @@
 <semantic-query query='SELECT ?resourceConfig ?searchAllPage ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceIcon ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern ?resourceSearchKPCategory
                        WHERE {    
-                            BIND(<[[config]]> as ?resourceConfig) .
+                            BIND(<{{#if config}}{{config}}{{else}}{{#if data.iri}}{{data.iri}}{{else}}[[#if selectedResource]][[#if config]][[config]][[/if]][[/if]]{{/if}}{{/if}}> as ?resourceConfig) .                          
                             [[#if selectedResource]]BIND(true as ?searchAllPage)[[else]]BIND("false" as ?searchAllPage)[[/if]] .
                             BIND("{{dashboardId}}" as ?viewId)
 
@@ -128,6 +128,9 @@
     --]]
 
       <mp-page-loader iri="http://www.researchspace.org/resource/ResourceSearchTemplate"
+                      urlqueryparam-searchrestrictions="{{#if searchRestrictions}}{{searchRestrictions}}{{/if}}"
+                      urlqueryparam-parentnode="{{#if parentNode}}{{parentNode}}{{/if}}"
+                      urlqueryparam-showresourcelabel="{{#if showResourceLabel}}{{showResourceLabel}}{{/if}}"
                       urlqueryparam-viewid="{{bindings.0.viewId.value}}"
                       urlqueryparam-resourceconfig="{{bindings.0.resourceConfig.value}}"
                       urlqueryparam-searchall="{{bindings.0.searchAllPage.value}}"
@@ -141,6 +144,6 @@
                       urlqueryparam-resourcelabelpattern="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceLabelPattern')}}{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceLabelPattern'}}{{/if}}"
                       urlqueryparam-searchkpcategory="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceSearchKPCategory')}}<{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceSearchKPCategory'}}>{{/if}}"
                       urlqueryparam-resourceicon="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceIcon')}}{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceIcon'}}{{/if}}"
-      ></mp-page-loader>
+      ></mp-page-loader> 
     </template>
 </semantic-query>

@@ -1,115 +1,31 @@
-<div class="page__grid-container">
-  <div class="page__content-container resource-editView-form-container">
-    <div class='resource-editView-formHeader'>
-      <div class="resource-editView-formHeader-title-container">
-        
-        <div class="resource-thumbnail-small-container">
-          
-            [[#if bindings.0.resourceConfig.value "===" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation"]]
-              
-                <rs-iiif-image-thumbnail   style='height: 100%; width: 100%;'
-                                          image-or-region='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]'      
-                                          [[> rsp:IIIFConfig]]
-                                        >
-                </rs-iiif-image-thumbnail>
-              
-            [[else]]
-              
-                <mp-resource-thumbnail iri='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]' class='resource-thumbnail-small'>
-                    <mp-resource-thumbnail-fallback>
-                    <div>  [[#if (urlParam 'resourceicon') ]]
-                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                      [[else]]
-                        <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                      [[/if]]</div>
-                    </mp-resource-thumbnail-fallback>
-                </mp-resource-thumbnail>
-              
-            [[/if]]    
-           
-          [[!-- <mp-resource-thumbnail iri='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]' class='resource-thumbnail-small'>
-                    <mp-resource-thumbnail-fallback>
-                      [[#if (urlParam 'resourceicon') ]]
-                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                      [[else]]
-                        <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                      [[/if]]
-                    </mp-resource-thumbnail-fallback>
-                </mp-resource-thumbnail> --]]
-        </div>
-        <h3 class="resource-editView-formHeader-title">
-          <div class="link-draggable">
+<mp-event-proxy id='[[> iri]]-update-resourceWorkspace-on-form-actions'
+    on-event-types='["Form.ResourceUpdated"]'      
+    proxy-event-type='Component.TemplateUpdate' 
+    proxy-targets='["[[urlParam 'resourceIri' escape=true]]-resourceWorkspace-frame","[[urlParam 'uri' escape=true]]-resourceWorkspace-frame","resource-detailed-visualisation"]'>
+</mp-event-proxy> 
+<mp-event-target-template-render id="[[urlParam 'resourceIri' escape=true]]-resourceWorkspace-frame" template='{{> template}}'>
 
-            <mp-draggable iri='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]'>
-              <div class="text-truncate">
-                <mp-label iri='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]' class=""></mp-label>
-              </div>
-            </mp-draggable>
-          </div>
-        </h3>
-        <div class="color-base" style="font-size: 21px; padding-bottom: 3px;">|</div>
-        <div class="text-type-subheader"><i class="material-symbols-rounded" aria-hidden="true">bubble_chart</i><div>[[urlParam "resourcelabel"]]</div></div>
-      
-      </div>
-
-     
-      <div class="btn-inline-container" style="margin-right:15px;">    
-        <!--     
-                <button type="button" class="btn btn-default btn-icon" title="Info">
-                  <i class="material-icons">info_outline</i>
-                </button>
-          -->
-                <!-- <button type="button" class="btn btn-default btn-icon" title="Refresh">
-                  <i class="material-icons">refresh</i>
-                </button> -->
-                <semantic-link-container  uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                              urlqueryparam-view='knowledge-map' 
-                              urlqueryparam-resource='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]'>
-        
-                  <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true" style="padding-left:5px;padding-right:5px;"></rs-icon>
-                   
-                </semantic-link-container>
-                <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                    urlqueryparam-view='resource-editor' urlqueryparam-resource='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]'>
-                                
-                        <rs-icon icon-type="rounded" icon-name="edit_note" symbol="true" padding-left:5px;padding-right:5px;></rs-icon>
-                    
-                </semantic-link-container>  
-                <!-- <button type="button" class="btn btn-default btn-icon" title="Share">
-                  <i class="material-icons">share</i>
-                </button> -->
-                
-             <!--  <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                    urlqueryparam-view='knowledge-map' urlqueryparam-resource='[[this]]'>
-                                <button type="button" title="Author Resource in Knowledge Map">
-                                    <rs-icon icon-type="round" icon-name="account_tree"></rs-icon>
-                                </button>
-                            </semantic-link-container>
-
-                            <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
-                                data='{"iri": "{{iri}}"}' targets='["details-view", "open-details-sidebar"]'>
-                                <button type="button" title="Resource Details">
-                                    <rs-icon icon-type="rounded" icon-name="info" symbol="true"></rs-icon>
-                                </button>
-                            </mp-event-trigger> -->
-                            
-                                 
-        
-      </div>
-    </div>
+<template id='template'>
+  <div class="page__grid-container">
+    <div class="page__content-container resource-editView-form-container">
+    [[#if (urlParam "uri")]]
+        [[> rsp:ResourceHeader frameView=false]]
+    [[else]]
+        [[#if (urlParam "resourceIri")]]
+            [[> rsp:ResourceHeader frameView=true]]
+        [[/if]]
+    [[/if]]
 
     <rs-tabs>
-          <rs-tab event-key="context" title="Context" icon="edit_note" icon-type="round">
-          <div class="tab-panel__header">          
-            <span class="muted">Add, structure, and enrich what is known about this resource.</span>
-          </div>
-          </rs-tab>
-          <rs-tab event-key="perspectives" title="Perspectives" icon="explore" icon-type="round">
+          
+          <rs-tab event-key="perspectives" title="Explore" icon="explore" icon-type="round">
             <div class="tab-panel__header">          
             <span class="muted">Explore this resource through maps, networks, timelines, media, and other visual research views.</span>
-            </div>   
+            </div>  
+            <div class="rs-visualisation-workspace">
+            <div class="rs-tabs-workspace">
             <rs-tabs>
-              <rs-tab event-key="object" title="Visual Features/Annotations" class-name="p-0">
+              <rs-tab event-key="object" title="Visual Annotations" class-name="p-0" icon="photo_size_select_large" icon-type="round">
                 <div style="height: 100%;" class="form-imageAnnotation__container">
                   <div style=" height: 100%; position: relative; z-index: 0;">                   
                         <inline-template template-iri='http://www.researchspace.org/resource/ImageAnnotation'
@@ -119,7 +35,53 @@
                   </div>
                 </div>
               </rs-tab>
-            </rs-tabs>       
+              <rs-tab event-key="map" title="Map" class-name="p-0" icon="place" icon-type="round"></rs-tab>
+              <rs-tab event-key="timeline" title="Timeline" icon="timeline" icon-type="round" class-name="p-0"></rs-tab>
+            </rs-tabs> </div>   
+            </div>   
+          </rs-tab>
+          <rs-tab event-key="context" title="Context" icon="edit_note" icon-type="round">
+            <div class="tab-panel__header">          
+                <span class="muted">Add, structure, and enrich what is known about this resource.</span>
+            </div>
+
+            <rs-tabs class="rs-secondary-tabs">
+         
+         
+                <rs-tab event-key="excavation" title="Excavation &amp; Looting">
+                
+                
+                <mp-collapsible-div class='search-page-container' expanded='false'>
+                    <mp-collapsible-div-trigger>
+                    <div><b>Archaeological Excavations </b>
+                    <span> </span>
+                    <span></span></div>
+                    </mp-collapsible-div-trigger>
+                    <mp-collapsible-div-content>
+                    <inline-template template-iri="http://www.researchspace.org/resource/ResourceSearchContent" 
+                        options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Archaeological_Excavation",
+                                "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
+                                "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
+                    </inline-template>
+                    </mp-collapsible-div-content>
+                </mp-collapsible-div>
+                
+                <mp-collapsible-div class='search-page-container' expanded='false'>
+                    <mp-collapsible-div-trigger>
+                    <div><b>Looting Activities </b>
+                    <span> </span>
+                    <span></span></div>
+                    </mp-collapsible-div-trigger>
+                    <mp-collapsible-div-content>
+                    <inline-template template-iri="rsp:ResourceSearchContent" 
+                        options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Looting_Activity",
+                                "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
+                                "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
+                    </inline-template>
+                    </mp-collapsible-div-content>
+                </mp-collapsible-div>
+                </rs-tab>
+            </rs-tabs>   
           </rs-tab>
           <rs-tab event-key="research" title="Research Outputs" icon="library_books" icon-type="round">
             <div class="tab-panel__header">          
@@ -131,13 +93,13 @@
             <mp-collapsible-div-trigger>
               <div><b>Knowledge Maps </b>
               <span> </span>
-              <span>(X entry)</span></div>
+              <span></span></div>
             </mp-collapsible-div-trigger>
             <mp-collapsible-div-content>
              <inline-template template-iri="rsp:ResourceSearchContent" 
                 options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map",
                           "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
-                          "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
+                          "searchRestrictions":"?subject ontodia:layoutData/ontodia:hasElement/ontodia:resource <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
             </inline-template>
             </mp-collapsible-div-content>
           </mp-collapsible-div>
@@ -145,17 +107,17 @@
             <mp-collapsible-div-trigger>
               <div><b>Semantic Narratives </b>
               <span> </span>
-              <span>(X entry)</span></div>
+              <span></span></div>
             </mp-collapsible-div-trigger>
             <mp-collapsible-div-content>
              <inline-template template-iri="rsp:ResourceSearchContent" 
                 options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative",
                           "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
-                          "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
+                          "searchRestrictions":"?subject crm:P67_refers_to <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
             </inline-template>
             </mp-collapsible-div-content>
           </mp-collapsible-div>
-</div>  
+            </div>  
           </rs-tab>
           <rs-tab event-key="connections" title="Connections" icon="account_tree" icon-type="round">
               <div class="tab-panel__header">          
@@ -527,9 +489,493 @@
         
           </rs-tab>
     </rs-tabs>
-</div>     
+    </div>     
+  </div>
+  
+</template>
 
-</div>
+</mp-event-target-template-render>
+
+[[#*inline "iri"]][[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]][[/inline]]
+
+[[#*inline "resourceWorkspaces"]]
+     <rs-tabs>
+          
+          <rs-tab event-key="perspectives" title="Explore" icon="explore" icon-type="round">
+            <div class="tab-panel__header">          
+            <span class="muted">Explore this resource through maps, networks, timelines, media, and other visual research views.</span>
+            </div>  
+            <div class="rs-visualisation-workspace">
+            <div class="rs-tabs-workspace">
+            <rs-tabs>
+              <rs-tab event-key="object" title="Visual Annotations" class-name="p-0" icon="photo_size_select_large" icon-type="round">
+                <div style="height: 100%;" class="form-imageAnnotation__container">
+                  <div style=" height: 100%; position: relative; z-index: 0;">                   
+                        <inline-template template-iri='http://www.researchspace.org/resource/ImageAnnotation'
+                                          options='{ "iri": "[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]", "dashboardId" : "{{dashboardId}}", "insideForm": false }'> 
+                        </inline-template> 
+                      
+                  </div>
+                </div>
+              </rs-tab>
+              <rs-tab event-key="map" title="Map" class-name="p-0" icon="place" icon-type="round"></rs-tab>
+              <rs-tab event-key="timeline" title="Timeline" icon="timeline" icon-type="round" class-name="p-0"></rs-tab>
+            </rs-tabs> </div>   
+            </div>   
+          </rs-tab>
+          <rs-tab event-key="context" title="Context" icon="edit_note" icon-type="round">
+            <div class="tab-panel__header">          
+                <span class="muted">Add, structure, and enrich what is known about this resource.</span>
+            </div>
+
+            <rs-tabs class="rs-secondary-tabs">
+         
+         
+                <rs-tab event-key="excavation" title="Excavation &amp; Looting">
+                <div class="tab-panel__header">
+                    <strong>Excavation &amp; Looting</strong>
+                    <span class="muted">Contextual data concerning excavation, illicit removal, or origin events tied to loss from archaeological context.</span>
+                </div>
+                
+                <mp-collapsible-div class='search-page-container' expanded='false'>
+                    <mp-collapsible-div-trigger>
+                    <div><b>Archaeological Excavations </b>
+                    <span> </span>
+                    <span>(X entry)</span></div>
+                    </mp-collapsible-div-trigger>
+                    <mp-collapsible-div-content>
+                    <inline-template template-iri="http://www.researchspace.org/resource/ResourceSearchContent" 
+                        options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Archaeological_Excavation",
+                                "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
+                                "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
+                    </inline-template>
+                    </mp-collapsible-div-content>
+                </mp-collapsible-div>
+                
+                <mp-collapsible-div class='search-page-container' expanded='false'>
+                    <mp-collapsible-div-trigger>
+                    <div><b>Looting Activities </b>
+                    <span> </span>
+                    <span>(X entry)</span></div>
+                    </mp-collapsible-div-trigger>
+                    <mp-collapsible-div-content>
+                    <inline-template template-iri="rsp:ResourceSearchContent" 
+                        options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Looting_Activity",
+                                "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
+                                "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
+                    </inline-template>
+                    </mp-collapsible-div-content>
+                </mp-collapsible-div>
+                </rs-tab>
+            </rs-tabs>   
+          </rs-tab>
+          <rs-tab event-key="research" title="Research Outputs" icon="library_books" icon-type="round">
+            <div class="tab-panel__header">          
+            <span class="muted">Access authored narratives, maps, sets, timelines, and other research artefacts related to this resource.</span>
+            </div>  
+             <div class="resource-relatedResourcesView-content">
+
+            <mp-collapsible-div class='search-page-container' expanded='false'>
+            <mp-collapsible-div-trigger>
+              <div><b>Knowledge Maps </b>
+              <span> </span>
+              <span></span></div>
+            </mp-collapsible-div-trigger>
+            <mp-collapsible-div-content>
+             <inline-template template-iri="rsp:ResourceSearchContent" 
+                options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map",
+                          "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
+                          "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
+            </inline-template>
+            </mp-collapsible-div-content>
+          </mp-collapsible-div>
+            <mp-collapsible-div class='search-page-container' expanded='false'>
+            <mp-collapsible-div-trigger>
+              <div><b>Semantic Narratives </b>
+              <span> </span>
+              <span></span></div>
+            </mp-collapsible-div-trigger>
+            <mp-collapsible-div-content>
+             <inline-template template-iri="rsp:ResourceSearchContent" 
+                options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative",
+                          "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
+                          "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
+            </inline-template>
+            </mp-collapsible-div-content>
+          </mp-collapsible-div>
+            </div>  
+          </rs-tab>
+          <rs-tab event-key="connections" title="Connections" icon="account_tree" icon-type="round">
+              <div class="tab-panel__header">          
+            <span class="muted">Review the direct relationships this resource participates in.</span>
+            </div>  
+              <inline-template template-iri='[[resolvePrefix "rsp:RawDataTemplate"]]' 
+                                                                  options='{"iri": "[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]"}' >
+                                                </inline-template>
+
+          </rs-tab>
+          <rs-tab event-key="activity" title="Activity" icon="history" icon-type="round">
+              <div class="tab-panel__header">          
+            <span class="muted">Trace edits, updates, and changes to this resource over time.</span>
+            </div>    
+
+
+            [[!-- creation details --]]
+            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName ?actorUser ?actorEmail ?creationDateValue ?importFromExternalSource ?sourceURI WHERE {
+                                        BIND(<[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> AS ?entity)
+
+                                        ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+
+                                        ?entityFormRecordCreation crm:P14_carried_out_by ?actor .
+                                        BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                                        BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
+
+                                        OPTIONAL {
+                                            ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                            ?actorUser crm:P1_is_identified_by ?actorName .
+                                            ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                            ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                        }
+
+                                        ?entityFormRecordCreation crm:P4_has_time-span ?creationDate .
+                                        ?creationDate crm:P82_at_some_time_within ?creationDateValue .
+
+                                        OPTIONAL {
+                                            ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                            ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                            ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
+                                            ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                        }
+                                    }'
+                                        
+                            template='{{> template}}'>
+                                
+                <template id='template'>
+                    
+                    <div class="table-expanded">
+                        <table class="table metadata-table">
+                            <tbody>
+                                <tr class="standard-row">
+                                    <td class="table-title" style="width: 200px;"><b>Created</b></td>
+                                    <td class="table-description">
+                                        {{dateTimeFormat bindings.0.creationDateValue.value "DD/MM/YYYY, h:mm a"}} by
+                                        {{#if bindings.0.actorFullName.value}}
+                                            <mp-draggable iri='{{bindings.0.actorUser.value}}'>
+                                                <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                            urlqueryparam-view='resource-editor' 
+                                                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                            urlqueryparam-resource-iri="{{bindings.0.actorUser.value}}"
+                                                                            urlqueryparam-mode='edit'>
+                                                    <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.actorFullName.value}}</div>
+                                                </semantic-link-container>
+                                            </mp-draggable>
+                                        {{else}}
+                                            <div>{{bindings.0.actorEmail.value}}</div>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                {{#if bindings.0.importFromExternalSource.value}}
+                                    <tr class="standard-row">
+                                        <td class="table-title" style="width: 200px;"><b>Imported from</b></td>
+                                        <td class="table-description">
+                                            <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
+                                        </td>
+                                    </tr>
+                                {{/if}}
+                            </tbody>   
+                        </table>
+                    </div>
+                </template>
+            </semantic-query>
+
+            [[!-- last modification details --]]
+            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName ?actorUser ?actorEmail (MAX(?modificationDateValue) AS ?lastModificationDate) WHERE {
+                                    BIND(<[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> AS ?entity)
+
+                                    ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
+                                    ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+
+                                    ?entityFormRecordModification crm:P14_carried_out_by ?actor .
+                                    BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                                    BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
+
+                                    OPTIONAL {
+                                        ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?actorUser crm:P1_is_identified_by ?actorName .
+                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                        ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                    }
+
+                                    ?entityFormRecordModification crm:P4_has_time-span ?modificationDate .
+                                    ?modificationDate crm:P82_at_some_time_within ?modificationDateValue .
+                                } GROUP BY ?actor ?actorFullName ?actorUser ?actorEmail'
+                                        
+                            template='{{> template}}'>
+                                
+                    <template id='template'>
+                        <div class="table-expanded">
+                            <table class="table metadata-table">
+                                <tbody>
+                                    {{#each bindings}}
+                                        <tr class="standard-row">
+                                            <td class="table-title" style="width: 200px;"><b>Last modified</b></td>
+                                            <td class="table-description">
+                                                {{dateTimeFormat lastModificationDate.value "DD/MM/YYYY, h:mm a"}} by
+                                                {{#if actorFullName}}
+                                                    <mp-draggable iri='{{actorUser.value}}'>
+                                                        <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                    urlqueryparam-resource-iri="{{actorUser.value}}"
+                                                                                    urlqueryparam-mode='edit'>
+                                                            <div style="text-decoration: underline; cursor: pointer;">{{actorFullName.value}}</div>
+                                                        </semantic-link-container>
+                                                    </mp-draggable>
+                                                {{else}}
+                                                    <div>{{actorEmail.value}}</div>
+                                                {{/if}}
+                                            </td>
+                                        </tr>
+                                    {{/each}}
+                                </tbody>   
+                            </table>
+                        </div>
+                    </template>
+            </semantic-query>
+
+            [[#if imageOverlay]]
+                <semantic-query  query='SELECT DISTINCT ?modifiedByUser ?modifiedByUserFullName ?actorUser ?actorEmail ?modifiedAtTime WHERE {
+                                            BIND(<[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> AS ?overlayImage)
+
+                                            ?overlayImage a crmdig:D9_Data_Object .
+                                            ?overlayImage crmdig:L60i_is_documented_by ?digitizationProcess .
+                                            ?digitizationProcess a crmdig:D2_Digitization_Process .
+            
+                                            ?overlayImage <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
+            
+                                            [[#if (hasPermission "forms:ldp:*")]]
+                                                ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                BIND(IRI(REPLACE(STR(?modifiedByUser), "%40", "_")) as ?actorUser)
+
+                                                OPTIONAL {
+                                                    ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                    ?actorUser crm:P1_is_identified_by ?actorName .
+                                                    ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                    ?actorName crm:P190_has_symbolic_content ?modifiedByUserFullName .
+                                                }
+                                            [[else]]
+                                                ?overlayImage <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
+                                            [[/if]]
+
+                                            BIND(IRI(REPLACE(STR(?modifiedByUser), "%40", "@")) as ?actorEmail)
+                                            
+                                        }'
+                                template='{{> template}}'>
+                                            
+                            <template id='template'>
+                                <div>
+                                    <div class="semantic-form-input-title">Image overlay metadata</div>
+                                    <div class="table-expanded">
+                                        <table class="table metadata-table">
+                                            <tbody>
+                                                <tr class="standard-row">
+                                                    <td class="table-title" style="width: 200px;"><b>Created</b></td>
+                                                    <td class="table-description">
+                                                        {{dateTimeFormat bindings.0.modifiedAtTime.value "DD/MM/YYYY, h:mm a"}} by
+                                                        {{#if bindings.0.modifiedByUserFullName.value}}
+                                                            <mp-draggable iri='{{bindings.0.actorUser.value}}'>
+                                                                <semantic-link-container    uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                            urlqueryparam-view='resource-editor' 
+                                                                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                            urlqueryparam-resource-iri="{{bindings.0.actorUser.value}}"
+                                                                                            urlqueryparam-mode='edit'>
+                                                                    <div style="text-decoration: underline; cursor: pointer;">{{bindings.0.modifiedByUserFullName.value}}</div>
+                                                                </semantic-link-container>
+                                                            </mp-draggable>
+                                                        {{else}}
+                                                            <div>{{bindings.0.actorEmail.value}}</div>
+                                                        {{/if}}
+                                                    </td>
+                                                </tr>
+                                            </tbody>   
+                                        </table>
+                                    </div>
+                                </div>
+                            </template>
+                </semantic-query>
+            [[/if]]
+
+            [[!-- modification history --]]
+            <semantic-if query='ASK {<[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> crm:P129i_is_subject_of ?entityFormRecord .
+                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
+                                        ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> . }'
+                        then='{{> then}}'>
+            
+                <template id='then'>
+                    <div class="table-expanded">
+                        <table class="table metadata-table">
+                            <tbody>
+                                <tr class="standard-row">
+                                    <td class="table-title" style="width: 200px;"><b>Modification history</b></td>
+                                    <td class="table-description">
+                                        <mp-overlay-dialog  id="{{viewId}}-modification-history"  
+                                                            type="modal" 
+                                                            class="modal-xlSize preview_modal"
+                                                            title="All modifications">
+                                        <mp-overlay-dialog-trigger>
+                                            <div style="text-decoration: underline; cursor: pointer;">all modifications</div>
+                                        </mp-overlay-dialog-trigger>
+                                        <mp-overlay-dialog-content>
+                                            <div>
+                                                <semantic-table id='{{viewId}}-modification-table'
+                                                                class-name="table-fixed-header table-expanded"
+                                                                query='SELECT DISTINCT ?actor ?actorFullName ?actorUser ?actorEmail ?modificationDateValue WHERE {
+                                                                    BIND(<[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> AS ?entity)
+                                
+                                                                    ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
+                                                                    ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+                                
+                                                                    ?entityFormRecordModification crm:P14_carried_out_by ?actor .
+                                                                    BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                                                                    BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
+                                
+                                                                    OPTIONAL {
+                                                                        ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                                                        ?actorUser crm:P1_is_identified_by ?actorName .
+                                                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                                                        ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                                                    }
+                                
+                                                                    ?entityFormRecordModification crm:P4_has_time-span ?modificationDate .
+                                                                    ?modificationDate crm:P82_at_some_time_within ?modificationDateValue .
+                                                                } ORDER BY DESC(?modificationDateValue)'
+                                                                
+                                                                number-of-displayed-rows=20
+                                                                options:='{"filterPlaceholderText":"Filter modifications"}'
+                                                                no-result-template='{{> noResults}}'
+                                                                column-configuration='[{"variableName": "modificationDateValue", "displayName": "Modification date", "cellTemplate": "{{> date}}" },
+                                                                                        {"variableName": "actorFullName", "displayName": "Modified by", "cellTemplate": "{{> actor}}" }
+                                                                                    ]'>
+        
+                                                        <template id='date'>
+                                                            <div style="display: flex; gap: 5px; align-items: center;">
+                                                                <rs-icon icon-type="rounded" icon-name="schedule" symbol="true"></rs-icon>
+                                                                <div>{{dateTimeFormat modificationDateValue.value "DD/MM/YYYY, h:mm:ss a"}}</div>
+                                                            </div>
+                                                        </template>
+                                                        
+                                                        <template id='actor'>
+                                                            <div style="display: flex; gap: 5px; align-items: center;">
+                                                                <rs-icon icon-type="rounded" icon-name="portrait" symbol="true"></rs-icon>
+                                                                {{#if actorFullName.value}}
+                                                                    <mp-draggable iri='{{actorUser.value}}'>
+                                                                        <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                                    urlqueryparam-view='resource-editor' 
+                                                                                                    urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                                    urlqueryparam-resource-iri="{{actorUser.value}}"
+                                                                                                    urlqueryparam-mode='edit'>
+                                                                            <div class="text-link">{{actorFullName.value}}</div>
+                                                                        </semantic-link-container>
+                                                                    </mp-draggable>
+                                                                {{else}}
+                                                                    <div>{{actorEmail.value}}</div>
+                                                                {{/if}}
+                                                            </div>
+                                                        </template>
+        
+                                                        <template id="noResults">
+                                                            <div style="padding: 12px 0">
+                                                                No modification available
+                                                            </div>
+                                                        </template>
+                                                </semantic-table>
+                                            </div>
+                                        </mp-overlay-dialog-content>
+                                        </mp-overlay-dialog>
+                                    </td>
+                                </tr>
+                            </tbody>   
+                        </table>
+                    </div>
+                </template>
+            </semantic-if>
+
+            [[!-- contributors details --]]
+            <semantic-query query='SELECT DISTINCT ?actor ?actorFullName ?actorUser ?actorEmail WHERE {
+                                    BIND(<[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> AS ?entity)
+
+                                    ?entity crm:P129i_is_subject_of ?entityFormRecord .
+                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                    ?entityFormRecord crmdig:L11i_was_output_of ?recordOutput .
+                                    ?recordOutput crm:P2_has_type ?type .
+                                    FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification>, 
+                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>
+                                                        ))
+                                    ?recordOutput crm:P14_carried_out_by ?actor .
+                                    BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
+                                    BIND(REPLACE(REPLACE(STR(?actor), STR(User:), ""), "%40", "@") as ?actorEmail) 
+                                    
+                                    OPTIONAL {
+                                        ?actorUser crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/user> .
+                                        ?actorUser crm:P1_is_identified_by ?actorName .
+                                        ?actorName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                        ?actorName crm:P190_has_symbolic_content ?actorFullName .
+                                    }
+                                } ORDER BY ?actorFullName ?actorEmail'
+                            template='{{> template}}'>
+
+                <template id='template'>
+                    <div class="table-expanded">
+                        <table class="table metadata-table">
+                            <tbody>
+                                <tr class="standard-row">
+                                    <td class="table-title" style="width: 200px;"><b>Contributors</b></td>
+                                    <td class="table-description">
+                                        <mp-popover>
+                                            <mp-popover-trigger placement="bottom" trigger='["click", "focus"]'> 
+                                                <rs-icon icon-type="rounded" icon-name="people_alt" class="people-icon" symbol="true"></rs-icon>
+                                            </mp-popover-trigger>
+                                            <mp-popover-content>
+                                                <div>
+                                                    {{#each bindings}}
+                                                        {{#if actorFullName.value}}
+                                                            <mp-draggable iri='{{actorUser.value}}'>
+                                                                <semantic-link-container    uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                                                            urlqueryparam-view='resource-editor' 
+                                                                                            urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/User'
+                                                                                            urlqueryparam-resource-iri="{{actorUser.value}}"
+                                                                                            urlqueryparam-mode='edit'>
+                                                                    <div class="text-link">{{actorFullName.value}}</div>
+                                                                </semantic-link-container>
+                                                            </mp-draggable>
+                                                        {{else}}
+                                                            <div>{{actorEmail.value}}</div>
+                                                        {{/if}}
+                                                    {{/each}}
+                                                </div>
+                                            </mp-popover-content>
+                                        </mp-popover>
+                                    </td>
+                                </tr>
+                            </tbody>   
+                        </table>
+                    </div>
+                </template>
+            </semantic-query>
+            
+        
+          </rs-tab>
+    </rs-tabs>
+[[/inline]]
 
 [[#*inline "researchOutputs"]]
 <div class="resource-relatedResourcesView-content">

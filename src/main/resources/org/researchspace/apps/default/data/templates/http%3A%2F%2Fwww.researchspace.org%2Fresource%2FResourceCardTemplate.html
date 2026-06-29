@@ -329,17 +329,29 @@
           </semantic-link-container>
         {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item")}}
           <mp-label iri='{{iri}}' class="text-link" style="text-decoration: none; cursor: initial;"></mp-label>
-        {{else}}
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
           <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                    urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                    urlqueryparam-view='semantic-narrative'
                                     urlqueryparam-resource='{{iri}}'>
+            
+              <div><mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label></div>
+            
+          </semantic-link-container>
+        {{else}} 
+          <mp-event-trigger id='{{viewId}}-resource-visualisation-trigger' 
+                  type='Dashboard.AddFrame'
+                  data='{"viewId":"resource-detailed-visualisation", 
+                          "resourceIri": "{{iri}}",
+                          "resourceVisualisationTemplate": "{{#if resourceVisualisationTemplate}}{{resourceVisualisationTemplate}}{{else}}rsp:ResourceContent{{/if}}"
+                        }' 
+                  targets='["thinking-frames"]'>
             {{#if label}}
               [[!-- Label from KM props --]]
               <span class="text-link" title="{{label}}">{{label}}</span>
             {{else}}
               <div><mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label></div>
             {{/if}}
-          </semantic-link-container>
+          </mp-event-trigger>
         {{/if}}
       </div>
     [[/if]]

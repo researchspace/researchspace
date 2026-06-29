@@ -15,7 +15,7 @@
           {{#if [[urlParam "searchall" escape=false]]}}
             <div class="semantic-search-header-title text-truncate-line1" style="min-height: 31px; min-width: 340px;flex: 0;"></div>
           {{else}}
-            <h3 class="semantic-search-header-title text-truncate-line1" title="[[urlParam 'resourcelabel' escape=false]]">[[urlParam "resourcelabel" escape=false]]</h3>
+            [[!-- <h3 class="semantic-search-header-title text-truncate-line1" title="[[urlParam 'resourcelabel' escape=false]]">[[urlParam "resourcelabel" escape=false]]</h3> --]]
           {{/if}}
       
           <div class="semantic-search-header-actions">
@@ -81,13 +81,14 @@
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'>
               </template>
 
-              <template id='default'>
+              <template id='default'>                
                 [[#if (urlParam "resourceform")]]
-                  <div class="btn-newDraggableTab-container" style="margin-right: 20px;">
+                 <div class="btn-newDraggableTab-container" style="margin-right: 20px;">
                     <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                               urlqueryparam-view="resource-editor"
                                               urlqueryparam-entity-type-config='[[urlParam "resourceconfig" escape=false]]'
                                               urlqueryparam-mode='new'
+                                              urlqueryparam-parent-node='[[urlParam "parentnode" escape=false]]'
                                               urlqueryparam-custom-label='New [[urlParam "resourcelabel" escape=false]]'>
                       <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
                         <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
@@ -98,6 +99,7 @@
                                               urlqueryparam-view="resource-editor"
                                               urlqueryparam-entity-type-config='[[urlParam "resourceconfig" escape=false]]'
                                               urlqueryparam-mode='new'
+                                              urlqueryparam-parent-node='[[urlParam "parentnode" escape=false]]'
                                               urlqueryparam-open-as-drag-and-drop='true'
                                               urlqueryparam-custom-label='New [[urlParam "resourcelabel" escape=false]]'>
                       <button class="btn btn-action btn-textAndIcon btn-newDraggableTab" title='Open in new draggable tab'>
@@ -199,7 +201,7 @@
               <semantic-search-query-keyword  domain='[[urlParam "resourceontologyclass" escape=false]]'
                                               query='SELECT ?subject WHERE { 
                                                       ?subject a [[urlParam "resourceontologyclass" escape=false]] .
-                                                      
+                                                      [[#if (urlParam "searchrestrictions")]] [[urlParam "searchrestrictions" escape=false]] [[/if]]
                                                       [[#if (urlParam "resourcetype")]] 
                                                         ?subject crm:P2_has_type [[urlParam "resourcetype" escape=false]] .
                                                       [[/if]]
@@ -272,7 +274,8 @@
     
                                                 default-query='SELECT ?subject WHERE { 
                                                                 ?subject a [[urlParam "resourceontologyclass" escape=false]] .
-                                                                
+                                                                [[#if (urlParam "searchrestrictions")]] [[urlParam "searchrestrictions" escape=false]] [[/if]]
+
                                                                 [[#if (urlParam "resourcetype")]] 
                                                                   ?subject crm:P2_has_type [[urlParam "resourcetype" escape=false]] .
                                                                 [[/if]]
@@ -966,7 +969,7 @@
                         </semantic-search-result>
                       </semantic-search-result-context>
                     
-                    {{else}}<div>
+                    {{else}}
                       [[!-- list view --]]
                       <semantic-query query=' SELECT DISTINCT ?resourceConfig 
                                                               ?columnTitle1 ?columnTitle2 ?columnTitle3 ?columnTitle4
@@ -1017,6 +1020,7 @@
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline'))}}{{else}}{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description WHERE {
                                                     BIND(?subject as ?iri) .
+                                                    {{#if searchRestrictions}}{{searchRestrictions}}{{/if}}
                                                     #?subject a ?type .
                                                     #?type rdfs:label ?typeLabel .
                                                     #FILTER (lang(?typeLabel) = "en")
@@ -1120,6 +1124,7 @@
                                                                 targets='["thinking-frames"]'>
                                                 <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
                                               </mp-event-trigger>
+                                            
                                             {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
                                               <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
                                                                 type='Dashboard.AddFrame'
@@ -1140,12 +1145,22 @@
                                                               urlqueryparam-resource='{{iri.value}}'>
                                                 <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                               </semantic-link>
-                                            {{else}}
+                                            {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
                                               <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                              urlqueryparam-view='{{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                                              urlqueryparam-view='semantic-narrative'
                                                               urlqueryparam-resource='{{iri.value}}'>
                                                 <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                               </semantic-link>
+                                            {{else}}
+                                              <mp-event-trigger id='{{viewId}}-resource-visualisation-trigger' 
+                                                      type='Dashboard.AddFrame'
+                                                      data='{"viewId":"resource-detailed-visualisation", 
+                                                              "resourceIri": "{{iri.value}}",
+                                                              "resourceVisualisationTemplate": "[[#if (urlParam "resourcevisualisationtemplate")]][[urlParam "resourcevisualisationtemplate"]][[else]]rsp:ResourceContent[[/if]]"
+                                                            }' 
+                                                      targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
                                             {{/if}}
                                           </div>
                                         </mp-draggable>
@@ -1161,9 +1176,7 @@
                                                 <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
                                               {{/ifCond}}
                                             </template>
-                                          </semantic-query>
-                                        {{else}}
-                                          <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                          </semantic-query>                                       
                                         {{/if}}
                                       </div>
                                     </div>
@@ -1465,6 +1478,7 @@
                                                                 targets='["thinking-frames"]'>
                                                 <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
                                               </mp-event-trigger>
+                                            
                                             {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
                                               <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
                                                                 type='Dashboard.AddFrame'
@@ -1493,12 +1507,22 @@
                                                               urlqueryparam-resource='{{iri.value}}'>
                                                 <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                               </semantic-link>
-                                            {{else}}
+                                            {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
                                               <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                              urlqueryparam-view='{{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                                              urlqueryparam-view='semantic-narrative'
                                                               urlqueryparam-resource='{{iri.value}}'>
                                                 <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
                                               </semantic-link>
+                                            {{else}}
+                                              <mp-event-trigger id='{{viewId}}-resource-visualisation-trigger' 
+                                                      type='Dashboard.AddFrame'
+                                                      data='{"viewId":"resource-detailed-visualisation", 
+                                                              "resourceIri": "{{iri.value}}",
+                                                              "resourceVisualisationTemplate": "[[#if (urlParam "resourcevisualisationtemplate")]][[urlParam "resourcevisualisationtemplate"]][[else]]rsp:ResourceContent[[/if]]"
+                                                            }' 
+                                                      targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
                                             {{/if}}
                                           </div>
                                         </mp-draggable>
@@ -1514,9 +1538,7 @@
                                                 <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
                                               {{/ifCond}}
                                             </template>
-                                          </semantic-query>
-                                        {{else}}
-                                          <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                          </semantic-query>                                  
                                         {{/if}}
                                       </div>
                                     </div>
@@ -1543,7 +1565,7 @@
                           </semantic-search-result>
                         </template>
 
-                      </semantic-query></div>
+                      </semantic-query>
                     {{/if}}
                   </semantic-search-result-holder>
                   {{/bind}}

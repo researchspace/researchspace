@@ -1,0 +1,100 @@
+<header class="resource-record-header">
+    <!-- Thumbnail -->
+    <div class="resource-record-header__thumbnail">                
+      <mp-resource-thumbnail iri='[[> iri]]' class='resource-thumbnail-small'>
+          <mp-resource-thumbnail-fallback>
+          <div>  [[#if (urlParam 'resourceicon') ]]
+              <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+            [[else]]
+              <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+            [[/if]]</div>
+          </mp-resource-thumbnail-fallback>
+      </mp-resource-thumbnail>
+    </div>
+
+
+    <!-- Identity, facts and actions -->
+    <div class="resource-record-header__body">
+      <div class="resource-record-header__top">
+        <!-- Resource identity -->
+        <div class="resource-record-header__identity">
+          <div class="resource-record-header__title-row">
+            <h3
+              id="resource-title"
+              class="resource-record-header__title"
+            >
+              <span class="link-draggable">
+              <mp-draggable iri='[[> iri]]'>
+                <div class="text-truncate">
+                  <mp-label iri='[[> iri]]' class=""></mp-label>
+                </div>
+              </mp-draggable>
+              </span>
+            </h3>
+
+            <!-- To BE DONE -->
+            <!--
+            <span class="resource-record-header__qualifier">              
+            </span>
+            -->
+          </div>
+
+      <div class="resource-record-header__classification">
+        [[#if (urlParam "uri" escape=false)]] 
+          <mp-field-visualization subject='[[urlParam "uri" escape=false]]'
+            fields="[[fieldDefinitionsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { BIND(<http://www.cidoc-crm.org/cidoc-crm/P2_has_type> as ?field) ?resoure ?field ?o . }" resource=(nTriplesIri (urlParam "uri" escape=true)) ) ]]"           
+            template='{{> template}}'>
+            <template id="template">{{> rsp:ResourceFieldBasedHeaderClassificationVisualization}}</template>
+          </mp-field-visualization>
+      [[else]]
+        <mp-field-visualization subject='[[urlParam "resourceIri" escape=false]]'
+          fields="[[fieldDefinitionsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { BIND(<http://www.cidoc-crm.org/cidoc-crm/P2_has_type> as ?field) ?resoure ?field ?o . }" resource=(nTriplesIri (urlParam "resourceIri" escape=true)) ) ]]"           
+          template='{{> template}}'>
+          <template id="template">{{> rsp:ResourceFieldBasedHeaderClassificationVisualization}}</template>
+        </mp-field-visualization>
+      [[/if]]
+      </div> 
+    </div>
+
+    <!--
+      Render this navigation only when actions exist.
+      The buttons form the compact top-right cluster.
+    -->
+    <nav class="resource-record-header__actions" aria-label="Actions for Resource">
+      <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+          urlqueryparam-view='resource-editor' urlqueryparam-resource='[[> iri]]'>
+        <button type="button" class="resource-record-header__action" title="Edit resource"  aria-label="Edit resource">
+          <i class="material-symbols-rounded" aria-hidden="true">edit_note</i>
+        </button>
+      </semantic-link-container>  
+          
+      <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret">
+        {{> rsp:ResourceDropdownActions viewId=viewId
+                                        iri="[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]"
+                                        resourceEditorButton=true
+                                        hidePreview=true
+                                        headerButton=false
+        }}
+      </rs-resource-dropdown>
+    </nav>
+  </div>
+
+  <!-- Resource-specific key facts -->
+  [[#if (urlParam "uri" escape=false)]]
+    <mp-field-visualization subject='[[urlParam "uri" escape=false]]'
+                fields="[[fieldDefinitionsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE {?resource ?field ?o . ?field a <http://www.researchspace.org/resource/system/fields/Field> . FILTER (?field NOT IN (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>, <http://www.cidoc-crm.org/cidoc-crm/P2_has_type>,<http://www.researchspace.org/ontology/PX_has_main_representation>, <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>))} ORDER BY DESC(?field)" resource=(nTriplesIri (urlParam "uri" escape=true)) ) ]]"           
+                template='{{> template}}'>
+          <template id="template">{{> rsp:ResourceFieldBasedHeaderNoFramesVisualization subject=iri}}</template>
+    </mp-field-visualization>
+  [[else]]
+    <mp-field-visualization subject='[[urlParam "resourceIri" escape=false]]'
+              fields="[[fieldDefinitionsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE {?resource ?field ?o . ?field a <http://www.researchspace.org/resource/system/fields/Field> . FILTER (?field NOT IN (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>, <http://www.cidoc-crm.org/cidoc-crm/P2_has_type>,<http://www.researchspace.org/ontology/PX_has_main_representation>, <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>)) } ORDER BY DESC(?field)" resource=(nTriplesIri (urlParam "resourceIri" escape=true)) ) ]]"           
+              template='{{> template}}'>
+          <template id="template">{{> rsp:ResourceFieldBasedHeaderFramesVisualization subject=iri}}</template>
+    </mp-field-visualization>
+  [[/if]] 
+  </div>
+  </header>
+
+[[#*inline "iri"]][[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]][[/inline]]
+

@@ -13,7 +13,15 @@
       [[!-- in the messy data it can happen that field is anyURI but actual data is literal --]]
       {{value.value.value}}
     {{else}} 
-      <semantic-link iri="{{value.value.value}}" draggable="true"></semantic-link>     
+        <mp-event-trigger id='{{viewId}}-resource-visualisation-trigger' 
+                  type='Dashboard.AddFrame'
+                  data='{"viewId":"resource-detailed-visualisation", 
+                          "resourceIri": "{{value.value.value}}",
+                          "resourceVisualisationTemplate": "{{#if resourceTemplate}}{{resourceTemplate}}{{else}}rsp:ResourceContent{{/if}}"
+                        }' 
+                  targets='["thinking-frames"]'>
+          <span><mp-label iri='{{value.value.value}}' class="text-truncate-line1" style="text-decoration:none;"></mp-label></span>
+          </mp-event-trigger>
     {{/if}}
   {{/ifCond}}
 </div>

@@ -1,0 +1,155 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "GroupingConfig": {
+            "properties": {
+                "behaviour": {
+                    "default": "'expand'",
+                    "description": "Behaviour of grouped nodes when expanding.\nIn 'expand' mode, the children nodes will be attached to the\ngrouped node. In 'replace' mode, the grouped node will be\nreplaced by the children nodes. If set to 'none', the grouped\nnode will neither be expanded nor replaced.",
+                    "enum": [
+                        "expand",
+                        "none",
+                        "replace"
+                    ],
+                    "type": "string"
+                },
+                "enabled": {
+                    "default": false,
+                    "description": "Enable grouping of nodes by shared predicate and type",
+                    "type": "boolean"
+                },
+                "threshold": {
+                    "default": 3,
+                    "description": "Number of nodes above which they will be grouped together.",
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "enabled",
+                "threshold",
+                "behaviour"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "colours": {
+            "additionalProperties": {
+                "type": "string"
+            },
+            "default": {},
+            "description": "Optional colour palette for nodes.\nPassed as JSON object with RDF types as keys and colours as values.",
+            "propertyOrder": [],
+            "type": "object"
+        },
+        "controls": {
+            "default": false,
+            "description": "Display a control panel with buttons to control the graph.",
+            "type": "boolean"
+        },
+        "edgeFilter": {
+            "default": false,
+            "description": "Display a filter box for the edges",
+            "type": "boolean"
+        },
+        "grouping": {
+            "$ref": "#/definitions/GroupingConfig",
+            "default": "{\nenabled: false\n}",
+            "description": "Grouping configuration"
+        },
+        "height": {
+            "default": "600px",
+            "description": "Height of the graph.",
+            "type": "string"
+        },
+        "id": {
+            "default": "undefined",
+            "description": "Optional identifier. \nRequired if component should be controlled via external events.",
+            "type": "string"
+        },
+        "nodeQuery": {
+            "default": "undefined",
+            "description": "Query to retrieve additional graph data. ?subject will be replaced by the\nURI of the node that is clicked.",
+            "type": "string"
+        },
+        "persistGraph": {
+            "default": false,
+            "description": "If true, the graph will be persisted in the browser's local storage.\nThis allows the graph to be restored when the page is reloaded.\nIf the URL of the page changes, the graph will be cleared.",
+            "type": "boolean"
+        },
+        "persistGraphMessage": {
+            "default": "The graph has been restored from the browser's local storage.",
+            "description": "Message to display when the graph has been restored from the browser's local storage.",
+            "type": "string"
+        },
+        "persistGraphMessagePosition": {
+            "default": "tr",
+            "description": "Position of the message to display when the graph has been restored from the browser's local storage.\nOptions:\ntr (top right), tl (top left), tc (top center), br (bottom right), bl (bottom left), bc (bottom center)",
+            "enum": [
+                "bc",
+                "bl",
+                "br",
+                "tc",
+                "tl",
+                "tr"
+            ],
+            "type": "string"
+        },
+        "query": {
+            "description": "SPARQL CONSTRUCT query to retrieve the graph data.",
+            "type": "string"
+        },
+        "searchBox": {
+            "default": false,
+            "description": "Display a search field.",
+            "type": "boolean"
+        },
+        "sizes": {
+            "default": {
+                "edges": 5,
+                "nodes": 10
+            },
+            "description": "Sizes of the nodes and edges in pixels\nPassed as a JSON object with the following properties:\n- nodes: size of the nodes\n- edges: size of the edges",
+            "properties": {
+                "edges": {
+                    "type": "number"
+                },
+                "nodes": {
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "nodes",
+                "edges"
+            ],
+            "required": [
+                "edges",
+                "nodes"
+            ],
+            "type": "object"
+        },
+        "width": {
+            "default": "800px",
+            "description": "Width of the graph.",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "query",
+        "id",
+        "colours",
+        "controls",
+        "edgeFilter",
+        "grouping",
+        "nodeQuery",
+        "persistGraph",
+        "persistGraphMessage",
+        "persistGraphMessagePosition",
+        "searchBox",
+        "sizes",
+        "width",
+        "height"
+    ],
+    "type": "object"
+}
+

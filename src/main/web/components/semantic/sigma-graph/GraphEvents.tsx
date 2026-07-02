@@ -36,6 +36,14 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const [ edgeLabels, setEdgeLabels ] = useState<{label: string, visible: boolean}[]>([]);
     const [ edgeLabelsNeedUpdate, setEdgeLabelsNeedUpdate ] = useState<boolean>(false);
 
+    const createDerivedEdgeKey = (
+    originalEdge: string,
+    source: string,
+    target: string
+): string => {
+    return `derived:${encodeURIComponent(originalEdge)}:${encodeURIComponent(source)}:${encodeURIComponent(target)}`;
+};
+
     // Derive the labels visible to Sigma once per edgeLabels update rather than
     // recalculating them for every node and edge processed by the reducers.
     const visibleEdgeLabels = useMemo(
@@ -128,20 +136,30 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
         for (const child of children) {
             for (const edge of incomingEdges) {
-                const edgeAttributes = graph.getEdgeAttributes(edge);
+                const edgeAttributes = { ...graph.getEdgeAttributes(edge) };
+
                 if (effectiveMode === "replace") {
                     const edgeSource = graph.source(edge);
-                    if (!graph.hasEdge(edgeSource + child.node)) {
+                    const newEdgeKey = createDerivedEdgeKey(edge, edgeSource, child.node);
+
+                    if (!graph.hasEdge(newEdgeKey)) {
                         graph.addEdgeWithKey(
-                            edgeSource + child.node,
+                            newEdgeKey,
                             edgeSource,
                             child.node,
                             edgeAttributes
                         );
                     }
                 } else {
-                    if (!graph.hasEdge(node, child.node)) {
-                        graph.addEdge(node, child.node, edgeAttributes);
+                    const newEdgeKey = createDerivedEdgeKey(edge, node, child.node);
+
+                    if (!graph.hasEdge(newEdgeKey)) {
+                        graph.addEdgeWithKey(
+                            newEdgeKey,
+                            node,
+                            child.node,
+                            edgeAttributes
+                        );
                     }
                 }
             }

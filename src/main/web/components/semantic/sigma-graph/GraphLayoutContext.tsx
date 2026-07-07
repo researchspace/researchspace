@@ -141,9 +141,20 @@ export const GraphLayoutProvider: React.FC = ({ children }) => {
   // Worker hooks kill their supervisors when the provider unmounts; this cleanup
   // additionally stops animation while the selection changes.
   useEffect(() => {
-    applyLayout(selectedLayout);
-    return stopAllWorkerLayouts;
-  }, [applyLayout, selectedLayout, stopAllWorkerLayouts]);
+  let cancelled = false;
+
+  const timeoutId = window.setTimeout(() => {
+    if (!cancelled) {
+      applyLayout(selectedLayout);
+    }
+  }, 0);
+
+  return () => {
+    cancelled = true;
+    window.clearTimeout(timeoutId);
+    stopAllWorkerLayouts();
+  };
+}, [applyLayout, selectedLayout, stopAllWorkerLayouts]);
 
   const selectedLayoutIsRunning =
     selectedLayout === 'force'

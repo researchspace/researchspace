@@ -484,11 +484,20 @@
         </mp-event-target-template-render>
     </template> --]]
 
-    <template id='resourceTemplate'>
-      <div style='flex: 1 1 0px; overflow: auto;'>
-        <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}'>
-        </mp-page-loader>
-    	</div>
+    <template id='resourceTemplate2'>  
+      <mp-event-target-template-render id='{{iri}}-resource-view' template='{{> template}}'>
+        <template id='template'>
+          <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}' viewId='{{dashboardId}}'></mp-page-loader>
+        </template>
+      </mp-event-target-template-render>
+    </template>
+
+    <template id='resourceTemplate'>  
+      <mp-event-target-template-render id='{{iri}}-resource-view' template='{{> template}}'>
+        <template id='template'>
+          [[> rsp:ResourceTemplate iri=iri]]
+        </template>
+      </mp-event-target-template-render>
     </template>
 
     <template id='ontologyPageView'>
@@ -513,7 +522,7 @@
     </template>
 
     <template id='resourceVisualisation'>
-      <mp-page-loader urlqueryparam-frame=true iri="{{data.resourceVisualisationTemplate}}" urlqueryparam-resource-iri="{{data.resourceIri}}">
+      <mp-page-loader urlqueryparam-frame=true iri="{{data.resourceVisualisationTemplate}}" urlqueryparam-resource-config="{{data.resourceConfig}}" urlqueryparam-resource-iri="{{data.resourceIri}}">
       </mp-page-loader>
     </template>
 

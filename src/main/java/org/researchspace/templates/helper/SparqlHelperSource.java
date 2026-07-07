@@ -82,6 +82,19 @@ public class SparqlHelperSource {
         return renderWithParameters(parsedQuery, parameters);
     }
 
+    public String nTriplesIri(String value, Options options) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                "Cannot convert an empty value to an N-Triples IRI."
+            );
+        }
+
+        String trimmedValue = value.trim();
+        IRI iri = VF.createIRI(trimmedValue);
+        
+        return NTriplesUtil.toNTriplesString(iri);
+    }
+
     protected Map<String, Value> retrieveParameters(Map<String, Object> queryParams) {
         Map<String, Value> parameters = new HashMap<>();
         for (String key : queryParams.keySet()) {

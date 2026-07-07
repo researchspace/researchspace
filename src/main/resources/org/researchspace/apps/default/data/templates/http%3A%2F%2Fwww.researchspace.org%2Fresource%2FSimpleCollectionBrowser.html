@@ -12,7 +12,7 @@
 --]]
 
 <mp-event-target-template-render id="{{viewId}}-entity-editor-area" template='{{> template}}'>
-  <template id='template'>
+  <template id='template'>{{log "browser" this}}
     <div class="resource-editView-container">
       {{#if collectionDeleted}}
         <div class="page__grid-container">
@@ -53,9 +53,9 @@
       {{else if resourceConfigurationError}}
         <div class="page__grid-container">
           <div class="page__content-container resource-editView-form-container">
-            <div class='resource-editView-formHeader'>
-              <div class="resource-editView-formHeader-title-container">
-                <h2 class="resource-editView-formHeader-title">
+            <div class='resource-record-header'>
+              <div class="resource-record-header-title-container">
+                <h2 class="resource-record-header-title">
                   <div class="link-draggable">
                     <mp-draggable iri='{{iri}}'>
                       <div class="text-truncate">
@@ -450,12 +450,12 @@
             <div class="page__content-container resource-editView-form-container">
               <mp-event-target-template-render id='{{viewId}}-term-forms' template='{{> template}}'>
                 <template id='template'>
-                  <div class='resource-editView-formHeader'>
-                    <div class="{{#if (eq mode 'deleted')}}{{else}}resource-editView-formHeader-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
+                  <div class='resource-record-header'>
+                    <div class="{{#if (eq mode 'deleted')}}{{else}}resource-record-header-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
                       {{#switch mode}}
                         {{#case "new" break=true}}
                           {{#if broader}}
-                            <h2 class="resource-editView-formHeader-title">
+                            <h2 class="resource-record-header-title">
                               New 
                               {{#if collectionLabel}}
                                 <span style="text-transform: lowercase;">{{collectionLabel}}</span>
@@ -483,7 +483,7 @@
                               {{/if}}
                             </h2>
                           {{else}}
-                            <h2 class="resource-editView-formHeader-title">New
+                            <h2 class="resource-record-header-title">New
                               {{#if collection}}
                                 {{#if collectionLabel}}
                                   <span style="text-transform: lowercase;">{{collectionLabel}}</span>
@@ -502,7 +502,7 @@
                         {{/case}}
 
                         {{#case "edit" break=true}}
-                          <h2 class="resource-editView-formHeader-title">
+                          <h2 class="resource-record-header-title">
                             <div class="link-draggable">
                             [[!--  <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true"></rs-icon> --]]
                             
@@ -554,7 +554,7 @@
                         {{/case}}
 
                         {{#case "view" break=true}}
-                          <h2 class="resource-editView-formHeader-title">
+                          <h2 class="resource-record-header-title">
                             <div>
                               <div class="link-draggable">
                             [[!--    <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true"></rs-icon> --]]
@@ -735,7 +735,7 @@
                             </mp-overlay-dialog-content>
 
                           </mp-overlay-dialog>
-
+                         
                           <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
                                             type='Component.TemplateUpdate' 
                                             targets='["{{#if collection}}{{viewId}}-term-forms{{else}}{{viewId}}-resource-editor-frame{{/if}}"]'
@@ -879,6 +879,7 @@
                                                 {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
                                                 "resourceConfig":"{{resourceConfiguration}}",
                                                 {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                                {{#if data}}"data":{{{stringify data}}},{{/if}}
                                                 {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
                                                 "editable": {{editable}},
                                                 "mode": "{{mode}}",
@@ -954,5 +955,3 @@
     </div>
   </template>
 </mp-event-target-template-render> 
-
-

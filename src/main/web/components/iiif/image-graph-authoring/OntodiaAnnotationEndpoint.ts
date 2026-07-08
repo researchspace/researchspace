@@ -198,10 +198,10 @@ function convertAnnotationToElementModel(
 
 function prepareRegionsQuery(
   query: SparqlJs.ConstructQuery,
-  propertyValues: ReadonlyArray<Reactodia.Rdf.NamedNode | Reactodia.Rdf.Literal>,
+  propertyValues: ReadonlyArray<Reactodia.Rdf.NamedNode | Reactodia.Rdf.Literal> | undefined,
   parameter: string
 ): SparqlJs.ConstructQuery {
-  return SparqlClient.prepareParsedQuery(propertyValues.map(({ value }) => ({ [parameter]: Rdf.literal(value) })))(
-    query
-  );
+  return SparqlClient.prepareParsedQuery(
+    (propertyValues ?? []).map(({ value }) => ({ [parameter]: Rdf.literal(value) }))
+  )(query);
 }

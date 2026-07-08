@@ -294,6 +294,10 @@ uses client-side templates:
   </template>
 
   <template id="default">
+    [[!-- Don't add any other explicit style to the root element here, only width and height:
+          they define the default card size and are overridden with the user-resized element
+          size (stored in the element state of the saved map) when the card is resized. The
+          card itself is set to autosize so it always fills the root element. --]]
     {{#if readonly}}
       {{#if isExpanded }}
         <div style="width: 270px; height:73px;">
@@ -302,8 +306,7 @@ uses client-side templates:
                                 knowledgeMapPreviewCard=true
                                 hideMediaSection=true
                                 hidePreview=true
-                                height=73
-                                width=270
+                                autosize=true
                                 props=props
                                 data=data
           }}
@@ -314,13 +317,13 @@ uses client-side templates:
                                 viewId='knowledge-map-preview'
                                 knowledgeMapPreviewCard=true
                                 hidePreview=true
+                                autosize=true
                                 props=props
                                 data=data
           }}
         </div>
       {{/if}}
     {{else}}
-      [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
       {{#if isExpanded }}
         <div style="width: 270px; height:73px;">
           <div class="resource-card__kmTopButtons">
@@ -335,8 +338,7 @@ uses client-side templates:
                                 viewId=ontodiaVariable
                                 knowledgeMapCard=true
                                 hideMediaSection=true
-                                height=73
-                                width=270
+                                autosize=true
                                 props=props
                                 data=data
           }}
@@ -354,6 +356,7 @@ uses client-side templates:
           {{> rsp:ResourceCard  iri=iri
                                 viewId=ontodiaVariable
                                 knowledgeMapCard=true
+                                autosize=true
                                 props=props
                                 data=data
           }}

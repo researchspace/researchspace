@@ -20,6 +20,7 @@
 import * as React from 'react';
 import { OverlayTrigger, Popover, Button, ButtonGroup, Dropdown, DropdownButton, MenuItem, SplitButton } from 'react-bootstrap';
 import * as classnames from 'classnames';
+import * as fileSaver from 'file-saver';
 import * as Reactodia from '@reactodia/workspace';
 
 import { Component } from 'platform/api/components';
@@ -131,13 +132,13 @@ export function Toolbar(props: ToolbarProps) {
     onExportSVG: () => {
       canvas.exportSvg({ addXmlHeader: true }).then(svg => {
         const blob = new Blob([svg], {type: 'image/svg+xml'});
-        saveAs(blob, 'diagram.svg');
+        fileSaver.saveAs(blob, 'diagram.svg');
       });
     },
     onExportPNG: () => {
       canvas.exportRaster({ backgroundColor: 'white' }).then(dataUri => {
           const blob = dataURLToBlob(dataUri);
-          saveAs(blob, 'diagram.png');
+          fileSaver.saveAs(blob, 'diagram.png');
       });
     },
     canSaveDiagram,

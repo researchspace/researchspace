@@ -132,13 +132,13 @@ export class FieldBasedMetadataApi implements Reactodia.MetadataProvider {
     const anyOutLinks = new Set<Reactodia.LinkTypeIri>();
     const anyInLinks = new Set<Reactodia.LinkTypeIri>();
 
-    this.addLinkTypes(source, sourceMetadata, target, linkType, typeClosure, targetOutLinks, anyOutLinks);
+    this.addLinkTypes(source, sourceMetadata, target, linkType, typeClosure, 'range', targetOutLinks, anyOutLinks);
 
     if (target && targetMetadata) {
-      this.addLinkTypes(target, targetMetadata, source, linkType, typeClosure, targetInLinks, anyInLinks);
+      this.addLinkTypes(target, targetMetadata, source, linkType, typeClosure, 'domain', targetInLinks, anyInLinks);
     } else {
       this.entityMetadata.forEach((metadata, targetType) => {
-        this.addLinkTypes(undefined, metadata, source, linkType, typeClosure, targetInLinks, anyInLinks);
+        this.addLinkTypes(undefined, metadata, source, linkType, typeClosure, 'domain', targetInLinks, anyInLinks);
       });
     }
 
@@ -156,7 +156,7 @@ export class FieldBasedMetadataApi implements Reactodia.MetadataProvider {
       if (specificInLinks) {
         anyInLinks.forEach(inLink => specificInLinks.add(inLink));
       } else {
-        specificInLinks = anyOutLinks;
+        specificInLinks = anyInLinks;
       }
 
       if (specificOutLinks.size > 0 || specificInLinks.size > 0) {
@@ -171,14 +171,22 @@ export class FieldBasedMetadataApi implements Reactodia.MetadataProvider {
     return connections;
   }
 
+  /**
+   * Collects link types for fields of `sourceMetadata` connecting `source` to `target`,
+   * grouped by the type of the element on the other side of the link:
+   * `field.range` for outgoing links from the perspective of the other element
+   * being the link target, `field.domain` for incoming ones where the other
+   * element is the link source.
+   */
   private addLinkTypes(
     source: Reactodia.ElementModel | undefined,
     sourceMetadata: EntityMetadata,
     target: Reactodia.ElementModel | undefined,
     linkType: Reactodia.LinkTypeIri | undefined,
     typeClosure: Map<Reactodia.ElementTypeIri, Set<Reactodia.ElementTypeIri>>,
-    targetOutLinks: Map<Reactodia.ElementTypeIri, Set<Reactodia.LinkTypeIri>>,
-    anyOutLinks: Set<Reactodia.LinkTypeIri>
+    groupByEndpoint: 'range' | 'domain',
+    linksByType: Map<Reactodia.ElementTypeIri, Set<Reactodia.LinkTypeIri>>,
+    anyLinks: Set<Reactodia.LinkTypeIri>
   ): void {
     sourceMetadata.fieldByIri.forEach((field, fieldIri) => {
       const isCompatibleField =
@@ -188,17 +196,18 @@ export class FieldBasedMetadataApi implements Reactodia.MetadataProvider {
         (!linkType || fieldIri === linkType);
 
       if (isCompatibleField) {
-        if (field.range && field.range.length > 0) {
-          for (const iri of field.range) {
-            let linkTypes = targetOutLinks.get(iri.value);
+        const endpointTypes = groupByEndpoint === 'range' ? field.range : field.domain;
+        if (endpointTypes && endpointTypes.length > 0) {
+          for (const iri of endpointTypes) {
+            let linkTypes = linksByType.get(iri.value);
             if (!linkTypes) {
               linkTypes = new Set<Reactodia.LinkTypeIri>();
-              targetOutLinks.set(iri.value, linkTypes);
+              linksByType.set(iri.value, linkTypes);
             }
             linkTypes.add(fieldIri);
           }
         } else {
-          anyOutLinks.add(fieldIri);
+          anyLinks.add(fieldIri);
         }
       }
     });

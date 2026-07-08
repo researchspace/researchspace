@@ -18,6 +18,7 @@
  */
 
 import * as Kefir from 'kefir';
+import { uniqWith } from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
@@ -35,7 +36,11 @@ export function getRdfGraphBySparqlQuery(query: string, repositories: string[]):
           triples.push(triple);
         }
       }
-      return triples;
+      // the same statement returned from multiple repositories would
+      // otherwise produce duplicate links on the diagram
+      return tripleGroups.length > 1
+        ? uniqWith(triples, (a, b) => a.s.equals(b.s) && a.p.equals(b.p) && a.o.equals(b.o))
+        : triples;
     })
     .toPromise();
 }

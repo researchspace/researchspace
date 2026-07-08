@@ -28,7 +28,7 @@ import {
 import * as Kefir from 'kefir';
 import { debounce, includes } from 'lodash';
 import * as Reactodia from '@reactodia/workspace';
-import { blockingDefaultLayout } from '@reactodia/workspace/layout-sync';
+import { blockingDefaultLayout, colaRemoveOverlaps, layoutPadded } from '@reactodia/workspace/layout-sync';
 
 import { BuiltInEvents, trigger, listen, registerEventSource, unregisterEventSource } from 'platform/api/events';
 import { Cancellation, WrappingError } from 'platform/api/async';
@@ -615,6 +615,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
           toolbar={null}
           classTree={{
             draggableItems: false,
+            placeCreatedEntity: this.placeCreatedEntity,
           }}
           connectionsMenu={{
             suggestProperties: propertySuggestionQuery ? this.suggestProperties : undefined,
@@ -946,6 +947,17 @@ export class Ontodia extends Component<OntodiaProps, State> {
               editor.createRelation(link);
             }
           });
+          const { view } = this.workspace.getContext();
+          const canvas = view.findAnyCanvas();
+          if (canvas) {
+            const viewport = canvas.metrics.pane;
+            element.setPosition(canvas.metrics.clientToPaperCoords(
+              viewport.clientWidth / 2,
+              viewport.clientHeight / 2
+            ));
+            canvas.renderingState.syncUpdate();
+          }
+          this.placeCreatedEntity(element);
         },
       });
 
@@ -1238,9 +1250,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
           diagram: res.diagram,
         })
       )
-      .then(() => {
-        performLayout({});
-      });
+      // wait for the layout so that its history batch is stored before
+      // the caller resets the command history
+      .then(() => performLayout({}));
   }
 
   private importProvisionData = (): Promise<void> => {
@@ -1338,9 +1350,10 @@ export class Ontodia extends Component<OntodiaProps, State> {
           ...res.diagram,
           linkTypeOptions: linkSettings,
         },
-      }).then(() => {
-        performLayout({});
       })
+        // wait for the layout so that its history batch is stored before
+        // the caller resets the command history
+        .then(() => performLayout({}))
     );
   }
 
@@ -1361,7 +1374,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
         this.state.fieldConfiguration
       ),
       preloadedElements: params.preloadedElements,
-      diagram: params.diagram,
+      diagram: params.diagram ? DiagramService.upgradeLegacyDiagram(params.diagram) : undefined,
       validateLinks: validateLinks,
     });
   };
@@ -1520,7 +1533,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
 
   private getElementTemplate = (template: string): Reactodia.ElementTemplate => {
     return {
-      supports: Reactodia.StandardTemplate.supports,
+      supports: {
+        ...Reactodia.StandardTemplate.supports,
+        // allow the user to resize elements via the halo resize handles
+        [Reactodia.TemplateProperties.ElementSize]: true,
+      },
       renderElement: props => <TemplatedElement baseProps={props} template={template} />,
     };
   };
@@ -1578,6 +1595,23 @@ export class Ontodia extends Component<OntodiaProps, State> {
     }
   };
 
+  /**
+   * Places a newly created element so it does not overlap the existing ones:
+   * runs an overlap removal pass which minimally displaces elements
+   * (same behavior as the legacy Ontodia fork had on entity creation).
+   */
+  private placeCreatedEntity = (
+    element: Reactodia.EntityElement,
+    dropEvent?: Reactodia.CanvasDropEvent
+  ): Promise<void> => {
+    const { performLayout } = this.workspace.getContext();
+    return performLayout({
+      canvas: dropEvent?.source,
+      layoutFunction: removeOverlapsLayout,
+      zoomToFit: false,
+    });
+  };
+
   private suggestProperties = (
     params: Reactodia.PropertySuggestionParams
   ): Promise<Reactodia.PropertyScore[]> => {
@@ -1611,7 +1645,24 @@ function makePersistenceFromConfig(mode: OntodiaPersistenceMode = { type: 'form'
   return new FormBasedPersistence(mode);
 }
 
-function mapTemplateComponent(component: JSX.Element, context: Reactodia.AuthoredEntityContext): JSX.Element {
+/**
+ * Layout function which only resolves element overlaps by minimally displacing
+ * the overlapping elements instead of recomputing the whole layout.
+ */
+const removeOverlapsLayout: Reactodia.LayoutFunction = (graph, state) => {
+  const padded = layoutPadded(state, { x: 15, y: 15 });
+  const withoutOverlaps = colaRemoveOverlaps(padded.state);
+  return Promise.resolve(padded.unwrap(withoutOverlaps));
+};
+
+interface TemplateAuthoringHandlers {
+  canEdit: boolean;
+  canDelete: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+function mapTemplateComponent(component: JSX.Element, handlers: TemplateAuthoringHandlers): JSX.Element {
   function mapElement(element: JSX.Element): JSX.Element {
     if (!isValidChild(element)) {
       return element;
@@ -1621,13 +1672,13 @@ function mapTemplateComponent(component: JSX.Element, context: Reactodia.Authore
       switch (element.props.name) {
         case 'edit':
           return cloneElement(element, {
-            disabled: !context.canEdit,
-            onClick: context.onEdit,
+            disabled: !handlers.canEdit,
+            onClick: handlers.onEdit,
           });
         case 'delete':
           return cloneElement(element, {
-            disabled: !context.canDelete,
-            onClick: context.onDelete,
+            disabled: !handlers.canDelete,
+            onClick: handlers.onDelete,
           });
       }
       return element;
@@ -1654,21 +1705,69 @@ interface TemplatedElementProps {
 
 function TemplatedElement({ baseProps, template }: TemplatedElementProps) {
   const workspace = Reactodia.useWorkspace();
-  const { editor } = workspace;
+  const { model, editor } = workspace;
+  const { element, elementState } = baseProps;
+  const data = element instanceof Reactodia.EntityElement ? element.data : undefined;
+
   const inAuthoringMode = Reactodia.useObservedProperty(
     editor.events, 'changeMode', () => editor.inAuthoringMode
   );
+
+  // re-render the template when labels for the element types or properties get loaded
+  Reactodia.useKeyedSyncStore(Reactodia.subscribeElementTypes, data ? data.types : [], model);
+  Reactodia.useKeyedSyncStore(Reactodia.subscribePropertyTypes, data ? Object.keys(data.properties) : [], model);
+
+  // do not render the template while the element data is being loaded for the
+  // first time, otherwise each element would be rendered twice: once with the
+  // placeholder data and once with the loaded one (each time re-running any
+  // queries the template makes)
+  const loadingData = Reactodia.useObservedProperty(
+    model.events, 'changeOperations',
+    () => Boolean(
+      data &&
+      Reactodia.EntityElement.isPlaceholderData(data) &&
+      model.operations.some(op => op.type === 'element' && op.targets.has(data.id))
+    ),
+    [data]
+  );
+
+  const authoredContext = Reactodia.useAuthoredEntity(data, inAuthoringMode && !loadingData);
+  const authoredContextRef = React.useRef(authoredContext);
+  authoredContextRef.current = authoredContext;
+  const { canEdit, canDelete } = authoredContext;
+  // keep the mapper identity stable unless the permissions change to avoid
+  // re-rendering the whole card subtree on every unrelated update
+  // (the handlers read the latest authoring context through the ref)
+  const componentMapper = React.useMemo(
+    () => inAuthoringMode
+      ? (component: JSX.Element) => mapTemplateComponent(component, {
+          canEdit: Boolean(canEdit),
+          canDelete: Boolean(canDelete),
+          onEdit: () => authoredContextRef.current.onEdit(element),
+          onDelete: () => authoredContextRef.current.onDelete(),
+        })
+      : undefined,
+    [element, inAuthoringMode, canEdit, canDelete]
+  );
+
+  // apply the user-chosen element size restored from the saved diagram
+  // or set through the halo resize handles
+  const elementSize = elementState.get(Reactodia.TemplateProperties.ElementSize);
+  const componentProps = React.useMemo(
+    () => elementSize ? { style: { width: elementSize.width, height: elementSize.height } } : undefined,
+    [elementSize]
+  );
+
+  if (loadingData) {
+    return <div className='ontodia-element-loading'><Spinner /></div>;
+  }
+
   const options = getElementTemplateContext(baseProps, workspace);
-  const data = baseProps.element instanceof Reactodia.EntityElement ? baseProps.element.data : undefined;
-  const authoredContext = Reactodia.useAuthoredEntity(data, inAuthoringMode);
   return (
     <TemplateItem template={{ source: template, options }}
-      componentMapper={
-        authoredContext
-          ? (component) => mapTemplateComponent(component, authoredContext)
-          : undefined
-      }
-      onLoad={() => baseProps.element.redraw('render')}
+      componentProps={componentProps}
+      componentMapper={componentMapper}
+      onLoad={() => element.redraw('render')}
     />
   );
 }
@@ -1785,8 +1884,8 @@ class PlatformLocaleProvider extends Reactodia.DefaultDataLocaleProvider {
   override selectEntityLabel(entity: Reactodia.ElementModel): readonly Reactodia.Rdf.Literal[] {
     if (this.fieldConfiguration?.metadata) {
       const metadata = getEntityMetadata(entity, this.fieldConfiguration.metadata);
-      if (metadata && Object.prototype.hasOwnProperty.call(entity.properties, metadata.labelField.id)) {
-        const values = entity.properties[metadata.labelField.id];
+      if (metadata && Object.prototype.hasOwnProperty.call(entity.properties, metadata.labelField.iri)) {
+        const values = entity.properties[metadata.labelField.iri];
         if (values.length > 0) {
           return values.filter((v): v is Reactodia.Rdf.Literal => v.termType === 'Literal');
         }
@@ -1800,9 +1899,9 @@ class PlatformLocaleProvider extends Reactodia.DefaultDataLocaleProvider {
       const metadata = getEntityMetadata(entity, this.fieldConfiguration.metadata);
       if (
         metadata && metadata.imageField &&
-        Object.prototype.hasOwnProperty.call(entity.properties, metadata.imageField.id)
+        Object.prototype.hasOwnProperty.call(entity.properties, metadata.imageField.iri)
       ) {
-        const values = entity.properties[metadata.imageField.id];
+        const values = entity.properties[metadata.imageField.iri];
         if (values.length > 0) {
           return values[0].value;
         }
@@ -1859,9 +1958,9 @@ function getLinkLabelStyle(attrs: LinkLabel['attrs']): React.CSSProperties | und
     backgroundColor: attrs.rect?.fill,
     borderWidth: attrs.rect?.['stroke-width'],
     borderColor: attrs.rect?.stroke,
-    fontFamily: attrs.text['font-family'],
-    fontSize: attrs.text['font-size'],
-    fontWeight: attrs.text['font-weight'],
+    fontFamily: attrs.text?.['font-family'],
+    fontSize: attrs.text?.['font-size'],
+    fontWeight: attrs.text?.['font-weight'],
   };
 }
 

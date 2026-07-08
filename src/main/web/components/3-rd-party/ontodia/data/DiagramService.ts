@@ -49,7 +49,7 @@ export function prepareImages(
       throw new Error('Image query must be a SELECT query');
     }
 
-    const params = Object.keys(elementsInfo).map((id): Record<string, Rdf.Node> => ({ element: Rdf.iri(id) }));
+    const params = Array.from(elementsInfo, (data): Record<string, Rdf.Node> => ({ element: Rdf.iri(data.id) }));
     parametrized = SparqlClient.prepareParsedQuery(params)(parsedQuery);
   } catch (error) {
     return Promise.reject(error);
@@ -161,13 +161,110 @@ export function getDiagramByIri(
     .toPromise();
 }
 
+/**
+ * Element layout state as serialized by the legacy Ontodia fork
+ * (see `serializedDiagram.ts` in `src/main/web/ontodia`).
+ */
+interface LegacySerializedElement extends Reactodia.SerializedElement {
+  size?: { width: number; height: number };
+  fixedSize?: boolean;
+  isExpanded?: boolean;
+}
+
+const LEGACY_PINNED_PROPERTIES = 'ontodia:pinnedProperties';
+
+/**
+ * Maps element layout fields written by the legacy Ontodia fork to their
+ * Reactodia equivalents, so that diagrams saved before the Reactodia
+ * migration keep user-resized elements and pinned properties:
+ *  - `size` + `fixedSize` -> `elementState[TemplateProperties.ElementSize]`;
+ *  - `elementState['ontodia:pinnedProperties']` -> `TemplateProperties.PinnedProperties`.
+ *
+ * Legacy top-level `isExpanded` is mapped by Reactodia itself and
+ * `linkState['ontodia:customLabel']` is read directly by the rename link
+ * provider, so both need no conversion here.
+ */
+export function upgradeLegacyDiagram(diagram: Reactodia.SerializedDiagram): Reactodia.SerializedDiagram {
+  const { layoutData } = diagram;
+  if (!layoutData || !Array.isArray(layoutData.elements)) {
+    return diagram;
+  }
+  let anyChanged = false;
+  const elements = layoutData.elements.map((element) => {
+    const { size, fixedSize, elementState } = element as LegacySerializedElement;
+    let state = elementState;
+    if (
+      fixedSize && size &&
+      typeof size.width === 'number' && typeof size.height === 'number' &&
+      !(state && state[Reactodia.TemplateProperties.ElementSize] !== undefined)
+    ) {
+      state = {
+        ...state,
+        [Reactodia.TemplateProperties.ElementSize]: { width: size.width, height: size.height },
+      };
+    }
+    if (
+      state && state[LEGACY_PINNED_PROPERTIES] !== undefined &&
+      state[Reactodia.TemplateProperties.PinnedProperties] === undefined
+    ) {
+      const { [LEGACY_PINNED_PROPERTIES]: pinned, ...otherState } = state;
+      state = {
+        ...otherState,
+        [Reactodia.TemplateProperties.PinnedProperties]: pinned,
+      };
+    }
+    if (state === elementState) {
+      return element;
+    }
+    anyChanged = true;
+    return { ...element, elementState: state };
+  });
+  return anyChanged ? { ...diagram, layoutData: { ...layoutData, elements } } : diagram;
+}
+
+/**
+ * Mirrors Reactodia element template state into the layout fields understood
+ * by the legacy Ontodia fork (`size`, `fixedSize`, `isExpanded`), so that
+ * diagrams saved after the Reactodia migration still open correctly in older
+ * ResearchSpace versions.
+ */
+export function addLegacyLayoutFields(diagram: Reactodia.SerializedDiagram): Reactodia.SerializedDiagram {
+  const { layoutData } = diagram;
+  if (!layoutData || !Array.isArray(layoutData.elements)) {
+    return diagram;
+  }
+  let anyChanged = false;
+  const elements = layoutData.elements.map((element) => {
+    const state = element.elementState;
+    if (!state) {
+      return element;
+    }
+    const legacyFields: Partial<LegacySerializedElement> = {};
+    const size = state[Reactodia.TemplateProperties.ElementSize] as
+      { width?: unknown; height?: unknown } | undefined;
+    if (size && typeof size.width === 'number' && typeof size.height === 'number') {
+      legacyFields.size = { width: size.width, height: size.height };
+      legacyFields.fixedSize = true;
+    }
+    if (state[Reactodia.TemplateProperties.Expanded] === true) {
+      legacyFields.isExpanded = true;
+    }
+    if (Object.keys(legacyFields).length === 0) {
+      return element;
+    }
+    anyChanged = true;
+    return { ...element, ...legacyFields };
+  });
+  return anyChanged ? { ...diagram, layoutData: { ...layoutData, elements } } : diagram;
+}
+
 function makeDiagramResource(
   diagram: Reactodia.SerializedDiagram,
   name: string,
   metadata: ReadonlyArray<Rdf.Triple>,
   diagramIri = ''
 ) {
-  const jsonldDiagram: any = { ...diagram };
+  const jsonldDiagram: any = { ...addLegacyLayoutFields(diagram) };
 
   // force inline context to disable fetching of the context by RDF4J
   if ((jsonldDiagram['@context'] = Reactodia.DiagramContextV1)) {

@@ -58,6 +58,9 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     template: undefined,
   };
 
+  private compileVersion = 0;
+  private renderedHtml: string | undefined;
+
   constructor(props: TemplateItemProps, context: any) {
     super(props, context);
     this.state = {
@@ -111,11 +114,18 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
       // propagate also props.children, we need this for react-resizable
       // to be able to add resize handle to templated items
       const children = this.props.children ? [root.props.children, this.props.children] : root.props.children;
+      const { componentProps } = this.props;
+      // merge styles instead of replacing them, so a style override
+      // (e.g. element size in the knowledge map) keeps the template ones
+      const style = componentProps?.style && root.props.style
+        ? { ...root.props.style, ...componentProps.style }
+        : componentProps?.style ?? root.props.style;
       component = cloneElement(root, {
         ...root.props,
-        ...this.props.componentProps,
+        ...componentProps,
+        style,
         className: classNames(
-          Maybe.fromNullable(this.props.componentProps)
+          Maybe.fromNullable(componentProps)
             .map((cp) => cp.className)
             .getOrElse(''),
           root.props.className
@@ -147,25 +157,48 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     }
   }
 
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    // prevent setState from compilations resolving after unmount
+    this.compileVersion++;
+  }
+
   private compileTemplate(props: TemplateItemProps) {
     const { templateDataContext } = this.context;
+    const version = ++this.compileVersion;
 
     const capturer = CapturedContext.inheritAndCapture(templateDataContext);
     this.appliedTemplateScope
       .compile(props.template.source)
-      // parse to react, but do not omit whitespaces
       .then((template) => {
         const renderedHtml = template(props.template.options, { capturer, parentContext: templateDataContext });
-        return ModuleRegistry.parseHtmlToReact(renderedHtml);
-      })
-      .then((parsedTemplate) => {
-        this.setState(
-          { parsedTemplate, capturedContext: capturer.getResult() },
-          () => props.onLoad?.()
-        );
+        if (version !== this.compileVersion) {
+          // a newer compilation has been started in the meantime
+          return;
+        }
+        if (renderedHtml === this.renderedHtml && !this.state.error) {
+          // template rendered exactly the same output: skip replacing the
+          // parsed react tree to avoid re-rendering (and re-querying) it
+          return;
+        }
+        // parse to react, but do not omit whitespaces
+        return ModuleRegistry.parseHtmlToReact(renderedHtml).then((parsedTemplate) => {
+          if (version !== this.compileVersion) {
+            return;
+          }
+          this.renderedHtml = renderedHtml;
+          this.setState(
+            { parsedTemplate, capturedContext: capturer.getResult(), error: undefined },
+            () => props.onLoad?.()
+          );
+        });
       })
       .catch((error) => {
+        if (version !== this.compileVersion) {
+          return;
+        }
         console.error(error);
+        this.renderedHtml = undefined;
         this.setState({ error }, () => props.onLoad?.());
       });
   }

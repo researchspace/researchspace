@@ -145,14 +145,14 @@ function createFieldConfiguration(
 }
 
 class OptimizingDataProvider extends Reactodia.SparqlDataProvider {
-  executeSparqlSelect<Binding>(query: string) {
+  executeSparqlSelect<Binding>(query: string, options?: { signal?: AbortSignal }) {
     const optimizedQuery = this.optimizeAndAddPrefixes(query);
-    return super.executeSparqlSelect<Binding>(optimizedQuery);
+    return super.executeSparqlSelect<Binding>(optimizedQuery, options);
   }
 
-  executeSparqlConstruct(query: string) {
+  executeSparqlConstruct(query: string, options?: { signal?: AbortSignal }) {
     const optimizedQuery = this.optimizeAndAddPrefixes(query);
-    return super.executeSparqlConstruct(optimizedQuery);
+    return super.executeSparqlConstruct(optimizedQuery, options);
   }
 
   private optimizeAndAddPrefixes(query: string): string {

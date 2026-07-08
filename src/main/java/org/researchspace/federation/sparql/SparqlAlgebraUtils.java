@@ -19,6 +19,7 @@
 
 package org.researchspace.federation.sparql;
 
+import org.eclipse.rdf4j.query.algebra.Projection;
 import org.eclipse.rdf4j.query.algebra.QueryModelNode;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 
@@ -31,20 +32,31 @@ public class SparqlAlgebraUtils {
     }
 
     /**
-     * Finds the root TupleExpr of the query tree containing the given node.
-     * 
+     * Finds the scope root of the (sub)query containing the given node: the
+     * nearest enclosing {@link Projection}, or the tree root if there is none.
+     *
+     * <p>
+     * A {@code Projection} is the algebra boundary of a (sub-)SELECT. Two
+     * nodes only share a scope root when they belong to the same (sub)query —
+     * consumers such as the Virtuoso keyword search extractor rely on this to
+     * avoid collecting patterns across sub-SELECT boundaries.
+     * </p>
+     *
      * @param node the node to find the scope root for
-     * @return the root TupleExpr of the query tree
+     * @return the nearest enclosing Projection, or the tree root
      */
     public static TupleExpr getScopeRoot(QueryModelNode node) {
-        QueryModelNode parent = node.getParentNode();
-        if (parent == null) {
-            return (TupleExpr) node;
+        QueryModelNode current = node;
+        while (true) {
+            if (current instanceof Projection) {
+                return (TupleExpr) current;
+            }
+            QueryModelNode parent = current.getParentNode();
+            if (parent == null) {
+                return (TupleExpr) current;
+            }
+            current = parent;
         }
-        while (parent.getParentNode() != null) {
-            parent = parent.getParentNode();
-        }
-        return (TupleExpr) parent;
     }
 
     /**

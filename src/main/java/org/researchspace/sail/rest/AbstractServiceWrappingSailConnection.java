@@ -42,6 +42,7 @@ import org.eclipse.rdf4j.query.algebra.helpers.collectors.StatementPatternCollec
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 import org.eclipse.rdf4j.sail.helpers.AbstractSailConnection;
+import org.researchspace.federation.repository.service.ServiceDescriptor;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -125,7 +126,54 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
         cloned.visit(collector);
         List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
         ServiceParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
-        return executeAndConvertResultsToBindingSet(parametersHolder);
+        // enforce ephedra:rowLimit generically, whatever the concrete sail or
+        // response shape produced the iteration
+        return applyRowLimit(executeAndConvertResultsToBindingSet(parametersHolder), parametersHolder,
+                sail.getServiceDescriptor());
+    }
+
+    /**
+     * Enforce a bound {@code ephedra:rowLimit} argument on the service result.
+     * The bound is declared generically in the {@link ServiceDescriptor}, so it
+     * must cap the result of EVERY service-wrapping sail — regardless of the
+     * response shape (JSON array or object, SQL result set) and of subclass
+     * overrides of {@link #executeAndConvertResultsToBindingSet}.
+     *
+     * @return the iteration, capped when a row limit is bound; unchanged otherwise
+     */
+    protected static CloseableIteration<? extends BindingSet> applyRowLimit(
+            CloseableIteration<? extends BindingSet> result, ServiceParametersHolder parametersHolder,
+            ServiceDescriptor descriptor) {
+        int rowLimit = resolveRowLimit(parametersHolder, descriptor);
+        if (rowLimit < 0) {
+            return result;
+        }
+        return new org.eclipse.rdf4j.common.iteration.LimitIteration<>(result, rowLimit);
+    }
+
+    /**
+     * Resolve the value of a {@code ephedra:rowLimit} input argument, if the
+     * query provided one.
+     *
+     * @return the row bound, or -1 when none is set
+     */
+    protected static int resolveRowLimit(ServiceParametersHolder parametersHolder, ServiceDescriptor descriptor) {
+        if (descriptor == null) {
+            return -1;
+        }
+        for (Map.Entry<String, ServiceDescriptor.Parameter> entry : descriptor.getInputParameters().entrySet()) {
+            if (entry.getValue().isRowLimit()) {
+                String value = parametersHolder.getInputParameters().get(entry.getKey());
+                if (value != null) {
+                    try {
+                        return Integer.parseInt(value);
+                    } catch (NumberFormatException e) {
+                        throw new SailException("Invalid " + entry.getKey() + " row limit value: " + value, e);
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     /**

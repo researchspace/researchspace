@@ -131,8 +131,11 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
           Optional<Parameter> param = getSail().getSubjectParameter();
           String rootPath = param.isPresent() ? param.get().getJsonPath() : "$";
           logger.trace("rootPath" + rootPath);
+          // early truncation saves per-row materialization for array roots; the
+          // shared base class additionally enforces the cap on the final
+          // iteration whatever the response shape
           results = executeJson(stringResponse, rootPath, parametersHolder.getOutputVariables(),
-              resolveRowLimit(parametersHolder));
+              resolveRowLimit(parametersHolder, getSail().getServiceDescriptor()));
           break;
 
         case RESTSailConfig.XML:
@@ -181,29 +184,6 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
     }
 
     return results;
-  }
-
-  /**
-   * Resolve the value of a {@code ephedra:rowLimit} input argument, if the
-   * query provided one. The bound caps the number of response rows parsed and
-   * is never sent to the remote API (see {@link #httpInputParameters}).
-   *
-   * @return the row bound, or -1 when none is set
-   */
-  private int resolveRowLimit(ServiceParametersHolder parametersHolder) {
-    for (Map.Entry<String, Parameter> entry : getSail().getServiceDescriptor().getInputParameters().entrySet()) {
-      if (entry.getValue().isRowLimit()) {
-        String value = parametersHolder.getInputParameters().get(entry.getKey());
-        if (value != null) {
-          try {
-            return Integer.parseInt(value);
-          } catch (NumberFormatException e) {
-            throw new SailException("Invalid " + entry.getKey() + " row limit value: " + value, e);
-          }
-        }
-      }
-    }
-    return -1;
   }
 
   /**

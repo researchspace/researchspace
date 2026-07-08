@@ -1809,7 +1809,7 @@ function getElementTemplateContext(
     types = data.types
       .map(typeIri => {
         const type = model.getElementType(typeIri);
-        return t.formatLabel(type?.data.label ?? [], typeIri, model.language);
+        return t.formatLabel(type?.data?.label ?? [], typeIri, model.language);
       })
       .sort()
       .join(', ')
@@ -1827,7 +1827,7 @@ function getElementTemplateContext(
       properties[propertyIri] = propertyWithValues;
       propertiesList.push({
         id: propertyIri,
-        name: t.formatLabel(property?.data.label ?? [], propertyIri, model.language),
+        name: t.formatLabel(property?.data?.label ?? [], propertyIri, model.language),
         property: propertyWithValues,
       });
     }

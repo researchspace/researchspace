@@ -21,6 +21,7 @@ import {
   SemanticMapControlsSendSunHeight,
   SemanticMapControlsSendSunDirection,
   SemanticMapControlsSendYear,
+  SemanticMapSendViewportExtent,
   SemanticMapControlsSendVectorLevels,
   SemanticMapControlsRegister,
   SemanticMapControlsUnregister,
@@ -38,6 +39,7 @@ import { CirclePicker, GithubPicker, SwatchesPicker } from 'react-color';
 import reactCSS from 'reactcss';
 import _ = require('lodash');
 import VectorLayer from 'ol/layer/Vector';
+import { containsCoordinate, intersects } from 'ol/extent';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const sliderbar: CSSProperties = {
@@ -84,6 +86,9 @@ interface State {
   is3dEnabled: boolean;
   visibleGroups: string[]; // Groups with features visible in current viewport
   isLegendHovered: boolean; // Whether the legend is being hovered
+  filterByZoom: boolean; // Spatial ("filter by zoom") filter on historical-map overlays
+  filterByTime: boolean; // Temporal ("filter by time") filter on historical-map overlays
+  viewportExtent: number[] | null; // Current map viewport [minX,minY,maxX,maxY] in EPSG:3857
 }
 
 interface Props {
@@ -165,6 +170,33 @@ interface Props {
    * Default: "Maps"
    */
   mapsSectionTitle?: string;
+  /**
+   * Default state of the "filter by zoom" (spatial) filter on historical-map overlays.
+   * Default: true.
+   */
+  spatialFilterDefault?: boolean;
+  /**
+   * Default state of the "filter by time" (temporal) filter on historical-map overlays.
+   * Default: false.
+   */
+  temporalFilterDefault?: boolean;
+  /**
+   * Label for the "filter by zoom" checkbox. Default: "Filter by zoom".
+   */
+  spatialFilterLabel?: string;
+  /**
+   * Label for the "filter by time" checkbox. Default: "Filter by time".
+   */
+  temporalFilterLabel?: string;
+  /**
+   * Behaviour of the temporal ("filter by time") filter applied to the sidebar list of
+   * historical-map sources:
+   * - `snapshot`   : per `filterGroup`, list only the single most-recent source with `year <= selectedYear`.
+   * - `cumulative` : list every source with `year <= selectedYear`.
+   * - `exact`      : list only sources with `year === selectedYear`.
+   * Defaults to `snapshot`.
+   */
+  timeFilterMode?: 'snapshot' | 'cumulative' | 'exact';
 }
 
 export class SemanticMapControls extends Component<Props, State> {
@@ -227,6 +259,9 @@ export class SemanticMapControls extends Component<Props, State> {
       is3dEnabled: false,
       visibleGroups: [],
       isLegendHovered: false,
+      filterByZoom: this.props.spatialFilterDefault ?? true,
+      filterByTime: this.props.temporalFilterDefault ?? false,
+      viewportExtent: null,
     };
     this.toggleGroupDisabled = this.toggleGroupDisabled.bind(this);
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
@@ -242,6 +277,14 @@ export class SemanticMapControls extends Component<Props, State> {
         })
       )
       .onValue(this.receiveMapLayers);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapSendViewportExtent,
+        })
+      )
+      .onValue(this.receiveViewportExtent);
 
     this.cancelation
       .map(
@@ -561,6 +604,24 @@ export class SemanticMapControls extends Component<Props, State> {
     });
   }
 
+  private handleFilterByZoomChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Toggling only re-filters the sidebar list (via render); it never changes map display.
+    this.setState({ filterByZoom: event.target.checked });
+  };
+
+  private handleFilterByTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ filterByTime: event.target.checked });
+  };
+
+  /**
+   * Receives the map's current viewport extent (EPSG:3857 [minX,minY,maxX,maxY]).
+   * Used by the "filter by zoom" list filter so only sources whose island point falls in
+   * the current view are listed in the sidebar.
+   */
+  private receiveViewportExtent = (event: any) => {
+    this.setState({ viewportExtent: event.data as number[] });
+  };
+
   private triggerSendToggle3d() {
     console.log('fired 3d');
     this.setState(
@@ -728,7 +789,20 @@ export class SemanticMapControls extends Component<Props, State> {
       return;
     }
 
-    const mapLayers = this.reorder(this.state.mapLayers, result.source.index, result.destination.index);
+    // The rendered list is the (possibly filtered) overlay list, so translate the drag indices
+    // through the actual layer objects to their positions in the full mapLayers array.
+    const rendered = this.getFilteredOverlayLayers();
+    const movedLayer = rendered[result.source.index];
+    const targetLayer = rendered[result.destination.index];
+    if (!movedLayer || !targetLayer) {
+      return;
+    }
+    const fromIndex = this.state.mapLayers.indexOf(movedLayer);
+    const toIndex = this.state.mapLayers.indexOf(targetLayer);
+    if (fromIndex === -1 || toIndex === -1) {
+      return;
+    }
+    const mapLayers = this.reorder(this.state.mapLayers, fromIndex, toIndex);
 
     this.setState(
       {
@@ -1366,8 +1440,39 @@ export class SemanticMapControls extends Component<Props, State> {
             </button>
 
             <div className={styles.mapControlsPanelHeader}>
-              
+
             </div>
+
+            {/* Overlay tile-layer filters — shown above the layer list when historical maps exist */}
+            {this.getOverlayLayers().length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  padding: '4px 2px 10px',
+                  marginBottom: '6px',
+                  borderBottom: '1px solid rgba(0,0,0,0.08)',
+                }}
+              >
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={this.state.filterByZoom}
+                    onChange={this.handleFilterByZoomChange}
+                  />
+                  <span>{this.props.spatialFilterLabel || 'Filter by zoom'}</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={this.state.filterByTime}
+                    onChange={this.handleFilterByTimeChange}
+                  />
+                  <span>{this.props.temporalFilterLabel || 'Filter by time'}</span>
+                </label>
+              </div>
+            )}
 
             {/* Geometry Layers Section */}
             {this.getGeometryLayers().length > 0 && (
@@ -1421,7 +1526,7 @@ export class SemanticMapControls extends Component<Props, State> {
             )}
             
             {/* Separator between geometry and tile layers */}
-            {this.getGeometryLayers().length > 0 && this.getOverlayLayers().length > 0 && (
+            {this.getGeometryLayers().length > 0 && this.getFilteredOverlayLayers().length > 0 && (
               <div className={styles.layersSectionSeparator}>
                 <span className={styles.layersSectionSeparatorLine}></span>
                 <span className={styles.layersSectionSeparatorText}>
@@ -1436,7 +1541,7 @@ export class SemanticMapControls extends Component<Props, State> {
               <Droppable droppableId="droppable">
                 {(provided, snapshot) => (
                   <div {...provided.droppableProps} ref={provided.innerRef} className={styles.layersContainer}>
-                    {this.getOverlayLayers().map(
+                    {this.getFilteredOverlayLayers().map(
                       (mapLayer, index) => (
                           <Draggable
                             key={mapLayer.get('identifier')}
@@ -2249,6 +2354,70 @@ export class SemanticMapControls extends Component<Props, State> {
    */
   private getOverlayLayers(): any[] {
     return this.state.mapLayers.filter(layer => layer.get('level') === 'overlay');
+  }
+
+  /**
+   * Overlay (historical-map) layers that pass the active sidebar filters. This decides which
+   * sources are LISTED in the sidebar as editable layer items — it never changes what is drawn
+   * on the map (that stays under the user's manual eye-toggle control).
+   *
+   * - "Filter by zoom": keep a source only if its island point (`filterCoordinate`, EPSG:3857) —
+   *   or `filterExtent` polygon — lies within the map's current viewport. Sources without spatial
+   *   data are always kept.
+   * - "Filter by time": compare each source's `filterYear` to the timeline year using
+   *   `timeFilterMode` (default `snapshot`: per `filterGroup`, keep only the latest source with
+   *   year <= selected year). Sources without a year are always kept.
+   */
+  private getFilteredOverlayLayers(): any[] {
+    const overlays = this.getOverlayLayers();
+    let result = overlays;
+
+    // Spatial ("filter by zoom") — needs the viewport extent broadcast by the map.
+    if (this.state.filterByZoom && this.state.viewportExtent) {
+      const extent = this.state.viewportExtent;
+      result = result.filter((layer) => {
+        const coordinate = layer.get('filterCoordinate');
+        const layerExtent = layer.get('filterExtent');
+        if (coordinate) {
+          return containsCoordinate(extent, coordinate);
+        } else if (layerExtent) {
+          return intersects(extent, layerExtent);
+        }
+        return true; // no spatial data → never filtered out
+      });
+    }
+
+    // Temporal ("filter by time") — compared against the current timeline year.
+    if (this.state.filterByTime) {
+      const selectedYear = Number(this.state.year);
+      if (Number.isFinite(selectedYear)) {
+        const mode = this.props.timeFilterMode || 'snapshot';
+        if (mode === 'snapshot') {
+          // Per group, keep only the layer with the greatest year <= selectedYear.
+          const winners = new Set<any>();
+          const byGroup: { [key: string]: any } = {};
+          result.forEach((layer) => {
+            const y = layer.get('filterYear');
+            if (y == null || y > selectedYear) return;
+            const key = String(layer.get('filterGroup'));
+            const current = byGroup[key];
+            if (!current || y > current.get('filterYear')) {
+              byGroup[key] = layer;
+            }
+          });
+          Object.keys(byGroup).forEach((key) => winners.add(byGroup[key]));
+          result = result.filter((layer) => layer.get('filterYear') == null || winners.has(layer));
+        } else {
+          result = result.filter((layer) => {
+            const y = layer.get('filterYear');
+            if (y == null) return true; // no year → never filtered out
+            return mode === 'exact' ? y === selectedYear : y <= selectedYear;
+          });
+        }
+      }
+    }
+
+    return result;
   }
 
   private setMapLayerProperty(identifier, propertyName, propertyValue) {

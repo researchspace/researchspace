@@ -121,6 +121,7 @@ import {
   SemanticMapControlsHighlightFeatures,
   SemanticMapControlsHandleGeneralizedData,
   SemanticMapSendVisibleGroups,
+  SemanticMapSendViewportExtent,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -267,8 +268,26 @@ export interface SemanticMapAdvancedConfig {
    *     ...
    * }
    * ```
+   *
+   * Optional additional bindings are stored on each resulting overlay tile layer and let the
+   * companion `<semantic-map-controls>` filter which sources are listed in the sidebar
+   * (its "filter by zoom" / "filter by time" checkboxes):
+   * - `lat` + `lng`  : a point (in `spatialCoordinateCrs`) stored as `filterCoordinate`, used
+   *                    by the spatial ("zoom") filter.
+   * - `wkt`          : alternatively a geometry whose extent is stored as `filterExtent`.
+   * - `year`         : numeric year stored as `filterYear`, used by the temporal ("time") filter.
+   * - `group`        : grouping key stored as `filterGroup`, used by the `snapshot` temporal mode
+   *                    (e.g. an island/place IRI). When absent each layer is its own group.
    */
   tilesLayersQuery?: string;
+
+  /**
+   * CRS of the `lat`/`lng` coordinates returned by `tilesLayersQuery` (used only to project the
+   * spatial-filter point to the map's EPSG:3857 view). Defaults to 'EPSG:4326' (WGS-84 degrees).
+   * The projected point is stored on each overlay tile layer as `filterCoordinate`; the controls
+   * use it to decide which historical-map sources to list in the sidebar ("filter by zoom").
+   */
+  spatialCoordinateCrs?: string;
 
   /**
    * Optional style configuration for selected features.
@@ -1782,6 +1801,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.registerControl(event.source).then(() => {
       console.log('Layers updated and map view fitted to extents');
       this.sendLayersToControls();
+      // Send the current viewport so the controls can apply their "filter by zoom" list filter.
+      this.sendViewportExtentToControls();
     });
     console.log('MapControls ' + event.source + ' Mounted and registered to', this.props.id);
   };
@@ -1809,6 +1830,22 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       console.log('Yearfiltering is set to false.');
     }
   };
+
+  /**
+   * Broadcasts the current map viewport extent (EPSG:3857 [minX, minY, maxX, maxY]) to the
+   * registered controls. The controls use it to filter which historical-map sources are listed
+   * in the sidebar ("filter by zoom"). The map itself never changes tile visibility for filtering.
+   */
+  private sendViewportExtentToControls(): void {
+    if (!this.map || this.state.registeredControls.length === 0) return;
+    const extent = this.map.getView().calculateExtent(this.map.getSize());
+    trigger({
+      eventType: SemanticMapSendViewportExtent,
+      data: extent as number[],
+      source: this.props.id,
+      targets: this.state.registeredControls,
+    });
+  }
 
   /**
    * Shows or hides Cesium 3D tilesets based on the currently selected year.
@@ -1925,12 +1962,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           // but we add this as a safety measure to ensure consistency
           const visible = value.getVisible();
           const opacity = value.getOpacity();
-          
+
           if (layer.getVisible() !== visible) {
             layer.setVisible(visible);
             console.log(`[SemanticMapAdvanced] Synced layer "${value.get('identifier')}" visible: ${visible}`);
           }
-          
+
           if (layer.getOpacity() !== opacity) {
             layer.setOpacity(opacity);
             console.log(`[SemanticMapAdvanced] Synced layer "${value.get('identifier')}" opacity: ${opacity}`);
@@ -1940,7 +1977,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         // Enforce deterministic ordering bands:
         // vectors (buildings, islands) > historical maps > basemaps
         this.enforceLayerStackingOrder();
-        
+
         // Force a re-render to apply the changes
         if (this.map) {
           this.map.render();
@@ -2974,6 +3011,37 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           tileslayer.set('author', binding.author ? binding.author.value : '');
           tileslayer.set('identifier', binding.identifier.value);
           tileslayer.set('thumbnail', binding.thumbnail ? binding.thumbnail.value : '');
+
+          // Optional filtering metadata (all generic — supplied by the query, no domain knowledge here).
+          // Spatial reference for the "filter by zoom" feature: a point (lat/lng) or a geometry (wkt).
+          if (binding.lat && binding.lng) {
+            const lon = parseFloat(binding.lng.value);
+            const lat = parseFloat(binding.lat.value);
+            if (Number.isFinite(lon) && Number.isFinite(lat)) {
+              const crs = this.props.spatialCoordinateCrs || 'EPSG:4326';
+              try {
+                tileslayer.set('filterCoordinate', transform([lon, lat], crs, 'EPSG:3857'));
+              } catch (e) {
+                console.warn('[TileFilter] Could not project tile layer coordinate', e);
+              }
+            }
+          } else if (binding.wkt) {
+            try {
+              tileslayer.set('filterExtent', this.readWKT(binding.wkt.value).getExtent());
+            } catch (e) {
+              console.warn('[TileFilter] Could not parse tile layer wkt', e);
+            }
+          }
+          // Numeric year for the "filter by time" feature.
+          const parsedYear = binding.year ? parseInt(String(binding.year.value).split('-')[0], 10) : NaN;
+          tileslayer.set('filterYear', Number.isFinite(parsedYear) ? parsedYear : null);
+          // Grouping key for the "snapshot" temporal mode (falls back to location, then identifier).
+          tileslayer.set(
+            'filterGroup',
+            binding.group ? binding.group.value
+              : binding.location ? binding.location.value
+              : binding.identifier.value
+          );
           return tileslayer;
         });
 
@@ -3062,10 +3130,14 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             if (this.debouncedUpdateVisibleFeatures) {
               this.debouncedUpdateVisibleFeatures();
             }
+            // Broadcast the new viewport so the controls can update the "filter by zoom" list.
+            this.sendViewportExtentToControls();
           });
 
           // Initial update of visible features
           this.updateVisibleFeatures();
+          // Broadcast the initial viewport extent to any already-registered controls.
+          this.sendViewportExtentToControls();
 
           // Set baseMapLoaded to true immediately after map initialization
           // The map is functional once it's created, regardless of tile loading status

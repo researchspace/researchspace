@@ -34,6 +34,7 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.HighlightFeatures': string;
   'SemanticMapControls.ZoomToFeature': string;
   'SemanticMap.SendVisibleGroups': string[];
+  'SemanticMap.SendViewportExtent': number[];
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;
@@ -63,3 +64,4 @@ export const SemanticMapControlsHandleGeneralizedData = event('SemanticMapContro
 export const SemanticMapControlsHighlightFeatures = event('SemanticMapControls.HighlightFeatures');
 export const SemanticMapControlsZoomToFeature = event('SemanticMapControls.ZoomToFeature');
 export const SemanticMapSendVisibleGroups = event('SemanticMap.SendVisibleGroups');
+export const SemanticMapSendViewportExtent = event('SemanticMap.SendViewportExtent');

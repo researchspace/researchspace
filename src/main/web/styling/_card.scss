@@ -835,12 +835,39 @@ $card-deck-margin: $card-group-margin !default;
 /*  Knowledge Map card */
 .reactodia-workspace .reactodia-paper-area {
 
-    /* Stretch the wrappers between the element root (which carries the
-       user-resized element size) and the card, so that cards resized via
-       the halo resize handles fill the whole element */
-    .reactodia-overlaid-element > div div:has(.resource-card) {
-      height: 100%;
-      width: 100%;
+    /* Make the element root (which carries the default and the user-resized
+       card size) the containing block for the card and pin the card to it,
+       so the wrapper markup the card templates render in between does not
+       need to participate in the height chain */
+    .reactodia-overlaid-element > div {
+      position: relative;
+    }
+
+    .reactodia-overlaid-element > div .resource-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100% !important;
+      width: 100% !important;
+    }
+
+    /* let the media area absorb the extra vertical space when the card
+       grows (mirrors .resource-card__media-container-autosize) */
+    .reactodia-overlaid-element > div .resource-card .resource-card__media-container {
+      height: calc(100% - 50px);
+      min-height: unset;
+      max-height: unset;
+
+      .image-thumbnail,
+      .resource-card__thumbnail,
+      .resource-card__icon-container {
+        min-height: unset;
+        overflow: hidden;
+      }
+
+      iframe {
+        height: 100% !important;
+      }
     }
 
     /*  Knowledge Map card */

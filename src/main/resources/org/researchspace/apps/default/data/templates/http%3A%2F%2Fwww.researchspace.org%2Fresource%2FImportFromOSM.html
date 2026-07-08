@@ -9,9 +9,20 @@
                                           SELECT ?subject WHERE {
                                             SERVICE osm:NominatimSearchService {
                                               ?subject osm:q ?__token__ .
+                                              # polygon_text "0": NO geometry in the search - country
+                                              # boundaries are megabytes of WKT. The Map cell fetches
+                                              # geometry per row with a size-appropriate simplification
+                                              # threshold; the bounding box (always returned) is what it
+                                              # judges the entity size by.
+                                              ?subject osm:polygon_text "0" .
                                               ?subject osm:display_name ?placeName.
-                                              ?subject osm:geotext ?geoText.
                                               ?subject osm:wikidata ?wikidataId .
+                                              ?subject osm:osm_type ?osmType .
+                                              ?subject osm:osm_id ?osmId .
+                                              ?subject osm:bbox_min_lat ?bboxMinLat .
+                                              ?subject osm:bbox_max_lat ?bboxMaxLat .
+                                              ?subject osm:bbox_min_lon ?bboxMinLon .
+                                              ?subject osm:bbox_max_lon ?bboxMaxLon .
                                               ?subject osm:ordinal ?ordinal .
                                             }
                                           }'
@@ -42,7 +53,8 @@
                                    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
                                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                                    PREFIX schema: <http://schema.org/>
-                                   SELECT ?subject ?placeName ?wikidataId ?geoText ?osmPlaceURI ?ordinal
+                                   SELECT ?subject ?placeName ?wikidataId ?osmPlaceURI ?ordinal
+                                          ?osmType ?osmId ?bboxMinLat ?bboxMaxLat ?bboxMinLon ?bboxMaxLon
                                           (SAMPLE(?_placeLabel) AS ?placeLabel)
                                           (SAMPLE(?_placeDescription) AS ?placeDescription)
                                           (SAMPLE(?_placeImage) AS ?placeImage)
@@ -57,7 +69,8 @@
                                        }
                                      }
                                    }
-                                   GROUP BY ?subject ?placeName ?wikidataId ?geoText ?osmPlaceURI ?ordinal
+                                   GROUP BY ?subject ?placeName ?wikidataId ?osmPlaceURI ?ordinal
+                                            ?osmType ?osmId ?bboxMinLat ?bboxMaxLat ?bboxMinLon ?bboxMaxLon
                                    ORDER BY ?ordinal'
 
                             options='{"showFilter":false, "resultsPerPage":4}'
@@ -101,9 +114,37 @@
 
               <template id='placeMap'>
                 <div style='height: 210px; width: 20vw;'>
-                  {{#if geoText.value}}
-                    <semantic-context repository='default'>
-                      <semantic-map query='SELECT ?wkt WHERE { BIND("{{geoText.value}}" AS ?wkt) }'
+                  {{#if osmId.value}}
+                    <!-- Geometry is fetched per row, NOT carried by the table query:
+                         it arrives as a query result binding (safe at any size),
+                         never inlined into query text (a country boundary is
+                         megabytes of WKT - inlining it crashes the client query
+                         parser). The re-search is joined back to THIS row by
+                         osm_type + osm_id, which - unlike the wikidata tag -
+                         every OSM result has. The simplification threshold is
+                         picked from the entity's bounding box so only BIG
+                         entities are simplified:
+                         > 2 deg span: 0.01 deg (~1 km, sub-pixel on this preview);
+                         > 0.2 deg: 0.001 deg (~110 m); small entities: full
+                         geometry. One rate-limited Nominatim call per rendered
+                         row - acceptable for 4 rows per page. -->
+                    <semantic-context repository='ephedra'>
+                      <semantic-map query='PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
+                                           PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+                                           SELECT ?wkt WHERE {
+                                             BIND(xsd:double("{{bboxMaxLat.value}}") - xsd:double("{{bboxMinLat.value}}") AS ?latSpan)
+                                             BIND(xsd:double("{{bboxMaxLon.value}}") - xsd:double("{{bboxMinLon.value}}") AS ?lonSpan)
+                                             BIND(IF(?latSpan > ?lonSpan, ?latSpan, ?lonSpan) AS ?span)
+                                             BIND(IF(?span > 2.0, "0.01", IF(?span > 0.2, "0.001", "0.0")) AS ?threshold)
+                                             SERVICE osm:NominatimSearchService {
+                                               ?result osm:q """{{placeName.value}}""" ;
+                                                       osm:polygon_threshold ?threshold ;
+                                                       osm:geotext ?wkt ;
+                                                       osm:osm_type ?resultOsmType ;
+                                                       osm:osm_id ?resultOsmId .
+                                             }
+                                             FILTER(?resultOsmType = "{{osmType.value}}" && ?resultOsmId = "{{osmId.value}}")
+                                           }'
                                         tuple-template='<div style="display:flex; flex-direction:column; gap:5px;">
                                                       <b style="color:#525156;">{{placeName.value}}</b>
                                                       {{#if wikidataId.value}}
@@ -235,11 +276,29 @@
                       {{/if}}
                       <mp-event-target-template-render id='{{viewId}}-open-record-dropdown-render-{{__semanticTableIndex.value}}' template='{{> template}}'>
                         <template id='template'>
+                          <!-- Existing records are matched by the import-from-external-source
+                               chain on the wikidata-derived URI (the same mechanism the
+                               MET/VAM/TNA/Wikidata import pages use; FormEntityRecord stores
+                               it for every import made from this page). Matching by geometry
+                               text equality would be fragile - it breaks whenever OSM edits
+                               the boundary - and would require carrying megabytes of WKT
+                               into this query. -->
                           <semantic-context repository='default'>
                             <semantic-query query='SELECT DISTINCT ?existingRecord ?existingRecordLabel WHERE {
-                                                    BIND("{{geoText.value}}" AS ?wkt)
+                                                    BIND(<{{osmPlaceURI.value}}> AS ?osmSourceURI)
 
-                                                    ?existingRecord crm:P168_place_is_defined_by ?wkt .
+                                                    ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                                    ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> .
+                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                    ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                    ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                    ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                    ?importFromExternalSource crmdig:L14_transferred ?osmSourceURI .
+                                                    ?osmSourceURI a crmdig:D1_Digital_Object .
+                                                    ?osmSourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+
                                                     ?existingRecord crm:P1_is_identified_by ?appellation .
                                                     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                     ?appellation crm:P190_has_symbolic_content ?existingRecordLabel .
@@ -268,14 +327,14 @@
                     </div>
                   {{else}}
                     <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
-                      <mp-popover title="Place without geographic coordinates">
+                      <mp-popover title="Place without wikidata tag">
                         <mp-popover-trigger placement="left" trigger='["hover", "click"]'>
                           <button class="btn btn-default btn-textAndIcon">
                             <rs-icon icon-type="rounded" icon-name="question_mark" symbol="true"></rs-icon>
                           </button>
                         </mp-popover-trigger>
                         <mp-popover-content>
-                          <div>This place can't be imported because geographic coordinates are not available in the OpenStreetMap record.</div>
+                          <div>This place can't be imported because the OpenStreetMap record has no wikidata tag; the import stores the wikidata entity as the record's source and uses it to link the geographic coordinates.</div>
                         </mp-popover-content>
                       </mp-popover>
                     </div>

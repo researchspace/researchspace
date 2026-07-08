@@ -118,6 +118,7 @@ public class MpFederation extends FedX {
     @Override
     protected void shutDownInternal() throws SailException {
         logger.debug("Shutting down MpFederation, stopping REST service executor");
+        serviceMemberCache.clear();
         if (restServiceExecutor != null) {
             restServiceExecutor.shutdown();
             try {
@@ -182,41 +183,31 @@ public class MpFederation extends FedX {
     }
 
     /**
+     * Resolved member repositories per SERVICE URI. Resolution results are
+     * constant for the lifetime of this federation instance (member config
+     * changes reinitialize the federation), and resolution goes through the
+     * globally synchronized {@link RepositoryManager} — without this cache
+     * every SERVICE join evaluation (on FedX worker threads) would contend on
+     * the manager monitor that admin operations hold across storage I/O and
+     * repository shutdown. Only successful resolutions are cached; unknown
+     * SERVICE URIs are rejected by the (memoized) mappings lookup without
+     * touching the manager.
+     */
+    private final java.util.concurrent.ConcurrentHashMap<String, Repository> serviceMemberCache =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
      * Checks if the given service URI maps to a REST-backed repository.
      * REST services should not use vectored (bound join) evaluation because
      * REST APIs cannot process VALUES clauses - they need to be called one-at-a-time.
-     * 
+     *
      * @param serviceUri the SERVICE clause URI
      * @return true if the service maps to a repository backed by AbstractServiceWrappingSail
      */
     public boolean isRestBackedService(String serviceUri) {
-        try {
-            IRI serviceIri = SimpleValueFactory.getInstance().createIRI(serviceUri);
-            Map<IRI, String> mappings = config.getRepositoryIDMappings();
-            String repoId = mappings.get(serviceIri);
-            
-            if (logger.isTraceEnabled()) {
-                logger.trace("isRestBackedService: uri={}, mappedRepoId={}, mappingsSize={}", 
-                    serviceUri, repoId, mappings.size());
-            }
-            
-            if (repoId != null && repositoryManagerProvider != null) {
-                Repository repo = repositoryManagerProvider.get().getRepository(repoId);
-                
-                if (repo instanceof SailRepository) {
-                    var sail = ((SailRepository) repo).getSail();
-                    boolean isRest = sail instanceof AbstractServiceWrappingSail;
-                    if (logger.isTraceEnabled()) {
-                        logger.trace("isRestBackedService: repoId={}, sailType={}, isRest={}", 
-                            repoId, sail.getClass().getSimpleName(), isRest);
-                    }
-                    return isRest;
-                }
-            }
-        } catch (Exception e) {
-            logger.debug("Error checking if service is REST-backed: {}", serviceUri, e);
-        }
-        return false;
+        Repository repo = getServiceMemberRepository(serviceUri);
+        return repo instanceof SailRepository
+                && ((SailRepository) repo).getSail() instanceof AbstractServiceWrappingSail;
     }
 
     /**
@@ -228,11 +219,28 @@ public class MpFederation extends FedX {
      * @return the member repository, or null
      */
     public Repository getServiceMemberRepository(String serviceUri) {
+        Repository cached = serviceMemberCache.get(serviceUri);
+        if (cached != null) {
+            return cached;
+        }
+        Repository resolved = resolveServiceMemberRepository(serviceUri);
+        if (resolved != null) {
+            serviceMemberCache.putIfAbsent(serviceUri, resolved);
+        }
+        return resolved;
+    }
+
+    private Repository resolveServiceMemberRepository(String serviceUri) {
         try {
             IRI serviceIri = SimpleValueFactory.getInstance().createIRI(serviceUri);
             String repoId = config.getRepositoryIDMappings().get(serviceIri);
             if (repoId != null && repositoryManagerProvider != null) {
-                return repositoryManagerProvider.get().getRepository(repoId);
+                Repository repo = repositoryManagerProvider.get().getRepository(repoId);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Resolved service member: uri={}, repoId={}, repo={}",
+                            serviceUri, repoId, repo == null ? null : repo.getClass().getSimpleName());
+                }
+                return repo;
             }
         } catch (Exception e) {
             logger.debug("Error resolving service member repository: {}", serviceUri, e);

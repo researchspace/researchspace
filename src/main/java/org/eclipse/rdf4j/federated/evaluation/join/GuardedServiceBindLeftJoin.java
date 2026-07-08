@@ -8,8 +8,11 @@ package org.eclipse.rdf4j.federated.evaluation.join;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 
@@ -41,9 +44,15 @@ import org.slf4j.LoggerFactory;
  * batches them instead: blocks of left rows are sent to the member endpoint in
  * a single VALUES query (see
  * {@code ExclusiveGroupQueryBuilder.buildServiceBoundLeftJoinVALUES}), with
- * unmatched rows re-emitted NULL-extended. The VALUES-with-UNDEF semantics of
- * the batched query are identical to per-binding evaluation, so batching
- * preserves SPARQL semantics exactly.
+ * unmatched rows re-emitted NULL-extended.
+ * </p>
+ * <p>
+ * Rows within a block are grouped by the subset of service variables they
+ * actually bind, one VALUES query per group. This keeps batching semantically
+ * exact: a variable bound in SOME rows must stay in the remote projection for
+ * the rows where it is UNDEF (per-binding evaluation returns the
+ * service-produced value there), which a single mixed batch cannot express —
+ * its VALUES clause removes the variable from the projection for every row.
  * </p>
  * <p>
  * A condition is handled per left row, soundly:
@@ -72,6 +81,7 @@ public class GuardedServiceBindLeftJoin extends ControlledWorkerBindJoinBase {
     private final ValueExpr condition;
     private final Set<String> conditionVars;
     private final Set<String> rightSideVars;
+    private final Set<String> serviceVars;
 
     private boolean warnedUnboundConditionVar = false;
 
@@ -86,6 +96,18 @@ public class GuardedServiceBindLeftJoin extends ControlledWorkerBindJoinBase {
                 ? VarNameCollector.process(condition)
                 : Collections.emptySet();
         this.rightSideVars = leftJoin.getRightArg().getBindingNames();
+        this.serviceVars = ((FedXService) leftJoin.getRightArg()).getService().getServiceVars();
+    }
+
+    /** The subset of service variables a left row actually binds. */
+    private Set<String> boundServiceVarSignature(BindingSet bs) {
+        Set<String> signature = new TreeSet<>();
+        for (String name : bs.getBindingNames()) {
+            if (serviceVars.contains(name)) {
+                signature.add(name);
+            }
+        }
+        return signature;
     }
 
     @Override
@@ -109,7 +131,8 @@ public class GuardedServiceBindLeftJoin extends ControlledWorkerBindJoinBase {
 
             int nBindings = getNextBindJoinSize(nBindingsCfg, totalBindings);
 
-            List<BindingSet> batch = new ArrayList<>(nBindings);
+            // one batch per bound-service-variable signature (see class doc)
+            Map<Set<String>, List<BindingSet>> batches = new LinkedHashMap<>();
             List<BindingSet> passThrough = null;
 
             int count = 0;
@@ -145,7 +168,7 @@ public class GuardedServiceBindLeftJoin extends ControlledWorkerBindJoinBase {
                 if (taskCreator == null) {
                     taskCreator = determineTaskCreator(rightArg, bs);
                 }
-                batch.add(bs);
+                batches.computeIfAbsent(boundServiceVarSignature(bs), k -> new ArrayList<>()).add(bs);
             }
 
             totalBindings += count;
@@ -154,7 +177,7 @@ public class GuardedServiceBindLeftJoin extends ControlledWorkerBindJoinBase {
                 addResult(new CollectionIteration<>(passThrough));
             }
 
-            if (!batch.isEmpty()) {
+            for (List<BindingSet> batch : batches.values()) {
                 currentPhaser.register();
                 scheduler.schedule(
                         taskCreator.getTask(new PhaserHandlingParallelExecutor(this, currentPhaser), batch));

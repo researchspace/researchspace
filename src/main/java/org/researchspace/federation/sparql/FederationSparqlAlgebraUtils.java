@@ -28,6 +28,7 @@ import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.Var;
 import org.eclipse.rdf4j.query.algebra.helpers.collectors.StatementPatternCollector;
+import org.eclipse.rdf4j.model.Literal;
 import org.researchspace.repository.MpRepositoryVocabulary;
 
 /**
@@ -83,9 +84,23 @@ public class FederationSparqlAlgebraUtils {
             if (!sp.getPredicateVar().hasValue() || !sp.getPredicateVar().getValue().equals(pred)) return false;
         }
         if (obj != null) {
-            if (!sp.getObjectVar().hasValue() || !sp.getObjectVar().getValue().equals(obj)) return false;
+            if (!sp.getObjectVar().hasValue()) return false;
+            Value actual = sp.getObjectVar().getValue();
+            if (!actual.equals(obj) && !literalsMatchByStringValue(actual, obj)) return false;
         }
         return true;
+    }
+
+    /**
+     * Lenient literal comparison for hint objects: the pre-rdf4j-5 engine
+     * accepted hints written as plain string literals (e.g.
+     * {@code ephedra:executeFirst "true"} instead of {@code true}). Since the
+     * extractor strips every hint-predicate pattern regardless of its object,
+     * a strict comparison would silently remove-but-ignore such hints.
+     */
+    private static boolean literalsMatchByStringValue(Value actual, Value expected) {
+        return actual instanceof Literal && expected instanceof Literal
+                && actual.stringValue().equals(expected.stringValue());
     }
 
 }

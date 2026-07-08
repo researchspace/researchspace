@@ -54,6 +54,13 @@ public class MpFederationSailRepository extends FedXRepository {
      */
     private SourceSelectionPlatformCache sourceSelectionPlatformCache;
 
+    /**
+     * The SERVICE resolver created for this repository instance. Stored so it
+     * can be shut down: FedX's DelegateFederatedServiceResolver only closes
+     * the resolver it creates itself, never an externally supplied delegate.
+     */
+    private SPARQLServiceResolver serviceResolver;
+
     public MpFederationSailRepository(MpFederation sail) {
         super(sail, sail.getFedXConfig());
     }
@@ -61,24 +68,25 @@ public class MpFederationSailRepository extends FedXRepository {
     @Override
     protected void initializeInternal() throws RepositoryException {
         MpFederation sail = (MpFederation) getSail();
-        
+
         // Configure custom service resolver
         RepositoryManager repositoryManager = sail.repositoryManagerProvider.get();
         SPARQLServiceResolver serviceResolver = new SPARQLServiceResolver();
+        this.serviceResolver = serviceResolver;
         serviceResolver.setHttpClientSessionManager(repositoryManager.getClientSessionManager());
-        
+
         sail.getRepositoryIDMappings().forEach((refIri, repoId) -> {
             try {
+                // RepositoryManager.getRepository throws for unknown ids
                 Repository repo = repositoryManager.getRepository(repoId);
-                if (repo != null) {
-                    serviceResolver.registerService(refIri.stringValue(), 
+                serviceResolver.registerService(refIri.stringValue(),
                         new RepositoryFederatedService(repo, false));
-                }
-            } catch (RepositoryException e) {
-                throw new SailException(e);
+            } catch (Exception e) {
+                throw new SailException("Federation member '" + repoId + "' (SERVICE " + refIri
+                        + ") could not be resolved: " + e.getMessage(), e);
             }
         });
-        
+
         // This sets the delegate in DelegateFederatedServiceResolver created by FedXRepository
         this.setFederatedServiceResolver(serviceResolver);
         
@@ -96,33 +104,32 @@ public class MpFederationSailRepository extends FedXRepository {
 
         // Add default member to the Sail BEFORE super.initializeInternal()
         // This ensures EndpointManager picks it up
+        String defaultRepositoryId = sail.getDefaultRepositoryId();
         try {
-            String defaultRepositoryId = sail.getDefaultRepositoryId();
-            if (repositoryManager.getRepository(defaultRepositoryId) == null) {
-                 throw new SailException("Default repository not found: " + defaultRepositoryId);
-            }
-            
-            ResolvableRepositoryInformation repoInfo = 
+            // throws for unknown ids (getRepository never returns null)
+            repositoryManager.getRepository(defaultRepositoryId);
+
+            ResolvableRepositoryInformation repoInfo =
                 new ResolvableRepositoryInformation(defaultRepositoryId);
             repoInfo.setWritable(true);
-            ResolvableEndpoint defaultEndpoint = 
+            ResolvableEndpoint defaultEndpoint =
                 new ResolvableEndpoint(repoInfo, defaultRepositoryId, EndpointClassification.Remote);
-                        
+
             sail.addFederationMember(defaultEndpoint);
         } catch (Exception e) {
-             throw new SailException(e);
+            throw new SailException("Default federation member '" + defaultRepositoryId
+                    + "' could not be resolved: " + e.getMessage(), e);
         }
-        
+
         // Add fedx:member repositories as federation members
         // These participate in FedX source selection and use our evaluation strategy
         for (String memberId : sail.getConfig().getFedxMemberRepositoryIds()) {
             try {
-                if (repositoryManager.getRepository(memberId) == null) {
-                    throw new SailException("FedX member repository not found: " + memberId);
-                }
-                ResolvableRepositoryInformation memberInfo = 
+                // throws for unknown ids (getRepository never returns null)
+                repositoryManager.getRepository(memberId);
+                ResolvableRepositoryInformation memberInfo =
                     new ResolvableRepositoryInformation(memberId);
-                ResolvableEndpoint memberEndpoint = 
+                ResolvableEndpoint memberEndpoint =
                     new ResolvableEndpoint(memberInfo, memberId, EndpointClassification.Remote);
                 sail.addFederationMember(memberEndpoint);
             } catch (Exception e) {
@@ -131,6 +138,12 @@ public class MpFederationSailRepository extends FedXRepository {
         }
 
         super.initializeInternal();
+
+        // The old ephedra engine enforced no query timeout; FedX does. Make the
+        // effective limit visible so operators of long-running federated
+        // queries know where the 120s default comes from and how to change it.
+        logger.info("Federation (default member '{}'): query timeout fedx:enforceMaxQueryTime = {}s (0 = disabled)",
+                defaultRepositoryId, sail.getFedXConfig().getEnforceMaxQueryTime());
 
         // Register FedX source selection cache with platform CacheManager
         // so that CacheManager.invalidateAll() (triggered by SPARQL updates,
@@ -159,6 +172,22 @@ public class MpFederationSailRepository extends FedXRepository {
             }
             sourceSelectionPlatformCache = null;
         }
-        super.shutDownInternal();
+        try {
+            super.shutDownInternal();
+        } finally {
+            // FedX's DelegateFederatedServiceResolver.shutDown() only closes the
+            // resolver it created itself, never the externally supplied delegate.
+            // Without this, every repository reinitialization (admin config save)
+            // leaks the resolver and its registered RepositoryFederatedServices.
+            if (serviceResolver != null) {
+                try {
+                    serviceResolver.shutDown();
+                    logger.debug("Shut down federation SERVICE resolver");
+                } catch (Exception e) {
+                    logger.debug("Failed to shut down federation SERVICE resolver: {}", e.getMessage());
+                }
+                serviceResolver = null;
+            }
+        }
     }
 }

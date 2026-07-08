@@ -103,6 +103,27 @@ public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testLegacyFederationSailRepositoryConfigIsMigrated() throws Exception {
+        // pre-rdf4j-5 deployments declared the ephedra federation as a generic
+        // 'openrdf:SailRepository' wrapping the 'researchspace:Federation' sail.
+        // After the FedX rewrite the federation only works through the
+        // MpFederationSailRepository (FedX repository) wrapper, which wires the
+        // FederationContext — the legacy form must be migrated at parse time,
+        // otherwise every query on it fails with a NullPointerException.
+        Model model = TestUtils.readTurtleInputStreamIntoModel(
+                TestUtils.readPlainTextTurtleInput("/org/researchspace/repository/test-sail-mp-federation-repository.ttl"),
+                baseIri);
+
+        RepositoryConfig repConfig = RepositoryConfigUtils.createRepositoryConfig(model);
+
+        assertEquals("test-sail-mp-federation-repository", repConfig.getID());
+        assertEquals(org.researchspace.federation.repository.MpFederationSailRepositoryFactory.REPOSITORY_TYPE,
+                repConfig.getRepositoryImplConfig().getType());
+        assertTrue(repConfig
+                .getRepositoryImplConfig() instanceof org.researchspace.federation.repository.MpFederationSailRepositoryConfig);
+    }
+
+    @Test
     public void testCreateRepositoryConfigFromModelFail() throws Exception {
         exception.expect(RepositoryConfigException.class);
         exception.expectMessage("Repository configuration model must have exactly one repository id.");

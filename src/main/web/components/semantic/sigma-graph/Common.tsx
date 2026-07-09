@@ -146,7 +146,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
                 if(!groupedGraph.hasEdge(entry['source']+node)) {
                     groupedGraph.addEdgeWithKey(entry['source']+node, entry['source'], node, {
                         label: entry['labels'].join(' '),
-                        size: props.sizes.edges,
+                        size: props.sizes?.edges ?? 5,
                         color: props.colours && props.colours.edge || DEFAULT_COLOUR_EDGE
                     })
                 }
@@ -177,19 +177,23 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
         }
 
         // Add a new node that represents the group of nodes that share the current source node, type combination and predicate
-        if(!groupedGraph.hasNode(key)) {
-            let x = graph.getNodeAttribute(entry['nodes'][0], 'x');
-            let y = graph.getNodeAttribute(entry['nodes'][0], 'y');
+        if (!groupedGraph.hasNode(key)) {
+            const firstNodeAttrs = graph.getNodeAttributes(entry.nodes[0]) || {};
+            let x = firstNodeAttrs.x;
+            let y = firstNodeAttrs.y;
             if (x === undefined) x = Math.random();
             if (y === undefined) y = Math.random();
+
+            const typeLabels = firstNodeAttrs.typeLabels;
+            const labelPrefix = Array.isArray(typeLabels) ? typeLabels.join(', ') : (typeLabels || 'Group');
 
             groupedGraph.addNode(key, {
                 grouped: true,
                 children: children,
-                label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
-                typeLabels: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels'),
+                label: labelPrefix + ' (' + entry.nodes.length + ')',
+                typeLabels: typeLabels,
                 size: (props.sizes?.nodes ?? 10) * 1.5,
-                color: graph.getNodeAttribute(entry['nodes'][0], 'color'), // We just use the color of the first node
+                color: firstNodeAttrs.color,
                 x: x,
                 y: y
             })
@@ -230,8 +234,8 @@ export function cleanGraph(graph: MultiDirectedGraph) {
 
 export function createGraphFromElements(elements: any[], props: SigmaGraphConfig) {
     const graph = new MultiDirectedGraph();
-    const nodeSize = props.sizes.nodes || 10;
-    const edgeSize = props.sizes.edges || 5;
+    const nodeSize = props.sizes?.nodes ?? 10;
+    const edgeSize = props.sizes?.edges ?? 5;
     // Order elements by <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> key
     elements = [...elements].sort((a, b) => {
         if (a.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'] && b.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
@@ -318,7 +322,8 @@ export function getStateFromLocalStorage(key: string) {
                     return graph;
                 }
             } catch (e) {
-                console.error("Failed to restore graph from local storage:", e);
+                console.error("Failed to restore graph state from localStorage:", e);
+                clearStateFromLocalStorage();
             }
         }
     }
@@ -362,12 +367,13 @@ export function mergeGraphs(graph: MultiDirectedGraph, newGraph: MultiDirectedGr
     // is part of a group is already present as an individual node in the graph. 
     // In this case we need to remove the grouped node from its group and add a
     // corresponding edge from the groups source to the node.
-    const nodes = graph.nodes();
+    const nodes = graph.nodes();            
+
     const nodesToRelease = [];
     for (const node of nodes) {
         if (graph.hasNodeAttribute(node, 'grouped')) {
             // Look at children of group and check if they are already present in the graph
-            const children = graph.getNodeAttribute(node, 'children');
+            const children = graph.getNodeAttribute(node, 'children') || [];
             for (const child of children) {
                 if (graph.hasNode(child.node)) {
                     nodesToRelease.push({group: node, child: child});
@@ -411,10 +417,14 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
             const newChildren = children.filter(c => c.node !== childNode);
             graph.setNodeAttribute(groupNode, "children", newChildren);
 
-            // Update group node label
-            const typeLabels = graph.getNodeAttribute(groupNode, "typeLabels")
-            const uniqueTypeLabels = typeLabels?.filter((value, index, array) => array.indexOf(value) === index);
-            graph.setNodeAttribute(groupNode, "label", uniqueTypeLabels + ' (' + newChildren.length + ')')
+            // Update group node label             
+            const groupAttrs = graph.getNodeAttributes(groupNode) || {};
+            const typeLabels = groupAttrs.typeLabels;
+            const uniqueTypeLabels = Array.isArray(typeLabels)
+                ? typeLabels.filter((value, index, array) => array.indexOf(value) === index)
+                : [];
+            const labelPrefix = uniqueTypeLabels.length > 0 ? uniqueTypeLabels.join(', ') : 'Group';
+            graph.setNodeAttribute(groupNode, "label", labelPrefix + ' (' + newChildren.length + ')');
             // Add edges from group source node to child node
             for (const edge of edges) {
                 const sourceNode = graph.source(edge);
@@ -429,8 +439,11 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
 }
 
 export function saveStateIntoLocalStorage(graph: MultiDirectedGraph, key: string) {
+    if (!graph || !key) return;
+
     const exportedGraph = graph.export();
     const compressed = compressToEncodedURIComponent(JSON.stringify(exportedGraph));
+    
     localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_KEY, key)
-    localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_GRAPH, compressed)
+    localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_GRAPH, compressed);
 }

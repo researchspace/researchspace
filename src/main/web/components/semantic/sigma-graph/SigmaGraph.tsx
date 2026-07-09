@@ -131,6 +131,8 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const controls = this.props.controls || false;
         const edgeFilter = this.props.edgeFilter || false;
         
+        const componentId = this.props.id || this.state.key;
+
         const sigmaSettings = { 
             defaultEdgeType: "arrow",
             defaultNodeType: "image",
@@ -160,6 +162,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                 >
                     <GraphLayoutProvider>
                         <GraphEvents
+                            id={componentId}
                             context={ this.context.semanticContext}
                             colours={ colours }
                             edgeFilter={ edgeFilter }

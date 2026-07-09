@@ -40,7 +40,8 @@ export const Panel: FC<{ title: JSX.Element | string; initiallyDeployed?: boolea
 
   return (
     <div className="panel" ref={dom}>
-      <a onClick={() => setIsDeployed((v) => !v)}>
+      <a role="button"
+        tabIndex={0} onClick={() => setIsDeployed((v) => !v)}>
         <div>
             {title}{" "}
             <span className="icon toggle">

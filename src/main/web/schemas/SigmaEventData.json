@@ -4,11 +4,15 @@
         "Sigma.FocusNode": {
             "description": "Event that listens to an external event that\nfocusses on a given node",
             "properties": {
+                "componentId": {
+                    "type": "string"
+                },
                 "node": {
                     "type": "string"
                 }
             },
             "propertyOrder": [
+                "componentId",
                 "node"
             ],
             "required": [
@@ -17,10 +21,25 @@
             "type": "object"
         },
         "Sigma.NodeClicked": {
-            "description": "Event which should be triggered when a node is clicked",
+            "description": "Event triggered when a node is clicked.",
             "properties": {
+                "attributes": {
+                    "description": "Sigma / graphology node attributes."
+                },
+                "componentId": {
+                    "description": "Id of the Sigma component instance that emitted the event.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "Full clicked node id, usually the internal graph node IRI with angle brackets.",
+                    "type": "string"
+                },
+                "node": {
+                    "description": "Same clicked node id, clearer alias for consumers.",
+                    "type": "string"
+                },
                 "nodes": {
-                    "description": "Node IRI.",
+                    "description": "Node IRIs exposed to external consumers.",
                     "items": {
                         "type": "string"
                     },
@@ -28,9 +47,16 @@
                 }
             },
             "propertyOrder": [
-                "nodes"
+                "componentId",
+                "id",
+                "node",
+                "nodes",
+                "attributes"
             ],
             "required": [
+                "componentId",
+                "id",
+                "node",
                 "nodes"
             ],
             "type": "object"
@@ -38,6 +64,9 @@
         "Sigma.ScatterGroupNode": {
             "description": "Event that listens to an external event and expands the given group node, replacing the group node with its children",
             "properties": {
+                "componentId": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -50,6 +79,7 @@
                 }
             },
             "propertyOrder": [
+                "componentId",
                 "id",
                 "mode"
             ],
@@ -60,13 +90,17 @@
             "type": "object"
         },
         "Sigma.TriggerNodeClicked": {
-            "description": "Event that listens to a external event that triggers\na click on a given node",
+            "description": "External event requesting a click on a given node.",
             "properties": {
+                "componentId": {
+                    "type": "string"
+                },
                 "node": {
                     "type": "string"
                 }
             },
             "propertyOrder": [
+                "componentId",
                 "node"
             ],
             "required": [

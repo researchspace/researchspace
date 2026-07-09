@@ -8,28 +8,49 @@ import { EventMaker } from 'platform/api/events';
 
 export interface SigmaEventData {
   /**
-   * Event which should be triggered when a node is clicked
+   * Event triggered when a node is clicked.
    */
   'Sigma.NodeClicked': {
     /**
-     * Node IRI.
+     * Id of the Sigma component instance that emitted the event.
+     */
+    componentId: string;
+
+    /**
+     * Full clicked node id, usually the internal graph node IRI with angle brackets.
+     */
+    id: string;
+
+    /**
+     * Same clicked node id, clearer alias for consumers.
+     */
+    node: string;
+
+    /**
+     * Node IRIs exposed to external consumers.
      */
     nodes: string[];
+
+    /**
+     * Sigma / graphology node attributes.
+     */
+    attributes?: any;
   };
 
   /**
-   * Event that listens to a external event that triggers
-   * a click on a given node
+   * External event requesting a click on a given node.
    */
   'Sigma.TriggerNodeClicked': {
+    componentId?: string;
     node: string;
-  }
+  };
 
   /**
    * Event that listens to an external event that
    * focusses on a given node
    */
   'Sigma.FocusNode': {
+    componentId?: string;
     node: string;
   }
   
@@ -40,6 +61,7 @@ export interface SigmaEventData {
    * @param mode The mode in which the group node should be expanded. Default is 'replace'
    */
   'Sigma.ScatterGroupNode': {
+    componentId?: string;
     id: string;
     mode: 'expand' | 'replace';
   }

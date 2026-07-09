@@ -201,9 +201,13 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             callback();
         }
 
+        const componentId = props.id;
+
         if (!omitEvent) {
             const data = {
+                componentId,
                 id: node,
+                node,
                 attributes,
                 nodes: attributes.children
                     ? attributes.children.map(
@@ -212,9 +216,10 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                     )
                     : [node.substring(1, node.length - 1)]
             };
+            console.log("sigma"+componentId);console.log(data,{"depth":null});
             trigger({
                 eventType: NodeClicked,
-                source: node,
+                source: componentId,
                 data
             });
         }

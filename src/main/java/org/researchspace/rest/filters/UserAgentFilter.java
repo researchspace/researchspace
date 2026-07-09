@@ -40,6 +40,10 @@ public class UserAgentFilter implements ClientRequestFilter {
         this.userAgent = userAgent;
     }
 
+    public String getUserAgent() {
+        return userAgent;
+    }
+
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         requestContext.getHeaders().add(HttpHeaders.USER_AGENT, userAgent);

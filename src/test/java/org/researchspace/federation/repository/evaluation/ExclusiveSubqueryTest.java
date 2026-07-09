@@ -200,4 +200,48 @@ public class ExclusiveSubqueryTest {
         StatementSource owner = new StatementSource("default", StatementSourceType.REMOTE);
         return new ExclusiveSubquery(njoin, owner, queryInfo);
     }
+
+    /**
+     * {@code canRender} is the eligibility predicate the join optimizer uses
+     * before folding a single-source tree into an ExclusiveSubquery. It must
+     * mirror exactly what {@link ExclusiveSubquery#toSparqlBody} can
+     * reconstruct — otherwise the optimizer builds plans that crash at
+     * evaluation time (e.g. property paths pushed to one source become
+     * {@code ExclusiveArbitraryLengthPath}, which toSparqlBody cannot render).
+     */
+    @Test
+    public void testCanRenderMirrorsToSparqlBodySupport() {
+        QueryInfo queryInfo = mockQueryInfo();
+        StatementSource source = new StatementSource("endpoint1", StatementSourceType.REMOTE);
+
+        StatementPattern stmt = new StatementPattern(new Var("s"), new Var("p"), new Var("o"));
+        assertTrue(ExclusiveSubquery.canRender(stmt));
+
+        org.eclipse.rdf4j.federated.algebra.ExclusiveStatement exclusive =
+                new org.eclipse.rdf4j.federated.algebra.ExclusiveStatement(
+                        new StatementPattern(new Var("s"), new Var("p"), new Var("o")), source, queryInfo);
+        assertTrue(ExclusiveSubquery.canRender(exclusive));
+
+        org.eclipse.rdf4j.federated.algebra.ExclusiveGroup group =
+                new org.eclipse.rdf4j.federated.algebra.ExclusiveGroup(
+                        Arrays.asList(exclusive), source, queryInfo);
+        assertTrue(ExclusiveSubquery.canRender(group));
+
+        org.eclipse.rdf4j.query.algebra.ArbitraryLengthPath path =
+                new org.eclipse.rdf4j.query.algebra.ArbitraryLengthPath(new Var("s"),
+                        new StatementPattern(new Var("s"), new Var("p"), new Var("o")), new Var("o"), 1);
+        org.eclipse.rdf4j.federated.algebra.ExclusiveArbitraryLengthPath exclusivePath =
+                new org.eclipse.rdf4j.federated.algebra.ExclusiveArbitraryLengthPath(path, source, queryInfo);
+        assertFalse("toSparqlBody cannot reconstruct property paths - the optimizer must not fold them",
+                ExclusiveSubquery.canRender(exclusivePath));
+
+        NJoin joinWithPath = new NJoin(Arrays.asList(exclusive, exclusivePath), queryInfo);
+        assertFalse("a join containing an unrenderable node is itself unrenderable",
+                ExclusiveSubquery.canRender(joinWithPath));
+
+        NJoin joinOfStatements = new NJoin(Arrays.asList(
+                new StatementPattern(new Var("s"), new Var("p"), new Var("o")),
+                new StatementPattern(new Var("s"), new Var("q"), new Var("v"))), queryInfo);
+        assertTrue(ExclusiveSubquery.canRender(joinOfStatements));
+    }
 }

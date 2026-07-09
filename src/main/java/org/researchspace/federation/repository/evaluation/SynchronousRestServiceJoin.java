@@ -14,13 +14,12 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.common.iteration.LookAheadIteration;
-import org.eclipse.rdf4j.federated.evaluation.FederationEvalStrategy;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +38,14 @@ import org.slf4j.LoggerFactory;
  * 
  * <h3>Synchronization Strategy</h3>
  * <ul>
- *   <li>{@code leftIter} is only accessed from the prefetcher thread</li>
- *   <li>{@code resultQueue} is a thread-safe blocking queue (producer=prefetcher, consumer=caller)</li>
- *   <li>{@code currentRightIter} is only accessed from the consumer thread</li>
+ *   <li>{@code leftIter} is iterated only from the prefetcher thread; it is additionally
+ *       closed from {@code handleClose} (close is idempotent and thread-safe in rdf4j) so
+ *       that aborting a query unwinds chained joins and releases their pool threads</li>
+ *   <li>{@code resultQueue} is a thread-safe blocking queue (producer=prefetcher, consumer=caller);
+ *       the producer re-checks the closed flag on every handover wait round so it never blocks
+ *       a shared pool thread indefinitely</li>
+ *   <li>{@code currentRightIter} is written by the consumer thread and closed by the
+ *       closing thread (volatile)</li>
  *   <li>{@code closed} flag from parent class coordinates shutdown</li>
  * </ul>
  * 
@@ -55,9 +59,8 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
     private static final CloseableIteration<BindingSet> END_MARKER = 
             new org.eclipse.rdf4j.common.iteration.EmptyIteration<>();
 
-    private final FederationEvalStrategy strategy;
+    private final Function<BindingSet, CloseableIteration<BindingSet>> rightEvaluator;
     private final CloseableIteration<BindingSet> leftIter;
-    private final TupleExpr rightArg;
     private final BindingSet bindings;
     private final int prefetchSize;
     
@@ -67,8 +70,9 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
     private final AtomicInteger httpCallCount = new AtomicInteger(0);
     private final AtomicInteger processedCount = new AtomicInteger(0);
     
-    // Only accessed from consumer thread (getNextElement and handleClose)
-    private CloseableIteration<BindingSet> currentRightIter;
+    // Written by the consumer thread; also read and closed by whichever thread
+    // calls close() (e.g. a query-timeout thread), hence volatile.
+    private volatile CloseableIteration<BindingSet> currentRightIter;
 
     // The prefetcher task handle - used for cancellation
     private volatile Future<?> prefetcherTask;
@@ -78,24 +82,21 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
 
     /**
      * Create a new prefetching join with a shared executor.
-     * 
-     * @param strategy the federation evaluation strategy
+     *
+     * @param rightEvaluator evaluates the right side of the join for one merged binding set
      * @param leftIter the left iterator providing bindings (will be consumed by prefetcher thread)
-     * @param rightArg the right argument to evaluate 
      * @param bindings base bindings
      * @param prefetchSize number of results to prefetch (bounded parallelism)
      * @param executor shared executor service from MpFederation
      */
     public SynchronousRestServiceJoin(
-            FederationEvalStrategy strategy,
+            Function<BindingSet, CloseableIteration<BindingSet>> rightEvaluator,
             CloseableIteration<BindingSet> leftIter,
-            TupleExpr rightArg,
             BindingSet bindings,
             int prefetchSize,
             ExecutorService executor) {
-        this.strategy = strategy;
+        this.rightEvaluator = rightEvaluator;
         this.leftIter = leftIter;
-        this.rightArg = rightArg;
         this.bindings = bindings;
         this.prefetchSize = Math.max(1, prefetchSize);
         this.executor = executor;
@@ -107,9 +108,12 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
         try {
             this.prefetcherTask = executor.submit(this::prefetchLoop);
         } catch (RejectedExecutionException e) {
-            // Executor is shutdown - proceed without prefetching
+            // Executor is shut down (federation stopping): fail the query loudly.
+            // Silently proceeding would return an incomplete (empty) result.
             log.warn("Failed to start prefetcher - executor is shutdown");
+            prefetchError = e;
             prefetcherDone.set(true);
+            closeQuietly(leftIter);
         }
         
         if (log.isDebugEnabled()) {
@@ -146,14 +150,23 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
                                 callNum, mergedBindings);
                     }
 
-                    result = strategy.evaluate(rightArg, mergedBindings);
+                    result = rightEvaluator.apply(mergedBindings);
 
-                    // Add to queue, blocking if full
-                    // This provides natural backpressure - if consumer is slow, we wait here
-                    if (!isClosed()) {
-                        resultQueue.put(result);
-                    } else {
-                        // Closed while evaluating - clean up the result
+                    // Hand over to the consumer, blocking while the queue is full
+                    // (natural backpressure). Re-check the closed flag on every
+                    // wait round: cancel(true) interrupts a blocked offer, but if
+                    // the evaluation above swallowed the interrupt this loop still
+                    // releases the shared pool thread once the join is closed —
+                    // that release is what unwinds chained REST joins.
+                    boolean handedOver = false;
+                    while (!isClosed()) {
+                        if (resultQueue.offer(result, 100, TimeUnit.MILLISECONDS)) {
+                            handedOver = true;
+                            break;
+                        }
+                    }
+                    if (!handedOver) {
+                        // Closed while evaluating or waiting - clean up the result
                         closeQuietly(result);
                         break;
                     }
@@ -239,6 +252,13 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
                     continue; // Retry poll
                 }
                 
+                if (isClosed()) {
+                    // Closed while we were polling: the close() thread has
+                    // already drained the queue, so this iteration would
+                    // otherwise leak.
+                    closeQuietly(next);
+                    return null;
+                }
                 currentRightIter = next;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -306,17 +326,13 @@ public class SynchronousRestServiceJoin extends LookAheadIteration<BindingSet> {
             }
         }
         
-        // Note: leftIter is closed by the prefetcher in its finally block
-        // If prefetcher is cancelled before reaching finally, this is a fallback
-        if (!prefetcherDone.get()) {
-            // Prefetcher may not have closed leftIter yet - give it a moment
-            // This is a best-effort; the prefetcher's finally block should handle it
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
+        // Close the left iteration unconditionally. The prefetcher's finally
+        // block also closes it, but a task cancelled before it ever started
+        // never reaches that block — and when the left side is another
+        // (chained) REST join, this close is what interrupts ITS producer and
+        // releases the shared pool thread. CloseableIteration.close() is
+        // idempotent, so the double close with the prefetcher is safe.
+        closeQuietly(leftIter);
     }
     
     /**

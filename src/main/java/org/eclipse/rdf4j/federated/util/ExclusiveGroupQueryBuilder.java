@@ -82,27 +82,7 @@ public class ExclusiveGroupQueryBuilder {
         // input bindings (cross-product join), the ?__index column is required by
         // BindLeftJoinIteration / BoundJoinVALUESConversionIteration, mirroring
         // QueryStringUtil.selectQueryStringBoundJoinVALUES.
-        query.append(" VALUES (");
-        for (String var : boundVarNames) {
-            query.append("?").append(var).append(" ");
-        }
-        query.append(" ?__index) { ");
-
-        int index = 0;
-        for (BindingSet b : bindings) {
-            query.append("(");
-            for (String var : boundVarNames) {
-                if (b.hasBinding(var)) {
-                    // Uses QueryStringUtil.appendValue (protected, same-package)
-                    QueryStringUtil.appendValue(query, b.getValue(var)).append(" ");
-                } else {
-                    query.append("UNDEF ");
-                }
-            }
-            query.append("\"").append(index).append("\") ");
-            index++;
-        }
-        query.append(" } ");
+        appendValuesBlock(query, boundVarNames, bindings, false);
 
         query.append(whereBody);
         query.append(" }");
@@ -150,32 +130,82 @@ public class ExclusiveGroupQueryBuilder {
         projectionVars.add(BoundJoinVALUESConversionIteration.INDEX_BINDING_NAME);
 
         String queryString = service.getSelectQueryString(projectionVars);
+        if (!queryString.contains("?" + BoundJoinVALUESConversionIteration.INDEX_BINDING_NAME)) {
+            // Sub-SELECT service bodies are forwarded verbatim by
+            // Service.getSelectQueryString (the projection vars are ignored), so
+            // the ?__index column the bind join relies on cannot be injected.
+            // Callers must evaluate such bodies per binding; failing fast here
+            // beats the NullPointerException the missing echo would cause in
+            // BindLeftJoinIteration.
+            throw new IllegalArgumentException(
+                    "SERVICE body does not support the VALUES bind-join rewrite (sub-SELECT body?): "
+                            + queryString);
+        }
 
         StringBuilder values = new StringBuilder();
-        values.append(" VALUES (?").append(BoundJoinVALUESConversionIteration.INDEX_BINDING_NAME);
-        for (String var : relevantVars) {
-            values.append(" ?").append(var);
-        }
-        values.append(") { ");
-        int index = 0;
-        for (BindingSet b : bindings) {
-            values.append("(\"").append(index).append("\" ");
-            for (String var : relevantVars) {
-                if (b.hasBinding(var)) {
-                    QueryStringUtil.appendValue(values, b.getValue(var)).append(" ");
-                } else {
-                    values.append("UNDEF ");
-                }
-            }
-            values.append(") ");
-            index++;
-        }
-        values.append("} ");
+        appendValuesBlock(values, relevantVars, bindings, true);
 
         // the first '{' is the WHERE brace (the prologue contains no braces)
         StringBuilder query = new StringBuilder(queryString);
         query.insert(query.indexOf("{") + 1, values);
         return query.toString();
+    }
+
+    /**
+     * Bridge to {@link QueryStringUtil#appendValue} (protected, reachable via
+     * this class's package). Single source of truth for SPARQL value
+     * serialization in the bind-join query builders — private copies drift
+     * (an earlier copy silently emitted unescaped quotes for unsupported
+     * value types where upstream fails fast).
+     */
+    public static StringBuilder appendValue(StringBuilder sb, org.eclipse.rdf4j.model.Value value) {
+        return QueryStringUtil.appendValue(sb, value);
+    }
+
+    /**
+     * Emit the {@code VALUES (…vars… ?__index) { rows }} block shared by all
+     * bind-join query builders. Rows not binding a variable emit {@code UNDEF};
+     * the {@code ?__index} column carries the 0-based row position consumed by
+     * {@code BindLeftJoinIteration}/{@code BoundJoinVALUESConversionIteration}.
+     *
+     * @param indexFirst whether the index column leads (service bound left
+     *                   join) or trails (exclusive group / subquery bound join)
+     *                   the variable columns
+     */
+    public static void appendValuesBlock(StringBuilder query, java.util.Collection<String> vars,
+            List<BindingSet> bindings, boolean indexFirst) {
+        String indexColumn = "?" + BoundJoinVALUESConversionIteration.INDEX_BINDING_NAME;
+        query.append(" VALUES (");
+        if (indexFirst) {
+            query.append(indexColumn).append(" ");
+        }
+        for (String var : vars) {
+            query.append("?").append(var).append(" ");
+        }
+        if (!indexFirst) {
+            query.append(indexColumn);
+        }
+        query.append(") { ");
+        int index = 0;
+        for (BindingSet b : bindings) {
+            query.append("(");
+            if (indexFirst) {
+                query.append("\"").append(index).append("\" ");
+            }
+            for (String var : vars) {
+                if (b.hasBinding(var)) {
+                    QueryStringUtil.appendValue(query, b.getValue(var)).append(" ");
+                } else {
+                    query.append("UNDEF ");
+                }
+            }
+            if (!indexFirst) {
+                query.append("\"").append(index).append("\"");
+            }
+            query.append(") ");
+            index++;
+        }
+        query.append("} ");
     }
 
     /**

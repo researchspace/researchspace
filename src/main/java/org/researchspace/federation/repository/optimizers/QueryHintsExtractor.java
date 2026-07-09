@@ -28,7 +28,6 @@ import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.evaluation.QueryOptimizer;
-import org.researchspace.federation.sparql.algebra.NaryJoin;
 import org.researchspace.federation.sparql.FederationSparqlAlgebraUtils;
 import org.researchspace.federation.sparql.optimizers.RemoveNodeQueryModelVisitor;
 import org.researchspace.repository.MpRepositoryVocabulary;
@@ -86,13 +85,10 @@ public class QueryHintsExtractor implements QueryOptimizer {
     }
 
     protected Optional<TupleExpr> getPreviousJoinOperand(StatementPattern hint) {
-        if (hint.getParentNode() instanceof NaryJoin) {
-            NaryJoin parent = (NaryJoin) hint.getParentNode();
-            int idx = parent.getArgs().indexOf(hint);
-            if (idx > 0) {
-                return Optional.of(parent.getArg(idx - 1));
-            }
-        } else if (hint.getParentNode() instanceof org.eclipse.rdf4j.federated.algebra.NJoin) {
+        // hints appear either in FedX NJoin trees (this extractor runs inside
+        // the FedX optimizer pipeline) or in freshly parsed trees with plain
+        // binary Join nodes (pre-optimization stripping)
+        if (hint.getParentNode() instanceof org.eclipse.rdf4j.federated.algebra.NJoin) {
             org.eclipse.rdf4j.federated.algebra.NJoin parent = (org.eclipse.rdf4j.federated.algebra.NJoin) hint.getParentNode();
             int idx = parent.getArgs().indexOf(hint);
             if (idx > 0) {

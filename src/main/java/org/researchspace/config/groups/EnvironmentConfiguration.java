@@ -187,8 +187,8 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
      * <p>For example:</p>
      * <pre>MyProject/1.0 (https://example.org/myproject; admin@example.org)</pre>
      *
-     * <p>Per-repository overrides are available via {@code repo:userAgent}
-     * in REST service configs.</p>
+     * <p>Per-repository overrides are available via {@code ephedra:userAgent}
+     * in REST repository configs.</p>
      */
     @ConfigurationParameter
     public String getHttpUserAgent() {

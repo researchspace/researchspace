@@ -13,6 +13,7 @@ Comprehensive documentation of the federation system: FedX core, old MpFederatio
 5. [Old MpFederation (Archived)](#old-mpfederation-archived)
 6. [Monitoring & Logging](#monitoring--logging)
 7. [Known Issues & Solutions](#known-issues--solutions)
+8. [Deferred Work (TODOs)](#deferred-work-todos)
 
 ---
 
@@ -297,11 +298,14 @@ Available hints:
 > [!WARNING]
 > `ephedra:Prior` attaches to the **preceding sibling in the same join group**
 > (`QueryHintsExtractor.getPreviousJoinOperand`). A hint placed as the *first*
-> element of a group attaches to nothing and is **silently dropped** — the
-> cost-based optimizer is then free to reorder, e.g. evaluating a SPARQL member
-> SERVICE before the REST search that was supposed to drive it (with no
-> bindings, so the member gets an unconstrained query). Always place the hint
-> *after* the pattern or SERVICE clause it applies to.
+> element of a group attaches to nothing and is **silently dropped**. Always
+> place the hint *after* the pattern or SERVICE clause it applies to.
+>
+> Hints are rarely needed for dependent SERVICE ordering, though: the join
+> optimizer defers a member SERVICE whose descriptor-declared input arguments
+> are not yet bound until another join argument can produce them
+> (`QueryHintAwareJoinOptimizer.orderCostAndInputAware`), so a REST search
+> automatically runs before the detail service it feeds.
 
 #### 3. Synchronous REST Service Join
 
@@ -336,7 +340,7 @@ The old federation was a custom implementation based on RDF4J's deprecated Feder
 | **Optimizers** | 15+ custom | 8 standard |
 | **Query Hints** | Full support | Added via our customizations |
 | **Competing Join** | Yes (FedSearch paper) | No |
-| **Aggregate Services** | Yes (median, etc.) | No |
+| **Aggregate Services** | Yes (median, etc.) | Yes — median is an rdf4j custom aggregate now (same IRI, works in every repository type, see `MedianAggregateFactory`) |
 | **Thread Pool** | 40 fixed threads | 20 controlled workers |
 | **Bound Join Batch** | 10 | 25 |
 
@@ -823,6 +827,38 @@ cross-product fallback for undecidable guards).
 
 ---
 
+### Issue 10: Megabyte Geometry from Nominatim (OSM import page)
+
+**Problem**: Nominatim with `polygon_text=1` returns the FULL boundary as WKT
+— measured 1.75 MB for Ukraine, 222 KB for Russia even at
+`polygon_threshold=0.005`. Interpolating that into a `query` attribute of a
+`semantic-*` component (e.g. `BIND("{{geoText.value}}" AS ?wkt)`) crashes the
+client-side sparqljs parser with Firefox's `InternalError: too much recursion`
+— the table shows the `priority_high` error icon in the affected cells.
+
+**Rule**: geometry (or any potentially-huge value) may flow to the client as
+a query **result binding** (parsed iteratively — safe at any size), but must
+NEVER be inlined into query **text**.
+
+**Solution** (ImportFromOSM.html, July 2026):
+- the search/table query binds `osm:polygon_text "0"` — no geometry at all in
+  the table; instead it carries `osm_type`/`osm_id` (the identity every OSM
+  result has) and the four `bbox_*` columns;
+- the Map cell fetches geometry per row (one rate-limited Nominatim call per
+  rendered row), joined back by `osm_type`+`osm_id`, with an
+  `osm:polygon_threshold` picked from the bbox span in SPARQL: span > 2° →
+  `0.01` (~1 km, sub-pixel on the 210 px preview), > 0.2° → `0.001`, else full
+  geometry — only BIG entities are simplified. The threshold flows through a
+  `BIND` into the SERVICE input, which relies on the descriptor-input-aware
+  join ordering (`QueryHintAwareJoinOptimizer`);
+- the "existing record" dedup matches the `import_from_external_source` chain
+  on the wikidata-derived URI (the mechanism all other import pages use)
+  instead of WKT string equality;
+- the import-time field (`osm_wikidata_geo_coordinates`) is untouched and
+  still stores full-precision geometry: `polygon_threshold` has NO default, so
+  requests of consumers that don't bind it are byte-identical (pinned by
+  `OsmSailTest`, which matches the exact request URL).
+
 ### SERVICE Clause Evaluation Contracts (verified by tests)
 
 Facts about how a `SERVICE <federation#member>` clause is evaluated that
@@ -1024,3 +1060,121 @@ SPARQL members for public endpoints:
 - Useful Wikidata umbrella classes for type filtering: human `Q5`,
   organization `Q43229`, group of humans `Q16334295`, and agent `Q24229398`
   (common superclass of person and organization — "people and organizations").
+
+---
+
+## Deferred Work (TODOs)
+
+Known cleanups that were deliberately deferred during the July 2026 review/fix
+pass. Each was judged real but not worth the risk or effort at the time; the
+entries record what a proper fix looks like and what should trigger it.
+
+### TODO: Move test debug counters out of the evaluation strategy
+
+`QueryHintAwareSparqlFederationEvalStrategy` holds four `static AtomicInteger`
+counters plus a `static volatile` enable flag, incremented in five production
+overrides and consumed only by `EphedraIntegrationTest` (assertions like
+"executeLeftJoin called exactly once"). Being class-static they are JVM-global:
+counter-asserting tests cannot run in parallel, and production code carries
+test instrumentation (cost when disabled: one volatile read per call).
+
+- **Proper fix:** per-federation metrics object hung off `MpFederation` (or
+  `FederationContext`), populated by the strategy, readable by both tests and
+  monitoring. Requires making the hardcoded
+  `QueryHintAwareFederationEvaluationStrategyFactory` in the `MpFederation`
+  constructor pluggable, and an aggregation point across the per-query
+  strategy instances (the reason the counters went static in the first place).
+- **Revisit when:** enabling intra-JVM parallel test execution, or when
+  per-federation runtime metrics become a monitoring requirement.
+
+### TODO: Executor lifecycle in `MpFederation`
+
+`getRestServiceExecutor()` uses double-checked locking; the pool size is the
+underived magic `restServicePrefetchSize * 3`. Eager creation in the
+constructor would delete the DCL — but `shutDownInternal()` closes the
+executor and never recreates it, so eager init would bake in the
+single-lifecycle assumption while upstream `FedXRepository.getConnection()`
+can re-init a shut-down sail instance (a rejected prefetch task now fails the
+query loudly rather than silently returning empty rows).
+
+- **Proper fix:** support same-instance re-initialization coherently —
+  recreate the executor on re-init, then simplify the lazy init, and derive
+  the pool size from an explicit model (concurrent REST-joining queries ×
+  in-flight calls per join) instead of `× 3`.
+- **Revisit when:** touching federation lifecycle (e.g. fixing upstream FedX's
+  members list surviving shutdown; see `initializeInternal` notes).
+
+### TODO: `GuardedServiceBindLeftJoin` copies the upstream batching loop
+
+`handleBindings()` duplicates ~45 lines of `ControlledWorkerBindJoinBase`'s
+batching/phaser protocol (10000-party phaser guard, `getNextBindJoinSize`,
+`informFinish`, `awaitAdvanceInterruptibly`) because upstream offers no
+per-row hook — there is nothing smaller than `handleBindings()` to override.
+The copy currently includes upstream's phaser-overflow fix (GH-4610) and has
+diverged further by design (per-row guard routing + grouping rows by
+bound-service-variable signature). Upstream fixes to that loop will not reach
+this copy on upgrades.
+
+- **Proper fix:** propose a per-row/per-batch extension hook upstream in FedX;
+  once accepted, shrink this class to the guard/grouping logic.
+- **Revisit when:** EVERY rdf4j upgrade — diff
+  `ControlledWorkerBindJoinBase.handleBindings` against this class (two-minute
+  check).
+
+### TODO: Consolidate the "existing record" lookup across import templates
+
+The ~45-line CRM lookup (entity form record → creation →
+`import_from_external_source` → transferred URI) plus the "Open record"
+dropdown markup is copy-pasted into ImportFromMET, ImportFromVAM,
+ImportFromTNA, ImportFromWikidata and (since July 2026, when it switched from
+fragile WKT-equality matching to the same chain) ImportFromOSM — five copies
+differing only in the external-URI expression and variable name. Any
+data-model change must be applied five times; missing one silently breaks
+duplicate detection for that institution (users then re-import records they
+already have). The one behavioral divergence (MET's unquoted
+`STR({{id.value}})`) was fixed in July 2026; the structural duplication
+remains.
+
+- **Proper fix:** one shared include/partial parameterized by the URI
+  expression and result variable name.
+- **Revisit when:** someone works on the import flows with a running platform
+  at hand — the include interacts with the client-side component wiring
+  (`SemanticQuery`, `bs-dropdown`, `mp-event-trigger`), so the refactor needs
+  a manual click-through per institution, not just the handlebars golden test.
+
+### TODO: Retire the forked SPARQL renderer
+
+`org.researchspace.sparql.renderer` (~3,000 lines) is the ancestor of rdf4j's
+own `org.eclipse.rdf4j.queryrender.sparql.experimental.SparqlQueryRenderer`,
+which already contains the QueryRoot-unwrapping fixes redone locally during
+the rdf4j-5 upgrade. Every upgrade forces the fork to learn new algebra nodes
+by hand (this one: `AggregateFunctionCall`, `TripleRef`), and the fork carries
+pre-existing latent bugs (e.g. `meet(Var)` NPE when rendering updates with
+anonymous variables — `currentQueryProfile` is never set on the update path).
+It is load-bearing: query catalog, `PropertyPattern`, `FieldsBasedSearch`,
+parametrized queries, and the single-source query-hint stripping in
+`QueryHintAwareSparqlFederationEvalStrategy.optimize()` all render through it,
+and its exact output format is pinned by golden tests.
+
+- **Proper fix:** a subclass of the upstream renderer carrying only the local
+  deltas (researchspace `NaryJoin`, `TripleRef`/`SerializableParsedQuery`
+  wiring, `isSliceOwner`); run both renderers over the golden corpus, diff,
+  then flip and re-baseline. Contribute generic fixes upstream.
+- **Revisit when:** the upstream renderer graduates out of `.experimental`,
+  or the next rdf4j upgrade forces another round of hand-ported node support.
+
+### TODO: `researchspace:WikidataTextSearch` sail type has no factory
+
+The shipped template `config/repository-templates/wikidata-text.ttl` (and the
+`RepositoryManager` help page) reference `config:sail.type
+"researchspace:WikidataTextSearch"`, but no `SailFactory` under that type is
+registered anywhere in the codebase (checked both `rdf4j-update` and
+`master`). Creating a repository from that template fails with "Unsupported
+Sail type". The equally dead test fixture was deleted in July 2026.
+
+- **Proper fix:** either implement/restore the sail (presumably a
+  `RESTSail`-style wrapper for `https://www.wikidata.org/w/api.php`) or delete
+  the template and its documentation mentions.
+- **Revisit when:** deciding whether Wikidata text search is a supported
+  feature; the ImportFromWikidata flow currently uses the QLever/SDC path
+  instead.

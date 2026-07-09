@@ -10,8 +10,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 import org.eclipse.rdf4j.federated.algebra.EmptyNJoin;
 import org.eclipse.rdf4j.federated.algebra.ExclusiveGroup;
 import org.eclipse.rdf4j.federated.algebra.ExclusiveTupleExpr;
+import org.eclipse.rdf4j.federated.algebra.FedXService;
 import org.eclipse.rdf4j.federated.algebra.NJoin;
 import org.eclipse.rdf4j.federated.algebra.NUnion;
 import org.eclipse.rdf4j.federated.algebra.StatementSource;
@@ -30,8 +33,17 @@ import org.eclipse.rdf4j.federated.structures.QueryInfo;
 import org.eclipse.rdf4j.federated.util.QueryAlgebraUtil;
 import org.eclipse.rdf4j.query.algebra.LeftJoin;
 import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.Service;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.sail.Sail;
+import org.researchspace.federation.repository.MpFederation;
 import org.researchspace.federation.repository.optimizers.QueryHintsSetup;
+import org.researchspace.federation.repository.service.ServiceDescriptor;
+import org.researchspace.federation.repository.service.SparqlServiceUtils;
+import org.researchspace.sail.rest.AbstractServiceWrappingSail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,6 +207,13 @@ public class QueryHintAwareJoinOptimizer extends StatementGroupAndJoinOptimizer 
     private Optional<StatementSource> detectSingleSource(List<TupleExpr> args) {
         StatementSource commonSource = null;
         for (TupleExpr arg : args) {
+            if (!ExclusiveSubquery.canRender(arg)) {
+                // ExclusiveSubquery.toSparqlBody could not reconstruct this
+                // node (e.g. an ExclusiveArbitraryLengthPath): leave the join
+                // to the standard FedX evaluation instead of building a plan
+                // that crashes at evaluation time
+                return Optional.empty();
+            }
             Optional<StatementSource> source = detectSource(arg);
             if (source.isEmpty()) {
                 return Optional.empty(); // unknown source — can't merge
@@ -218,22 +237,11 @@ public class QueryHintAwareJoinOptimizer extends StatementGroupAndJoinOptimizer 
         if (expr instanceof ExclusiveTupleExpr) {
             return Optional.of(((ExclusiveTupleExpr) expr).getOwner());
         }
-        if (expr instanceof NUnion) {
+        // NUnion and NJoin both fold to a common source when ALL their
+        // children resolve to the same one (both extend NTuple)
+        if (expr instanceof NUnion || expr instanceof NJoin) {
             StatementSource source = null;
-            for (TupleExpr child : ((NUnion) expr).getArgs()) {
-                Optional<StatementSource> childSource = detectSource(child);
-                if (childSource.isEmpty()) return Optional.empty();
-                if (source == null) {
-                    source = childSource.get();
-                } else if (!source.equals(childSource.get())) {
-                    return Optional.empty();
-                }
-            }
-            return Optional.ofNullable(source);
-        }
-        if (expr instanceof NJoin) {
-            StatementSource source = null;
-            for (TupleExpr child : ((NJoin) expr).getArgs()) {
+            for (TupleExpr child : ((org.eclipse.rdf4j.federated.algebra.NTuple) expr).getArgs()) {
                 Optional<StatementSource> childSource = detectSource(child);
                 if (childSource.isEmpty()) return Optional.empty();
                 if (source == null) {
@@ -293,17 +301,16 @@ public class QueryHintAwareJoinOptimizer extends StatementGroupAndJoinOptimizer 
         List<TupleExpr> middleItems = remaining.stream()
             .filter(e -> hints.getExecuteLast() == null || !hints.getExecuteLast().contains(e))
             .collect(Collectors.toList());
-            
+
         if (!middleItems.isEmpty()) {
-            if (outerScopeVars.isEmpty()) {
-                // No outer scope — use default cost-based ordering
-                optimized.addAll(super.optimizeJoinOrder(middleItems));
-            } else {
-                // Outer scope available (we're inside a LeftJoin right side):
-                // seed joinVars with outer-scope vars so the cost model knows
-                // which patterns are already anchored by bound variables.
-                optimized.addAll(optimizeJoinOrderWithOuterScope(middleItems));
+            // Seed the join vars with what is already bound when the middle
+            // items start evaluating: outer-scope vars (LeftJoin right side)
+            // plus everything produced by the executeFirst items above.
+            Set<String> seedVars = new HashSet<>(outerScopeVars);
+            for (TupleExpr first : optimized) {
+                seedVars.addAll(QueryAlgebraUtil.getFreeVars(first));
             }
+            optimized.addAll(orderCostAndInputAware(middleItems, seedVars));
         }
         
         // Remove middle items from remaining
@@ -326,48 +333,41 @@ public class QueryHintAwareJoinOptimizer extends StatementGroupAndJoinOptimizer 
     }
 
     /**
-     * Cost-based join ordering with outer-scope variables seeded as initial
-     * join variables. This makes the cost model treat outer-scope-bound
-     * variables as "already bound", correctly preferring patterns that
-     * reference them.
-     *
-     * <p>
-     * This is the same greedy algorithm as
-     * {@link StatementGroupAndJoinOptimizer#optimizeJoinOrder}, but with
-     * {@code joinVars} initialized to the outer scope instead of empty.
-     * </p>
+     * Greedy cost-based join ordering, aware of two things the upstream
+     * algorithm ({@link StatementGroupAndJoinOptimizer#optimizeJoinOrder}) is
+     * not:
+     * <ul>
+     * <li><b>Seed variables</b>: {@code joinVars} starts from the given seed
+     * (outer-scope vars of an enclosing OPTIONAL plus the output of
+     * executeFirst hints) instead of empty, so already-anchored patterns are
+     * preferred (with a -50 bonus per overlapping outer-scope var);</li>
+     * <li><b>Descriptor-required inputs</b>: a member SERVICE whose
+     * {@link ServiceDescriptor} declares input arguments must not be scheduled
+     * before those inputs can be bound. Candidates with unbound required
+     * inputs are deferred until another argument produces them — the ordering
+     * guarantee the old ephedra join optimizer gave without manual hints. If
+     * NO candidate is eligible (circular or externally-bound inputs), the
+     * cheapest candidate is picked to guarantee progress.</li>
+     * </ul>
      */
-    private List<TupleExpr> optimizeJoinOrderWithOuterScope(List<TupleExpr> joinArgs) {
+    private List<TupleExpr> orderCostAndInputAware(List<TupleExpr> joinArgs, Set<String> seedVars) {
         List<TupleExpr> optimized = new ArrayList<>(joinArgs.size());
         List<TupleExpr> left = new LinkedList<>(joinArgs);
-        // Seed with outer-scope vars — the key difference from the default algorithm
-        Set<String> joinVars = new HashSet<>(outerScopeVars);
-
-        if (log.isDebugEnabled()) {
-            log.debug("Optimizing join order with {} outer-scope vars as seed: {}",
-                    outerScopeVars.size(), outerScopeVars);
-            for (TupleExpr arg : joinArgs) {
-                Collection<String> freeVars = QueryAlgebraUtil.getFreeVars(arg);
-                long overlap = freeVars.stream().filter(outerScopeVars::contains).count();
-                log.debug("Arg: {} freeVars={} overlap={} baseCost={}",
-                        arg.getClass().getSimpleName(), freeVars, overlap,
-                        estimateCost(arg, joinVars));
-            }
-        }
+        Set<String> joinVars = new HashSet<>(seedVars);
 
         while (!left.isEmpty()) {
-            TupleExpr item = left.get(0);
+            TupleExpr item = null;
             double minCost = Double.MAX_VALUE;
+            boolean itemEligible = false;
 
             for (TupleExpr tmp : left) {
+                boolean eligible = joinVars.containsAll(requiredInputVars(tmp));
                 double baseCost = estimateCost(tmp, joinVars);
 
-                // Apply a bonus for nodes whose free variables overlap with
-                // outer-scope vars. The default cost model doesn't sufficiently
-                // reward this overlap, so a full-scan ExclusiveGroup with 0
-                // overlap can beat an NUnion with 1 overlap by just 1 point.
-                // Apply -50 per overlapping var to strongly prefer patterns
-                // that use already-bound outer-scope variables.
+                // Bonus for overlap with outer-scope vars: the default cost
+                // model doesn't sufficiently reward anchoring, so a full-scan
+                // ExclusiveGroup with 0 overlap can beat an NUnion with 1
+                // overlap by just 1 point.
                 Collection<String> freeVars = QueryAlgebraUtil.getFreeVars(tmp);
                 long outerOverlap = freeVars.stream()
                         .filter(outerScopeVars::contains)
@@ -375,14 +375,24 @@ public class QueryHintAwareJoinOptimizer extends StatementGroupAndJoinOptimizer 
                 double adjustedCost = baseCost - (outerOverlap * 50.0);
 
                 if (log.isDebugEnabled()) {
-                    log.debug("Evaluating: {} baseCost={} overlap={} adjustedCost={}",
-                            tmp.getClass().getSimpleName(), baseCost, outerOverlap, adjustedCost);
+                    log.debug("Evaluating: {} baseCost={} overlap={} adjustedCost={} inputEligible={}",
+                            tmp.getClass().getSimpleName(), baseCost, outerOverlap, adjustedCost, eligible);
                 }
 
-                if (adjustedCost < minCost) {
+                // an input-eligible candidate always beats an ineligible one;
+                // among equals the lower cost wins
+                if (item == null
+                        || (eligible && !itemEligible)
+                        || (eligible == itemEligible && adjustedCost < minCost)) {
                     item = tmp;
                     minCost = adjustedCost;
+                    itemEligible = eligible;
                 }
+            }
+
+            if (!itemEligible && log.isDebugEnabled()) {
+                log.debug("No join argument has all descriptor-required inputs bound; "
+                        + "scheduling {} to guarantee progress", item.getClass().getSimpleName());
             }
 
             joinVars.addAll(QueryAlgebraUtil.getFreeVars(item));
@@ -395,5 +405,64 @@ public class QueryHintAwareJoinOptimizer extends StatementGroupAndJoinOptimizer 
         }
 
         return optimized;
+    }
+
+    /**
+     * Cache of descriptor-required input variables per join argument (the
+     * resolution walks the member repository's ServiceDescriptor; the greedy
+     * loop asks O(n²) times).
+     */
+    private final Map<TupleExpr, Set<String>> requiredInputVarsCache = new IdentityHashMap<>();
+
+    /**
+     * The still-free (non-constant) variables that the member SERVICE behind
+     * this join argument REQUIRES as input according to its
+     * {@link ServiceDescriptor}. Empty for non-SERVICE arguments, non-member
+     * services, and services without a descriptor.
+     */
+    private Set<String> requiredInputVars(TupleExpr expr) {
+        return requiredInputVarsCache.computeIfAbsent(expr, this::computeRequiredInputVars);
+    }
+
+    private Set<String> computeRequiredInputVars(TupleExpr expr) {
+        if (!(expr instanceof FedXService)) {
+            return Collections.emptySet();
+        }
+        Service service = ((FedXService) expr).getService();
+        Var serviceRef = service.getServiceRef();
+        if (serviceRef == null || !serviceRef.hasValue()) {
+            return Collections.emptySet();
+        }
+        if (!(queryInfo.getFederationContext().getFederation() instanceof MpFederation)) {
+            return Collections.emptySet();
+        }
+        MpFederation federation = (MpFederation) queryInfo.getFederationContext().getFederation();
+        Repository repo = federation.getServiceMemberRepository(serviceRef.getValue().stringValue());
+        if (!(repo instanceof SailRepository)) {
+            return Collections.emptySet();
+        }
+        Sail sail = ((SailRepository) repo).getSail();
+        if (!(sail instanceof AbstractServiceWrappingSail)) {
+            return Collections.emptySet();
+        }
+        ServiceDescriptor descriptor = ((AbstractServiceWrappingSail<?>) sail).getServiceDescriptor();
+        if (descriptor == null) {
+            return Collections.emptySet();
+        }
+        try {
+            Set<String> result = new HashSet<>();
+            for (Var input : SparqlServiceUtils.extractInputParameters(service.getArg(), descriptor).values()) {
+                if (!input.hasValue()) {
+                    result.add(input.getName());
+                }
+            }
+            return result;
+        } catch (RuntimeException e) {
+            // a malformed pattern/descriptor combination must not break join
+            // optimization; the service is then ordered by cost alone
+            log.debug("Could not determine descriptor inputs for SERVICE {}: {}",
+                    serviceRef.getValue(), e.getMessage());
+            return Collections.emptySet();
+        }
     }
 }

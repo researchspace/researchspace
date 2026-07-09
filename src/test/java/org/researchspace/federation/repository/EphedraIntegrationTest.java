@@ -140,6 +140,45 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
     }
 
     /**
+     * A query hint on a query WITHOUT any SERVICE clause. On a single-member
+     * federation FedX takes the SingleSourceQuery shortcut and forwards the
+     * ORIGINAL query string to the member. The hint pattern must be stripped
+     * from what reaches the endpoint — otherwise the member evaluates
+     * {@code ephedra:Prior ephedra:executeFirst true} as an ordinary triple
+     * pattern that matches nothing, and the query silently returns zero rows.
+     */
+    @Test
+    public void testQueryHintDoesNotLeakToSingleSourceQuery() throws Exception {
+        Repository defaultRepo = repositoryManager.getDefault();
+        try (var conn = defaultRepo.getConnection()) {
+            conn.add(SimpleValueFactory.getInstance().createStatement(
+                SimpleValueFactory.getInstance().createIRI("http://example.org/person/1"),
+                SimpleValueFactory.getInstance().createIRI("http://example.org/ns#hasId"),
+                SimpleValueFactory.getInstance().createLiteral("1")
+            ));
+        }
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#> " +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+            "SELECT ?id WHERE { " +
+            "  ?person ex:hasId ?id . " +
+            "  ephedra:Prior ephedra:executeFirst \"true\"^^xsd:boolean . " +
+            "}";
+
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                assertTrue("hint pattern must not be forwarded to the endpoint", tqr.hasNext());
+                assertEquals("1", tqr.next().getValue("id").stringValue());
+                assertFalse("expected exactly one result", tqr.hasNext());
+            }
+        }
+    }
+
+    /**
      * Tests a simple SERVICE query fetching data from a single remote service (Service A) without involving local data.
      * <p>
      * Expected behavior:
@@ -425,6 +464,117 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
         
         // Verify that at least one object details endpoint was called with the objectid from search
         verify(getRequestedFor(urlPathEqualTo("/public/collection/v1/objects/123")));
+    }
+
+    /**
+     * Repository reinitialization (what an admin config save triggers) shuts
+     * the old federation instance down — including its SERVICE resolver, which
+     * FedX itself never closes for externally supplied delegates — and builds
+     * a fresh instance. The fresh instance must still resolve member SERVICEs,
+     * and shutting down the old resolver must not disturb shared
+     * infrastructure (the platform HTTP session manager is shared).
+     */
+    @Test
+    public void testReinitializedFederationStillResolvesMemberServices() throws Exception {
+        stubFor(get(urlPathEqualTo("/service-a"))
+            .withQueryParam("id", equalTo("7"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"name\": \"Seven\" }")));
+
+        repositoryManager.reinitializeRepositories(java.util.Arrays.asList("ephedra"));
+        repositoryManager.reinitializeRepositories(java.util.Arrays.asList("ephedra"));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "SELECT ?name WHERE { " +
+            "  SERVICE <http://example.org/ns#ServiceA> { " +
+            "    ?p ex:hasId \"7\" . " +
+            "    ?p ex:hasName ?name . " +
+            "  } " +
+            "}";
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                assertTrue("reinitialized federation must resolve member SERVICEs", tqr.hasNext());
+                assertEquals("Seven", tqr.next().getValue("name").stringValue());
+            }
+        }
+    }
+
+    /**
+     * Ordering of dependent SERVICE clauses must follow the ServiceDescriptor
+     * REQUIRED inputs, not just the free-variable cost heuristic. Here the
+     * consumer (ServiceA, 3 free vars, requires ?entity as input) is textually
+     * first AND cheaper for the cost model than the producer (SearchService,
+     * 4 free vars, only a constant input). Without descriptor-aware ordering
+     * the consumer is scheduled first with ?entity unbound — its required
+     * input is silently omitted from the REST call and the query fails (or
+     * silently returns garbage). No hints: the engine must get this right on
+     * its own, as the old ephedra join optimizer did.
+     */
+    @Test
+    public void testDependentServicesOrderedByDescriptorInputsWithoutHints() throws Exception {
+        stubFor(get(urlPathEqualTo("/search-service"))
+            .withQueryParam("q", equalTo("dep"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"search\": [" +
+                    "{ \"entity\": \"http://example.org/entity/1\", \"name\": \"Alpha\" }," +
+                    "{ \"entity\": \"http://example.org/entity/3\", \"name\": \"Gamma\" } ] }")));
+
+        stubFor(get(urlPathEqualTo("/service-a"))
+            .withQueryParam("id", equalTo("http://example.org/entity/1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"name\": \"AlphaDetails\" }")));
+        stubFor(get(urlPathEqualTo("/service-a"))
+            .withQueryParam("id", equalTo("http://example.org/entity/3"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"name\": \"GammaDetails\" }")));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "SELECT ?name ?detailName WHERE { " +
+            "  SERVICE <http://example.org/ns#ServiceA> { " +
+            "    ?person ex:hasId ?entity . " +
+            "    ?person ex:hasName ?detailName . " +
+            "  } " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"dep\" . " +
+            "    ?res ex:hasEntity ?entity . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            "}";
+
+        var detailByName = new java.util.HashMap<String, String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    detailByName.put(bs.getValue("name").stringValue(),
+                        bs.getValue("detailName").stringValue());
+                }
+            }
+        }
+
+        assertEquals(2, detailByName.size());
+        assertEquals("AlphaDetails", detailByName.get("Alpha"));
+        assertEquals("GammaDetails", detailByName.get("Gamma"));
+
+        // the consumer must never have been called without its required input
+        wireMockRule.verify(0, getRequestedFor(urlPathEqualTo("/service-a"))
+            .withQueryParam("id", absent()));
     }
 
     /**
@@ -2313,6 +2463,195 @@ public class EphedraIntegrationTest extends AbstractIntegrationTest {
             .withQueryParam("query", containing("VALUES")));
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/sparql"))
             .withQueryParam("query", notMatching(".*VALUES.*")));
+    }
+
+    /**
+     * Batched OPTIONAL SERVICE with rows that bind DIFFERENT subsets of the
+     * service variables (no guard condition involved). A variable that is
+     * bound in SOME rows may not be removed from the remote projection for the
+     * rows where it is UNDEF — per-binding semantics return the
+     * service-produced value for those rows. The engine must group rows by
+     * their bound-service-variable signature and send one VALUES batch per
+     * group, so every group's projection is exact.
+     */
+    @Test
+    public void testHeterogeneousRowsKeepServiceProducedBindings() throws Exception {
+        // three hits; Beta has NO entity value -> ?entity stays unbound in its row
+        stubFor(get(urlPathEqualTo("/search-service"))
+            .withQueryParam("q", equalTo("hetero"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"search\": [" +
+                    "{ \"entity\": \"http://example.org/entity/1\", \"name\": \"Alpha\" }," +
+                    "{ \"name\": \"Beta\" }," +
+                    "{ \"entity\": \"http://example.org/entity/3\", \"name\": \"Gamma\" } ] }")));
+
+        // group of rows that bind ?entity (Alpha=index 0, Gamma=index 1): only Alpha has an image
+        String boundGroupJson =
+            "{" +
+            "  \"head\": { \"vars\": [\"__index\", \"_img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"0\" }," +
+            "        \"_img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/1.jpg\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .atPriority(1)
+            .withQueryParam("query", containing("entity/1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(boundGroupJson)));
+
+        // group of rows that do NOT bind ?entity (Beta=index 0): the service
+        // body is evaluated with ?entity free and produces it
+        String unboundGroupJson =
+            "{" +
+            "  \"head\": { \"vars\": [\"__index\", \"entity\", \"_img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"__index\": { \"type\": \"literal\", \"datatype\": \"http://www.w3.org/2001/XMLSchema#int\", \"value\": \"0\" }," +
+            "        \"entity\": { \"type\": \"uri\", \"value\": \"http://example.org/entity/9\" }," +
+            "        \"_img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/9.jpg\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .atPriority(10)
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(unboundGroupJson)));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#> " +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+            "SELECT ?name ?ordinal (SAMPLE(?entity) AS ?ent) (SAMPLE(?_img) AS ?image) WHERE { " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"hetero\" . " +
+            "    ?res ex:hasEntity ?entity . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            "  ephedra:Prior ephedra:executeFirst \"true\"^^xsd:boolean . " +
+            "  OPTIONAL { " +
+            "    SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "      OPTIONAL { ?entity ex:img ?_img . } " +
+            "    } " +
+            "  } " +
+            "} GROUP BY ?name ?ordinal ORDER BY ?ordinal";
+
+        var entByName = new java.util.HashMap<String, String>();
+        var imageByName = new java.util.HashMap<String, String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    String name = bs.getValue("name").stringValue();
+                    entByName.put(name, bs.getValue("ent") == null ? null : bs.getValue("ent").stringValue());
+                    imageByName.put(name, bs.getValue("image") == null ? null : bs.getValue("image").stringValue());
+                }
+            }
+        }
+
+        assertEquals(3, entByName.size());
+        assertEquals("http://example.org/entity/1", entByName.get("Alpha"));
+        assertEquals("http://example.org/img/1.jpg", imageByName.get("Alpha"));
+        // Beta's row did not bind ?entity, so the service-produced value must
+        // come back with the merged solution — exactly what per-binding
+        // evaluation would return.
+        assertEquals("http://example.org/entity/9", entByName.get("Beta"));
+        assertEquals("http://example.org/img/9.jpg", imageByName.get("Beta"));
+        assertEquals("http://example.org/entity/3", entByName.get("Gamma"));
+        assertNull("Gamma matched without image", imageByName.get("Gamma"));
+
+        // one VALUES batch per bound-variable signature: {entity} and {}
+        wireMockRule.verify(2, getRequestedFor(urlPathEqualTo("/sparql")));
+    }
+
+    /**
+     * OPTIONAL SERVICE whose body is a sub-SELECT. rdf4j's
+     * {@code Service.getSelectQueryString} forwards sub-SELECT bodies verbatim
+     * (the projection-vars parameter is ignored), so the batched VALUES
+     * rewrite cannot inject its {@code ?__index} column — such bodies must be
+     * evaluated per binding instead of crashing with a missing-__index NPE.
+     */
+    @Test
+    public void testSubSelectServiceBodyFallsBackToPerBindingEvaluation() throws Exception {
+        stubFor(get(urlPathEqualTo("/search-service"))
+            .withQueryParam("q", equalTo("subselect"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{ \"search\": [" +
+                    "{ \"entity\": \"http://example.org/entity/1\", \"name\": \"Alpha\" }," +
+                    "{ \"entity\": \"http://example.org/entity/3\", \"name\": \"Gamma\" } ] }")));
+
+        // per-binding evaluation of the sub-SELECT: the member returns its rows,
+        // compatibility with the input row decides the merge
+        String subselectJson =
+            "{" +
+            "  \"head\": { \"vars\": [\"entity\", \"_img\"] }," +
+            "  \"results\": {" +
+            "    \"bindings\": [" +
+            "      { \"entity\": { \"type\": \"uri\", \"value\": \"http://example.org/entity/1\" }," +
+            "        \"_img\": { \"type\": \"uri\", \"value\": \"http://example.org/img/1.jpg\" } }" +
+            "    ]" +
+            "  }" +
+            "}";
+        stubFor(any(urlPathEqualTo("/sparql"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/sparql-results+json")
+                .withBody(subselectJson)));
+
+        Repository ephedraRepo = repositoryManager.getRepository("ephedra");
+
+        String query =
+            "PREFIX ex: <http://example.org/ns#> " +
+            "PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#> " +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+            "SELECT ?name ?ordinal (SAMPLE(?_img) AS ?image) WHERE { " +
+            "  SERVICE <http://example.org/ns#SearchService> { " +
+            "    ?res ex:q \"subselect\" . " +
+            "    ?res ex:hasEntity ?entity . " +
+            "    ?res ex:hasName ?name . " +
+            "    ?res ex:hasOrdinal ?ordinal . " +
+            "  } " +
+            "  ephedra:Prior ephedra:executeFirst \"true\"^^xsd:boolean . " +
+            "  OPTIONAL { " +
+            "    SERVICE <http://www.researchspace.org/resource/system/repository/federation#sparql-repo> { " +
+            "      SELECT ?entity ?_img WHERE { ?entity ex:img ?_img . } LIMIT 5 " +
+            "    } " +
+            "  } " +
+            "} GROUP BY ?name ?ordinal ORDER BY ?ordinal";
+
+        var imageByName = new java.util.HashMap<String, String>();
+        try (var conn = ephedraRepo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(query);
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    var bs = tqr.next();
+                    imageByName.put(bs.getValue("name").stringValue(),
+                        bs.getValue("image") == null ? null : bs.getValue("image").stringValue());
+                }
+            }
+        }
+
+        assertEquals(2, imageByName.size());
+        assertEquals("http://example.org/img/1.jpg", imageByName.get("Alpha"));
+        assertNull("Gamma's row is incompatible with the sub-SELECT solution", imageByName.get("Gamma"));
+
+        // the batched VALUES rewrite must not be attempted on a sub-SELECT body
+        wireMockRule.verify(0, getRequestedFor(urlPathEqualTo("/sparql"))
+            .withQueryParam("query", containing("__index")));
     }
 
     /**

@@ -182,4 +182,48 @@ public class MpFederationConfigTest {
         assertEquals(1, reparsed.getRepositoryIDMappings().size());
         assertTrue(reparsed.getDelegateRepositoryIDs().contains("assets"));
     }
+
+    /**
+     * The old engine's join-algorithm selectors have no FedX equivalent; a
+     * config that still sets them must parse fine (with a logged warning) —
+     * silently rejecting existing configs would break deployments on upgrade.
+     */
+    @Test
+    public void legacyJoinOptionsAreAcceptedAndIgnored() throws Exception {
+        MpFederationConfig config = parse("<urn:impl> ephedra:defaultMember \"default\" ;\n"
+                + "  ephedra:useAsyncParallelJoin \"false\"^^xsd:boolean ;\n"
+                + "  ephedra:useCompetingJoin \"false\"^^xsd:boolean ;\n"
+                + "  config:fed.member [ ephedra:delegateRepositoryID \"assets\" ; "
+                + "ephedra:serviceReference <http://example.org/assets> ] .\n");
+        config.validate();
+
+        // the ignored options are not re-exported
+        Model exported = new LinkedHashModel();
+        config.export(exported);
+        assertTrue(exported.filter(null,
+                org.researchspace.repository.MpRepositoryVocabulary.USE_ASYNCHRONOUS_PARALLEL_JOIN, null).isEmpty());
+        assertTrue(exported.filter(null,
+                org.researchspace.repository.MpRepositoryVocabulary.USE_COMPETING_JOIN, null).isEmpty());
+    }
+
+    /**
+     * The admin UI round-trips repository configurations through
+     * parse → export on every save (and even on GET). Every FedXConfig setting
+     * upstream can parse must survive that round trip — in particular
+     * {@code fedx:prefixDeclarations}, which is consumed at runtime.
+     */
+    @Test
+    public void exportRoundTripsPrefixDeclarations() throws Exception {
+        MpFederationConfig config = parse("<urn:impl> ephedra:defaultMember \"default\" ;\n"
+                + "  config:fed.member [ ephedra:delegateRepositoryID \"assets\" ; "
+                + "ephedra:serviceReference <http://example.org/assets> ] ;\n"
+                + "  fedx:config [ fedx:prefixDeclarations \"/runtime-data/prefixes.prop\" ] .\n");
+
+        Model exported = new LinkedHashModel();
+        config.export(exported);
+
+        assertTrue("fedx:prefixDeclarations must survive the config round trip",
+                exported.contains(null, FedXRepositoryConfig.CONFIG_PREFIX_DECLARATIONS,
+                        vf.createLiteral("/runtime-data/prefixes.prop")));
+    }
 }

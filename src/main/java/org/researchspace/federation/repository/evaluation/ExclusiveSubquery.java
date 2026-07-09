@@ -289,34 +289,55 @@ public class ExclusiveSubquery extends AbstractQueryModelNode
         // Always append the VALUES clause — even when no variables are shared with
         // the input bindings (cross-product join), the ?__index column is required
         // by BindLeftJoinIteration / BoundJoinVALUESConversionIteration.
-        query.append("VALUES (");
-        for (String var : boundVarNames) {
-            query.append("?").append(var).append(" ");
-        }
-        query.append(" ?").append(indexBindingName).append(") { ");
-
-        int index = 0;
-        for (BindingSet b : bindings) {
-            query.append("(");
-            for (String var : boundVarNames) {
-                if (b.hasBinding(var)) {
-                    appendValue(query, b.getValue(var));
-                    query.append(" ");
-                } else {
-                    query.append("UNDEF ");
-                }
-            }
-            query.append("\"").append(index).append("\" ");
-            query.append(") ");
-            index++;
-        }
-        query.append(" } ");
+        org.eclipse.rdf4j.federated.util.ExclusiveGroupQueryBuilder.appendValuesBlock(
+                query, boundVarNames, bindings, false);
 
         query.append(body).append(" }");
         return query.toString();
     }
 
     // ── SPARQL body reconstruction ──
+
+    /**
+     * Whether {@link #toSparqlBody} can reconstruct this algebra node. This is
+     * the eligibility predicate the join optimizer consults before folding a
+     * single-source tree into an {@link ExclusiveSubquery}: keep it in sync
+     * with the branches of {@link #toSparqlBody} — a node admitted here but
+     * not rendered there turns into an
+     * {@link UnsupportedOperationException} at evaluation time (e.g. property
+     * paths pushed to one source become {@code ExclusiveArbitraryLengthPath},
+     * which has no rendering branch).
+     */
+    public static boolean canRender(TupleExpr expr) {
+        if (expr instanceof StatementPattern) {
+            return true;
+        }
+        if (expr instanceof ExclusiveGroup) {
+            for (ExclusiveTupleExpr e : ((ExclusiveGroup) expr).getExclusiveExpressions()) {
+                if (!(e instanceof TupleExpr) || !canRender((TupleExpr) e)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (expr instanceof NUnion) {
+            for (TupleExpr child : ((NUnion) expr).getArgs()) {
+                if (!canRender(child)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (expr instanceof NJoin) {
+            for (TupleExpr child : ((NJoin) expr).getArgs()) {
+                if (!canRender(child)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Recursively convert an algebra tree into a SPARQL body string.
@@ -406,6 +427,16 @@ public class ExclusiveSubquery extends AbstractQueryModelNode
     }
 
     /**
+     * Value serialization delegates to FedX's QueryStringUtil (via the
+     * same-package bridge in ExclusiveGroupQueryBuilder) so all bind-join
+     * builders share one implementation — including its fail-fast behavior
+     * for value types that cannot appear in a SPARQL query.
+     */
+    private static void appendValue(StringBuilder sb, org.eclipse.rdf4j.model.Value value) {
+        org.eclipse.rdf4j.federated.util.ExclusiveGroupQueryBuilder.appendValue(sb, value);
+    }
+
+    /**
      * Append FROM / FROM NAMED clauses for the dataset (mirrors
      * {@code QueryStringUtil.appendDatasetClause}).
      */
@@ -420,29 +451,6 @@ public class ExclusiveSubquery extends AbstractQueryModelNode
             sb.append("FROM NAMED <").append(g.stringValue()).append("> ");
         }
         return sb;
-    }
-
-    private static void appendValue(StringBuilder sb, org.eclipse.rdf4j.model.Value value) {
-        if (value instanceof org.eclipse.rdf4j.model.IRI) {
-            sb.append("<").append(value.stringValue()).append(">");
-        } else if (value instanceof org.eclipse.rdf4j.model.Literal) {
-            // Mirrors QueryStringUtil.appendLiteral: triple-quoted with escaped quotes
-            // (long literal form also tolerates raw newlines in the label)
-            org.eclipse.rdf4j.model.Literal lit = (org.eclipse.rdf4j.model.Literal) value;
-            sb.append("'''");
-            sb.append(lit.getLabel().replace("\"", "\\\"").replace("'", "\\'"));
-            sb.append("'''");
-            if (lit.getLanguage().isPresent()) {
-                sb.append("@").append(lit.getLanguage().get());
-            } else if (lit.getDatatype() != null) {
-                sb.append("^^<").append(lit.getDatatype().stringValue()).append(">");
-            }
-        } else if (value instanceof org.eclipse.rdf4j.model.BNode) {
-            // BNodes can't be used in SPARQL queries; use a placeholder URI
-            sb.append("<http://fluidops.com/fedx/bnode>");
-        } else {
-            sb.append("\"").append(value.stringValue()).append("\"");
-        }
     }
 
 }

@@ -21,6 +21,7 @@ import org.eclipse.rdf4j.federated.algebra.ExclusiveGroup;
 import org.eclipse.rdf4j.federated.algebra.ExclusiveTupleExpr;
 import org.eclipse.rdf4j.federated.algebra.ExclusiveStatement;
 import org.eclipse.rdf4j.federated.algebra.FedXService;
+import org.eclipse.rdf4j.federated.algebra.SingleSourceQuery;
 import org.eclipse.rdf4j.federated.algebra.StatementSource;
 import org.eclipse.rdf4j.federated.algebra.StatementSource.StatementSourceType;
 import org.eclipse.rdf4j.federated.algebra.FilterTuple;
@@ -44,13 +45,17 @@ import org.eclipse.rdf4j.federated.structures.QueryInfo;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.LeftJoin;
+import org.eclipse.rdf4j.query.algebra.QueryRoot;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.eclipse.rdf4j.query.algebra.helpers.collectors.VarNameCollector;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.researchspace.federation.repository.MpFederation;
+import org.researchspace.federation.sparql.FederationSparqlAlgebraUtils;
+import org.researchspace.sparql.renderer.MpSparqlQueryRenderer;
 import org.researchspace.federation.repository.optimizers.BoundJoinExclusiveGroupOptimizer;
 import org.researchspace.federation.repository.optimizers.MpQueryHintsSyncOptimizer;
 import org.researchspace.federation.repository.optimizers.QueryHintsExtractor;
@@ -153,7 +158,8 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
                 int prefetchSize = getPrefetchSize();
                 ExecutorService executor = getRestServiceExecutor();
                 log.debug("Using SynchronousRestServiceJoin for REST service with prefetchSize={}", prefetchSize);
-                return new SynchronousRestServiceJoin(this, leftIter, rightArg, bindings, prefetchSize, executor);
+                return new SynchronousRestServiceJoin(b -> this.evaluate(rightArg, b), leftIter, bindings,
+                        prefetchSize, executor);
             }
         }
         
@@ -210,14 +216,17 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
     
     /**
      * Get the shared executor service for REST services from MpFederation.
-     * Falls back to a default single-thread executor if not available.
      */
     private ExecutorService getRestServiceExecutor() {
         if (this.federationContext.getFederation() instanceof MpFederation) {
             return ((MpFederation) this.federationContext.getFederation()).getRestServiceExecutor();
         }
-        // Fallback: shouldn't happen in normal use, but provides safety
-        return java.util.concurrent.Executors.newSingleThreadExecutor();
+        // Unreachable: the only caller is guarded by isRestBackedService(),
+        // which returns false for non-MpFederation federations. A silent
+        // fallback executor here would leak one thread per REST join.
+        throw new IllegalStateException(
+                "REST-backed SERVICE evaluation requires an MpFederation (got "
+                        + this.federationContext.getFederation().getClass().getName() + ")");
     }
 
     /**
@@ -258,6 +267,11 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         TupleExpr rightArg = leftJoin.getRightArg();
         boolean serviceBindLeftJoin = rightArg instanceof FedXService
                 && queryInfo.getFederationContext().getConfig().isEnableOptionalAsBindJoin()
+                // rdf4j forwards sub-SELECT service bodies verbatim (the projection-vars
+                // parameter of Service.getSelectQueryString is ignored), so the VALUES
+                // rewrite cannot inject its ?__index column - such bodies must be
+                // evaluated per binding
+                && !isSubSelectServiceBody((FedXService) rightArg)
                 && resolveServiceMemberRepository((FedXService) rightArg) != null;
 
         if (leftJoin.hasCondition()) {
@@ -290,6 +304,20 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
 
         return super.executeLeftJoin(joinScheduler, leftIter, leftJoin, bindings, queryInfo);
     }
+
+    /**
+     * Whether the SERVICE body is itself a sub-SELECT. Mirrors the (private)
+     * detection in rdf4j's {@code Service#initPreparedQueryString}: such bodies
+     * are forwarded verbatim and cannot take part in the VALUES bind-join
+     * rewrite.
+     */
+    private boolean isSubSelectServiceBody(FedXService service) {
+        String body = service.getService().getServiceExpressionString();
+        return body != null && SUBSELECT_BODY.matcher(body).matches();
+    }
+
+    private static final java.util.regex.Pattern SUBSELECT_BODY = java.util.regex.Pattern.compile("\\s*SELECT.*",
+            java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL);
 
     /**
      * Whether the LeftJoin condition references only variables that the left
@@ -705,13 +733,79 @@ public class QueryHintAwareSparqlFederationEvalStrategy extends SparqlFederation
         }
     }
 
+    /**
+     * Upstream {@code FederationEvalStrategy.optimize} contains two
+     * {@link SingleSourceQuery} shortcuts that skip join optimization entirely
+     * and forward the ORIGINAL query string verbatim to the single relevant
+     * endpoint. Query hints are normally stripped during join optimization
+     * ({@link #optimizeJoinOrder}), so on those shortcut paths the forwarded
+     * string still contains the {@code ephedra:*} hint patterns — the endpoint
+     * evaluates them as ordinary triple patterns that match nothing, and the
+     * query silently returns zero results. Detect that case after the fact and
+     * re-render the query without the hint patterns (hints only influence our
+     * own join reordering, which the shortcut skips anyway, so dropping them
+     * is semantically exact).
+     */
+    @Override
+    public TupleExpr optimize(TupleExpr expr, EvaluationStatistics evaluationStatistics, BindingSet bindings) {
+        TupleExpr optimized = super.optimize(expr, evaluationStatistics, bindings);
+        if (optimized instanceof SingleSourceQuery && isQueryHintsEnabled()
+                && !FederationSparqlAlgebraUtils.extractQueryHintsPatterns(expr).isEmpty()) {
+            SingleSourceQuery singleSource = (SingleSourceQuery) optimized;
+            TupleExpr stripped = expr.clone();
+            if (!(stripped instanceof QueryRoot)) {
+                stripped = new QueryRoot(stripped);
+            }
+            new QueryHintsExtractor().optimize(stripped, null, null);
+            String hintFreeQuery;
+            try {
+                hintFreeQuery = new MpSparqlQueryRenderer().render(stripped);
+            } catch (Exception e) {
+                // Failing loudly beats the alternative: forwarding the hint
+                // patterns yields silently wrong (empty) results.
+                throw new QueryEvaluationException(
+                        "Could not strip ephedra query hints from a single-source query; "
+                                + "remove the hint patterns from the query or add a SERVICE clause",
+                        e);
+            }
+            log.debug("Stripped ephedra query hints from single-source query for endpoint {}",
+                    singleSource.getSource().getId());
+            return new HintStrippedSingleSourceQuery(stripped, singleSource, hintFreeQuery);
+        }
+        return optimized;
+    }
+
+    /**
+     * A {@link SingleSourceQuery} whose forwarded query string had the ephedra
+     * hint patterns removed. Everything else behaves like the wrapped node.
+     */
+    private static class HintStrippedSingleSourceQuery extends SingleSourceQuery {
+        private static final long serialVersionUID = 1L;
+
+        private final String hintFreeQuery;
+
+        HintStrippedSingleSourceQuery(TupleExpr strippedTree, SingleSourceQuery original, String hintFreeQuery) {
+            super(strippedTree, original.getSource(), original.getQueryInfo());
+            this.hintFreeQuery = hintFreeQuery;
+        }
+
+        @Override
+        public String getQueryString() {
+            return hintFreeQuery;
+        }
+    }
+
+    private boolean isQueryHintsEnabled() {
+        if (this.federationContext.getFederation() instanceof MpFederation) {
+            return ((MpFederation) this.federationContext.getFederation()).isEnableQueryHints();
+        }
+        return true;
+    }
+
     @Override
     protected void optimizeJoinOrder(TupleExpr query, QueryInfo queryInfo, GenericInfoOptimizer info) {
-        boolean hintsEnabled = true;
-        if (this.federationContext.getFederation() instanceof MpFederation) {
-            hintsEnabled = ((MpFederation) this.federationContext.getFederation()).isEnableQueryHints();
-        }
-        
+        boolean hintsEnabled = isQueryHintsEnabled();
+
         if (hintsEnabled) {
             // Extract query hints before join optimization
             QueryHintsExtractor hintsExtractor = new QueryHintsExtractor();

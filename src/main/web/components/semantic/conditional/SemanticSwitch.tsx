@@ -75,9 +75,22 @@ export class SemanticSwitch extends Component<SemanticSwitchProps, State> {
   }
 
   componentDidMount() {
+    this.evaluateQuery(this.props);
+  }
+
+  componentWillReceiveProps(nextProps: SemanticSwitchProps) {
+    if (nextProps.query !== this.props.query) {
+      // re-evaluate when the same component instance is updated with
+      // another query (e.g. when the surrounding template re-renders)
+      this.setState({ loading: true, error: undefined, selectedCase: undefined });
+      this.evaluateQuery(nextProps);
+    }
+  }
+
+  private evaluateQuery(props: SemanticSwitchProps) {
     let switchQuery: SparqlJs.SelectQuery;
     try {
-      switchQuery = parseSwitchSelectQuery(this.props.query);
+      switchQuery = parseSwitchSelectQuery(props.query);
     } catch (error) {
       this.setState({ loading: false, error });
       return;
@@ -85,8 +98,16 @@ export class SemanticSwitch extends Component<SemanticSwitchProps, State> {
 
     const { semanticContext } = this.context;
     this.cancellation.map(SparqlClient.select(switchQuery, { context: semanticContext })).observe({
-      value: (result) => this.setResultCase(result),
-      error: (error) => this.setState({ loading: false, error }),
+      value: (result) => {
+        if (this.props.query === props.query) {
+          this.setResultCase(result);
+        }
+      },
+      error: (error) => {
+        if (this.props.query === props.query) {
+          this.setState({ loading: false, error });
+        }
+      },
     });
   }
 

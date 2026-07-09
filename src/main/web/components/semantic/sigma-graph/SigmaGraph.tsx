@@ -21,7 +21,7 @@ import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
 import { GraphControls } from './GraphControls'
-import { GraphLayoutProvider } from './GraphLayoutContext'
+import { GraphLayoutName, GraphLayoutProvider, isGraphLayoutName } from './GraphLayoutContext'
 import { clearStateFromLocalStorage, createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
 import ArrowEdgeProgram from './programs/edge.arrow'
 
@@ -64,7 +64,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
     }
 
     private componentCleanup() : void {
-        if (this.props.persistGraph) {
+        if (this.props.persistGraph && this.state.graph) {
             saveStateIntoLocalStorage(this.state.graph, this.props.query);
         }
     }
@@ -147,6 +147,9 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const nodeQuery = this.props.nodeQuery || "";
         const sizes = this.props.sizes || { nodes: 10, edges: 5 };
         const persistGraph = this.props.persistGraph || false;
+        const initialLayout = isGraphLayoutName(this.props.layout)
+            ? this.props.layout as GraphLayoutName
+            : undefined;
 
         if (this.state.isLoading) {
             return createElement(Spinner);
@@ -160,7 +163,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     style={{ height: `${height}`, width: `${width}` }}
                     settings={ sigmaSettings }
                 >
-                    <GraphLayoutProvider>
+                    <GraphLayoutProvider initialLayout={initialLayout}>
                         <GraphEvents
                             id={componentId}
                             context={ this.context.semanticContext}

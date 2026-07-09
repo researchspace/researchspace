@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from 'react';
 import { MdAccountTree, MdPlayArrow, MdStop } from 'react-icons/md';
 
 import {
-  GRAPH_LAYOUT_OPTIONS,
   GraphLayoutName,
   isWorkerGraphLayout,
   useGraphLayout,
@@ -38,6 +37,7 @@ export const LayoutControl: React.FC<LayoutControlProps> = ({
     applyLayout,
     stopAllWorkerLayouts,
     selectedLayoutIsRunning,
+    layoutOptions,
   } = useGraphLayout();
 
   useEffect(() => {
@@ -98,7 +98,7 @@ export const LayoutControl: React.FC<LayoutControlProps> = ({
               setSelectedLayout(event.target.value as GraphLayoutName)
             }
           >
-            {GRAPH_LAYOUT_OPTIONS.map(({ value, label }) => (
+            {layoutOptions.map(({ value, label }) => (
               <option key={value} value={value}>
                 {label}
               </option>

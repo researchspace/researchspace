@@ -216,7 +216,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                     )
                     : [node.substring(1, node.length - 1)]
             };
-            console.log("sigma"+componentId);console.log(data,{"depth":null});
+            
             trigger({
                 eventType: NodeClicked,
                 source: componentId,
@@ -336,7 +336,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                      const rawNode = event.data.node.trim();
                         const node = rawNode.startsWith("<") && rawNode.endsWith(">")
                                         ? rawNode
-                                        : `<${rawNode}>`; console.log("node"+node);
+                                        : `<${rawNode}>`; 
                      
                     if (sigma.getGraph().hasNode(node)) {
                         focusNodeRef.current(node);

@@ -56,6 +56,14 @@ export class CapturedContext {
 
   constructor(private contexts?: ReadonlyMap<number, DataContext>) {}
 
+  /**
+   * Returns all captured contexts in capture order, e.g. to compare
+   * the results of two template compilations for equivalence.
+   */
+  getAllContexts(): ReadonlyMap<number, DataContext> | undefined {
+    return this.contexts;
+  }
+
   getContext(contextKey: number): DataContext | undefined {
     if (!this.contexts) {
       return undefined;

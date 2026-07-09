@@ -154,6 +154,7 @@ export function Toolbar(props: ToolbarProps) {
     },
     selectedLanguage,
     onChangeLanguage: (lang) => model.setLanguage(lang),
+    history: model.history,
     ...props,
   };
 

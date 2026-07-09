@@ -266,7 +266,11 @@ function processStyle(node: Node, children: Array<React.ReactNode>): Promise<Rea
   return Promise.resolve(styleNode);
 }
 
-function processReactComponent(node: Node, children: Array<ReactNode>): Promise<React.ReactElement<any>> {
+function processReactComponent(
+  node: Node,
+  children: Array<ReactNode>,
+  index?: number
+): Promise<React.ReactElement<any>> {
   let attributes;
   try {
     attributes = htmlAttributesToReactProps(node.attribs);
@@ -276,13 +280,16 @@ function processReactComponent(node: Node, children: Array<ReactNode>): Promise<
     throw new Error(msg);
   }
 
-  // was previously {key: `component-${index}-${level}`},
+  // use a position-based key so that re-parsing an equivalent template
+  // updates the existing components instead of remounting them
+  // (a random key would remount every component, losing their state and
+  // re-running their queries, each time a template is re-rendered)
   const computedKey =
     attributes['key'] && !attributes['fixedKey']
       ? attributes['key']
       : attributes['fixedKey']
       ? attributes['fixedKey']
-      : Math.random().toString(36).slice(2);
+      : `component-${node.name}-${index ?? 0}`;
 
   // we propagate attributes as-is, but also put them into special config field
   let props = assign({ key: computedKey }, attributes);

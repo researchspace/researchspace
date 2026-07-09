@@ -658,10 +658,6 @@ export class Ontodia extends Component<OntodiaProps, State> {
               dropdownTemplate={this.getTemplate('{{> knowledge-map-dropdown}}')}
             />
           )}
-          <Reactodia.Toolbar dock='sw'>
-            <Reactodia.ToolbarActionUndo />
-            <Reactodia.ToolbarActionRedo />
-          </Reactodia.Toolbar>
         </Reactodia.ClassicWorkspace>
       </Reactodia.Workspace>
     );

@@ -11,6 +11,15 @@ export const DEFAULT_HIDE_PREDICATES = [
     '<http://www.w3.org/2000/01/rdf-schema#label>',
     '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'
 ];
+
+export type SigmaGraphLayout =
+    | 'circular'
+    | 'circlepack'
+    | 'force'
+    | 'forceAtlas2'
+    | 'noverlap'
+    | 'random';
+
 export interface GroupingConfig {
     /**
      * Enable grouping of nodes by shared predicate and type
@@ -129,6 +138,20 @@ export interface SigmaGraphConfig {
      * @default {"nodes": 10, "edges": 5}
      */
     sizes?: { "nodes": number, "edges": number };
+
+
+    /**
+     * Initial layout to apply once after the graph has mounted.
+     * If omitted, the component applies the lightweight deterministic
+     * 'circular' layout. Users can then choose and apply a different layout
+     * from the controls when required.
+     *
+     * Available values: 'circular', 'circlepack', 'force', 'forceAtlas2',
+     * 'noverlap', 'random'.
+     *
+     * @default 'circular'
+     */
+    layout?: SigmaGraphLayout;
 
     /**
      *  Width of the graph.

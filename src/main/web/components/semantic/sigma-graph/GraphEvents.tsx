@@ -19,7 +19,7 @@ import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraph
 import { ScatterGroupNode, FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 import { EdgeFilterControl } from './EdgeFilterControl'
 import { Panel } from './ControlPanel'
-import { useGraphLayout } from './GraphLayoutContext';
+import { isWorkerGraphLayout, useGraphLayout } from './GraphLayoutContext';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
@@ -56,7 +56,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     );
     
     const {
-        selectedLayout,
+        appliedLayout,
         applyLayout,
         startSelectedWorkerLayout,
         stopAllWorkerLayouts,
@@ -65,12 +65,21 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     /**
      * Complete a topology-changing graph operation while all layout workers are
-     * stopped, then reapply the currently selected layout to the new topology.
+     * stopped, then reapply the currently applied layout to the new topology.
      */
     const finishGraphMutation = (callback = () => { return undefined; }) => {
         cleanGraph(sigma.getGraph());
         clearCustomBBox();
-        applyLayout(selectedLayout);
+
+        if (isWorkerGraphLayout(appliedLayout)) {
+            // Only resume a worker layout if this graph previously stopped a
+            // running worker during the mutation. Merely selecting Force or
+            // ForceAtlas2 in the layout menu must not start it automatically.
+            startSelectedWorkerLayout();
+        } else {
+            applyLayout(appliedLayout);
+        }
+
         callback();
     };
 
@@ -216,7 +225,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                     )
                     : [node.substring(1, node.length - 1)]
             };
-            
             trigger({
                 eventType: NodeClicked,
                 source: componentId,
@@ -336,7 +344,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                      const rawNode = event.data.node.trim();
                         const node = rawNode.startsWith("<") && rawNode.endsWith(">")
                                         ? rawNode
-                                        : `<${rawNode}>`; 
+                                        : `<${rawNode}>`;
                      
                     if (sigma.getGraph().hasNode(node)) {
                         focusNodeRef.current(node);

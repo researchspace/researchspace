@@ -30,6 +30,17 @@
                 "behaviour"
             ],
             "type": "object"
+        },
+        "SigmaGraphLayout": {
+            "enum": [
+                "circlepack",
+                "circular",
+                "force",
+                "forceAtlas2",
+                "noverlap",
+                "random"
+            ],
+            "type": "string"
         }
     },
     "properties": {
@@ -66,6 +77,11 @@
             "default": "undefined",
             "description": "Optional identifier. \nRequired if component should be controlled via external events.",
             "type": "string"
+        },
+        "layout": {
+            "$ref": "#/definitions/SigmaGraphLayout",
+            "default": "'circular'",
+            "description": "Initial layout to apply once after the graph has mounted.\nIf omitted, the component applies the lightweight deterministic\n'circular' layout. Users can then choose and apply a different layout\nfrom the controls when required.\n\nAvailable values: 'circular', 'circlepack', 'force', 'forceAtlas2',\n'noverlap', 'random'."
         },
         "nodeQuery": {
             "default": "undefined",
@@ -147,6 +163,7 @@
         "persistGraphMessagePosition",
         "searchBox",
         "sizes",
+        "layout",
         "width",
         "height"
     ],

@@ -19,11 +19,44 @@ select:global(.reactodia-group-paginator__page-size) {
   --reactodia-font-family-base: var(--font-family-base, 'Source Sans Pro', 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif);
 }
 
-/* Hide the built-in authoring edit/delete decorations on selected entities:
-   the knowledge map cards provide their own edit and delete buttons
-   (the state indicators for new/changed entities and validation stay visible) */
-:global(.reactodia-authoring-state__actions)[class] {
-  display: none;
+/* Style the built-in authoring edit/delete actions on selected entities
+   like the platform buttons, with the same icons the cards use
+   (by default they render as plain text with codicon glyphs) */
+:global(.reactodia-authoring-state__action)[class] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  background-color: var(--color-white, #fff);
+  border: 1px solid var(--color-border, #e0e0e4);
+  border-radius: 4px;
+  opacity: 1;
+  /* hide the text label, the icon is shown instead */
+  font-size: 0;
+}
+
+:global(.reactodia-authoring-state__action)[class]:hover {
+  border-color: var(--color-action, #396efe);
+}
+
+:global(.reactodia-authoring-state__action)[class]::before {
+  font-family: 'Material Symbols Rounded';
+  font-size: 18px;
+  line-height: 1;
+  mask: none;
+  -webkit-mask: none;
+  background: none;
+  width: auto;
+  height: auto;
+  color: var(--color-dark, #242426);
+}
+
+:global(.reactodia-authoring-state__action-edit)[class]::before {
+  content: 'edit';
+}
+
+:global(.reactodia-authoring-state__action-delete)[class]::before {
+  content: 'delete';
 }
 
 /* Overrides: Accordion */

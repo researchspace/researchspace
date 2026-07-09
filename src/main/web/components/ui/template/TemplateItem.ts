@@ -59,7 +59,6 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
   };
 
   private compileVersion = 0;
-  private renderedHtml: string | undefined;
 
   constructor(props: TemplateItemProps, context: any) {
     super(props, context);
@@ -176,27 +175,13 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
           // a newer compilation has been started in the meantime
           return;
         }
-        const capturedContext = capturer.getResult();
-        if (
-          !this.state.error &&
-          this.renderedHtml !== undefined &&
-          equalTemplateOutput(
-            { html: this.renderedHtml, capturedContext: this.state.capturedContext },
-            { html: renderedHtml, capturedContext }
-          )
-        ) {
-          // the template rendered an equivalent output: skip replacing the
-          // parsed react tree to avoid re-rendering (and re-querying) it
-          return;
-        }
         // parse to react, but do not omit whitespaces
         return ModuleRegistry.parseHtmlToReact(renderedHtml).then((parsedTemplate) => {
           if (version !== this.compileVersion) {
             return;
           }
-          this.renderedHtml = renderedHtml;
           this.setState(
-            { parsedTemplate, capturedContext, error: undefined },
+            { parsedTemplate, capturedContext: capturer.getResult(), error: undefined },
             () => props.onLoad?.()
           );
         });
@@ -206,7 +191,6 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
           return;
         }
         console.error(error);
-        this.renderedHtml = undefined;
         this.setState({ error }, () => props.onLoad?.());
       });
   }
@@ -214,33 +198,6 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
 
 function templateEqual(a: Template, b: Template) {
   return a === b || (a.source === b.source && isEqual(a.options, b.options));
-}
-
-const EXPOSE_KEY_PATTERN = /\{\{#expose \d+\}\}/g;
-
-/**
- * Compares two template compilation results for equivalence.
- *
- * The rendered HTML cannot be compared directly: every compilation of a
- * template with nested client-side templates allocates fresh globally-unique
- * `{{#expose <key>}}` context keys (see `ContextCapturer`), so the output
- * is never byte-identical. Instead the HTML is compared with the expose keys
- * masked out, together with the captured contexts those keys refer to
- * (the nested templates render from the captured contexts later, so both
- * must be equivalent for the previous output to be reusable).
- */
-function equalTemplateOutput(
-  previous: { html: string; capturedContext: CapturedContext | undefined },
-  next: { html: string; capturedContext: CapturedContext | undefined }
-): boolean {
-  if (previous.html.replace(EXPOSE_KEY_PATTERN, '') !== next.html.replace(EXPOSE_KEY_PATTERN, '')) {
-    return false;
-  }
-  const previousContexts = previous.capturedContext?.getAllContexts();
-  const nextContexts = next.capturedContext?.getAllContexts();
-  const previousValues = previousContexts ? Array.from(previousContexts.values()) : [];
-  const nextValues = nextContexts ? Array.from(nextContexts.values()) : [];
-  return isEqual(previousValues, nextValues);
 }
 
 function shallowEqual<T>(a: T, b: T) {

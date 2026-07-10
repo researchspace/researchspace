@@ -57,6 +57,8 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     template: undefined,
   };
 
+  private compileVersion = 0;
+
   constructor(props: TemplateItemProps, context: any) {
     super(props, context);
     this.state = {
@@ -78,9 +80,11 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     this.compileTemplate(this.props);
   }
 
-  componentWillReceiveProps(props) {
+  componentWillReceiveProps(props, nextContext) {
     if (!templateEqual(props.template, this.props.template)) {
-      this.compileTemplate(props);
+      // use nextContext: this.context still holds the previous captured
+      // context, but the new source may reference the incoming one's keys
+      this.compileTemplate(props, nextContext);
     }
   }
 
@@ -146,21 +150,37 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     }
   }
 
-  private compileTemplate(props) {
-    const { templateDataContext } = this.context;
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    // prevent setState from compilations resolving after unmount
+    this.compileVersion++;
+  }
+
+  private compileTemplate(props: TemplateItemProps, context: TemplateContext = this.context) {
+    const { templateDataContext } = context;
+    const version = ++this.compileVersion;
 
     const capturer = CapturedContext.inheritAndCapture(templateDataContext);
     this.appliedTemplateScope
       .compile(props.template.source)
-      // parse to react, but do not omit whitespaces
       .then((template) => {
         const renderedHtml = template(props.template.options, { capturer, parentContext: templateDataContext });
-        return ModuleRegistry.parseHtmlToReact(renderedHtml);
-      })
-      .then((parsedTemplate) => {
-        this.setState({ parsedTemplate, capturedContext: capturer.getResult() });
+        if (version !== this.compileVersion) {
+          // a newer compilation has been started in the meantime
+          return;
+        }
+        // parse to react, but do not omit whitespaces
+        return ModuleRegistry.parseHtmlToReact(renderedHtml).then((parsedTemplate) => {
+          if (version !== this.compileVersion) {
+            return;
+          }
+          this.setState({ parsedTemplate, capturedContext: capturer.getResult(), error: undefined });
+        });
       })
       .catch((error) => {
+        if (version !== this.compileVersion) {
+          return;
+        }
         console.error(error);
         this.setState({ error });
       });

@@ -218,7 +218,7 @@ export class DashboardComponent extends Component<Props, State> {
     this.itemLabelCount = this.itemLabelCount + 1;
 
     const displayLabel = label ?? 'Homepage';
-    const displayCustomLabel = this.props.initialView?.data["customLabel"] && (this.state.items.length == 0) ?this.props.initialView.data["customLabel"]:displayLabel;
+    const displayCustomLabel = this.props.initialView?.data?.["customLabel"] && (this.state.items.length == 0) ?this.props.initialView.data["customLabel"]:displayLabel;
 
     return { 
       // id: uniqueId(displayLabel.replace(/\s/g, '')),

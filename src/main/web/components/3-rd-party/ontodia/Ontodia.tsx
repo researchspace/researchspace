@@ -26,7 +26,7 @@ import {
   cloneElement,
 } from 'react';
 import * as Kefir from 'kefir';
-import { debounce, includes } from 'lodash';
+import { debounce, includes, isUndefined, omitBy } from 'lodash';
 import * as Reactodia from '@reactodia/workspace';
 import { blockingDefaultLayout, colaRemoveOverlaps, layoutPadded } from '@reactodia/workspace/layout-sync';
 
@@ -1570,16 +1570,20 @@ export class Ontodia extends Component<OntodiaProps, State> {
           ) : undefined;
           return (
             <Reactodia.StandardRelation {...props}
-              pathProps={connection ? {
+              // drop undefined values: they would override the defaults
+              // StandardRelation spreads these over (e.g. an undefined `fill`
+              // would replace the default 'none' making the browser fill the
+              // link path black, visible on links with vertices)
+              pathProps={connection ? omitBy({
                 fill: connection.fill,
                 stroke: connection.stroke,
                 strokeWidth: connection['stroke-width'],
                 strokeDasharray: connection['stroke-dasharray'],
-              } : undefined}
-              primaryLabelProps={label ? {
+              }, isUndefined) : undefined}
+              primaryLabelProps={label ? omitBy({
                 title: label.title,
                 style: getLinkLabelStyle(label.attrs),
-              } : undefined}
+              }, isUndefined) : undefined}
               propertyLabelStartLine={1 + (properties ? properties.length : 0)}
               prependLabels={propertyLabels}
             />

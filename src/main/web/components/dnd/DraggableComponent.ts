@@ -137,6 +137,10 @@ export class Draggable extends Component<DraggableProps, State> {
       style: style,
       draggable: true,
       onMouseDown: (e) => e.stopPropagation(),
+      // Reactodia listens to pointer events: keep the pointerdown from
+      // reaching the canvas so it does not start moving the element
+      // instead of letting the browser begin the native drag
+      onPointerDown: (e) => e.stopPropagation(),
     });
   }
 }

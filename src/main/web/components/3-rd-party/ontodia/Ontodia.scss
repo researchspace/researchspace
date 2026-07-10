@@ -19,36 +19,27 @@ select:global(.reactodia-group-paginator__page-size) {
   --reactodia-font-family-base: var(--font-family-base, 'Source Sans Pro', 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif);
 }
 
-/* Style the built-in authoring edit/delete actions on selected entities
-   like the platform buttons, with the same icons the cards use
-   (by default they render as plain text with codicon glyphs) */
+/* Use the same icons as the rest of the platform for the built-in
+   authoring edit/delete/discard actions on selected entities, keeping
+   their original small semi-transparent look and coloring them like
+   the other halo icons (by default they render codicon glyphs with
+   text labels) */
 :global(.reactodia-authoring-state__action)[class] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px;
-  background-color: var(--color-white, #fff);
-  border: 1px solid var(--color-border, #e0e0e4);
-  border-radius: 4px;
-  opacity: 1;
   /* hide the text label, the icon is shown instead */
   font-size: 0;
 }
 
-:global(.reactodia-authoring-state__action)[class]:hover {
-  border-color: var(--color-action, #396efe);
-}
-
 :global(.reactodia-authoring-state__action)[class]::before {
   font-family: 'Material Symbols Rounded';
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
   mask: none;
   -webkit-mask: none;
   background: none;
   width: auto;
   height: auto;
-  color: var(--color-dark, #242426);
+  margin-right: 0;
+  color: #000;
 }
 
 :global(.reactodia-authoring-state__action-edit)[class]::before {
@@ -57,6 +48,10 @@ select:global(.reactodia-group-paginator__page-size) {
 
 :global(.reactodia-authoring-state__action-delete)[class]::before {
   content: 'delete';
+}
+
+:global(.reactodia-authoring-state__action-discard)[class]::before {
+  content: 'undo';
 }
 
 /* Overrides: Accordion */

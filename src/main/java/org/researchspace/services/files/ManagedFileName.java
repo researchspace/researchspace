@@ -19,6 +19,7 @@
 
 package org.researchspace.services.files;
 
+import java.text.Normalizer;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -28,7 +29,8 @@ import javax.annotation.Nullable;
 import org.researchspace.services.storage.api.StoragePath;
 
 public final class ManagedFileName {
-    private static final Pattern DISALLOWED_CHARACTERS = Pattern.compile("[^a-zA-Z0-9_.\\-\\p{L}]");
+    private static final Pattern COMBINING_MARKS = Pattern.compile("\\p{M}");
+    private static final Pattern DISALLOWED_CHARACTERS = Pattern.compile("[^a-zA-Z0-9_.\\-]");
     private static final Pattern COLLAPSE_UNDERSCORES = Pattern.compile("_+");
 
     private StoragePath prefix;
@@ -50,6 +52,11 @@ public final class ManagedFileName {
     public static ManagedFileName generateFromFileName(StoragePath prefix, String fileName,
             @Nullable Supplier<String> sequenceGenerator) {
         String transformed = fileName;
+        // ASCII-only: the name is used as an IIIF identifier in a URL, and the
+        // image proxy rejects percent-encoded non-ASCII paths. Transliterate
+        // accents (é -> e), drop the rest.
+        transformed = Normalizer.normalize(transformed, Normalizer.Form.NFD);
+        transformed = COMBINING_MARKS.matcher(transformed).replaceAll("");
         transformed = DISALLOWED_CHARACTERS.matcher(transformed).replaceAll("_");
         transformed = COLLAPSE_UNDERSCORES.matcher(transformed).replaceAll("_");
 

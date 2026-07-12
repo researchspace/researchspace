@@ -325,7 +325,7 @@ export const ImageRegionRepresentsXRFMeasurement = Forms.normalizeFieldDefinitio
 export const ImageRegionRepresentsDigitalMeasurement = Forms.normalizeFieldDefinition({
   id: 'representsDigitalMeasurement',
   xsdDatatype: vocabularies.xsd.anyURI,
-  range: '[ "http://www.cidoc-crm.org/extensions/crmdig/D11_Digital_Measurement_Event", "http://www.researchspace.org/resource/system/vocab/resource_type/measurement_xrf"]',
+  range: '[ "http://www.cidoc-crm.org/extensions/crmdig/D11_Digital_Measurement_Event", "http://www.researchspace.org/resource/system/vocab/resource_type/measurement_xrf","http://www.researchspace.org/resource/system/vocab/resource_type/measurement_ftir", "http://www.researchspace.org/resource/system/vocab/resource_type/measurement_mft"]',
   insertPattern: `INSERT {
     $subject <http://www.cidoc-crm.org/cidoc-crm/P138_represents> ?measurement .
     ?measurement <http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation> $subject .

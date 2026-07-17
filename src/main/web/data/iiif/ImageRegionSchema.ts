@@ -173,7 +173,7 @@ export const ImageRegionRepresentsVisualItem = Forms.normalizeFieldDefinition({
 //category the P2_type for SamplingSite
 export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition({
   id: 'representsSamplingActivity',
-  domain:'http://www.cidoc-crm.org/cidoc-crm/E7_Activity',
+  domain:['http://www.cidoc-crm.org/cidoc-crm/E7_Activity','http://www.cidoc-crm.org/extensions/crmsci/S27_Observation'],
   xsdDatatype: vocabularies.xsd.anyURI,
   range: '["http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature","http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site"]',
   insertPattern: `INSERT {
@@ -249,7 +249,7 @@ export const ImageRegionRepresentsSamplingSite = Forms.normalizeFieldDefinition(
       BIND(IRI(REPLACE(?iriStr, "^(.*)/annotation_label/.*$", "$1")) AS ?annotationIri)
       BIND(REPLACE(?iriStr, "^.*/annotation_label/(.*)$", "$1") AS ?annotationLabel)
 
-      ?activityIri crm:P16_used_specific_object ?objectSampled .
+      ?activityIri crm:P16_used_specific_object|crmsci:O35_observed_entity ?objectSampled .
 
       BIND(IRI(CONCAT(STR($subject),"/sampling_site/",STRUUID())) as ?samplingSite)  
       BIND(URI(CONCAT(STR(?samplingSite),"/place/", STRUUID())) as ?samplingPlace)

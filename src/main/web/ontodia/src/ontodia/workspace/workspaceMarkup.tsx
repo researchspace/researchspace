@@ -153,7 +153,6 @@ export class WorkspaceMarkup extends React.Component<WorkspaceMarkupProps, {}> {
             defaultCollapsed: !this.props.isRightPanelOpen,
         };
         
-       console.log("Right Panel"); console.log(this.props);
         if (elementsSearchPanel) {
             rightPanel.children = [
                 ...rightPanel.children,

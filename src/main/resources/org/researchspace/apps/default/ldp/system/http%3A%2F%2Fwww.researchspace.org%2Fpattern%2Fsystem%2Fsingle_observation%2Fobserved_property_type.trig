@@ -1,0 +1,65 @@
+<http://www.researchspace.org/pattern/system/single_observation/observed_property_type/context> {
+  <http://www.researchspace.org/pattern/system/single_observation/observed_property_type> a
+      <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f919a2406dc44aeab881be87fc12ed93-qbjadu;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-f919a2406dc44aeab881be87fc12ed93-3mbh;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f919a2406dc44aeab881be87fc12ed93-zkzpt;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-f919a2406dc44aeab881be87fc12ed93-i4aw4n;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/extensions/crmsci/S9_Property_Type>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#comment> "The Property Type for which the observation provides a value or evidence, such as “concentration of nitrate” observed in the water from a particular borehole. Encoding the observed property by type, observed resource and value is a method to circumscribe the reification of the observed property by the respective observation.";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/extensions/crmsci/S4_Single_Observation>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/observation>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Observed property type";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f919a2406dc44aeab881be87fc12ed93-zqfe0s;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-04-29T16:44:07.305+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-f919a2406dc44aeab881be87fc12ed93-qbjadu a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  	$subject crmsci:O9_observed_property_type $value .
+     
+    ?value a crmsci:S9_Property_Type .
+    ?value skos:prefLabel ?label .
+}""" .
+  
+  _:genid-f919a2406dc44aeab881be87fc12ed93-zqfe0s a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+    $subject crmsci:O9_observed_property_type $value . 
+    $value crmsci:O9i_property_type_was_observed_by $subject .
+} WHERE {
+    $subject crmsci:O9_observed_property_type $value . 
+    $value crmsci:O9i_property_type_was_observed_by $subject .
+      
+    ?value a crmsci:S9_Property_Type .
+    ?value skos:prefLabel ?label .
+}""" .
+  
+  _:genid-f919a2406dc44aeab881be87fc12ed93-3mbh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+    ?value a crmsci:S9_Property_Type .
+    ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-f919a2406dc44aeab881be87fc12ed93-i4aw4n a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a crmsci:S9_Property_Type .
+  ?value skos:prefLabel ?label .
+
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-f919a2406dc44aeab881be87fc12ed93-zkzpt a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crmsci:O9_observed_property_type $value . 
+    $value crmsci:O9i_property_type_was_observed_by $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/single_observation/observed_property_type> .
+}

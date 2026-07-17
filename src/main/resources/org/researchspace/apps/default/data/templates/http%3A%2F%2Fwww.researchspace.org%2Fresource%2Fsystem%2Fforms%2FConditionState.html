@@ -21,6 +21,8 @@
                           entity_description="http://www.researchspace.org/pattern/system/entity/description"
                           temporal_entity_date="http://www.researchspace.org/pattern/system/temporal_entity/has_timespan"
 
+                          condition_state_type="http://www.researchspace.org/pattern/system/condition_state/type"
+
                           entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                           entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
 
@@ -53,6 +55,20 @@
                 <div class="form-details-container">
                     <div class="form-details-inputs-container">
                         <semantic-form-text-input for="entity_primary_appellation" label="Condition state name" placeholder="Enter condition state name"></semantic-form-text-input>
+
+                        <semantic-form-select-input for='condition_state_type' 
+                                                    label="Condition state type" 
+                                                    placeholder="Select type" 
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Condition state type",
+                                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                            scheme=\"http://www.researchspace.org/resource/vocab/condition_state_type\"
+                                                                                            entityType=\"condition state type\" }}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'> 
+                        </semantic-form-select-input>
 
                         <semantic-form-text-input for="entity_description" multiline="true" label="Description" placeholder="Enter description/comment"></semantic-form-text-input>
                         

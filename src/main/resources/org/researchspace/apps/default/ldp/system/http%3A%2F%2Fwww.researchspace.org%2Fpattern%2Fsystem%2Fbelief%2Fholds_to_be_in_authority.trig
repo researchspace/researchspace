@@ -1,0 +1,60 @@
+
+<http://www.researchspace.org/pattern/system/belief/holds_to_be_in_authority/context> {
+  _:genid-f2f83293e27e424487ff9439a6465328-owoq4u a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crminf:J5_holds_to_be ?confidenceLabel . 
+  ?value skos:prefLabel ?confidenceLabel .
+  ?value skos:inScheme <http://www.researchspace.org/resource/vocab/level_of_confidence> .
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/belief/holds_to_be_in_authority> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Holds to be";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f2f83293e27e424487ff9439a6465328-5l6hcc;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-f2f83293e27e424487ff9439a6465328-c9ui7;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-f2f83293e27e424487ff9439a6465328-1zx1pb;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f2f83293e27e424487ff9439a6465328-owoq4u;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/belief_search>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f2f83293e27e424487ff9439a6465328-miasm;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/extensions/crminf/I2_Belief>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-12-08T15:30:39.368Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-f2f83293e27e424487ff9439a6465328-c9ui7 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value skos:inScheme <http://www.researchspace.org/resource/vocab/level_of_confidence> .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-f2f83293e27e424487ff9439a6465328-5l6hcc a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  	$subject crminf:J5_holds_to_be ?confidenceLabel  . 
+} WHERE {
+  	$subject crminf:J5_holds_to_be ?confidenceLabel  . 
+      
+    ?value skos:prefLabel ?confidenceLabel .
+    ?value skos:inScheme <http://www.researchspace.org/resource/vocab/level_of_confidence> .
+}""" .
+  
+  _:genid-f2f83293e27e424487ff9439a6465328-1zx1pb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value skos:inScheme <http://www.researchspace.org/resource/vocab/level_of_confidence> .
+  ?value skos:prefLabel ?label .
+      
+  FILTER REGEX(STR(?label), \"?token\", \"i\")
+} LIMIT 10""" .
+  
+  _:genid-f2f83293e27e424487ff9439a6465328-miasm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  	$subject crminf:J5_holds_to_be ?confidenceLabel . 
+} WHERE {
+      ?value skos:prefLabel ?confidenceLabel .
+      ?value skos:inScheme <http://www.researchspace.org/resource/vocab/level_of_confidence> .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/belief/holds_to_be_in_authority> .
+}

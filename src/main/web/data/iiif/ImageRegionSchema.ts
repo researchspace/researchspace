@@ -375,6 +375,7 @@ export const ImageRegionRepresentsDigitalMeasurement = Forms.normalizeFieldDefin
       OPTIONAL {
         FILTER(CONTAINS(?encoded, "&p2Type="))
         BIND(IRI(REPLACE(?encoded, "^.*&p2Type=([^&]*)&.*$", "$1")) AS ?p2Type)
+        BIND(UCASE(REPLACE(STR(?p2Type),"^.*measurement_([^/#]+)$","$1")) AS ?measurementTypeLabel)
       }
       
       OPTIONAL {
@@ -418,7 +419,7 @@ export const ImageRegionRepresentsDigitalMeasurement = Forms.normalizeFieldDefin
       BIND(IRI(?iriStr) AS ?annotationIri)     
       BIND(IRI(CONCAT(STR(?examinationIri),"/measurement/",STRUUID())) as ?measurement)           
   	  BIND(URI(CONCAT(STR(?measurement), "/primary_appellation") ) as ?measurementAppellation)
-      BIND(CONCAT("Digital Measurement: ",?annotationLabel) as ?measurementLabel)
+      BIND(IF (BOUND(?measurementTypeLabel),CONCAT(?measurementTypeLabel," Measurement: ",?annotationLabel),CONCAT("Digital Measurement: ",?annotationLabel)) as ?measurementLabel)
     }`,
   selectPattern: `SELECT ?value WHERE {
     $subject <http://www.cidoc-crm.org/cidoc-crm/P138_represents> ?value .

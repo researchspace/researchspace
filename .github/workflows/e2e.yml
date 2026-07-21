@@ -1,0 +1,114 @@
+name: e2e
+
+# Run the Playwright end-to-end suite against a full dev stack.
+# Only on pull requests (and their new pushes) and on merges to master.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
+
+# A new push to a PR cancels the in-progress e2e run for that PR.
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      # Gradle + npm caches (match .github/workflows/main.yml).
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-wrapper-
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('build.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle-caches-
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json', 'e2e/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      # Start the dev stack in the background (backend :10214, webpack :3000,
+      # blazegraph). `runAll` runs npm install + webpack + jetty; stdin is held
+      # open so the blocking jetty task keeps running. The extra Node heap keeps
+      # the webpack + fork-ts-checker build from running out of memory.
+      - name: Start dev stack
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: |
+          bash -c 'tail -f /dev/null | ./gradlew --no-daemon runAll' > runall.log 2>&1 &
+          echo $! > gradle.pid
+          echo "dev stack starting (pid $(cat gradle.pid))"
+
+      # Ready when webpack serves assets AND the backend actually renders the
+      # login page (the ports open ~20s before /login is servable, so probing
+      # the ports alone runs the tests too early). Fail fast if the stack dies.
+      - name: Wait for dev stack
+        run: |
+          for i in $(seq 1 180); do
+            if ! kill -0 "$(cat gradle.pid)" 2>/dev/null; then
+              echo "::error::dev stack process exited before becoming ready"
+              tail -n 300 runall.log; exit 1
+            fi
+            webpack=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 http://localhost:3000/assets/no_auth/ || echo 000)
+            login=$(curl -s --max-time 10 http://localhost:10214/login 2>/dev/null | grep -c 'name="username"' || true)
+            echo "attempt $i: webpack=$webpack login_form=$login"
+            if [ "$webpack" = "200" ] && [ "$login" -ge 1 ]; then
+              echo "dev stack is ready"; exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::dev stack did not become ready in time"
+          tail -n 300 runall.log
+          exit 1
+
+      - name: Install e2e dependencies
+        working-directory: e2e
+        run: |
+          npm ci
+          ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        working-directory: e2e
+        env:
+          CI: 'true'
+          RS_BASE_URL: http://localhost:10214
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+          retention-days: 14
+
+      - name: Upload dev stack log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-stack-log
+          path: runall.log
+          retention-days: 14

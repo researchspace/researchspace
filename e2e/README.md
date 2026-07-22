@@ -110,3 +110,17 @@ npm test
 Failure screenshots, videos, and traces are written under `e2e/test-results/`.
 In CI, the workflow also uploads the Playwright report and, when stack startup
 fails, the development-stack log.
+
+## ArtResearch fixture data
+
+The semantic-search fixture is a committed CIDOC-CRM snapshot of 20 real
+ArtResearch work IRIs. Its manifest, preserved extraction query, and
+regeneration script are documented in
+[`fixtures/artresearch/README.md`](fixtures/artresearch/README.md).
+
+Regenerate it from the public development endpoint with:
+
+```bash
+cd e2e
+npm run fixtures:artresearch
+```

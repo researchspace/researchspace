@@ -1,0 +1,180 @@
+<!--
+  Copyright (c) 2026 ResearchSpace contributors.
+
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
+<div class="page__grid-container help-page-container" id="e2e-semantic-search-page">
+  <div class="page__content-container">
+    <h1>CIDOC-CRM semantic search E2E fixture</h1>
+
+    <semantic-search
+      id="e2e-semantic-search"
+      search-profile='{
+        "categories": [
+          {
+            "iri": "<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>",
+            "label": "Human-made object"
+          },
+          {
+            "iri": "<http://www.cidoc-crm.org/cidoc-crm/E39_Actor>",
+            "label": "Creator"
+          },
+          {
+            "iri": "<http://www.cidoc-crm.org/cidoc-crm/E55_Type>",
+            "label": "Object type"
+          },
+          {
+            "iri": "<http://www.w3.org/2001/XMLSchema#string>",
+            "label": "Title"
+          },
+          {
+            "iri": "<http://www.w3.org/2001/XMLSchema#dateTime>",
+            "label": "Production date"
+          }
+        ],
+        "relations": [
+          {
+            "iri": "<http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by>",
+            "label": "Creator",
+            "hasDomain": "<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>",
+            "hasRange": "<http://www.cidoc-crm.org/cidoc-crm/E39_Actor>"
+          },
+          {
+            "iri": "<http://www.cidoc-crm.org/cidoc-crm/P2_has_type>",
+            "label": "Object type",
+            "hasDomain": "<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>",
+            "hasRange": "<http://www.cidoc-crm.org/cidoc-crm/E55_Type>"
+          },
+          {
+            "iri": "<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content>",
+            "label": "Title",
+            "hasDomain": "<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>",
+            "hasRange": "<http://www.w3.org/2001/XMLSchema#string>"
+          },
+          {
+            "iri": "<http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span>",
+            "label": "Production date",
+            "hasDomain": "<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>",
+            "hasRange": "<http://www.w3.org/2001/XMLSchema#dateTime>"
+          }
+        ]
+      }'
+      relations='{
+        "<http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by>": [{
+          "kind": "resource",
+          "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P108i_was_produced_by>/<http://www.cidoc-crm.org/cidoc-crm/P9_consists_of>* ?production .
+            ?production <http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by> ?__value__ ."
+        }],
+        "<http://www.cidoc-crm.org/cidoc-crm/P2_has_type>": [{
+          "kind": "resource",
+          "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?__value__ ."
+        }],
+        "<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content>": [{
+          "kind": "literal",
+          "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?__literal__ ."
+        }],
+        "<http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span>": [{
+          "kind": "date-range",
+          "datatype": "http://www.w3.org/2001/XMLSchema#dateTime",
+          "format": "YYYY-MM-DDTHH:mm:ssZ",
+          "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P108i_was_produced_by>/<http://www.cidoc-crm.org/cidoc-crm/P9_consists_of>*/<http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?timeSpan .
+            ?timeSpan <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?begin .
+            ?timeSpan <http://www.cidoc-crm.org/cidoc-crm/P82b_end_of_the_end> ?end .
+            FILTER(?begin <= ?__dateEndValue__) .
+            FILTER(?end >= ?__dateBeginValue__) ."
+        }]
+      }'
+    >
+      <semantic-search-query-constant
+        domain="<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>"
+        query="
+          SELECT DISTINCT ?subject WHERE {
+            ?subject a <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> .
+          }
+        "
+      ></semantic-search-query-constant>
+
+      <div data-flex-layout="row stretch-stretch">
+        <div data-flex-self="size-1of3" style="min-width: 320px; max-width: 420px;">
+          <semantic-search-facet
+            id="e2e-semantic-search-facet"
+            open-by-default="true"
+            hide-toggle-button="true"
+            relations='{
+              "tupleTemplate": "<span class=\"e2e-facet-relation-label\">{{$relation.label.value}}</span>"
+            }'
+            default-value-template='{
+              "resource": "<span class=\"e2e-facet-value-label\">{{label.value}}</span> <span class=\"e2e-facet-value-count\">({{count.value}})</span>",
+              "literal": "<span class=\"e2e-facet-value-label\">{{literal.value}}</span> <span class=\"e2e-facet-value-count\">({{count.value}})</span>"
+            }'
+            value-relations='{
+              "<http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by>": {
+                "kind": "resource",
+                "valuesQuery": "SELECT ?value (SAMPLE(?displayLabel) AS ?label) (COUNT(DISTINCT $subject) AS ?count) WHERE {
+                  $subject <http://www.cidoc-crm.org/cidoc-crm/P108i_was_produced_by>/<http://www.cidoc-crm.org/cidoc-crm/P9_consists_of>* ?production .
+                  ?production <http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by> ?value .
+                  OPTIONAL {
+                    ?value <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?rawLabel .
+                  }
+                  BIND(COALESCE(?rawLabel, STR(?value)) AS ?displayLabel)
+                } GROUP BY ?value ORDER BY ?label"
+              },
+              "<http://www.cidoc-crm.org/cidoc-crm/P2_has_type>": {
+                "kind": "resource",
+                "valuesQuery": "SELECT ?value (SAMPLE(?displayLabel) AS ?label) (COUNT(DISTINCT $subject) AS ?count) WHERE {
+                  $subject <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?value .
+                  OPTIONAL {
+                    ?value <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?rawLabel .
+                  }
+                  BIND(COALESCE(?rawLabel, STR(?value)) AS ?displayLabel)
+                } GROUP BY ?value ORDER BY ?label"
+              },
+              "<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content>": {
+                "kind": "literal",
+                "valuesQuery": "SELECT ?literal (COUNT(DISTINCT $subject) AS ?count) WHERE {
+                  $subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?literal .
+                } GROUP BY ?literal ORDER BY ?literal"
+              },
+              "<http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span>": {
+                "kind": "date-range",
+                "valuesQuery": "SELECT ?dateBeginValue ?dateEndValue WHERE {
+                  $subject <http://www.cidoc-crm.org/cidoc-crm/P108i_was_produced_by>/<http://www.cidoc-crm.org/cidoc-crm/P9_consists_of>*/<http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?timeSpan .
+                  ?timeSpan <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?dateBeginValue .
+                  ?timeSpan <http://www.cidoc-crm.org/cidoc-crm/P82b_end_of_the_end> ?dateEndValue .
+                } ORDER BY ?dateBeginValue"
+              }
+            }'
+          ></semantic-search-facet>
+        </div>
+
+        <semantic-search-result-holder data-flex-self="md-full">
+          <div>
+            <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
+
+            <semantic-search-result>
+              <mp-sparql-result-counts
+                id="e2e-semantic-search-count"
+                query="SELECT DISTINCT ?subject {}"
+                template='<span data-testid="semantic-result-count">{{numberOfResults}}</span>'
+              ></mp-sparql-result-counts>
+            </semantic-search-result>
+
+            <semantic-search-result>
+              <semantic-table
+                id="e2e-semantic-search-results"
+                query="
+                  SELECT ?subject (SAMPLE(?rawTitle) AS ?title) WHERE {
+                    ?subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?rawTitle .
+                  } GROUP BY ?subject
+                "
+                tuple-template='<span class="e2e-result-title">{{title.value}}</span>'
+                options='{"showFilter": false, "resultsPerPage": 30}'
+              ></semantic-table>
+            </semantic-search-result>
+          </div>
+        </semantic-search-result-holder>
+      </div>
+    </semantic-search>
+  </div>
+</div>

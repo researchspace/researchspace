@@ -45,6 +45,7 @@ For focused development runs:
 
 ```bash
 npx playwright test tests/smoke.spec.ts --project=chromium
+npx playwright test tests/semantic-search-facets.spec.ts --project=chromium
 npx playwright test --grep "opens the application" --project=chromium
 npm run test:headed
 npm run test:ui
@@ -83,6 +84,7 @@ screens, dialogs, and reusable widgets.
 | `RS_BASE_URL` | `http://localhost:10214` | Application URL |
 | `RS_USER` | `admin` | Login user |
 | `RS_PASSWORD` | `admin` | Login password |
+| `RS_FIXTURE_HOST` | `127.0.0.1` | Hostname the ResearchSpace backend uses to reach the temporary fixture server |
 | `PLAYWRIGHT_CHROMIUM_EXECUTABLE` | unset | Path to a system Chrome or Chromium |
 
 For example, to use an installed browser:
@@ -124,3 +126,16 @@ Regenerate it from the public development endpoint with:
 cd e2e
 npm run fixtures:artresearch
 ```
+
+The facet suite serves this file temporarily and loads it with SPARQL `LOAD`
+into `urn:researchspace:e2e:artresearch-semantic-search`. It verifies the graph
+size before testing and executes `DROP SILENT GRAPH` in teardown. Set
+`RS_FIXTURE_HOST` when the backend cannot reach the Playwright host as
+`127.0.0.1`.
+
+The suite covers base CIDOC-CRM search results, resource and literal facets,
+OR within one relation, AND across relations, contextual counts, and date
+ranges. Known master regressions remain executable with `test.fail`: expanded
+BCE years are discarded by date parsing, and exact-year ranges shift at
+historical timezone boundaries. An unexpected pass intentionally asks us to
+remove the marker when the corresponding fix lands.

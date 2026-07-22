@@ -161,8 +161,6 @@ test.describe('historical-timezone date boundary', () => {
   test.use({ timezoneId: 'Europe/Athens' });
 
   test('matches an exact production year without a boundary shift', async ({ page }) => {
-    test.fail(true, 'Master serializes year boundaries in the browser historical timezone');
-
     const search = new SemanticSearchPage(page);
     await search.open();
 
@@ -173,8 +171,6 @@ test.describe('historical-timezone date boundary', () => {
 });
 
 test('includes large BCE values in the production-date facet', async ({ page }) => {
-  test.fail(true, 'Master drops expanded negative xsd:dateTime years while parsing facet values');
-
   const search = new SemanticSearchPage(page);
   await search.open();
 

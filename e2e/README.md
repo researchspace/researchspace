@@ -134,8 +134,5 @@ size before testing and executes `DROP SILENT GRAPH` in teardown. Set
 `127.0.0.1`.
 
 The suite covers base CIDOC-CRM search results, resource and literal facets,
-OR within one relation, AND across relations, contextual counts, and date
-ranges. Known master regressions remain executable with `test.fail`: expanded
-BCE years are discarded by date parsing, and exact-year ranges shift at
-historical timezone boundaries. An unexpected pass intentionally asks us to
-remove the marker when the corresponding fix lands.
+OR within one relation, AND across relations, contextual counts, AD and BCE
+date ranges, and exact-year boundaries in a historical non-UTC timezone.

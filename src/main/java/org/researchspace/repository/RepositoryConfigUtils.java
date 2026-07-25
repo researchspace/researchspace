@@ -33,23 +33,26 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.vocabulary.CONFIG;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
-import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
-import org.eclipse.rdf4j.repository.sail.config.SailRepositorySchema;
 import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
-import org.eclipse.rdf4j.sail.config.SailConfigSchema;
-import org.eclipse.rdf4j.sail.federation.config.FederationConfig;
+
+import org.researchspace.federation.repository.MpFederationConfig;
+import org.researchspace.federation.repository.MpFederationSailRepository;
+import org.researchspace.federation.repository.MpFederationSailRepositoryConfig;
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.ObjectRecord;
@@ -81,15 +84,68 @@ public class RepositoryConfigUtils {
      * @throws RepositoryConfigException If the supplied graph can not be converted
      *                                   into a VALID {@link RepositoryConfig}
      */
+    private static final String REPOSITORY_NAMESPACE = "http://www.openrdf.org/config/repository#";
+    private static final String SAIL_CONFIG_NAMESPACE = "http://www.openrdf.org/config/sail#";
+    private static final String SAIL_REPOSITORY_NAMESPACE = "http://www.openrdf.org/config/repository/sail#";
+
+    private static final IRI LEGACY_REPOSITORY_ID = SimpleValueFactory.getInstance()
+            .createIRI(REPOSITORY_NAMESPACE, "repositoryID");
+
+    /**
+     * Tries to convert an RDF graph i.e. the specified {@link Model} into a
+     * {@link RepositoryConfig} object.
+     *
+     * @param model
+     * @return
+     * @throws RepositoryConfigException If the supplied graph can not be converted
+     *                                   into a VALID {@link RepositoryConfig}
+     */
     public static RepositoryConfig createRepositoryConfig(Model model) throws RepositoryConfigException {
-        Model idStmt = model.filter(null, RepositoryConfigSchema.REPOSITORYID, null);
+        // Try new vocabulary first
+        Model idStmt = model.filter(null, CONFIG.Rep.id, null);
+        
+        // Fallback to explicit legacy vocabulary
+        if (idStmt.isEmpty()) {
+            idStmt = model.filter(null, LEGACY_REPOSITORY_ID, null);
+        }
+        
         Optional<Resource> repositoryNode = Models.subject(idStmt);
 
         if (idStmt.size() != 1 || !repositoryNode.isPresent()) {
             throw new RepositoryConfigException("Repository configuration model must have exactly one repository id.");
         }
 
-        return RepositoryConfig.create(model, repositoryNode.get());
+        return migrateLegacyFederationConfig(RepositoryConfig.create(model, repositoryNode.get()));
+    }
+
+    /**
+     * Pre-rdf4j-5 deployments declared the ephedra federation as a generic
+     * {@code openrdf:SailRepository} wrapping the
+     * {@code researchspace:Federation} sail. Since the FedX rewrite the
+     * federation only works through {@link MpFederationSailRepository} (the
+     * FedX repository wrapper, which wires the FederationContext and registers
+     * the federation members) — under a plain SailRepository every query would
+     * fail with a NullPointerException. Migrate such configurations on read.
+     */
+    private static RepositoryConfig migrateLegacyFederationConfig(RepositoryConfig repConfig) {
+        org.eclipse.rdf4j.repository.config.RepositoryImplConfig impl = repConfig.getRepositoryImplConfig();
+        if (impl instanceof org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig
+                && !(impl instanceof MpFederationSailRepositoryConfig)) {
+            org.eclipse.rdf4j.sail.config.SailImplConfig sailImplConfig = ((org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig) impl)
+                    .getSailImplConfig();
+            if (sailImplConfig instanceof MpFederationConfig) {
+                logger.warn(
+                        "Repository '{}' declares the ephedra federation sail under the generic "
+                                + "'openrdf:SailRepository' repository type; migrating to "
+                                + "'researchspace:FederationSailRepository'. Please update the repository "
+                                + "configuration accordingly.",
+                        repConfig.getID());
+                RepositoryConfig migrated = new RepositoryConfig(repConfig.getID(), repConfig.getTitle(),
+                        new MpFederationSailRepositoryConfig((MpFederationConfig) sailImplConfig));
+                return migrated;
+            }
+        }
+        return repConfig;
     }
 
     /**
@@ -255,10 +311,11 @@ public class RepositoryConfigUtils {
 
     private static void writeModelAsPrettyTurtleOutputStream(OutputStream os, Model model) {
         Map<String, String> prefixes = ImmutableMap.<String, String>builder()
-                .put("rep", RepositoryConfigSchema.NAMESPACE).put("sail", SailConfigSchema.NAMESPACE)
-                .put("sr", SailRepositorySchema.NAMESPACE).put("rdfs", RDFS.NAMESPACE)
+                .put("config", CONFIG.NAMESPACE)
+                .put("rep", REPOSITORY_NAMESPACE).put("sail", SAIL_CONFIG_NAMESPACE)
+                .put("sr", SAIL_REPOSITORY_NAMESPACE).put("rdfs", RDFS.NAMESPACE)
                 .put("mph", MpRepositoryVocabulary.NAMESPACE)
-                .put("ephedra", MpRepositoryVocabulary.FEDERATION_NAMESPACE).put("fedsail", FederationConfig.NAMESPACE)
+                .put("ephedra", MpRepositoryVocabulary.FEDERATION_NAMESPACE).put("fedsail", "http://www.openrdf.org/config/sail/federation#")
                 .put("sparqlr", SPARQLRepositoryConfig.NAMESPACE).build();
         for (Entry<String, String> e : prefixes.entrySet()) {
             model.setNamespace(e.getKey(), e.getValue());
@@ -297,6 +354,7 @@ public class RepositoryConfigUtils {
                 String fileNameId = getRepositoryIdFromPath(configFile.getPath());
                 Model model = readTurtleRepositoryConfigFile(configFile);
                 RepositoryConfig repConfig = createRepositoryConfig(model);
+                
                 if (!normalizeRepositoryConfigId(fileNameId).equals(fileNameId)) {
                     throw new RepositoryConfigException(String.format(
                             "File name of repository configuration file \"%s\" contains characters that are not permitted. Please use only alpha-numerical characters.",
@@ -308,9 +366,13 @@ public class RepositoryConfigUtils {
                             "Name of repository configuration file is \"%s\", but need to be equal to the repository id as specified in the configuration (repositoryID=\"%s\").",
                             fileNameId, repConfig.getID()));
                 }
+                repConfig.validate();
                 map.put(repConfig.getID(), repConfig);
-            } catch (IOException | RepositoryConfigException e) {
-                logger.warn("Error while creating the repository config object from the configuration model:{}",
+            } catch (IOException | RDF4JException e) {
+                // RDF4JException covers RepositoryConfigException as well as unchecked
+                // parse/config errors (RDFParseException, SailConfigException, ...);
+                // one broken file must not prevent the remaining repositories from loading
+                logger.warn("Skipping repository configuration file \"{}\": {}", configFile.getPath(),
                         e.getMessage());
             }
         }

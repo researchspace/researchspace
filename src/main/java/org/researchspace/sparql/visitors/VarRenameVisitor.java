@@ -51,7 +51,8 @@ public class VarRenameVisitor extends AbstractQueryModelVisitor<RuntimeException
         super.meet(node);
         String varName = node.getName();
         if (varName.equals(fromVariableName)) {
-            node.setName(toVariableName);
+            Var newVar = new Var(toVariableName, node.getValue(), node.isAnonymous(), node.isConstant());
+            node.replaceWith(newVar);
         }
     }
 
@@ -59,11 +60,11 @@ public class VarRenameVisitor extends AbstractQueryModelVisitor<RuntimeException
     public void meet(Projection node) throws RuntimeException {
         super.meet(node);
         node.getProjectionElemList().getElements().forEach(element -> {
-            if (element.getSourceName().equals(fromVariableName)) {
-                element.setSourceName(toVariableName);
+            if (element.getName().equals(fromVariableName)) {
+                element.setName(toVariableName);
             }
-            if (element.getTargetName().equals(fromVariableName)) {
-                element.setTargetName(toVariableName);
+            if (element.getProjectionAlias().orElse("").equals(fromVariableName)) {
+                element.setProjectionAlias(toVariableName);
             }
         });
     }

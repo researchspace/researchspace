@@ -19,14 +19,27 @@
 package org.researchspace.repository.sparql;
 
 import org.eclipse.rdf4j.http.client.SPARQLProtocolSession;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.GraphQuery;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sparql.SPARQLConnection;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Override of the default rdf4j {@link SPARQLConnection}.
+ * 
+ * <p>Provides central TRACE-level logging of all outgoing SPARQL queries.
+ * Enable with log4j-trace profile or by setting TRACE on
+ * {@code org.researchspace.repository.sparql.CustomSPARQLConnection}.</p>
  */
 public class CustomSPARQLConnection extends SPARQLConnection {
+
+    private static final Logger log = LoggerFactory.getLogger(CustomSPARQLConnection.class);
 
     public CustomSPARQLConnection(SPARQLRepository repository, SPARQLProtocolSession client, boolean quadMode,
             boolean isSilentMode) {
@@ -44,6 +57,33 @@ public class CustomSPARQLConnection extends SPARQLConnection {
     }
 
     @Override
+    public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String base)
+            throws MalformedQueryException, RepositoryException {
+        if (log.isTraceEnabled()) {
+            log.trace("Outgoing SPARQL SELECT to [{}]: {}", getRepository().toString(), query);
+        }
+        return super.prepareTupleQuery(ql, query, base);
+    }
+
+    @Override
+    public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String base)
+            throws MalformedQueryException, RepositoryException {
+        if (log.isTraceEnabled()) {
+            log.trace("Outgoing SPARQL ASK to [{}]: {}", getRepository().toString(), query);
+        }
+        return super.prepareBooleanQuery(ql, query, base);
+    }
+
+    @Override
+    public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String base)
+            throws MalformedQueryException, RepositoryException {
+        if (log.isTraceEnabled()) {
+            log.trace("Outgoing SPARQL CONSTRUCT to [{}]: {}", getRepository().toString(), query);
+        }
+        return super.prepareGraphQuery(ql, query, base);
+    }
+
+    @Override
     public void commit() throws RepositoryException {
         // all write operations are going through commit method
         // so it is a good place to enforce readonly status of the repository.
@@ -55,3 +95,4 @@ public class CustomSPARQLConnection extends SPARQLConnection {
         }
     }
 }
+

@@ -1,13 +1,14 @@
 PREFIX sp: <http://spinrdf.org/sp#>
 PREFIX spin: <http://spinrdf.org/spin#>
 PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
-PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX config: <tag:rdf4j.org,2023:config/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX : <http://www.researchspace.org/resource/system/service/wikidataentity/>
 
 :WikidataEntity a ephedra:Service;
-	sail:sailType "researchspace:RESTSail" ;
+	config:sail.type "researchspace:RESTSail" ;
 	rdfs:label "A wrapper for the wikidata entity service.";
 	ephedra:hasSPARQLPattern (
 
@@ -71,6 +72,12 @@ PREFIX : <http://www.researchspace.org/resource/system/service/wikidataentity/>
       sp:object :_match_type
     ]
 
+	[
+      sp:subject :_results ;
+      sp:predicate :ordinal ;
+      sp:object :_ordinal
+    ]
+
   );
 
 	spin:constraint [
@@ -113,7 +120,9 @@ PREFIX : <http://www.researchspace.org/resource/system/service/wikidataentity/>
 		a spin:Column ;
 		rdfs:comment "URI of the Wikidata resource" ;
 		spl:predicate :_concepturi ;
-		spl:valueType rdf:Resource ;
+		# rdfs:Resource makes RESTSail mint an IRI (any other type produces a
+		# typed literal, which breaks joining the entity into SPARQL members)
+		spl:valueType rdfs:Resource ;
 		ephedra:jsonPath "$.concepturi"
 	] ;
 
@@ -155,4 +164,12 @@ PREFIX : <http://www.researchspace.org/resource/system/service/wikidataentity/>
 		spl:predicate :_id ;
 		spl:valueType xsd:string;
 		ephedra:jsonPath "$.id"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "0-based position of the hit in the search response (relevance rank)" ;
+		spl:predicate :_ordinal ;
+		spl:valueType xsd:integer ;
+		ephedra:rowIndex true
 	] .

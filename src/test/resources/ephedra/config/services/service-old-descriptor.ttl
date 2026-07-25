@@ -1,0 +1,32 @@
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix : <http://www.researchspace.org/resource/system/repository#> .
+@prefix ex: <http://example.org/ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:ServiceOld a ephedra:Service ;
+  sail:sailType "researchspace:RESTSail" ;
+  ephedra:serviceURL "http://localhost:18089/rdf4j-server/repositories/service-old" ;
+  ephedra:hasSPARQLPattern (
+    [
+      sp:subject :_results ;
+      sp:predicate ex:hasName ;
+      sp:object :_name
+    ]
+  ) ;
+  spin:column [
+    a spin:Column ;
+    spl:predicate :_results ;
+    spl:valueType rdfs:Resource;
+    ephedra:jsonPath "$"
+  ] ;
+  spin:column [
+    a spin:Column ;
+    spl:predicate :_name ;
+    spl:valueType xsd:string;
+    ephedra:jsonPath "$.name"
+  ] .

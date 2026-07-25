@@ -32,6 +32,10 @@ import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
 import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
 import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
+import org.eclipse.rdf4j.federated.repository.FedXRepositoryConfig;
+import org.eclipse.rdf4j.federated.util.Vocabulary;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -52,7 +56,34 @@ import com.google.common.collect.SetMultimap;
  */
 public class RepositoryDependencySorter {
 
+    /**
+     * The only fedx:store type resolved through the local
+     * {@link RepositoryManager}; other member types must not be treated as local
+     * repository dependencies.
+     */
+    private static final String RESOLVABLE_REPOSITORY_STORE = "ResolvableRepository";
+
     private RepositoryDependencySorter() {
+    }
+
+    /**
+     * Extracts the repository IDs of fedx:member entries that reference local
+     * repositories (fedx:store "ResolvableRepository").
+     */
+    public static List<String> getResolvableFedXMembers(FedXRepositoryConfig fedXConfig) {
+        List<String> memberIds = Lists.newArrayList();
+        if (fedXConfig.getMembers() == null) {
+            return memberIds;
+        }
+        for (Resource member : fedXConfig.getMembers().filter(null, Vocabulary.FEDX.STORE, null).subjects()) {
+            boolean resolvable = fedXConfig.getMembers().filter(member, Vocabulary.FEDX.STORE, null).objects()
+                    .stream().anyMatch(store -> RESOLVABLE_REPOSITORY_STORE.equals(store.stringValue()));
+            if (resolvable) {
+                fedXConfig.getMembers().filter(member, Vocabulary.FEDX.REPOSITORY_NAME, null).objects().stream()
+                        .map(Value::stringValue).forEach(memberIds::add);
+            }
+        }
+        return memberIds;
     }
 
     private static void fillMultimaps(Map<String, RepositoryConfig> originals, SetMultimap<String, String> dependOnMe,
@@ -67,6 +98,8 @@ public class RepositoryDependencySorter {
                 if (sailImplConfig instanceof MpDelegatingImplConfig) {
                     delegateRepositoryIds.addAll(((MpDelegatingImplConfig) sailImplConfig).getDelegateRepositoryIDs());
                 }
+            } else if (implConfig instanceof FedXRepositoryConfig) {
+                 delegateRepositoryIds.addAll(getResolvableFedXMembers((FedXRepositoryConfig) implConfig));
             }
             // default and/or assets repository configs not provided explicitly:
             // we ignore it as they will be initialized first anyway

@@ -67,6 +67,8 @@ public class ServiceDescriptor {
         private String parameterName;
         private String jsonPath;
         private String inputJsonPath;
+        private boolean rowIndex = false;
+        private boolean rowLimit = false;
         private Resource parameterId;
         private Resource rootNode;
         private IRI valueType;
@@ -91,6 +93,22 @@ public class ServiceDescriptor {
 
         public String getJsonPath() {
             return jsonPath;
+        }
+
+        /**
+         * Whether this output column binds the 0-based row position in the
+         * service response array instead of a {@code jsonPath} value.
+         */
+        public boolean isRowIndex() {
+            return rowIndex;
+        }
+
+        /**
+         * Whether this input argument is a local row bound: its value caps
+         * the number of response rows parsed and is not sent to the API.
+         */
+        public boolean isRowLimit() {
+            return rowLimit;
         }
 
         public void setJsonPath(String jsonPath) {
@@ -229,6 +247,12 @@ public class ServiceDescriptor {
             parameter.inputJsonPath = inputJsonPathOptional.get().stringValue();
         }
 
+        Models.objectLiteral(model.filter(resource, MpRepositoryVocabulary.ROW_INDEX, null))
+                .ifPresent(lit -> parameter.rowIndex = lit.booleanValue());
+
+        Models.objectLiteral(model.filter(resource, MpRepositoryVocabulary.ROW_LIMIT, null))
+                .ifPresent(lit -> parameter.rowLimit = lit.booleanValue());
+
         for (Statement stmt : model.filter(resource, null, null)) {
             parameter.propertiesMap.put(stmt.getPredicate(), stmt.getObject());
         }
@@ -243,15 +267,11 @@ public class ServiceDescriptor {
 
     protected StatementPattern parseStatementPattern(Resource resource, Model model,
             Map<Resource, Parameter> paramMap) {
-        StatementPattern pattern = new StatementPattern();
-
         Value subj = Models.object(model.filter(resource, SP.SUBJECT_PROPERTY, null)).get();
         Value predicate = Models.object(model.filter(resource, SP.PREDICATE_PROPERTY, null)).get();
         Value obj = Models.object(model.filter(resource, SP.OBJECT_PROPERTY, null)).get();
 
-        pattern.setSubjectVar(parseToVar(subj));
-        pattern.setPredicateVar(parseToVar(predicate));
-        pattern.setObjectVar(parseToVar(obj));
+        StatementPattern pattern = new StatementPattern(org.eclipse.rdf4j.query.algebra.StatementPattern.Scope.DEFAULT_CONTEXTS, parseToVar(subj), parseToVar(predicate), parseToVar(obj), null);
 
         if ((subj instanceof Resource) && paramMap.containsKey(subj)) {
             paramMap.get(subj).subjectPatterns.add(pattern);

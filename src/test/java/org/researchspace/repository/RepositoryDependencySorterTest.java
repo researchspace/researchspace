@@ -28,6 +28,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.rdf4j.federated.repository.FedXRepositoryConfig;
+import org.eclipse.rdf4j.federated.util.Vocabulary;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.config.AbstractRepositoryImplConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
@@ -217,6 +224,49 @@ public class RepositoryDependencySorterTest {
         Map<String, RepositoryConfig> sorted = RepositoryDependencySorter.sortConfigs(originals);
         assertThat(Lists.newArrayList(sorted.keySet()), hasItemsInOrder("first", "third", "fourth"));
         assertThat(Lists.newArrayList(sorted.keySet()), hasItemsInOrder("first", "second", "fourth"));
+    }
+
+    private RepositoryConfig createFedXRepoConfig(String name, Model members) {
+        FedXRepositoryConfig impl = new FedXRepositoryConfig();
+        impl.setMembers(members);
+        return new RepositoryConfig(name, impl);
+    }
+
+    private Model fedxMember(Model model, String store, String repositoryName) {
+        ValueFactory vf = SimpleValueFactory.getInstance();
+        BNode member = vf.createBNode();
+        model.add(member, Vocabulary.FEDX.STORE, vf.createLiteral(store));
+        model.add(member, Vocabulary.FEDX.REPOSITORY_NAME, vf.createLiteral(repositoryName));
+        return model;
+    }
+
+    @Test
+    public void testFedXResolvableMembersCreateDependencies() {
+        Map<String, RepositoryConfig> originals = Maps.newLinkedHashMap();
+        Model members = fedxMember(new LinkedHashModel(), "ResolvableRepository", "first");
+        originals.put("federation", createFedXRepoConfig("federation", members));
+        addRepo(originals, "first");
+
+        Map<String, RepositoryConfig> sorted = RepositoryDependencySorter.sortConfigs(originals);
+        assertThat(Lists.newArrayList(sorted.keySet()), hasItemsInOrder("first", "federation"));
+    }
+
+    /**
+     * fedx:member entries that are not resolved through the local
+     * RepositoryManager (e.g. fedx:store "RemoteRepository") must not become
+     * phantom local dependencies, otherwise startup fails with "Loop
+     * dependencies or unresolved dependencies".
+     */
+    @Test
+    public void testFedXNonResolvableMembersAreIgnored() {
+        Map<String, RepositoryConfig> originals = Maps.newLinkedHashMap();
+        Model members = fedxMember(new LinkedHashModel(), "RemoteRepository", "remote-repo");
+        fedxMember(members, "ResolvableRepository", "first");
+        originals.put("federation", createFedXRepoConfig("federation", members));
+        addRepo(originals, "first");
+
+        Map<String, RepositoryConfig> sorted = RepositoryDependencySorter.sortConfigs(originals);
+        assertThat(Lists.newArrayList(sorted.keySet()), hasItemsInOrder("first", "federation"));
     }
 
 }

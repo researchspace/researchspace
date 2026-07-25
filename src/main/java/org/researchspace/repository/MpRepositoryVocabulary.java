@@ -49,6 +49,11 @@ public class MpRepositoryVocabulary {
      * Default namespace for the instance URIs of federation members.
      */
     public static final String FEDERATION_MEMBER_NAMESPACE = "http://www.researchspace.org/resource/system/repository/federation#";
+    
+    public static final IRI FEDERATION_MEMBER = VF.createIRI("tag:rdf4j.org,2023:config/fed.member");
+    public static final IRI LEGACY_FEDERATION_MEMBER = VF.createIRI("http://www.openrdf.org/config/sail/federation#member");
+    
+    public static final IRI LEGACY_REPOSITORY_ID = VF.createIRI("http://www.openrdf.org/config/repository#repositoryID");
 
     /**
      * Namespace for the common configuration properties of custom services.
@@ -110,12 +115,34 @@ public class MpRepositoryVocabulary {
     public static final IRI USE_BOUND_JOIN = VF.createIRI(FEDERATION_NAMESPACE, "useBoundJoin");
     public static final IRI JSON_PATH = VF.createIRI(FEDERATION_NAMESPACE, "jsonPath");
     public static final IRI INPUT_JSON_PATH = VF.createIRI(FEDERATION_NAMESPACE, "inputJsonPath");
+    /**
+     * Marks a REST service descriptor output column that binds the 0-based
+     * position of the row in the service response array (instead of reading a
+     * value via {@link #JSON_PATH}). Lets queries restore the service's result
+     * ordering (e.g. search relevance) after joins and aggregation.
+     */
+    public static final IRI ROW_INDEX = VF.createIRI(FEDERATION_NAMESPACE, "rowIndex");
+    /**
+     * Marks a REST service descriptor input argument as a local row bound: its
+     * value caps the number of rows parsed from the service response and it is
+     * NOT sent to the remote API. The declared "top N hits" bound for search
+     * APIs that return their full unpaginated result list - it limits what
+     * enters the SPARQL engine, so downstream per-row joins and ORDER BY
+     * cannot fan out beyond N.
+     */
+    public static final IRI ROW_LIMIT = VF.createIRI(FEDERATION_NAMESPACE, "rowLimit");
     public static final IRI HTTP_METHOD = VF.createIRI(FEDERATION_NAMESPACE, "httpMethod");
     public static final IRI HTTP_HEADER = VF.createIRI(FEDERATION_NAMESPACE, "httpHeader");
     public static final IRI NAME = VF.createIRI(FEDERATION_NAMESPACE, "name");
     public static final IRI VALUE = VF.createIRI(FEDERATION_NAMESPACE, "value");
     public static final IRI INPUT_FORMAT = VF.createIRI(FEDERATION_NAMESPACE, "inputFormat");
     public static final IRI MEDIA_TYPE = VF.createIRI(FEDERATION_NAMESPACE, "mediaType");
+    /**
+     * If set to true, HTTP errors (4xx, 5xx) from REST services will be ignored
+     * and return empty results instead of failing the entire query. Useful for
+     * services where some items may return 403 Forbidden but others succeed.
+     */
+    public static final IRI IGNORE_HTTP_ERRORS = VF.createIRI(FEDERATION_NAMESPACE, "ignoreHttpErrors");
 
     public static final IRI IMPLEMENTS_SERVICE = VF.createIRI(FEDERATION_NAMESPACE, "implementsService");
 
@@ -132,6 +159,13 @@ public class MpRepositoryVocabulary {
     // REST authorization
     public static final IRI AUTHORIZATION_KEY = VF.createIRI(FEDERATION_NAMESPACE, "authKey");
     public static final IRI AUTHORIZATION_VALUE = VF.createIRI(FEDERATION_NAMESPACE, "authValue");
+    
+    /**
+     * Number of HTTP calls to prefetch for REST services.
+     * Higher values improve parallelism but may make slightly more calls than needed when LIMIT is used.
+     * Default is 5.
+     */
+    public static final IRI REST_SERVICE_PREFETCH_SIZE = VF.createIRI(FEDERATION_NAMESPACE, "restServicePrefetchSize");
     public static final IRI AUTHORIZATION_LOCATION = VF.createIRI(FEDERATION_NAMESPACE, "authLocation");
 
     // SQL authorization

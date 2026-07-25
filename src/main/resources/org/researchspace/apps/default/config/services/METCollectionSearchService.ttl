@@ -2,12 +2,12 @@ PREFIX sp: <http://spinrdf.org/sp#>
 PREFIX spin: <http://spinrdf.org/spin#>
 PREFIX spl: <http://spinrdf.org/spl#>
 PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
-PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX config: <tag:rdf4j.org,2023:config/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX : <http://www.researchspace.org/resource/system/services/metcollectiononline/>
 
 :METCollectionSearchService a ephedra:Service ;    
-    sail:sailType "researchspace:RESTSail" ;
+    config:sail.type "researchspace:RESTSail" ;
     rdfs:label "A wrapper for the MET museum API service." ;
 
     ephedra:hasSPARQLPattern (
@@ -26,6 +26,16 @@ PREFIX : <http://www.researchspace.org/resource/system/services/metcollectiononl
            sp:predicate :objectIDs ;
            sp:object :_objectIDs
         ]
+        [
+           sp:subject :_results ;
+           sp:predicate :ordinal ;
+           sp:object :_ordinal
+        ]
+        [
+           sp:subject :_results ;
+           sp:predicate :limit ;
+           sp:object :_limit
+        ]
     );
 
     spin:constraint [
@@ -33,6 +43,14 @@ PREFIX : <http://www.researchspace.org/resource/system/services/metcollectiononl
         rdfs:comment "search term" ;
         spl:predicate :_q ;
         spl:valueType xsd:string ;
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "local bound on the number of search hits parsed (the MET search API returns the FULL unpaginated id list); never sent to the API" ;
+        spl:predicate :_limit ;
+        spl:valueType xsd:integer ;
+        ephedra:rowLimit true
         ] ;
 
     spin:column [
@@ -49,5 +67,13 @@ PREFIX : <http://www.researchspace.org/resource/system/services/metcollectiononl
         spl:predicate :_objectIDs ;
         spl:valueType xsd:string ;
         ephedra:jsonPath "$"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "0-based position of the hit in the search response (relevance rank)" ;
+        spl:predicate :_ordinal ;
+        spl:valueType xsd:integer ;
+        ephedra:rowIndex true
     ] .
 

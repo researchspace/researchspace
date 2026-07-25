@@ -26,14 +26,17 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.QueryParserUtil;
+import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
 import org.junit.Assert;
 import org.junit.Test;
 import org.researchspace.junit.AbstractIntegrationTest;
 import org.researchspace.sparql.renderer.MpSparqlQueryRenderer;
 import org.researchspace.sparql.visitors.ParametrizeVisitor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -85,5 +88,24 @@ public class ParametrizeVisitorTest extends AbstractIntegrationTest {
         parsedQuery.getTupleExpr().visit(new ParametrizeVisitor(this.parameters));
         String rendered = new MpSparqlQueryRenderer().render(parsedQuery);
         Assert.assertEquals(expected.replaceAll("\\s+", ""), rendered.replaceAll("\\s+", ""));
+    }
+    @Test
+    public void testAliasedProjection() throws Exception {
+        String query = "SELECT (?s as ?subject) WHERE { ?s ?p ?o }";
+        SPARQLParser parser = new SPARQLParser();
+        ParsedQuery pq = parser.parseQuery(query, null);
+        
+        Map<String, Value> params = new HashMap<>();
+        params.put("s", SimpleValueFactory.getInstance().createIRI("http://example.org/subject"));
+        
+        ParametrizeVisitor visitor = new ParametrizeVisitor(params);
+        pq.getTupleExpr().visit(visitor);
+        
+        String rendered = new MpSparqlQueryRenderer().render(pq);
+        String expectedQuery = "SELECT ( <http://example.org/subject> AS ?subject) WHERE { <http://example.org/subject> ?p ?o . }";
+        // Normalize strings by removing whitespace
+        System.out.println("Expected: " + expectedQuery.replaceAll("\\s+", ""));
+        System.out.println("Actual:   " + rendered.replaceAll("\\s+", ""));
+        Assert.assertEquals(expectedQuery.replaceAll("\\s+", ""), rendered.replaceAll("\\s+", ""));
     }
 }

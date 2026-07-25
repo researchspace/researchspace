@@ -57,6 +57,7 @@ import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryFactory;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
 import org.eclipse.rdf4j.sail.nativerdf.config.NativeStoreConfig;
+import org.eclipse.rdf4j.federated.repository.FedXRepositoryConfig;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.Configuration;
 import org.researchspace.data.rdf.container.LDPApiInternalRegistry;
@@ -139,12 +140,10 @@ public class RepositoryManager implements RepositoryManagerInterface {
         File baseDataFolder = new File(Configuration.getRuntimeDirectory(), "data");
         this.repositoryDataFolder = new File(baseDataFolder, "repositories");
         this.client = new MpSharedHttpClientSessionManager(config);
-
-        init();
         this.hookReference = new WeakReference<>(addShutdownHook(this));
     }
 
-    private void init() throws IOException {
+    public void init() throws IOException {
         Map<String, RepositoryConfig> configs = RepositoryConfigUtils
                 .readInitialRepositoryConfigsFromStorage(this.platformStorage);
 
@@ -443,6 +442,14 @@ public class RepositoryManager implements RepositoryManagerInterface {
         getAssetRepository().shutDown();
         initializedRepositories.clear();
 
+        // close the shared HTTP client and its executor threads, otherwise they
+        // survive webapp reloads
+        try {
+            this.client.shutDown();
+        } catch (Throwable t) {
+            logger.warn("Error while shutting down the HTTP client session manager: {}", t.getMessage());
+        }
+
         if (unregisterShutdownHook) {
             // unregister shutdown hook as everything is done
             removeShutdownHook(hookReference.get());
@@ -669,6 +676,9 @@ public class RepositoryManager implements RepositoryManagerInterface {
                     if (sailConfig instanceof MpDelegatingImplConfig) {
                         delegates = ((MpDelegatingImplConfig) sailConfig).getDelegateRepositoryIDs();
                     }
+                } else if (implConfig instanceof FedXRepositoryConfig) {
+                    delegates.addAll(
+                            RepositoryDependencySorter.getResolvableFedXMembers((FedXRepositoryConfig) implConfig));
                 }
                 for (String delegate : delegates) {
                     if (configs.containsKey(delegate)) {

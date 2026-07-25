@@ -22,9 +22,11 @@ package org.researchspace.repository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -76,6 +78,10 @@ public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    private static final String CONFIG_NAMESPACE = "tag:rdf4j.org,2023:config/";
+    private static final IRI NEW_REPOSITORY_ID = SimpleValueFactory.getInstance().createIRI(CONFIG_NAMESPACE, "rep.id");
+    private static final IRI NEW_SAIL_TYPE = SimpleValueFactory.getInstance().createIRI(CONFIG_NAMESPACE, "sail.type");
+
     @Test
     public void testCreateMemorySailRepositoryConfigFromModel() throws Exception {
         Model model = TestUtils
@@ -97,6 +103,27 @@ public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testLegacyFederationSailRepositoryConfigIsMigrated() throws Exception {
+        // pre-rdf4j-5 deployments declared the ephedra federation as a generic
+        // 'openrdf:SailRepository' wrapping the 'researchspace:Federation' sail.
+        // After the FedX rewrite the federation only works through the
+        // MpFederationSailRepository (FedX repository) wrapper, which wires the
+        // FederationContext — the legacy form must be migrated at parse time,
+        // otherwise every query on it fails with a NullPointerException.
+        Model model = TestUtils.readTurtleInputStreamIntoModel(
+                TestUtils.readPlainTextTurtleInput("/org/researchspace/repository/test-sail-mp-federation-repository.ttl"),
+                baseIri);
+
+        RepositoryConfig repConfig = RepositoryConfigUtils.createRepositoryConfig(model);
+
+        assertEquals("test-sail-mp-federation-repository", repConfig.getID());
+        assertEquals(org.researchspace.federation.repository.MpFederationSailRepositoryFactory.REPOSITORY_TYPE,
+                repConfig.getRepositoryImplConfig().getType());
+        assertTrue(repConfig
+                .getRepositoryImplConfig() instanceof org.researchspace.federation.repository.MpFederationSailRepositoryConfig);
+    }
+
+    @Test
     public void testCreateRepositoryConfigFromModelFail() throws Exception {
         exception.expect(RepositoryConfigException.class);
         exception.expectMessage("Repository configuration model must have exactly one repository id.");
@@ -110,7 +137,7 @@ public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
         final RepositoryConfig repConfig2 = createTestMemorySailRepositoryConfig("test-sail-memory-repository-2");
         repConfig1.export(model);
         repConfig2.export(model);
-        assertEquals(2, model.filter(null, RepositoryConfigSchema.REPOSITORYID, null).size());
+        assertEquals(2, model.filter(null, NEW_REPOSITORY_ID, null).size());
         exception.expect(RepositoryConfigException.class);
         exception.expectMessage("Repository configuration model must have exactly one repository id.");
         RepositoryConfigUtils.createRepositoryConfig(model);
@@ -159,12 +186,16 @@ public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
         final Model model = new LinkedHashModel();
         repConfig.export(model);
 
-        final Model fileModel = TestUtils
-                .readTurtleInputStreamIntoModel(TestUtils.readPlainTextTurtleInput(MEMORY_STORE_CONFIG_FILE), baseIri);
+        // Verify that the exported model uses the new vocabulary
+        assertTrue(model.contains(null, NEW_REPOSITORY_ID, null));
 
-        // the config as in turtle file should be isomorphic as the model
-        // created programmatically
-        assertTrue(Models.isomorphic(fileModel, model));
+        // We can't compare with the legacy file anymore because the vocabulary changed.
+        // Instead, we verify that we can read the legacy file and get the same config object.
+        Model legacyFileModel = TestUtils
+                .readTurtleInputStreamIntoModel(TestUtils.readPlainTextTurtleInput(MEMORY_STORE_CONFIG_FILE), baseIri);
+        RepositoryConfig legacyConfig = RepositoryConfigUtils.createRepositoryConfig(legacyFileModel);
+        
+        assertMemorySailTestConfig(legacyConfig);
     }
 
     @Test
@@ -174,12 +205,15 @@ public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
         final Model model = new LinkedHashModel();
         repConfig.export(model);
 
-        final Model fileModel = TestUtils
-                .readTurtleInputStreamIntoModel(TestUtils.readPlainTextTurtleInput(NATIVE_STORE_CONFIG_FILE), baseIri);
+        // Verify that the exported model uses the new vocabulary
+        assertTrue(model.contains(null, NEW_REPOSITORY_ID, null));
 
-        // the config as in turtle file should be isomorphic as the model
-        // created programmatically
-        assertTrue(Models.isomorphic(fileModel, model));
+        // Verify legacy file reading
+        Model legacyFileModel = TestUtils
+                .readTurtleInputStreamIntoModel(TestUtils.readPlainTextTurtleInput(NATIVE_STORE_CONFIG_FILE), baseIri);
+        RepositoryConfig legacyConfig = RepositoryConfigUtils.createRepositoryConfig(legacyFileModel);
+
+        assertNativeSailTestConfig(legacyConfig);
     }
 
     private void writeConfigToStorage(String repositoryId, InputStream content) throws IOException {
@@ -205,7 +239,7 @@ public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
         final RepositoryConfig repConfig = createTestMemorySailRepositoryConfig("test-sail-memory-repository-invalid");
         repConfig.export(model);
 
-        model.remove(null, SailConfigSchema.SAILTYPE, null);
+        model.remove(null, NEW_SAIL_TYPE, null);
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             Rio.write(model, os, RDFFormat.TURTLE);
             writeConfigToStorage("test-sail-memory-repository-invalid", os.toInputStream());
@@ -324,5 +358,27 @@ public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
 
         assertMemorySailTestConfig(map.get("test-sail-memory-repository"));
         assertNativeSailTestConfig(map.get("test-sail-native-repository"));
+    }
+
+    /**
+     * A single broken configuration file (unparseable turtle, invalid config)
+     * must be skipped with a warning instead of aborting the loading of all
+     * other repository configurations at startup.
+     */
+    @Test
+    public void testBrokenConfigFilesDoNotPreventOtherConfigsFromLoading() throws Exception {
+        URL memoryFile = RepositoryConfigUtilsTest.class.getResource(MEMORY_STORE_CONFIG_FILE);
+        writeConfigToStorage("test-sail-memory-repository", memoryFile.openStream());
+        writeConfigToStorage("broken",
+                new ByteArrayInputStream("this is not valid turtle".getBytes(StandardCharsets.UTF_8)));
+        writeConfigToStorage("noimpl",
+                new ByteArrayInputStream("<urn:x> <tag:rdf4j.org,2023:config/rep.id> \"noimpl\" ."
+                        .getBytes(StandardCharsets.UTF_8)));
+
+        Map<String, RepositoryConfig> map = RepositoryConfigUtils
+                .readInitialRepositoryConfigsFromStorage(storage.getPlatformStorage());
+
+        assertEquals(1, map.size());
+        assertMemorySailTestConfig(map.get("test-sail-memory-repository"));
     }
 }

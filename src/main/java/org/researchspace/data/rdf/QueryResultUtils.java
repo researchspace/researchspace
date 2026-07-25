@@ -19,7 +19,7 @@
 
 package org.researchspace.data.rdf;
 
-import org.eclipse.rdf4j.common.iteration.Iteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,9 +39,9 @@ public class QueryResultUtils extends QueryResults {
      * @see Iterations#closeCloseable(Iteration)
      * @param iter
      */
-    public static <X extends Exception> void closeQuietly(Iteration<?, X> iter) {
+    public static <X extends Exception> void closeQuietly(CloseableIteration<?> iter) {
         try {
-            Iterations.closeCloseable(iter);
+            iter.close();
         } catch (Exception e) {
             logger.warn("Failed to close iterable:" + e);
         }

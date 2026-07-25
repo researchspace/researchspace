@@ -36,12 +36,13 @@ import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
-import org.eclipse.rdf4j.query.algebra.evaluation.impl.BindingAssigner;
-import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
-import org.eclipse.rdf4j.query.algebra.helpers.StatementPatternCollector;
+import org.eclipse.rdf4j.query.algebra.evaluation.optimizer.BindingAssignerOptimizer;
+import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
+import org.eclipse.rdf4j.query.algebra.helpers.collectors.StatementPatternCollector;
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 import org.eclipse.rdf4j.sail.helpers.AbstractSailConnection;
+import org.researchspace.federation.repository.service.ServiceDescriptor;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -117,16 +118,62 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
      * 
      */
     @Override
-    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(TupleExpr tupleExpr,
+    protected CloseableIteration<? extends BindingSet> evaluateInternal(TupleExpr tupleExpr,
             Dataset dataset, BindingSet bindings, boolean includeInferred) throws SailException {
         TupleExpr cloned = tupleExpr.clone();
-        new BindingAssigner().optimize(cloned, dataset, bindings);
+        new BindingAssignerOptimizer().optimize(cloned, dataset, bindings);
         StatementPatternCollector collector = new StatementPatternCollector();
         cloned.visit(collector);
         List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
         ServiceParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
-        // limiter goes here
-        return executeAndConvertResultsToBindingSet(parametersHolder);
+        // enforce ephedra:rowLimit generically, whatever the concrete sail or
+        // response shape produced the iteration
+        return applyRowLimit(executeAndConvertResultsToBindingSet(parametersHolder), parametersHolder,
+                sail.getServiceDescriptor());
+    }
+
+    /**
+     * Enforce a bound {@code ephedra:rowLimit} argument on the service result.
+     * The bound is declared generically in the {@link ServiceDescriptor}, so it
+     * must cap the result of EVERY service-wrapping sail — regardless of the
+     * response shape (JSON array or object, SQL result set) and of subclass
+     * overrides of {@link #executeAndConvertResultsToBindingSet}.
+     *
+     * @return the iteration, capped when a row limit is bound; unchanged otherwise
+     */
+    protected static CloseableIteration<? extends BindingSet> applyRowLimit(
+            CloseableIteration<? extends BindingSet> result, ServiceParametersHolder parametersHolder,
+            ServiceDescriptor descriptor) {
+        int rowLimit = resolveRowLimit(parametersHolder, descriptor);
+        if (rowLimit < 0) {
+            return result;
+        }
+        return new org.eclipse.rdf4j.common.iteration.LimitIteration<>(result, rowLimit);
+    }
+
+    /**
+     * Resolve the value of a {@code ephedra:rowLimit} input argument, if the
+     * query provided one.
+     *
+     * @return the row bound, or -1 when none is set
+     */
+    protected static int resolveRowLimit(ServiceParametersHolder parametersHolder, ServiceDescriptor descriptor) {
+        if (descriptor == null) {
+            return -1;
+        }
+        for (Map.Entry<String, ServiceDescriptor.Parameter> entry : descriptor.getInputParameters().entrySet()) {
+            if (entry.getValue().isRowLimit()) {
+                String value = parametersHolder.getInputParameters().get(entry.getKey());
+                if (value != null) {
+                    try {
+                        return Integer.parseInt(value);
+                    } catch (NumberFormatException e) {
+                        throw new SailException("Invalid " + entry.getKey() + " row limit value: " + value, e);
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     /**
@@ -138,18 +185,18 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
      *                         parameters to be submitted to the service
      * @return iteration over binding sets
      */
-    protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
+    protected abstract CloseableIteration<? extends BindingSet> executeAndConvertResultsToBindingSet(
             ServiceParametersHolder parametersHolder);
 
     @Override
-    protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal() throws SailException {
-        return new CollectionIteration<Resource, SailException>(Lists.<Resource>newArrayList());
+    protected CloseableIteration<? extends Resource> getContextIDsInternal() throws SailException {
+        return new CloseableIteratorIteration<>(Lists.<Resource>newArrayList().iterator());
     }
 
     @Override
-    protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj, IRI pred,
+    protected CloseableIteration<? extends Statement> getStatementsInternal(Resource subj, IRI pred,
             Value obj, boolean includeInferred, Resource... contexts) throws SailException {
-        return new CollectionIteration<Statement, SailException>(Lists.<Statement>newArrayList());
+        return new CloseableIteratorIteration<>(Lists.<Statement>newArrayList().iterator());
     }
 
     @Override
@@ -190,8 +237,8 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
     }
 
     @Override
-    protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal() throws SailException {
-        return new CollectionIteration<Namespace, SailException>(Lists.<Namespace>newArrayList());
+    protected CloseableIteration<? extends Namespace> getNamespacesInternal() throws SailException {
+        return new CloseableIteratorIteration<>(Lists.<Namespace>newArrayList().iterator());
     }
 
     @Override

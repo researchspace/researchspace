@@ -87,7 +87,7 @@ public class RESTSailHttpHeaderSecretTest {
         
         // Initialize sail to trigger secret resolution
         sail = createSailWithSecretResolver(config, secretResolver);
-        sail.initialize();
+        sail.init();
         
         // Verify secret was resolved
         assertEquals("test-token-12345", config.getHttpHeaders().get("Authorization"));
@@ -111,7 +111,7 @@ public class RESTSailHttpHeaderSecretTest {
         
         // Initialize sail to trigger secret resolution
         sail = createSailWithSecretResolver(config, secretResolver);
-        sail.initialize();
+        sail.init();
         
         // Verify secret was resolved
         assertEquals("Bearer my-secret-key", config.getHttpHeaders().get("X-API-Key"));
@@ -135,7 +135,7 @@ public class RESTSailHttpHeaderSecretTest {
         
         // Initialize sail to trigger secret resolution
         sail = createSailWithSecretResolver(config, secretResolver);
-        sail.initialize();
+        sail.init();
         
         // Verify placeholder is kept when secret not found (fail-safe behavior)
         assertEquals("${secret.nonexistent}", config.getHttpHeaders().get("X-Missing"));
@@ -159,7 +159,7 @@ public class RESTSailHttpHeaderSecretTest {
         
         // Initialize sail to trigger secret resolution
         sail = createSailWithSecretResolver(config, secretResolver);
-        sail.initialize();
+        sail.init();
         
         // Verify fallback value is used
         assertEquals("fallback-value", config.getHttpHeaders().get("X-Fallback"));
@@ -183,7 +183,7 @@ public class RESTSailHttpHeaderSecretTest {
         
         // Initialize sail
         sail = createSailWithSecretResolver(config, secretResolver);
-        sail.initialize();
+        sail.init();
         
         // Verify plain value remains unchanged
         assertEquals("application/json", config.getHttpHeaders().get("Content-Type"));
@@ -220,7 +220,7 @@ public class RESTSailHttpHeaderSecretTest {
         
         // Initialize sail
         sail = createSailWithSecretResolver(config, secretResolver);
-        sail.initialize();
+        sail.init();
         
         // Verify all headers are resolved correctly
         Map<String, String> headers = config.getHttpHeaders();
@@ -271,7 +271,7 @@ public class RESTSailHttpHeaderSecretTest {
         
         // Initialize sail
         sail = createSailWithSecretResolver(config, secretResolver);
-        sail.initialize();
+        sail.init();
         
         // Verify Bearer prefix is preserved and token is resolved
         assertEquals("Bearer test-token-12345", config.getHttpHeaders().get("Authorization"));

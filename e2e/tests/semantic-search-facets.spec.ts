@@ -81,6 +81,37 @@ test('combines structured search with a facet filter', async ({ page }) => {
   await expect(search.titles.filter({ hasText: 'The Red Vineyard' })).toHaveCount(0);
 });
 
+test('narrows resource autocomplete results with a literal facet', async ({ page }) => {
+  const search = new SemanticSearchPage(page, 'structured');
+  await search.open();
+  await search.selectStructuredResource('Creator', 'Gogh', 'Gogh, Vincent van');
+  await search.expectCount(3);
+
+  const title = await search.openRelation('Title');
+  await search.filterFacetValues(title, 'The Bedroom');
+  await expect(search.facetValue(title, 'The Bedroom')).toContainText('(1)');
+  await search.selectFacetValue(title, 'The Bedroom');
+  await search.expectCount(1);
+  await search.expectVisibleTitles(['The Bedroom']);
+  await expect(search.titles.filter({ hasText: 'Café Terrace at Night' })).toHaveCount(0);
+});
+
+test('narrows free-text results with a resource facet', async ({ page }) => {
+  const search = new SemanticSearchPage(page, 'structured');
+  await search.open();
+  await search.selectStructuredText('Title', 'night');
+  await search.expectCount(2);
+  await search.expectVisibleTitles(['Café Terrace at Night', 'The Nightmare']);
+
+  const creator = await search.openRelation('Creator');
+  await search.filterFacetValues(creator, 'Gogh');
+  await expect(search.facetValue(creator, 'Gogh, Vincent van')).toContainText('(1)');
+  await search.selectFacetValue(creator, 'Gogh, Vincent van');
+  await search.expectCount(1);
+  await search.expectVisibleTitles(['Café Terrace at Night']);
+  await expect(search.titles.filter({ hasText: 'The Nightmare' })).toHaveCount(0);
+});
+
 test('filters and combines multiple creator facet values with OR', async ({ page }) => {
   const search = new SemanticSearchPage(page);
   await search.open();

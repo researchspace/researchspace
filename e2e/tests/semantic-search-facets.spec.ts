@@ -39,6 +39,48 @@ test('shows the complete base semantic-search result set', async ({ page }) => {
   );
 });
 
+test('structured search offers a date-range selector and filters results', async ({ page }) => {
+  const search = new SemanticSearchPage(page, 'structured');
+  await search.open();
+
+  await search.selectStructuredYearRange(1888, 1889);
+  await search.expectCount(3);
+  await search.expectVisibleTitles(['The Bedroom', 'Café Terrace at Night', 'The Red Vineyard']);
+});
+
+test('structured search autocompletes resources and filters by creator', async ({ page }) => {
+  const search = new SemanticSearchPage(page, 'structured');
+  await search.open();
+
+  await search.selectStructuredResource('Creator', 'Gogh', 'Gogh, Vincent van');
+  await search.expectCount(3);
+  await search.expectVisibleTitles(['The Bedroom', 'Café Terrace at Night', 'The Red Vineyard']);
+});
+
+test('structured search filters titles with free text', async ({ page }) => {
+  const search = new SemanticSearchPage(page, 'structured');
+  await search.open();
+
+  await search.selectStructuredText('Title', 'mona lisa');
+  await search.expectCount(1);
+  await search.expectVisibleTitles(['Mona Lisa']);
+  await expect(search.titles.filter({ hasText: 'Las Meninas' })).toHaveCount(0);
+});
+
+test('combines structured search with a facet filter', async ({ page }) => {
+  const search = new SemanticSearchPage(page, 'structured');
+  await search.open();
+  await search.selectStructuredYearRange(1888, 1889);
+  await search.expectCount(3);
+
+  const title = await search.openRelation('Title');
+  await search.filterFacetValues(title, 'The Bedroom');
+  await search.selectFacetValue(title, 'The Bedroom');
+  await search.expectCount(1);
+  await search.expectVisibleTitles(['The Bedroom']);
+  await expect(search.titles.filter({ hasText: 'The Red Vineyard' })).toHaveCount(0);
+});
+
 test('filters and combines multiple creator facet values with OR', async ({ page }) => {
   const search = new SemanticSearchPage(page);
   await search.open();

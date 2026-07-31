@@ -1,5 +1,23 @@
 <semantic-search
   id="structured-search-example-search"
+  categories='{
+    "<http://www.w3.org/2001/XMLSchema#string>": [{
+      "kind": "text",
+      "tokenizeLuceneQuery": false,
+      "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?title .
+        FILTER(CONTAINS(LCASE(STR(?title)), LCASE(STR(?__value__)))) ."
+    }],
+    "<http://www.w3.org/2001/XMLSchema#dateTime>": [{
+      "kind": "date-range",
+      "datatype": "http://www.w3.org/2001/XMLSchema#dateTime",
+      "format": "YYYY-MM-DDTHH:mm:ssZ",
+      "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P108i_was_produced_by>/<http://www.cidoc-crm.org/cidoc-crm/P9_consists_of>*/<http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?timeSpan .
+        ?timeSpan <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?begin .
+        ?timeSpan <http://www.cidoc-crm.org/cidoc-crm/P82b_end_of_the_end> ?end .
+        FILTER(?begin <= ?__dateEndValue__) .
+        FILTER(?end >= ?__dateBeginValue__) ."
+    }]
+  }'
   search-profile='{
     "categories": [
       {
@@ -59,16 +77,6 @@
     "<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content>": [{
       "kind": "literal",
       "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?__literal__ ."
-    }],
-    "<http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span>": [{
-      "kind": "date-range",
-      "datatype": "http://www.w3.org/2001/XMLSchema#dateTime",
-      "format": "YYYY-MM-DDTHH:mm:ssZ",
-      "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P108i_was_produced_by>/<http://www.cidoc-crm.org/cidoc-crm/P9_consists_of>*/<http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?timeSpan .
-        ?timeSpan <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?begin .
-        ?timeSpan <http://www.cidoc-crm.org/cidoc-crm/P82b_end_of_the_end> ?end .
-        FILTER(?begin <= ?__dateEndValue__) .
-        FILTER(?end >= ?__dateBeginValue__) ."
     }]
   }'
   [[#if presetFacets]] preset-facets='[[presetFacets]]' [[/if]]

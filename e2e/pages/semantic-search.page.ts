@@ -6,6 +6,8 @@
 
 import { expect, type Locator, type Page } from '@playwright/test';
 
+type SemanticSearchExample = 'constant' | 'structured';
+
 function facetValueText(value: string): RegExp {
   const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`^${escaped}\\s*\\(\\d+\\)\\s*$`);
@@ -18,9 +20,14 @@ export class SemanticSearchPage {
   readonly titles: Locator;
   readonly thumbnails: Locator;
 
-  constructor(page: Page) {
+  private readonly example: SemanticSearchExample;
+
+  constructor(page: Page, example: SemanticSearchExample = 'constant') {
     this.page = page;
-    this.root = page.locator('.structured-constant-search-example');
+    this.example = example;
+    this.root = page.locator(
+      example === 'constant' ? '.structured-constant-search-example' : '.structured-search-example'
+    );
     this.count = this.root.getByText(/^Found \d+ matches$/);
     this.titles = this.root.locator('.grid-resource-link');
     this.thumbnails = this.root.locator(
@@ -29,9 +36,67 @@ export class SemanticSearchPage {
   }
 
   async open(): Promise<void> {
-    await this.page.goto('/resource/Help:StructuredConstantSearchExample');
+    const resource =
+      this.example === 'constant' ? 'Help:StructuredConstantSearchExample' : 'Help:StructuredSearchExample';
+    await this.page.goto(`/resource/${resource}`);
     await expect(this.root).toBeVisible();
-    await this.expectCount(20);
+    if (this.example === 'constant') {
+      await this.expectCount(20);
+    } else {
+      await expect(
+        this.root.getByRole('listbox', { name: 'search domain category selection' })
+      ).toBeVisible();
+    }
+  }
+
+  async selectStructuredYearRange(begin: number, end: number): Promise<void> {
+    await this.selectStructuredRange('Production date');
+
+    const dateFormat = this.root.getByText('Select Date or Range Type', { exact: true });
+    await expect(dateFormat).toBeVisible();
+    await dateFormat.click();
+
+    const dateFormatOptions = this.root.locator('.Select-menu .Select-option');
+    await expect(dateFormatOptions).toHaveCount(6);
+    await dateFormatOptions.nth(4).click();
+
+    const yearInputs = this.root.locator('input[placeholder="YYYY"]');
+    await expect(yearInputs).toHaveCount(2);
+    await yearInputs.nth(0).fill(String(begin));
+    await yearInputs.nth(1).fill(String(end));
+    await this.root.getByRole('button', { name: 'Select', exact: true }).click();
+  }
+
+  async selectStructuredResource(range: string, searchTerm: string, suggestion: string): Promise<void> {
+    await this.selectStructuredRange(range);
+
+    const input = this.root.getByRole('combobox');
+    await expect(input).toBeVisible();
+    await input.fill(searchTerm);
+
+    const option = this.root.locator('.Select-option').filter({ hasText: suggestion }).first();
+    await expect(option).toBeVisible();
+    await option.click();
+  }
+
+  async selectStructuredText(range: string, text: string): Promise<void> {
+    await this.selectStructuredRange(range);
+
+    const input = this.root.locator('input[placeholder="text"]');
+    await expect(input).toBeVisible();
+    await input.fill(text);
+    await this.root.getByRole('button', { name: 'Find Text', exact: true }).click();
+  }
+
+  private async selectStructuredRange(range: string): Promise<void> {
+    await this.root
+      .getByRole('listbox', { name: 'search domain category selection' })
+      .getByRole('option', { name: 'Human-made object' })
+      .click();
+    await this.root
+      .getByRole('listbox', { name: 'search range category selection' })
+      .getByRole('option', { name: range })
+      .click();
   }
 
   relation(name: string): Locator {

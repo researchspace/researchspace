@@ -2,11 +2,12 @@
   <div class='page__content-container'>
   <div>
   [[> Help:StructuredSearchSampleDataCheck]]
-    <p>Try to find human-made objects produced in a date range.</p>
+    <p>Try different structured searches for human-made objects.</p>
     <ul>
       <li>Select the search category <i>Human-made object</i>.</li>
-      <li>Select the related category and relation <i>Production date</i>.</li>
-      <li>Select a date range such as <i>1888 - 1889</i>.</li>
+      <li>Select <i>Creator</i> and autocomplete a name such as <i>Gogh</i>.</li>
+      <li>Select <i>Title</i> and enter free text such as <i>Mona Lisa</i>.</li>
+      <li>Select <i>Production date</i> and a date range such as <i>1888 - 1889</i>.</li>
       <li>Refine the results with the <i>Creator</i>, <i>Object type</i>, <i>Title</i>, and <i>Production date</i> facets.</li>
     </ul>
   </div>
@@ -14,7 +15,22 @@
     <mp-code-example>
     <![CDATA[
 [[#> Help:StructuredSearchExampleBase]]
-  <semantic-search-query-builder id="structured-search-example-query-builder"></semantic-search-query-builder>
+  <semantic-search-query-builder
+    id="structured-search-example-query-builder"
+    resource-selector='{
+      "query": "PREFIX bds: <http://www.bigdata.com/rdf/search#>
+        SELECT DISTINCT ?suggestion ?label WHERE {
+          ?label bds:search ?__token__ ;
+            bds:relevance ?score ;
+            bds:minRelevance \"0.5\" ;
+            bds:matchAllTerms \"true\" .
+          ?suggestion <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?label .
+          FILTER(EXISTS { { FILTER(?__relationPattern__) } })
+        } ORDER BY DESC(?score) LIMIT 30",
+      "suggestionTupleTemplate": "<span title=\"{{label.value}}\">{{label.value}}</span>",
+      "noSuggestionsTemplate": "<div class=\"suggestion-no-matches\">no matches found</div>"
+    }'
+  ></semantic-search-query-builder>
 [[/ Help:StructuredSearchExampleBase]]
       ]]>
     </mp-code-example>

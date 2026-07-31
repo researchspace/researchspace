@@ -9,11 +9,16 @@ import * as fs from 'node:fs';
 import * as http from 'node:http';
 import * as path from 'node:path';
 
-export const ARTRESEARCH_GRAPH = 'urn:researchspace:e2e:artresearch-semantic-search';
-export const ARTRESEARCH_FIXTURE_PATH = path.join(
+const ARTRESEARCH_GRAPH = 'urn:researchspace:e2e:artresearch-semantic-search';
+const ARTRESEARCH_FIXTURE_PATH = path.join(
   __dirname,
-  'artresearch',
-  'artresearch-semantic-search.nt'
+  '..',
+  '..',
+  'src',
+  'main',
+  'webapp',
+  'samples',
+  'sample-search.ttl'
 );
 
 type FixtureServer = {
@@ -31,7 +36,7 @@ async function startFixtureServer(filePath: string): Promise<FixtureServer> {
     }
 
     response.writeHead(200, {
-      'Content-Type': 'application/n-triples',
+      'Content-Type': 'text/turtle',
       'Content-Length': fixture.byteLength,
     });
     response.end(fixture);
@@ -72,26 +77,19 @@ async function sparqlUpdate(request: APIRequestContext, update: string): Promise
   }
 }
 
-export async function selectJson(request: APIRequestContext, query: string): Promise<any> {
+async function graphSize(request: APIRequestContext): Promise<number> {
   const response = await request.post('/sparql', {
     headers: {
       Accept: 'application/sparql-results+json',
       'Content-Type': 'application/sparql-query; charset=UTF-8',
     },
-    data: query,
+    data: `SELECT (COUNT(*) AS ?count) WHERE { GRAPH <${ARTRESEARCH_GRAPH}> { ?s ?p ?o } }`,
   });
 
   if (!response.ok()) {
     throw new Error(`SPARQL query failed (${response.status()}): ${await response.text()}`);
   }
-  return response.json();
-}
-
-async function graphSize(request: APIRequestContext): Promise<number> {
-  const result = await selectJson(
-    request,
-    `SELECT (COUNT(*) AS ?count) WHERE { GRAPH <${ARTRESEARCH_GRAPH}> { ?s ?p ?o } }`
-  );
+  const result = await response.json();
   return Number(result.results.bindings[0].count.value);
 }
 
@@ -110,8 +108,8 @@ export async function loadArtResearchFixture(request: APIRequestContext): Promis
     );
 
     const size = await graphSize(request);
-    if (size !== 1668) {
-      throw new Error(`Expected 1668 fixture triples after LOAD, found ${size}`);
+    if (size !== 1708) {
+      throw new Error(`Expected 1708 fixture triples after LOAD, found ${size}`);
     }
   } catch (error) {
     try {

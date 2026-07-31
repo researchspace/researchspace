@@ -2,19 +2,18 @@
   <div class='page__content-container'>
     [[> Help:StructuredSearchSampleDataCheck]]
     <p>
-      Try to type <i>alice</i> to search for all people that know her.
+      Try to type <i>Mona Lisa</i> to search the titles of human-made objects.
     </p>
     <mp-code-example>
     <![CDATA[
 [[#> Help:StructuredSearchExampleBase]]
   <semantic-search-query-keyword 
-    domain='<http://xmlns.com/foaf/0.1/Person>'
+    domain='<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>'
     query='
-      PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-      SELECT ?subject WHERE { 
-        ?subject foaf:knows ?friend. 
-        ?friend rdfs:label ?label .
-        FILTER REGEX(STR(?label), ?__token__, "i")
+      SELECT DISTINCT ?subject WHERE {
+        ?subject a <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> ;
+          <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?title .
+        FILTER REGEX(STR(?title), ?__token__, "i")
       }
     '
   ></semantic-search-query-keyword>

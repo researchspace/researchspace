@@ -6,8 +6,9 @@
 
 import { expect, type Locator, type Page } from '@playwright/test';
 
-function exactText(value: string): RegExp {
-  return new RegExp(`^${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+function facetValueText(value: string): RegExp {
+  const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^${escaped}\\s*\\(\\d+\\)\\s*$`);
 }
 
 export class SemanticSearchPage {
@@ -15,16 +16,20 @@ export class SemanticSearchPage {
   readonly root: Locator;
   readonly count: Locator;
   readonly titles: Locator;
+  readonly thumbnails: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.root = page.locator('#e2e-semantic-search-page');
-    this.count = page.getByTestId('semantic-result-count');
-    this.titles = page.locator('.e2e-result-title');
+    this.root = page.locator('.structured-constant-search-example');
+    this.count = this.root.getByText(/^Found \d+ matches$/);
+    this.titles = this.root.locator('.grid-resource-link');
+    this.thumbnails = this.root.locator(
+      '.semantic-search-result-thumbnail[src^="https://artresearch.net/cache/images/thumbnails/"]'
+    );
   }
 
   async open(): Promise<void> {
-    await this.page.goto('/resource/Help:E2ESemanticSearch');
+    await this.page.goto('/resource/Help:StructuredConstantSearchExample');
     await expect(this.root).toBeVisible();
     await this.expectCount(20);
   }
@@ -32,7 +37,9 @@ export class SemanticSearchPage {
   relation(name: string): Locator {
     return this.root
       .locator('.facet__relation')
-      .filter({ has: this.page.locator('.e2e-facet-relation-label', { hasText: exactText(name) }) });
+      .filter({
+        has: this.page.locator('.facet__relation__label').getByText(name, { exact: true }),
+      });
   }
 
   async openRelation(name: string): Promise<Locator> {
@@ -48,7 +55,11 @@ export class SemanticSearchPage {
   facetValue(relation: Locator, label: string): Locator {
     return relation
       .locator('.facet__relation__values__value')
-      .filter({ has: this.page.locator('.e2e-facet-value-label', { hasText: exactText(label) }) });
+      .filter({
+        has: this.page.locator('.facet__relation__values__value-label').filter({
+          hasText: facetValueText(label),
+        }),
+      });
   }
 
   async filterFacetValues(relation: Locator, value: string): Promise<void> {
@@ -66,7 +77,7 @@ export class SemanticSearchPage {
   }
 
   async expectCount(expected: number): Promise<void> {
-    await expect(this.count).toHaveText(String(expected));
+    await expect(this.count).toHaveText(`Found ${expected} matches`);
   }
 
   async expectVisibleTitles(expected: string[]): Promise<void> {

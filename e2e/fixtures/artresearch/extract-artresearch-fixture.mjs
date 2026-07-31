@@ -14,6 +14,7 @@ const fixtureDirectory = dirname(fileURLToPath(import.meta.url));
 
 const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
 const CRM = 'http://www.cidoc-crm.org/cidoc-crm/';
+const CUSTOM = 'https://artresearch.net/custom/';
 const E22 = `${CRM}E22_Human-Made_Object`;
 const P1 = `${CRM}P1_is_identified_by`;
 const P2 = `${CRM}P2_has_type`;
@@ -35,10 +36,12 @@ const P90 = `${CRM}P90_has_value`;
 const P91 = `${CRM}P91_has_unit`;
 const P108I = `${CRM}P108i_was_produced_by`;
 const P190 = `${CRM}P190_has_symbolic_content`;
+const THUMBNAIL_URL = `${CUSTOM}thumbnail_url`;
+const WORK_PREFERRED_PHOTO = `${CUSTOM}work_preferred_photo`;
 
 // A role defines the predicates retained for a resource and which connected
-// CIDOC-CRM resources should be traversed next. ArtResearch labels are always
-// followed through P1/P190; rdfs:label and SKOS are intentionally not used.
+// resources should be traversed next. ArtResearch labels are always followed
+// through P1/P190; rdfs:label and SKOS are intentionally not used.
 const roleRules = {
   work: new Map([
     [RDF_TYPE, null],
@@ -49,6 +52,7 @@ const roleRules = {
     [P50, 'entity'],
     [P55, 'entity'],
     [P108I, 'activity'],
+    [WORK_PREFERRED_PHOTO, 'photo'],
   ]),
   appellation: new Map([
     [RDF_TYPE, null],
@@ -86,13 +90,14 @@ const roleRules = {
     [RDF_TYPE, null],
     [P1, 'appellation'],
   ]),
+  photo: new Map([[THUMBNAIL_URL, null]]),
 };
 
 function parseArguments(argv) {
   const options = {
     endpoint: process.env.ARTRESEARCH_SPARQL_ENDPOINT || 'https://dev.artresearch.net/sparql',
     manifest: resolve(fixtureDirectory, 'selected-works.tsv'),
-    output: resolve(fixtureDirectory, 'artresearch-semantic-search.nt'),
+    output: resolve(fixtureDirectory, '../../../src/main/webapp/samples/sample-search.ttl'),
     concurrency: 4,
   };
 
@@ -108,7 +113,7 @@ function parseArguments(argv) {
 Options:
   --endpoint URL       SPARQL endpoint (default: dev.artresearch.net)
   --manifest FILE      TSV work manifest
-  --output FILE        Generated N-Triples fixture
+  --output FILE        Generated Turtle-compatible N-Triples sample
   --concurrency N      Concurrent requests (default: 4)
 `);
       process.exit(0);
@@ -316,6 +321,20 @@ function validateFixture(lines, works) {
   if (![...ends.keys()].some((subject) => !begins.has(subject))) {
     throw new Error('Fixture does not contain an end-only time-span');
   }
+
+  const preferredPhotos = new Set(
+    triples
+      .filter((triple) => triple.predicate === WORK_PREFERRED_PHOTO)
+      .map((triple) => triple.object.match(/^<([^>]*)>$/)?.[1])
+      .filter(Boolean),
+  );
+  const hasThumbnail = triples.some(
+    (triple) =>
+      preferredPhotos.has(triple.subject) &&
+      triple.predicate === THUMBNAIL_URL &&
+      triple.object.startsWith('"/cache/images/thumbnails/'),
+  );
+  if (!hasThumbnail) throw new Error('Fixture does not contain an ArtResearch preferred-photo thumbnail');
 }
 
 main().catch((error) => {

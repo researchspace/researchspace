@@ -78,6 +78,9 @@ export class FacetValueComponent extends Component<FacetValueProps, FacetValueSt
         source: template,
         options: { highlight: this.props.highlight, ...(this.props.facetValue.entity as any).tuple },
       },
+      componentProps: {
+        className: 'facet__relation__values__value-label',
+      },
     });
   }
 

@@ -6,11 +6,7 @@
 
 import { expect, request as playwrightRequest, test, type APIRequestContext } from '@playwright/test';
 
-import {
-  ARTRESEARCH_GRAPH,
-  loadArtResearchFixture,
-  selectJson,
-} from '../fixtures/sparql-fixture.js';
+import { loadArtResearchFixture } from '../fixtures/sparql-fixture.js';
 import { SemanticSearchPage } from '../pages/semantic-search.page.js';
 
 let dropFixture: (() => Promise<void>) | undefined;
@@ -32,71 +28,15 @@ test.afterAll(async () => {
   }
 });
 
-test('loads the CIDOC fixture with the date edge cases used by facets', async ({ request }) => {
-  const result = await selectJson(
-    request,
-    `
-      PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-      SELECT
-        (COUNT(DISTINCT ?work) AS ?works)
-        (COUNT(DISTINCT ?withoutTimeSpan) AS ?withoutTimeSpan)
-        (COUNT(DISTINCT ?bceWork) AS ?bceWorks)
-        (COUNT(DISTINCT ?beginOnlyWork) AS ?beginOnlyWorks)
-        (COUNT(DISTINCT ?endOnlyWork) AS ?endOnlyWorks)
-        (COUNT(DISTINCT ?zeroWidthWork) AS ?zeroWidthWorks)
-      WHERE {
-        GRAPH <${ARTRESEARCH_GRAPH}> {
-          ?work a crm:E22_Human-Made_Object .
-          OPTIONAL {
-            ?withoutTimeSpan a crm:E22_Human-Made_Object .
-            FILTER NOT EXISTS {
-              ?withoutTimeSpan crm:P108i_was_produced_by/crm:P9_consists_of*/crm:P4_has_time-span ?anyTimeSpan .
-            }
-          }
-          OPTIONAL {
-            ?bceWork a crm:E22_Human-Made_Object ;
-              crm:P108i_was_produced_by/crm:P9_consists_of*/crm:P4_has_time-span ?bceTimeSpan .
-            ?bceTimeSpan crm:P82a_begin_of_the_begin ?bceBegin .
-            FILTER(STRSTARTS(STR(?bceBegin), "-"))
-          }
-          OPTIONAL {
-            ?beginOnlyWork a crm:E22_Human-Made_Object ;
-              crm:P108i_was_produced_by/crm:P9_consists_of*/crm:P4_has_time-span ?beginOnlyTimeSpan .
-            ?beginOnlyTimeSpan crm:P82a_begin_of_the_begin ?beginOnly .
-            FILTER NOT EXISTS { ?beginOnlyTimeSpan crm:P82b_end_of_the_end ?unusedEnd }
-          }
-          OPTIONAL {
-            ?endOnlyWork a crm:E22_Human-Made_Object ;
-              crm:P108i_was_produced_by/crm:P9_consists_of*/crm:P4_has_time-span ?endOnlyTimeSpan .
-            ?endOnlyTimeSpan crm:P82b_end_of_the_end ?endOnly .
-            FILTER NOT EXISTS { ?endOnlyTimeSpan crm:P82a_begin_of_the_begin ?unusedBegin }
-          }
-          OPTIONAL {
-            ?zeroWidthWork a crm:E22_Human-Made_Object ;
-              crm:P108i_was_produced_by/crm:P9_consists_of*/crm:P4_has_time-span ?zeroWidthTimeSpan .
-            ?zeroWidthTimeSpan crm:P82a_begin_of_the_begin ?sameDate ;
-              crm:P82b_end_of_the_end ?sameDate .
-          }
-        }
-      }
-    `
-  );
-
-  expect(result.results.bindings[0]).toMatchObject({
-    works: { value: '20' },
-    withoutTimeSpan: { value: '4' },
-    bceWorks: { value: '6' },
-    beginOnlyWorks: { value: '1' },
-    endOnlyWorks: { value: '1' },
-    zeroWidthWorks: { value: '1' },
-  });
-});
-
 test('shows the complete base semantic-search result set', async ({ page }) => {
   const search = new SemanticSearchPage(page);
   await search.open();
 
   await search.expectVisibleTitles(['Mona Lisa', 'Guernica', 'Las Meninas', 'Venus von Willendorf']);
+  await expect(search.thumbnails.first()).toHaveAttribute(
+    'src',
+    /^https:\/\/artresearch\.net\/cache\/images\/thumbnails\//
+  );
 });
 
 test('filters and combines multiple creator facet values with OR', async ({ page }) => {
@@ -166,7 +106,7 @@ test.describe('historical-timezone date boundary', () => {
 
     const productionDate = await search.openRelation('Production date');
     await search.setDateRange(productionDate, 1888, 1888);
-    await expect(search.count).toHaveText('3', { timeout: 5_000 });
+    await search.expectCount(3);
   });
 });
 

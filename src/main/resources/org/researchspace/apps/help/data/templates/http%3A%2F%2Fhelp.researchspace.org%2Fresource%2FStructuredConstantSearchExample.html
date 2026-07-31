@@ -1,21 +1,18 @@
-<div class="page__grid-container help-page-container">
+<div class="page__grid-container help-page-container structured-constant-search-example">
   <div class='page__content-container'>
     [[> Help:StructuredSearchSampleDataCheck]]
     <p>
-      Shows all people interested in <i>Mona Lisa</i>.
+      Shows all human-made objects from a constant query and lets facets refine the result set.
     </p>
 
     <mp-code-example>
     <![CDATA[
-[[#> Help:StructuredSearchExampleBase presetFacets='[{"relation": "<http://xmlns.com/foaf/0.1/topic_interest>", "values": [ "<http://www.wikidata.org/entity/Q12418>"]}]' ]]
+[[#> Help:StructuredSearchExampleBase]]
   <semantic-search-query-constant 
-    domain='<http://xmlns.com/foaf/0.1/Person>'
+    domain='<http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object>'
     query="
-      PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-      PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX wd: <http://www.wikidata.org/entity/>
-      SELECT ?subject WHERE { 
-        ?subject foaf:topic_interest wd:Q12418 . 
+      SELECT ?subject WHERE {
+        ?subject a <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> .
       }
     "
   ></semantic-search-query-constant>

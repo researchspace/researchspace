@@ -212,17 +212,17 @@ export const DefaultFacetCategoriesTupleTemplate = `
 export function DefaultResourceSelectorQuery() {
   return `
     prefix bds: <http://www.bigdata.com/rdf/search#>
-    SELECT DISTINCT ?suggestion ?label WHERE {
-      ?label bds:search ?__token__ ;
-      bds:relevance ?score ;
+    SELECT ?suggestion (SAMPLE(?matchedLabel) AS ?label) (MAX(?matchedScore) AS ?score) WHERE {
+      ?matchedLabel bds:search ?__token__ ;
+      bds:relevance ?matchedScore ;
       bds:minRelevance "0.5" ;
       bds:matchAllTerms "true"  .
 
-      ?suggestion ${ConfigHolder.getUIConfig().labelPropertyPattern} ?label .
+      ?suggestion ${ConfigHolder.getUIConfig().labelPropertyPattern} ?matchedLabel .
       FILTER(EXISTS {
         { FILTER(?${SEMANTIC_SEARCH_VARIABLES.RELATION_PATTERN_VAR}) }
       })
-    } ORDER BY DESC(?score)  LIMIT 30
+    } GROUP BY ?suggestion ORDER BY DESC(?score) LIMIT 30
   `;
 }
 export const DefaultResourceSelectorRelationPattern = `?subject $${SEMANTIC_SEARCH_VARIABLES.RELATION_VAR} ?suggestion`;

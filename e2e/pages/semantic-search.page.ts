@@ -74,9 +74,9 @@ export class SemanticSearchPage {
     await expect(input).toBeVisible();
     await input.fill(searchTerm);
 
-    const option = this.root.locator('.Select-option').filter({ hasText: suggestion }).first();
-    await expect(option).toBeVisible();
-    await option.click();
+    const options = this.root.locator('.Select-option').filter({ hasText: suggestion });
+    await expect(options).toHaveCount(1);
+    await options.first().click();
   }
 
   async selectStructuredText(range: string, text: string): Promise<void> {

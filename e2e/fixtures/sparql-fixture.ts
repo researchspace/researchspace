@@ -23,6 +23,7 @@ const ARTRESEARCH_FIXTURE_PATH = path.join(
 
 type FixtureServer = {
   fixtureUrl: string;
+  tripleCount: number;
   close: () => Promise<void>;
 };
 
@@ -56,6 +57,7 @@ async function startFixtureServer(filePath: string): Promise<FixtureServer> {
   const advertisedHost = process.env.RS_FIXTURE_HOST ?? '127.0.0.1';
   return {
     fixtureUrl: `http://${advertisedHost}:${address.port}/${fixtureName}`,
+    tripleCount: fixture.toString('utf8').split(/\r?\n/).filter(Boolean).length,
     close: () =>
       new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve()))
@@ -108,8 +110,8 @@ export async function loadArtResearchFixture(request: APIRequestContext): Promis
     );
 
     const size = await graphSize(request);
-    if (size !== 1708) {
-      throw new Error(`Expected 1708 fixture triples after LOAD, found ${size}`);
+    if (size !== fixtureServer.tripleCount) {
+      throw new Error(`Expected ${fixtureServer.tripleCount} fixture triples after LOAD, found ${size}`);
     }
   } catch (error) {
     try {

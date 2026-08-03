@@ -133,12 +133,15 @@ function parseManifest(contents) {
     .split(/\r?\n/)
     .filter((line) => line.trim() && !line.startsWith('#'))
     .map((line, index) => {
-      const [id, iri, expectedTitle, coverage] = line.split('\t');
-      if (!id || !iri || !expectedTitle || !coverage) {
-        throw new Error(`Invalid manifest row ${index + 1}: expected four tab-separated columns`);
+      const [id, iri, expectedTitle, imageExpectation, coverage] = line.split('\t');
+      if (!id || !iri || !expectedTitle || !imageExpectation || !coverage) {
+        throw new Error(`Invalid manifest row ${index + 1}: expected five tab-separated columns`);
+      }
+      if (!['required', 'optional'].includes(imageExpectation)) {
+        throw new Error(`Invalid image expectation for ${id}: expected required or optional`);
       }
       validateIri(iri);
-      return { id, iri, expectedTitle, coverage };
+      return { id, iri, expectedTitle, imageExpectation, coverage };
     });
 
   const uniqueIris = new Set(entries.map((entry) => entry.iri));
@@ -322,19 +325,24 @@ function validateFixture(lines, works) {
     throw new Error('Fixture does not contain an end-only time-span');
   }
 
-  const preferredPhotos = new Set(
+  const thumbnails = new Set(
     triples
-      .filter((triple) => triple.predicate === WORK_PREFERRED_PHOTO)
-      .map((triple) => triple.object.match(/^<([^>]*)>$/)?.[1])
-      .filter(Boolean),
+      .filter(
+        (triple) =>
+          triple.predicate === THUMBNAIL_URL &&
+          triple.object.startsWith('"/cache/images/thumbnails/'),
+      )
+      .map((triple) => triple.subject),
   );
-  const hasThumbnail = triples.some(
-    (triple) =>
-      preferredPhotos.has(triple.subject) &&
-      triple.predicate === THUMBNAIL_URL &&
-      triple.object.startsWith('"/cache/images/thumbnails/'),
-  );
-  if (!hasThumbnail) throw new Error('Fixture does not contain an ArtResearch preferred-photo thumbnail');
+  for (const work of works.filter(({ imageExpectation }) => imageExpectation === 'required')) {
+    const hasThumbnail = triples.some(
+      (triple) =>
+        triple.subject === work.iri &&
+        triple.predicate === WORK_PREFERRED_PHOTO &&
+        thumbnails.has(triple.object.match(/^<([^>]*)>$/)?.[1]),
+    );
+    if (!hasThumbnail) throw new Error(`${work.id} has no ArtResearch preferred-photo thumbnail`);
+  }
 }
 
 main().catch((error) => {

@@ -39,13 +39,26 @@ test('shows the complete base semantic-search result set', async ({ page }) => {
   );
 });
 
+test('keyword search shows all sample artworks before filtering', async ({ page }) => {
+  await page.goto('/resource/Help:StructuredKeywordSearchExample');
+
+  const search = page.locator('.structured-keyword-search-example');
+  await expect(search.getByText(/^Found \d+ matches$/)).toHaveText('Found 20 matches');
+  await expect(search.locator('.grid-resource-link')).toHaveCount(20);
+
+  await search.getByPlaceholder('Search all, minimum 3 characters').fill('Mona Lisa');
+  await expect(search.getByText(/^Found \d+ matches$/)).toHaveText('Found 1 matches');
+  await expect(search.locator('.grid-resource-link')).toHaveCount(1);
+  await expect(search.locator('.grid-resource-link')).toContainText('Mona Lisa');
+});
+
 test('structured search offers a date-range selector and filters results', async ({ page }) => {
   const search = new SemanticSearchPage(page, 'structured');
   await search.open();
 
   await search.selectStructuredYearRange(1888, 1889);
   await search.expectCount(3);
-  await search.expectVisibleTitles(['The Bedroom', 'Café Terrace at Night', 'The Red Vineyard']);
+  await search.expectVisibleTitles(['Sunflowers.', 'Café Terrace at Night', 'The Red Vineyard']);
 });
 
 test('structured search autocompletes resources and filters by creator', async ({ page }) => {
@@ -54,7 +67,51 @@ test('structured search autocompletes resources and filters by creator', async (
 
   await search.selectStructuredResource('Creator', 'Gogh', 'Gogh, Vincent van');
   await search.expectCount(3);
-  await search.expectVisibleTitles(['The Bedroom', 'Café Terrace at Night', 'The Red Vineyard']);
+  await search.expectVisibleTitles(['Sunflowers.', 'Café Terrace at Night', 'The Red Vineyard']);
+
+  const categoryIcons = search.root.locator('.facet__category-selector-holder .category-item');
+  await expect(categoryIcons).toHaveCount(4);
+  await expect(categoryIcons.nth(0)).toHaveCSS('background-image', /actor\.svg/);
+  await expect(categoryIcons.nth(1)).toHaveCSS('background-image', /type\.svg/);
+  await expect(categoryIcons.nth(2)).toHaveCSS('background-image', /keyword\.svg/);
+  await expect(categoryIcons.nth(3)).toHaveCSS('background-image', /date\.svg/);
+});
+
+test('semantic-search documentation uses self-contained CIDOC artwork examples', async ({ page }) => {
+  await page.goto('/resource/Help:SemanticSearch');
+
+  const architectureImage = page.locator(
+    'img[src="/assets/images/help/structured-search-cidoc-crm.png"]',
+  );
+  await expect(architectureImage).toBeVisible();
+
+  const keyword = page.getByPlaceholder('Search all, minimum 3 characters');
+  const simpleArtworks = page.locator('.semantic-search-simple-artwork');
+  await expect(simpleArtworks).toHaveCount(4);
+
+  await keyword.fill('night');
+  await expect(simpleArtworks).toHaveCount(1);
+  await expect(simpleArtworks).toContainText('Outdoor Café at Night.');
+
+  const artworks = page.locator('.semantic-search-constant-artwork');
+  await expect(artworks).toHaveCount(4);
+  const thumbnails = artworks.locator(
+    '.semantic-search-result-thumbnail[src^="https://iiif.artresearch.net/iiif/3/frick/"]',
+  );
+  await expect(thumbnails).toHaveCount(4);
+  await expect(artworks.locator('a[href*="991000128789707141"]')).toBeVisible();
+  await expect(artworks.locator('a[href*="991000988029707141"]')).toBeVisible();
+
+  const vineyardFooter = artworks
+    .filter({ hasText: 'The Red Vineyard of Arles.' })
+    .locator('.panel-footer');
+  await expect(vineyardFooter).toHaveAttribute('title', 'The Red Vineyard of Arles.');
+  await expect(vineyardFooter).toHaveCSS('overflow', 'hidden');
+  await expect(vineyardFooter).toHaveCSS('text-overflow', 'ellipsis');
+  await expect(vineyardFooter).toHaveCSS('white-space', 'nowrap');
+  await expect
+    .poll(() => vineyardFooter.evaluate((element) => element.scrollWidth > element.clientWidth))
+    .toBe(true);
 });
 
 test('structured search filters titles with free text', async ({ page }) => {
@@ -74,10 +131,10 @@ test('combines structured search with a facet filter', async ({ page }) => {
   await search.expectCount(3);
 
   const title = await search.openRelation('Title');
-  await search.filterFacetValues(title, 'The Bedroom');
-  await search.selectFacetValue(title, 'The Bedroom');
+  await search.filterFacetValues(title, 'Sunflowers.');
+  await search.selectFacetValue(title, 'Sunflowers.');
   await search.expectCount(1);
-  await search.expectVisibleTitles(['The Bedroom']);
+  await search.expectVisibleTitles(['Sunflowers.']);
   await expect(search.titles.filter({ hasText: 'The Red Vineyard' })).toHaveCount(0);
 });
 
@@ -88,11 +145,11 @@ test('narrows resource autocomplete results with a literal facet', async ({ page
   await search.expectCount(3);
 
   const title = await search.openRelation('Title');
-  await search.filterFacetValues(title, 'The Bedroom');
-  await expect(search.facetValue(title, 'The Bedroom')).toContainText('(1)');
-  await search.selectFacetValue(title, 'The Bedroom');
+  await search.filterFacetValues(title, 'Sunflowers.');
+  await expect(search.facetValue(title, 'Sunflowers.')).toContainText('(1)');
+  await search.selectFacetValue(title, 'Sunflowers.');
   await search.expectCount(1);
-  await search.expectVisibleTitles(['The Bedroom']);
+  await search.expectVisibleTitles(['Sunflowers.']);
   await expect(search.titles.filter({ hasText: 'Café Terrace at Night' })).toHaveCount(0);
 });
 
@@ -122,7 +179,7 @@ test('filters and combines multiple creator facet values with OR', async ({ page
   await search.expectCount(20);
   await search.selectFacetValue(creator, 'Gogh, Vincent van');
   await search.expectCount(3);
-  await search.expectVisibleTitles(['The Bedroom', 'Café Terrace at Night', 'The Red Vineyard']);
+  await search.expectVisibleTitles(['Sunflowers.', 'Café Terrace at Night', 'The Red Vineyard']);
 
   await search.filterFacetValues(creator, 'Picasso');
   await expect(search.facetValue(creator, 'Picasso, Pablo')).toContainText('(2)');
@@ -167,7 +224,7 @@ test('filters an AD production-date range', async ({ page }) => {
   const productionDate = await search.openRelation('Production date');
   await search.setDateRange(productionDate, 1888, 1889);
   await search.expectCount(3);
-  await search.expectVisibleTitles(['The Bedroom', 'Café Terrace at Night', 'The Red Vineyard']);
+  await search.expectVisibleTitles(['Sunflowers.', 'Café Terrace at Night', 'The Red Vineyard']);
 });
 
 test.describe('historical-timezone date boundary', () => {

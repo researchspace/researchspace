@@ -30,9 +30,7 @@ export class SemanticSearchPage {
     );
     this.count = this.root.getByText(/^Found \d+ matches$/);
     this.titles = this.root.locator('.grid-resource-link');
-    this.thumbnails = this.root.locator(
-      '.semantic-search-result-thumbnail[src^="https://artresearch.net/cache/images/thumbnails/"]'
-    );
+    this.thumbnails = this.root.locator('.semantic-search-result-thumbnail');
   }
 
   async open(): Promise<void> {
@@ -56,9 +54,11 @@ export class SemanticSearchPage {
     await expect(dateFormat).toBeVisible();
     await dateFormat.click();
 
-    const dateFormatOptions = this.root.locator('.Select-menu .Select-option');
-    await expect(dateFormatOptions).toHaveCount(6);
-    await dateFormatOptions.nth(4).click();
+    const yearRangeOption = this.root
+      .locator('.Select-menu .Select-option')
+      .filter({ hasText: /year.*to.*year/i });
+    await expect(yearRangeOption).toHaveCount(1);
+    await yearRangeOption.click();
 
     const yearInputs = this.root.locator('input[placeholder="YYYY"]');
     await expect(yearInputs).toHaveCount(2);

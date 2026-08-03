@@ -18,7 +18,12 @@
  */
 
 import { ConfigHolder } from 'platform/api/services/config-holder';
-import { SEMANTIC_SEARCH_VARIABLES, FACET_VARIABLES, Patterns } from './SearchConfig';
+import {
+  SEMANTIC_SEARCH_VARIABLES,
+  FACET_VARIABLES,
+  RESOURCE_SEGGESTIONS_VARIABLES,
+  Patterns,
+} from './SearchConfig';
 import { defaultKeywordSearchConfig } from 'platform/components/shared/KeywordSearchConfig';
 
 export const DefaultInlineProfile = '<http://www.researchspace.org/semantic-search/dummyInlineDefaultProfile>';
@@ -211,7 +216,6 @@ export const DefaultFacetCategoriesTupleTemplate = `
 `;
 
 export function DefaultResourceSelectorQuery() {
-  const labelPattern = ConfigHolder.getUIConfig().labelRelationPattern('?suggestion', '?matchedLabel');
   return `
     prefix bds: <http://www.bigdata.com/rdf/search#>
     SELECT ?suggestion (SAMPLE(?matchedLabel) AS ?label) (MAX(?matchedScore) AS ?score) WHERE {
@@ -220,7 +224,7 @@ export function DefaultResourceSelectorQuery() {
       bds:minRelevance "0.5" ;
       bds:matchAllTerms "true"  .
 
-      ${labelPattern}
+      FILTER(?${RESOURCE_SEGGESTIONS_VARIABLES.LABEL_RELATION_PATTERN_VAR})
       FILTER(EXISTS {
         { FILTER(?${SEMANTIC_SEARCH_VARIABLES.RELATION_PATTERN_VAR}) }
       })

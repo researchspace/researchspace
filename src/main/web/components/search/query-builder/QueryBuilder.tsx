@@ -27,6 +27,7 @@ import * as SparqlJs from 'sparqljs';
 
 import { trigger } from 'platform/api/events';
 import { Rdf, vocabularies } from 'platform/api/rdf';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 import { QueryService } from 'platform/api/services/ldp-query';
 import { SparqlUtil, SparqlClient, PatternBinder, VariableRenameBinder } from 'platform/api/sparql';
 import { Component } from 'platform/api/components';
@@ -864,6 +865,17 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
       patterns = SparqlUtil.parsePatterns(SearchDefaults.DefaultResourceSelectorRelationPattern, parsedQuery.prefixes);
     }
     new PatternBinder(SEMANTIC_SEARCH_VARIABLES.RELATION_PATTERN_VAR, patterns).sparqlQuery(parsedQuery);
+
+    if (query.includes(`?${RESOURCE_SEGGESTIONS_VARIABLES.LABEL_RELATION_PATTERN_VAR}`)) {
+      const labelPattern = ConfigHolder.getUIConfig().labelRelationPattern(
+        `?${RESOURCE_SEGGESTIONS_VARIABLES.SUGGESTION_IRI}`,
+        `?${RESOURCE_SEGGESTIONS_VARIABLES.MATCHED_LABEL}`
+      );
+      const labelPatterns = SparqlUtil.parsePatterns(labelPattern, parsedQuery.prefixes);
+      new PatternBinder(RESOURCE_SEGGESTIONS_VARIABLES.LABEL_RELATION_PATTERN_VAR, labelPatterns).sparqlQuery(
+        parsedQuery
+      );
+    }
 
     const bindings = _.assign(
       {

@@ -175,12 +175,11 @@
 	resource-selector='{
 		"query":"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-           SELECT DISTINCT ?suggestion ?label WHERE {
-           	?subject a ?__domain__.
-            ?suggestion a ?__range__.
-            ?suggestion rdfs:label ?label.
-            (?label ?score) <tag:stardog:api:property:textMatch> ?__token__ .
-           }ORDER BY desc(?score)",
+           SELECT ?suggestion (SAMPLE(?matchedLabel) AS ?label) (MAX(?matchedScore) AS ?score) WHERE {
+            FILTER(?__relationPattern__)
+            FILTER(?__labelRelationPattern__)
+            (?matchedLabel ?matchedScore) <tag:stardog:api:property:textMatch> ?__token__ .
+           } GROUP BY ?suggestion ORDER BY DESC(?score)",
    	"suggestionTupleTemplate": "<span title=\"{{label.value}}\">{{label.value}} </span>",
    	"noSuggestionsTemplate": "<div class=\"suggestion-no-matches\">no matches found</div>"
 	}'

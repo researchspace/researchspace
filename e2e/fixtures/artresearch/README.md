@@ -13,7 +13,10 @@ at a time, and retains a bounded CIDOC-CRM graph in the shipped
 ArtResearch labels are represented with
 `crm:P1_is_identified_by/crm:P190_has_symbolic_content`. The extractor does not
 invent or depend on `rdfs:label`, SKOS labels, Pharos templates, or ArtResearch
-custom label predicates. Preferred thumbnails retain the same
+custom label predicates. It preserves the source appellation types and adds the
+ResearchSpace `primary_appellation` type to one deterministic appellation for
+each labelled resource so the platform's standard label configuration applies.
+Preferred thumbnails retain the same
 `custom:work_preferred_photo/custom:thumbnail_url` path used by the ArtResearch
 card templates.
 

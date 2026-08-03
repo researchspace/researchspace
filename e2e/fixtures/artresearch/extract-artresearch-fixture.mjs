@@ -15,6 +15,7 @@ const fixtureDirectory = dirname(fileURLToPath(import.meta.url));
 const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
 const CRM = 'http://www.cidoc-crm.org/cidoc-crm/';
 const CUSTOM = 'https://artresearch.net/custom/';
+const E41 = `${CRM}E41_Appellation`;
 const E22 = `${CRM}E22_Human-Made_Object`;
 const P1 = `${CRM}P1_is_identified_by`;
 const P2 = `${CRM}P2_has_type`;
@@ -38,6 +39,8 @@ const P108I = `${CRM}P108i_was_produced_by`;
 const P190 = `${CRM}P190_has_symbolic_content`;
 const THUMBNAIL_URL = `${CUSTOM}thumbnail_url`;
 const WORK_PREFERRED_PHOTO = `${CUSTOM}work_preferred_photo`;
+const PRIMARY_APPELLATION =
+  'http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation';
 
 // A role defines the predicates retained for a resource and which connected
 // resources should be traversed next. ArtResearch labels are always followed
@@ -175,6 +178,113 @@ function parseNTriples(contents, requestedIri) {
     });
 }
 
+function parseLiteral(object) {
+  const match = object.match(/^("(?:[^"\\]|\\.)*")(?:@([a-zA-Z0-9-]+)|\^\^<[^>]+>)?$/);
+  if (!match) return null;
+  return { value: JSON.parse(match[1]), language: match[2] || '' };
+}
+
+function normalizeLabel(value) {
+  return value
+    .normalize('NFKD')
+    .replace(/\p{Mark}/gu, '')
+    .toLocaleLowerCase('en');
+}
+
+function preferredTypeScore(types) {
+  const scores = {
+    pharos_preferred_name: 600,
+    primary_title: 500,
+    preferred_name: 400,
+    traditional_title: 300,
+    object_title: 200,
+    title: 100,
+  };
+  return Math.max(
+    0,
+    ...types.map((type) => scores[type.slice(Math.max(type.lastIndexOf('/'), type.lastIndexOf('#')) + 1)] || 0),
+  );
+}
+
+function addPrimaryAppellationTypes(output, works) {
+  const triples = [...output].map((line) => {
+    const match = line.match(/^<([^>]*)> <([^>]*)> (.+) \.$/);
+    return { subject: match[1], predicate: match[2], object: match[3] };
+  });
+  const expectedTitles = new Map(works.map(({ iri, expectedTitle }) => [iri, expectedTitle]));
+  const linkedAppellations = new Map();
+
+  for (const triple of triples) {
+    if (triple.predicate !== P1) continue;
+    const appellation = triple.object.match(/^<([^>]*)>$/)?.[1];
+    if (!appellation) continue;
+    if (!linkedAppellations.has(triple.subject)) linkedAppellations.set(triple.subject, []);
+    linkedAppellations.get(triple.subject).push(appellation);
+  }
+
+  let added = 0;
+  for (const [resource, appellations] of linkedAppellations) {
+    let candidates = appellations
+      .filter((appellation) =>
+        triples.some(
+          (triple) =>
+            triple.subject === appellation &&
+            triple.predicate === RDF_TYPE &&
+            triple.object === `<${E41}>`,
+        ),
+      )
+      .flatMap((appellation) => {
+        const types = triples
+          .filter((triple) => triple.subject === appellation && triple.predicate === P2)
+          .map((triple) => triple.object.match(/^<([^>]*)>$/)?.[1])
+          .filter(Boolean);
+        return triples
+          .filter((triple) => triple.subject === appellation && triple.predicate === P190)
+          .map((triple) => parseLiteral(triple.object))
+          .filter(Boolean)
+          .map((literal) => ({ appellation, literal, types }));
+      });
+
+    const expectedTitle = expectedTitles.get(resource);
+    if (expectedTitle) {
+      const normalizedExpectedTitle = normalizeLabel(expectedTitle);
+      candidates = candidates.filter(
+        ({ literal }) => normalizeLabel(literal.value) === normalizedExpectedTitle,
+      );
+      if (candidates.length === 0) {
+        throw new Error(`${resource} has no appellation matching expected title ${expectedTitle}`);
+      }
+    }
+    if (candidates.length === 0) continue;
+
+    candidates.sort(
+      (left, right) =>
+        Number(right.types.includes(PRIMARY_APPELLATION)) -
+          Number(left.types.includes(PRIMARY_APPELLATION)) ||
+        preferredTypeScore(right.types) - preferredTypeScore(left.types) ||
+        Number(right.literal.language === 'en') - Number(left.literal.language === 'en') ||
+        left.appellation.localeCompare(right.appellation),
+    );
+    const selected = candidates[0];
+    const existingPrimaryAppellations = candidates.filter(({ types }) =>
+      types.includes(PRIMARY_APPELLATION),
+    );
+    if (
+      existingPrimaryAppellations.length > 0 &&
+      !existingPrimaryAppellations.some(({ appellation }) => appellation === selected.appellation)
+    ) {
+      throw new Error(`${resource} already has a different primary appellation`);
+    }
+
+    const line = `<${selected.appellation}> <${P2}> <${PRIMARY_APPELLATION}> .`;
+    if (!output.has(line)) {
+      output.add(line);
+      added += 1;
+    }
+  }
+  return added;
+}
+
 async function requestConstruct(endpoint, query, iri) {
   const attempts = 5;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -274,12 +384,14 @@ async function main() {
     }
   }
 
+  const addedPrimaryAppellations = addPrimaryAppellationTypes(output, works);
   const sortedLines = [...output].sort();
   validateFixture(sortedLines, works);
   await mkdir(dirname(options.output), { recursive: true });
   await writeFile(options.output, `${sortedLines.join('\n')}\n`, 'utf8');
 
   console.log(`Wrote ${sortedLines.length} triples for ${works.length} works to ${options.output}`);
+  console.log(`Added ${addedPrimaryAppellations} ResearchSpace primary-appellation types`);
   console.log(`Executed ${responseCache.size} bounded CIDOC-CRM predicate requests against ${options.endpoint}`);
 }
 
@@ -304,6 +416,18 @@ function validateFixture(lines, works) {
       (triple) => identifiers.includes(triple.subject) && triple.predicate === P190,
     );
     if (!hasSymbolicContent) throw new Error(`${work.id} has no P1/P190 title or identifier`);
+
+    const primaryAppellations = identifiers.filter((identifier) =>
+      triples.some(
+        (triple) =>
+          triple.subject === identifier &&
+          triple.predicate === P2 &&
+          triple.object === `<${PRIMARY_APPELLATION}>`,
+      ),
+    );
+    if (primaryAppellations.length !== 1) {
+      throw new Error(`${work.id} must have exactly one ResearchSpace primary appellation`);
+    }
   }
 
   const begins = new Map();

@@ -4,7 +4,10 @@
     "<http://www.w3.org/2001/XMLSchema#string>": [{
       "kind": "text",
       "tokenizeLuceneQuery": false,
-      "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?title .
+      "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?appellation .
+        ?appellation a <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> ;
+          <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+          <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?title .
         FILTER(CONTAINS(LCASE(STR(?title)), LCASE(STR(?__value__)))) ."
     }],
     "<http://www.w3.org/2001/XMLSchema#dateTime>": [{
@@ -81,7 +84,10 @@
     }],
     "<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content>": [{
       "kind": "literal",
-      "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?__literal__ ."
+      "queryPattern": "$subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?appellation .
+        ?appellation a <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> ;
+          <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+          <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?__literal__ ."
     }]
   }'
   [[#if presetFacets]] preset-facets='[[presetFacets]]' [[/if]]
@@ -98,7 +104,10 @@
           "resource": "SELECT ?value (SAMPLE(?displayLabel) AS ?label) (COUNT(DISTINCT $subject) AS ?count) WHERE {
             FILTER(?__facetRelationPattern__)
             OPTIONAL {
-              ?value <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?rawLabel .
+              ?value <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?labelAppellation .
+              ?labelAppellation a <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> ;
+                <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?rawLabel .
             }
             BIND(COALESCE(?rawLabel, STR(?value)) AS ?displayLabel)
           } GROUP BY ?value ORDER BY ?label"
@@ -130,9 +139,12 @@
                   SELECT ?subject ?title (SAMPLE(?displayThumbnail) AS ?thumbnail)
                   WHERE {
                     {
-                      SELECT ?subject (SAMPLE(?rawTitle) AS ?title) WHERE {
-                        ?subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?rawTitle .
-                      } GROUP BY ?subject
+                      SELECT ?subject ?title WHERE {
+                        ?subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?titleAppellation .
+                        ?titleAppellation a <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> ;
+                          <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                          <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?title .
+                      }
                     }
                     OPTIONAL {
                       ?subject <https://artresearch.net/custom/work_preferred_photo>/<https://artresearch.net/custom/thumbnail_url> ?thumbnailPath .
@@ -167,9 +179,12 @@
             <semantic-search-result>
               <semantic-table
                 id="table-result"
-                query='SELECT ?subject (SAMPLE(?rawTitle) AS ?title) WHERE {
-                  ?subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?rawTitle .
-                } GROUP BY ?subject'
+                query='SELECT ?subject ?title WHERE {
+                  ?subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?titleAppellation .
+                  ?titleAppellation a <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> ;
+                    <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                    <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?title .
+                }'
                 options='{"showFilter": false, "resultsPerPage": 30}'
               ></semantic-table>
             </semantic-search-result>
@@ -183,9 +198,12 @@
                   SELECT ?subject ?title (SAMPLE(?displayThumbnail) AS ?thumbnail)
                   WHERE {
                     {
-                      SELECT ?subject (SAMPLE(?rawTitle) AS ?title) WHERE {
-                        ?subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?rawTitle .
-                      } GROUP BY ?subject
+                      SELECT ?subject ?title WHERE {
+                        ?subject <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?titleAppellation .
+                        ?titleAppellation a <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> ;
+                          <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                          <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?title .
+                      }
                     }
                     OPTIONAL {
                       ?subject <https://artresearch.net/custom/work_preferred_photo>/<https://artresearch.net/custom/thumbnail_url> ?thumbnailPath .

@@ -17,7 +17,10 @@
     query='
       SELECT DISTINCT ?subject WHERE {
         ?subject a <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> ;
-          <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by>/<http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?title .
+          <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?appellation .
+        ?appellation a <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> ;
+          <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+          <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?title .
         FILTER REGEX(STR(?title), ?__token__, "i")
       }
     '

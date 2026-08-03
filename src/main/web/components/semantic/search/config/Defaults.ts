@@ -100,6 +100,7 @@ export const DefaultSearchProfileRelationsQuery = `
 `;
 
 export function DefaultTextPattern(): Patterns {
+  const labelPattern = ConfigHolder.getUIConfig().labelRelationPattern('$subject', '?label');
   return {
     'http://www.researchspace.org/resource/system/semantic-search-profile/TextCategory': [
       {
@@ -107,7 +108,7 @@ export function DefaultTextPattern(): Patterns {
         queryPattern: `
            {
              $subject a ?__domain__ .
-             $subject ${ConfigHolder.getUIConfig().labelPropertyPattern} ?label .
+             ${labelPattern}
              SERVICE <http://www.bigdata.com/rdf/search#search> {
                ?label bds:search ?__value__ ;
                       bds:minRelevance "0.3" ;
@@ -210,6 +211,7 @@ export const DefaultFacetCategoriesTupleTemplate = `
 `;
 
 export function DefaultResourceSelectorQuery() {
+  const labelPattern = ConfigHolder.getUIConfig().labelRelationPattern('?suggestion', '?matchedLabel');
   return `
     prefix bds: <http://www.bigdata.com/rdf/search#>
     SELECT ?suggestion (SAMPLE(?matchedLabel) AS ?label) (MAX(?matchedScore) AS ?score) WHERE {
@@ -218,7 +220,7 @@ export function DefaultResourceSelectorQuery() {
       bds:minRelevance "0.5" ;
       bds:matchAllTerms "true"  .
 
-      ?suggestion ${ConfigHolder.getUIConfig().labelPropertyPattern} ?matchedLabel .
+      ${labelPattern}
       FILTER(EXISTS {
         { FILTER(?${SEMANTIC_SEARCH_VARIABLES.RELATION_PATTERN_VAR}) }
       })

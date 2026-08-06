@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -95,6 +96,7 @@ import com.google.common.collect.Sets;
 public class ContainerEndpoint {
 
     private static final Logger logger = LogManager.getLogger(ContainerEndpoint.class);
+    private static final Logger dataAuditLog = LogManager.getLogger("org.researchspace.ldp.dataaudit");
 
     private static final Set<String> supportedResourceOperations = Sets.newHashSet("GET, DELETE", "PUT");
     private static final Set<String> supporteContainerOperations = Sets.newHashSet("GET", "DELETE", "PUT", "POST");
@@ -107,6 +109,9 @@ public class ContainerEndpoint {
 
     @Context
     private Request req;
+
+    @Context
+    private HttpServletRequest servletRequest;
 
     @SuppressWarnings("unused")
     @Inject
@@ -137,6 +142,7 @@ public class ContainerEndpoint {
             }
             LDPResource ldpResource = api(repositoryID).createLDPResource(slug, new RDFStream(in, format.get()), uri,
                     getBaseUri());
+            dataAuditLog.info("CREATE LDP RESOURCE {} BY USER {}", uri, servletRequest.getUserPrincipal());
             return Response.created(java.net.URI.create(ldpResource.getResourceIRI().stringValue()))
                     .links(generateLinks(ldpResource.getLDPTypes())).build();
         });
@@ -153,6 +159,7 @@ public class ContainerEndpoint {
 
         return handleExceptions("Failed to copy LDP resource", uri.stringValue(), () -> {
             LDPResource ldpResource = api(repositoryID).copyLDPResource(slug, uri, targetContainer, getBaseUri());
+            dataAuditLog.info("COPY LDP RESOURCE {} TO {} BY USER {}", uri, targetContainer.toString(), servletRequest.getUserPrincipal());
             return Response.created(java.net.URI.create(ldpResource.getResourceIRI().stringValue())).build();
         });
     }
@@ -265,6 +272,7 @@ public class ContainerEndpoint {
             } else if (delayedId.isPresent()) {
                 delayedImportRequestSet.remove(delayedId.get());
             }
+            dataAuditLog.info("IMPORT LDP RESOURCE {} BY USER {}", containerIRI.toString(), servletRequest.getUserPrincipal());
             return Response.created(java.net.URI.create(ldpResources.get(0).getResourceIRI().stringValue())).build();
 
         });
@@ -356,6 +364,7 @@ public class ContainerEndpoint {
 
         return this.handleExceptions("Failed to delete LDP resource", uri.stringValue(), () -> {
             api(repositoryID).deleteLDPResource(uri);
+            dataAuditLog.info("DELETE LDP RESOURCE {} BY USER {}", uri, servletRequest.getUserPrincipal());
             return Response.ok().build();
         });
     }
@@ -374,6 +383,7 @@ public class ContainerEndpoint {
                 return Response.status(Status.UNSUPPORTED_MEDIA_TYPE).build();
             }
             LDPResource ldpResource = api(repositoryID).updateLDPResource(new RDFStream(in, format.get()), uri);
+            dataAuditLog.info("UPDATE LDP RESOURCE {} BY USER {}", uri, servletRequest.getUserPrincipal());
             return Response.created(java.net.URI.create(ldpResource.getResourceIRI().stringValue()))
                     .links(generateLinks(ldpResource.getLDPTypes())).build();
         });
@@ -390,6 +400,7 @@ public class ContainerEndpoint {
             resource = ldp.getLDPResource(uri);
             AbstractLDPContainer parent = (AbstractLDPContainer) ldp.getLDPResource(resource.getParentContainer());
             parent.rename(uri, newName);
+            dataAuditLog.info("RENAME LDP RESOURCE {} TO {} BY USER {}", uri, newName, servletRequest.getUserPrincipal());
             return Response.created(java.net.URI.create(resource.getResourceIRI().stringValue()))
                     .links(generateLinks(resource.getLDPTypes())).build();
         } catch (Exception ex) {

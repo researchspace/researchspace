@@ -19,6 +19,7 @@ import org.eclipse.rdf4j.federated.algebra.ExclusiveGroup;
 import org.eclipse.rdf4j.federated.algebra.ExclusiveStatement;
 import org.eclipse.rdf4j.federated.algebra.BoundJoinTupleExpr;
 import org.eclipse.rdf4j.federated.algebra.ExclusiveTupleExpr;
+import org.eclipse.rdf4j.federated.algebra.FilterValueExpr;
 import org.eclipse.rdf4j.federated.algebra.NJoin;
 import org.eclipse.rdf4j.federated.algebra.NUnion;
 import org.eclipse.rdf4j.federated.algebra.NodeFactory;
@@ -28,6 +29,7 @@ import org.eclipse.rdf4j.federated.endpoint.Endpoint;
 import org.eclipse.rdf4j.federated.structures.QueryInfo;
 import org.eclipse.rdf4j.federated.util.QueryAlgebraUtil;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.AbstractQueryModelNode;
@@ -198,8 +200,12 @@ public class ExclusiveSubquery extends AbstractQueryModelNode
                 log.debug("ExclusiveSubquery evaluate @{}: {}",
                         owner.getEndpointID(), sparql);
             }
+            // Use the FilterValueExpr overload: the generated query is always a SELECT
+            // (regardless of the top-level query type) and the input bindings — which
+            // were substituted into the query text — must be re-inserted into the
+            // result rows (InsertBindingsIteration).
             return ownedEndpoint.getTripleSource()
-                    .getStatements(sparql, bindings, queryInfo.getQueryType(), queryInfo);
+                    .getStatements(sparql, bindings, (FilterValueExpr) null, queryInfo);
         } catch (Exception e) {
             throw new QueryEvaluationException(e);
         }
@@ -218,10 +224,19 @@ public class ExclusiveSubquery extends AbstractQueryModelNode
 
         StringBuilder res = new StringBuilder();
         res.append("SELECT ");
+        if (varNames.isEmpty()) {
+            // All free vars are covered by the bindings: an empty projection would be
+            // invalid SPARQL. Project * — the endpoint returns a single empty row if
+            // the pattern matches, and the input bindings are re-inserted afterwards
+            // (cf. upstream IllegalQueryException fallback to a hasStatements check).
+            res.append("*");
+        }
         for (String var : varNames) {
             res.append(" ?").append(var);
         }
-        res.append(" WHERE { ").append(body).append(" }");
+        res.append(" ");
+        appendDatasetClause(res, queryInfo.getDataset());
+        res.append("WHERE { ").append(body).append(" }");
         return res.toString();
     }
 
@@ -267,39 +282,62 @@ public class ExclusiveSubquery extends AbstractQueryModelNode
                 .BoundJoinVALUESConversionIteration.INDEX_BINDING_NAME;
         query.append(" ?").append(indexBindingName);
 
-        query.append(" WHERE { ");
+        query.append(" ");
+        appendDatasetClause(query, queryInfo.getDataset());
+        query.append("WHERE { ");
 
-        // Append VALUES clause if there are bound variables
-        if (!boundVarNames.isEmpty()) {
-            query.append("VALUES (");
-            for (String var : boundVarNames) {
-                query.append("?").append(var).append(" ");
-            }
-            query.append(" ?").append(indexBindingName).append(") { ");
-
-            int index = 0;
-            for (BindingSet b : bindings) {
-                query.append("(");
-                for (String var : boundVarNames) {
-                    if (b.hasBinding(var)) {
-                        appendValue(query, b.getValue(var));
-                        query.append(" ");
-                    } else {
-                        query.append("UNDEF ");
-                    }
-                }
-                query.append("\"").append(index).append("\" ");
-                query.append(") ");
-                index++;
-            }
-            query.append(" } ");
-        }
+        // Always append the VALUES clause — even when no variables are shared with
+        // the input bindings (cross-product join), the ?__index column is required
+        // by BindLeftJoinIteration / BoundJoinVALUESConversionIteration.
+        org.eclipse.rdf4j.federated.util.ExclusiveGroupQueryBuilder.appendValuesBlock(
+                query, boundVarNames, bindings, false);
 
         query.append(body).append(" }");
         return query.toString();
     }
 
     // ── SPARQL body reconstruction ──
+
+    /**
+     * Whether {@link #toSparqlBody} can reconstruct this algebra node. This is
+     * the eligibility predicate the join optimizer consults before folding a
+     * single-source tree into an {@link ExclusiveSubquery}: keep it in sync
+     * with the branches of {@link #toSparqlBody} — a node admitted here but
+     * not rendered there turns into an
+     * {@link UnsupportedOperationException} at evaluation time (e.g. property
+     * paths pushed to one source become {@code ExclusiveArbitraryLengthPath},
+     * which has no rendering branch).
+     */
+    public static boolean canRender(TupleExpr expr) {
+        if (expr instanceof StatementPattern) {
+            return true;
+        }
+        if (expr instanceof ExclusiveGroup) {
+            for (ExclusiveTupleExpr e : ((ExclusiveGroup) expr).getExclusiveExpressions()) {
+                if (!(e instanceof TupleExpr) || !canRender((TupleExpr) e)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (expr instanceof NUnion) {
+            for (TupleExpr child : ((NUnion) expr).getArgs()) {
+                if (!canRender(child)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (expr instanceof NJoin) {
+            for (TupleExpr child : ((NJoin) expr).getArgs()) {
+                if (!canRender(child)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Recursively convert an algebra tree into a SPARQL body string.
@@ -353,16 +391,25 @@ public class ExclusiveSubquery extends AbstractQueryModelNode
 
     /**
      * Construct a triple pattern string "s p o . " with bindings substituted.
-     * Mirrors QueryStringUtil.constructStatement but is self-contained.
+     * Mirrors QueryStringUtil.constructStatement but is self-contained. Patterns
+     * with named-context scope are wrapped in {@code GRAPH ctx { ... }}.
      */
     private static String constructStatement(StatementPattern stmt, Set<String> varNames, BindingSet bindings) {
         StringBuilder sb = new StringBuilder();
+        if (stmt.getScope().equals(StatementPattern.Scope.NAMED_CONTEXTS)) {
+            sb.append("GRAPH ");
+            appendVar(sb, stmt.getContextVar(), varNames, bindings);
+            sb.append(" { ");
+        }
         appendVar(sb, stmt.getSubjectVar(), varNames, bindings);
         sb.append(" ");
         appendVar(sb, stmt.getPredicateVar(), varNames, bindings);
         sb.append(" ");
         appendVar(sb, stmt.getObjectVar(), varNames, bindings);
         sb.append(" . ");
+        if (stmt.getScope().equals(StatementPattern.Scope.NAMED_CONTEXTS)) {
+            sb.append("} ");
+        }
         return sb.toString();
     }
 
@@ -379,23 +426,31 @@ public class ExclusiveSubquery extends AbstractQueryModelNode
         }
     }
 
+    /**
+     * Value serialization delegates to FedX's QueryStringUtil (via the
+     * same-package bridge in ExclusiveGroupQueryBuilder) so all bind-join
+     * builders share one implementation — including its fail-fast behavior
+     * for value types that cannot appear in a SPARQL query.
+     */
     private static void appendValue(StringBuilder sb, org.eclipse.rdf4j.model.Value value) {
-        if (value instanceof org.eclipse.rdf4j.model.IRI) {
-            sb.append("<").append(value.stringValue()).append(">");
-        } else if (value instanceof org.eclipse.rdf4j.model.Literal) {
-            org.eclipse.rdf4j.model.Literal lit = (org.eclipse.rdf4j.model.Literal) value;
-            sb.append("\"").append(lit.getLabel().replace("\"", "\\\"")).append("\"");
-            if (lit.getLanguage().isPresent()) {
-                sb.append("@").append(lit.getLanguage().get());
-            } else if (lit.getDatatype() != null) {
-                sb.append("^^<").append(lit.getDatatype().stringValue()).append(">");
-            }
-        } else if (value instanceof org.eclipse.rdf4j.model.BNode) {
-            // BNodes can't be used in SPARQL queries; use a placeholder URI
-            sb.append("<http://fluidops.com/fedx/bnode>");
-        } else {
-            sb.append("\"").append(value.stringValue()).append("\"");
+        org.eclipse.rdf4j.federated.util.ExclusiveGroupQueryBuilder.appendValue(sb, value);
+    }
+
+    /**
+     * Append FROM / FROM NAMED clauses for the dataset (mirrors
+     * {@code QueryStringUtil.appendDatasetClause}).
+     */
+    private static StringBuilder appendDatasetClause(StringBuilder sb, Dataset dataset) {
+        if (dataset == null) {
+            return sb;
         }
+        for (org.eclipse.rdf4j.model.IRI g : dataset.getDefaultGraphs()) {
+            sb.append("FROM <").append(g.stringValue()).append("> ");
+        }
+        for (org.eclipse.rdf4j.model.IRI g : dataset.getNamedGraphs()) {
+            sb.append("FROM NAMED <").append(g.stringValue()).append("> ");
+        }
+        return sb;
     }
 
 }

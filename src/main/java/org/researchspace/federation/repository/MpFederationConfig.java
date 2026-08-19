@@ -37,9 +37,10 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelException;
 import org.eclipse.rdf4j.model.util.Models;
-import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.sail.config.AbstractSailImplConfig;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.researchspace.repository.MpDelegatingImplConfig;
 import org.researchspace.repository.MpRepositoryVocabulary;
@@ -67,6 +68,14 @@ import com.google.common.collect.Lists;
  * @author Andriy Nikolov <an@metaphacts.com>
  */
 public class MpFederationConfig extends AbstractSailImplConfig implements MpDelegatingImplConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(MpFederationConfig.class);
+
+    /**
+     * The only fedx:store type supported for fedx:member entries: repositories
+     * resolved by ID through the platform {@link RepositoryManager}.
+     */
+    private static final String RESOLVABLE_REPOSITORY_STORE = "ResolvableRepository";
 
     /**
      * Legacy IRI for the config block within ephedra namespace (deprecated, use fedx:config)
@@ -150,8 +159,6 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
     private String defaultMember = null;
 
     // Legacy config options (kept for backwards compatibility)
-    private boolean useAsyncParallelJoin = true;
-    private boolean useCompetingJoin = true;
     private boolean useBoundJoin = true;
     private boolean enableQueryHints = true;
     
@@ -173,7 +180,9 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
     public Collection<String> getDelegateRepositoryIDs() {
         Set<String> res = memberConfigs.stream().map(repoConfig -> repoConfig.getDelegateRepositoryId())
                 .collect(Collectors.toSet());
-        res.add(this.defaultMember);
+        if (this.defaultMember != null) {
+            res.add(this.defaultMember);
+        }
         res.addAll(fedxMemberRepositoryIds);
         return res;
     }
@@ -188,7 +197,7 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
 
     @Override
     public void validate() throws SailConfigException {
-        if (memberConfigs.isEmpty()) {
+        if (memberConfigs.isEmpty() && fedxMemberRepositoryIds.isEmpty()) {
             throw new SailConfigException("No federation members were configured.");
         }
         if (this.defaultMember == null) {
@@ -210,28 +219,30 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
             model.add(res, MpRepositoryVocabulary.DEFAULT_MEMBER,
                     SimpleValueFactory.getInstance().createLiteral(this.defaultMember));
         }
-        if (!this.isUseAsyncParallelJoin()) {
-            model.add(res, MpRepositoryVocabulary.USE_ASYNCHRONOUS_PARALLEL_JOIN,
-                    SimpleValueFactory.getInstance().createLiteral(this.isUseAsyncParallelJoin()));
-        }
         if (!this.isUseBoundJoin()) {
             model.add(res, MpRepositoryVocabulary.USE_BOUND_JOIN,
                     SimpleValueFactory.getInstance().createLiteral(this.isUseBoundJoin()));
-        }
-        if (!this.isUseCompetingJoin()) {
-            model.add(res, MpRepositoryVocabulary.USE_COMPETING_JOIN,
-                    SimpleValueFactory.getInstance().createLiteral(this.isUseCompetingJoin()));
         }
         if (!this.enableQueryHints) {
             model.add(res, MpRepositoryVocabulary.ENABLE_QUERY_HINTS,
                     SimpleValueFactory.getInstance().createLiteral(this.enableQueryHints));
         }
-        
+        for (String fedxMemberId : fedxMemberRepositoryIds) {
+            BNode memberNode = vf.createBNode();
+            model.add(memberNode, Vocabulary.FEDX.STORE, vf.createLiteral(RESOLVABLE_REPOSITORY_STORE));
+            model.add(memberNode, Vocabulary.FEDX.REPOSITORY_NAME, vf.createLiteral(fedxMemberId));
+            model.add(res, FedXRepositoryConfig.MEMBER, memberNode);
+        }
+        if (restServicePrefetchSize != DEFAULT_REST_SERVICE_PREFETCH_SIZE) {
+            model.add(res, MpRepositoryVocabulary.REST_SERVICE_PREFETCH_SIZE,
+                    vf.createLiteral(restServicePrefetchSize));
+        }
+
         // Export FedX config if present
         if (fedXConfig != null) {
             exportFedXConfig(model, res);
         }
-        
+
         return res;
     }
 
@@ -252,20 +263,42 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
             memberConfigs.add(conf);
         });
 
+        // The old engine's join-algorithm selectors have no FedX equivalent:
+        // accept them for backwards compatibility but warn that they are
+        // ignored (deployments tuned them to protect rate-limited endpoints).
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USE_ASYNCHRONOUS_PARALLEL_JOIN, null))
-                .ifPresent(lit -> setUseAsyncParallelJoin(lit.booleanValue()));
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USE_BOUND_JOIN, null))
-                .ifPresent(lit -> setUseBoundJoin(lit.booleanValue()));
+                .ifPresent(lit -> logger.warn(
+                        "Federation option ephedra:useAsyncParallelJoin is no longer supported after the FedX "
+                                + "rewrite and will be IGNORED. Tune fedx:config worker threads and "
+                                + "fedx:boundJoinBlockSize instead."));
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USE_COMPETING_JOIN, null))
-                .ifPresent(lit -> setUseCompetingJoin(lit.booleanValue()));
+                .ifPresent(lit -> logger.warn(
+                        "Federation option ephedra:useCompetingJoin is no longer supported after the FedX "
+                                + "rewrite and will be IGNORED."));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USE_BOUND_JOIN, null))
+                .ifPresent(lit -> {
+                    setUseBoundJoin(lit.booleanValue());
+                    // legacy option maps onto FedX's enableServiceAsBoundJoin; an explicit
+                    // fedx:config value parsed below still takes precedence
+                    fedXConfig.withEnableServiceAsBoundJoin(lit.booleanValue());
+                });
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.ENABLE_QUERY_HINTS, null))
                 .ifPresent(lit -> setEnableQueryHints(lit.booleanValue()));
         
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REST_SERVICE_PREFETCH_SIZE, null))
                 .ifPresent(lit -> setRestServicePrefetchSize(lit.intValue()));
 
-        // Parse fedx:member entries (ResolvableRepository members for FedX source selection)
+        // Parse fedx:member entries (ResolvableRepository members for FedX source selection).
+        // Other member types (e.g. RemoteRepository) are not resolvable through the local
+        // RepositoryManager and must not become local repository dependencies.
         Models.objectResources(model.filter(implNode, FedXRepositoryConfig.MEMBER, null)).forEach(memberNode -> {
+            boolean resolvable = Models.objectLiteral(model.filter(memberNode, Vocabulary.FEDX.STORE, null))
+                    .map(lit -> RESOLVABLE_REPOSITORY_STORE.equals(lit.stringValue())).orElse(false);
+            if (!resolvable) {
+                logger.warn("Ignoring fedx:member without fedx:store \"{}\" (other member types are not supported)",
+                        RESOLVABLE_REPOSITORY_STORE);
+                return;
+            }
             Models.objectLiteral(model.filter(memberNode, Vocabulary.FEDX.REPOSITORY_NAME, null))
                     .ifPresent(lit -> fedxMemberRepositoryIds.add(lit.stringValue()));
         });
@@ -325,75 +358,52 @@ public class MpFederationConfig extends AbstractSailImplConfig implements MpDele
     }
     
     /**
-     * Helper class to access FedXRepositoryConfig's protected parseFedXConfig method.
-     * This avoids duplicating the FedX config parsing logic.
+     * Helper class to access FedXRepositoryConfig's protected parseFedXConfig
+     * and exportFedXConfig methods. This avoids duplicating the FedX config
+     * parse/export logic — a hand copy would silently drop settings the
+     * upstream version knows about (it once lost fedx:prefixDeclarations on
+     * every admin-UI save).
      */
     private static class FedXConfigParserHelper extends FedXRepositoryConfig {
         @Override
         public void parseFedXConfig(Model m, Resource implNode) {
             super.parseFedXConfig(m, implNode);
         }
+
+        @Override
+        public void exportFedXConfig(Model m, Resource implNode) {
+            super.exportFedXConfig(m, implNode);
+        }
     }
-    
+
     /**
-     * Export FedX configuration to the model.
+     * Export FedX configuration to the model (delegates to upstream
+     * FedXRepositoryConfig so every parseable setting survives the
+     * parse → export round trip).
      */
     private void exportFedXConfig(Model model, Resource implNode) {
-        BNode confNode = Values.bnode();
-
-        model.add(confNode, FedXRepositoryConfig.CONFIG_JOIN_WORKER_THREADS, 
-                vf.createLiteral(fedXConfig.getJoinWorkerThreads()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_UNION_WORKER_THREADS, 
-                vf.createLiteral(fedXConfig.getUnionWorkerThreads()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_LEFT_JOIN_WORKER_THREADS, 
-                vf.createLiteral(fedXConfig.getLeftJoinWorkerThreads()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_BOUND_JOIN_BLOCK_SIZE, 
-                vf.createLiteral(fedXConfig.getBoundJoinBlockSize()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_ENFORCE_MAX_QUERY_TIME, 
-                vf.createLiteral(fedXConfig.getEnforceMaxQueryTime()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_ENABLE_SERVICE_AS_BOUND_JOIN,
-                vf.createLiteral(fedXConfig.getEnableServiceAsBoundJoin()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_ENABLE_OPTIONAL_AS_BIND_JOIN,
-                vf.createLiteral(fedXConfig.isEnableOptionalAsBindJoin()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_ENABLE_MONITORING, 
-                vf.createLiteral(fedXConfig.isEnableMonitoring()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_LOG_QUERY_PLAN, 
-                vf.createLiteral(fedXConfig.isLogQueryPlan()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_LOG_QUERIES, 
-                vf.createLiteral(fedXConfig.isLogQueries()));
-        model.add(confNode, FedXRepositoryConfig.CONFIG_INCLUDE_INFERRED_DEFAULT, 
-                vf.createLiteral(fedXConfig.getIncludeInferredDefault()));
-
-        if (fedXConfig.getSourceSelectionCacheSpec() != null) {
-            model.add(confNode, FedXRepositoryConfig.CONFIG_SOURCE_SELECTION_CACHE_SPEC,
-                    vf.createLiteral(fedXConfig.getSourceSelectionCacheSpec()));
-        }
-
-        model.add(confNode, FedXRepositoryConfig.CONFIG_CONSUMING_ITERATION_MAX, 
-                vf.createLiteral(fedXConfig.getConsumingIterationMax()));
-
-        model.add(implNode, FedXRepositoryConfig.FEDX_CONFIG, confNode);
+        FedXConfigParserHelper helper = new FedXConfigParserHelper();
+        helper.setConfig(fedXConfig);
+        helper.exportFedXConfig(model, implNode);
     }
+
+    /**
+     * SERVICE-IRI to repository-id mappings, memoized: the member configs are
+     * fixed after {@link #parse}, and this map is consulted on the query hot
+     * path (per SERVICE join evaluation).
+     */
+    private volatile Map<IRI, String> repositoryIDMappings;
 
     public Map<IRI, String> getRepositoryIDMappings() {
-        return memberConfigs.stream().collect(Collectors.toMap(memberConfig -> memberConfig.getReferenceIri(),
-                memberConfig -> memberConfig.getDelegateRepositoryId()));
-    }
-
-    public boolean isUseAsyncParallelJoin() {
-        return useAsyncParallelJoin;
-    }
-
-    public void setUseAsyncParallelJoin(boolean useAsyncParallelJoin) {
-        this.useAsyncParallelJoin = useAsyncParallelJoin;
-    }
-
-    public boolean isUseCompetingJoin() {
-        return useCompetingJoin;
-    }
-
-    public void setUseCompetingJoin(boolean useCompetingJoin) {
-        this.useCompetingJoin = useCompetingJoin;
+        Map<IRI, String> mappings = repositoryIDMappings;
+        if (mappings == null) {
+            mappings = java.util.Collections
+                    .unmodifiableMap(memberConfigs.stream().collect(Collectors.toMap(
+                            memberConfig -> memberConfig.getReferenceIri(),
+                            memberConfig -> memberConfig.getDelegateRepositoryId())));
+            repositoryIDMappings = mappings;
+        }
+        return mappings;
     }
 
     public boolean isUseBoundJoin() {

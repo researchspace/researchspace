@@ -47,6 +47,11 @@ PREFIX : <http://www.researchspace.org/resource/system/services/osm/>
             ]
         [
             sp:subject :_results ;
+            sp:predicate :polygon_threshold ;
+            sp:object :_polygon_threshold
+            ]
+        [
+            sp:subject :_results ;
             sp:predicate :format ;
             sp:object :_format
             ]
@@ -67,8 +72,43 @@ PREFIX : <http://www.researchspace.org/resource/system/services/osm/>
             ]
         [
             sp:subject :_results ;
+            sp:predicate :osm_type ;
+            sp:object :_osm_type
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :osm_id ;
+            sp:object :_osm_id
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :bbox_min_lat ;
+            sp:object :_bbox_min_lat
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :bbox_max_lat ;
+            sp:object :_bbox_max_lat
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :bbox_min_lon ;
+            sp:object :_bbox_min_lon
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :bbox_max_lon ;
+            sp:object :_bbox_max_lon
+            ]
+        [
+            sp:subject :_results ;
             sp:predicate :importance ;
             sp:object :_importance
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :ordinal ;
+            sp:object :_ordinal
             ]
         );
 
@@ -115,6 +155,16 @@ PREFIX : <http://www.researchspace.org/resource/system/services/osm/>
         spl:defaultValue "1"
         ] ;
 
+    # No spl:defaultValue: the parameter is only sent when a query binds it,
+    # keeping requests of existing consumers byte-identical (Nominatim's own
+    # default is 0.0 = full geometry).
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "Douglas-Peucker simplification tolerance (in degrees) applied to the returned geometry. Unset/0.0 returns the full geometry. Country boundaries at full resolution are multiple MEGABYTES of WKT (Ukraine ~1.7 MB, at 0.01 ~25 KB) - bind a coarser threshold whenever the geometry is only displayed, and fetch full precision only where it is stored." ;
+        spl:predicate :_polygon_threshold ;
+        spl:valueType xsd:string
+        ] ;
+
     spin:constraint [
         a spl:Argument ;
         rdfs:comment "Include additional information in the result if available, like wikidata id" ;
@@ -155,12 +205,75 @@ PREFIX : <http://www.researchspace.org/resource/system/services/osm/>
         ephedra:jsonPath "$.extratags.wikidata"
         ] ;
 
+    # OSM identity (always returned): osm_type ("node"/"way"/"relation") plus
+    # osm_id identify the entity uniquely - numeric ids alone can collide
+    # across types. Unlike the wikidata tag, these exist for EVERY result,
+    # so they are the join key for per-row follow-up queries.
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "OSM object type: node, way or relation" ;
+        spl:predicate :_osm_type ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.osm_type"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "OSM object id (unique within its osm_type)" ;
+        spl:predicate :_osm_id ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.osm_id"
+        ] ;
+
+    # Bounding box (always returned by Nominatim, even with polygon_text=0):
+    # [min lat, max lat, min lon, max lon]. Lets consumers judge the entity's
+    # size BEFORE fetching geometry, e.g. to pick a polygon_threshold.
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Bounding box: minimum latitude" ;
+        spl:predicate :_bbox_min_lat ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.boundingbox[0]"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Bounding box: maximum latitude" ;
+        spl:predicate :_bbox_max_lat ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.boundingbox[1]"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Bounding box: minimum longitude" ;
+        spl:predicate :_bbox_min_lon ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.boundingbox[2]"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Bounding box: maximum longitude" ;
+        spl:predicate :_bbox_max_lon ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.boundingbox[3]"
+        ] ;
+
     spin:column [
         a spin:Column ;
         rdfs:comment "search result rank, the higher the more relevant is the result" ;
         spl:predicate :_importance ;
         spl:valueType xsd:string;
         ephedra:jsonPath "$.importance"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "0-based position of the hit in the search response (Nominatim returns results ranked by importance)" ;
+        spl:predicate :_ordinal ;
+        spl:valueType xsd:integer ;
+        ephedra:rowIndex true
         ] .
 
 

@@ -115,6 +115,22 @@ public class MpRepositoryVocabulary {
     public static final IRI USE_BOUND_JOIN = VF.createIRI(FEDERATION_NAMESPACE, "useBoundJoin");
     public static final IRI JSON_PATH = VF.createIRI(FEDERATION_NAMESPACE, "jsonPath");
     public static final IRI INPUT_JSON_PATH = VF.createIRI(FEDERATION_NAMESPACE, "inputJsonPath");
+    /**
+     * Marks a REST service descriptor output column that binds the 0-based
+     * position of the row in the service response array (instead of reading a
+     * value via {@link #JSON_PATH}). Lets queries restore the service's result
+     * ordering (e.g. search relevance) after joins and aggregation.
+     */
+    public static final IRI ROW_INDEX = VF.createIRI(FEDERATION_NAMESPACE, "rowIndex");
+    /**
+     * Marks a REST service descriptor input argument as a local row bound: its
+     * value caps the number of rows parsed from the service response and it is
+     * NOT sent to the remote API. The declared "top N hits" bound for search
+     * APIs that return their full unpaginated result list - it limits what
+     * enters the SPARQL engine, so downstream per-row joins and ORDER BY
+     * cannot fan out beyond N.
+     */
+    public static final IRI ROW_LIMIT = VF.createIRI(FEDERATION_NAMESPACE, "rowLimit");
     public static final IRI HTTP_METHOD = VF.createIRI(FEDERATION_NAMESPACE, "httpMethod");
     public static final IRI HTTP_HEADER = VF.createIRI(FEDERATION_NAMESPACE, "httpHeader");
     public static final IRI NAME = VF.createIRI(FEDERATION_NAMESPACE, "name");

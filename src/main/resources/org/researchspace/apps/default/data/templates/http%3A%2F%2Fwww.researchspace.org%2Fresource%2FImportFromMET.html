@@ -7,10 +7,12 @@
                                   debounce=500
                                   debounce=500
                                   query='PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
-                                         SELECT ?subject ?objectid WHERE { 
+                                         SELECT ?subject ?objectid WHERE {
                                            service met:METCollectionSearchService {
                                              ?subject met:q ?__token__ .
-                                             ?subject met:objectIDs ?objectid.                                                                                       
+                                             ?subject met:limit "50" .
+                                             ?subject met:objectIDs ?objectid.
+                                             ?subject met:ordinal ?ordinal.
                                            }
                                          }'
   ></semantic-search-query-keyword>
@@ -20,12 +22,22 @@
       <semantic-search-result>
         <div class="METapiResultsTable">
           <semantic-context repository='ephedra'>
+            <!-- IMPORTANT: the met:limit "50" bound in the keyword query above
+                 is what keeps this affordable. The MET search returns the FULL
+                 list of matching object ids (thousands for broad terms, no
+                 pagination) and every row costs one HTTP call to the
+                 per-object details API; the rowLimit input caps the parsed
+                 hits at 50 BEFORE they reach the engine, so the details join
+                 and the ORDER BY below can never fan out beyond 50 requests.
+                 Never add an ORDER BY here without such a source bound: it
+                 would consume the entire id list through the details API
+                 (which once got a server 403-banned by the MET WAF). -->
             <semantic-table id='semantic-search-result-table'
                             query='prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
-                                   SELECT DISTINCT ?subject ?id ?name ?title ?objectType ?primaryImageSmall ?accessionNumber ?artistName ?artistRole  WHERE {
+                                   SELECT DISTINCT ?subject ?id ?name ?title ?objectType ?primaryImageSmall ?accessionNumber ?artistName ?artistRole ?ordinal WHERE {
                                     BIND(?objectid as ?id)
                                     BIND(?subject as ?iri) .
-                                    service met:METObjectDescriptionService {                                           
+                                    service met:METObjectDescriptionService {
                                         ?subject met:objectid ?id .
                                         ?subject met:objectName ?objectType .
                                         ?subject met:title ?rawTitle .
@@ -38,7 +50,7 @@
                                         ?subject met:artistRole ?artistRole .
                                     }
                                     BIND(REPLACE(STR(?rawTitle),"\"","") as ?title)
-                                  } LIMIT 50'
+                                  } ORDER BY ?ordinal'
 
                             options='{"showFilter":true, "resultsPerPage":10}' 
                             column-configuration='[
@@ -89,36 +101,25 @@
             <template id='actions'>
               <div> 
                 <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 116px;">
-                  <semantic-context repository='default'>
-                    <semantic-query query='SELECT DISTINCT ?MetResourceURI WHERE {
-                                            BIND(IRI(CONCAT("https://www.metmuseum.org/art/collection/search/", STR({{id.value}}))) AS ?MetResourceURI)
+                  <mp-event-trigger id='{{viewId}}-select-api-resource-trigger'
+                                    type='apiResourceImportInModal'
+                                    data='{"apiResourceURI": "https://www.metmuseum.org/art/collection/search/{{id.value}}",
+                                            "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}",
+                                            "apiResourceMuseumId": "{{accessionNumber.value}}",
+                                            "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/accession_number",
+                                            "apiResourceSystemId": "{{id.value}}",
+                                            "apiResourceArtistName": "{{artistName.value}}",
+                                            "apiResourceArtistRole": "{{artistRole.value}}"
                                           }'
-                                          
-                                    template='{{> template}}'>
-                            
-                      <template id='template'>
-                        <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
-                                          type='apiResourceImportInModal' 
-                                          data='{"apiResourceURI": "{{bindings.0.MetResourceURI.value}}", 
-                                                  "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}", 
-                                                  "apiResourceMuseumId": "{{accessionNumber.value}}",
-                                                  "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/accession_number", 
-                                                  "apiResourceSystemId": "{{id.value}}",
-                                                  "apiResourceArtistName": "{{artistName.value}}",
-                                                  "apiResourceArtistRole": "{{artistRole.value}}"
-                                                }' 
-                                    >
-                          <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
-                        </mp-event-trigger>
-                      </template>
-                    </semantic-query>
-                  </semantic-context>
+                              >
+                    <button class="btn btn-action" title="Import as {{label}}">Import as {{label}}</button>
+                  </mp-event-trigger>
 
                   <semantic-context repository='default'>
                     
                     <semantic-query query='SELECT DISTINCT ?existingRecord ?existingRecordLabel WHERE {
 
-                                            BIND(IRI(CONCAT("https://www.metmuseum.org/art/collection/search/", STR({{id.value}}))) AS ?MetResourceURI)
+                                            BIND(IRI(CONCAT("https://www.metmuseum.org/art/collection/search/", STR("{{id.value}}"))) AS ?MetResourceURI)
 
                                             ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
                                             ?entityFormRecord a crmdig:D1_Digital_Object .

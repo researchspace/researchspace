@@ -99,7 +99,7 @@
       <strong>Note:</strong> Starting with RDF4J 5.0, the configuration vocabulary has changed. 
       The old vocabulary (<code>http://www.openrdf.org/config/repository#</code>) is still supported 
       for backward compatibility but is deprecated. New configurations should use the new vocabulary 
-      (<code>tag:rdf4j.org,2023:config/repository#</code>).
+      (<code>tag:rdf4j.org,2023:config/</code>).
     </div>
 
     <p>The following Turtle code shows the Library Cloud configuration file content.</p>
@@ -255,8 +255,40 @@ spin:constraint [
     refer to <a href="https://github.com/json-path/JsonPath" class="text-link-action" target="_blank">JSON path documentation</a>). 
     In this example, the results are stored in a JSON array reachable with a JSON path of <code>$.items.mods.[*]</code>.</p>
 
-    <p>For all the other parameters of type <code>spin:Column</code>, which are the 
+    <p>For all the other parameters of type <code>spin:Column</code>, which are the
     output parameters, the lookup will start from the new root, which is the one passed with <code>_results</code>.</p>
+
+    <div class="alert alert-warning">
+      <strong>IRIs vs. literals:</strong> a column is materialized as an IRI only when its
+      <code>spl:valueType</code> is exactly <code>rdfs:Resource</code>. Any other value — including the
+      easily-confused <code>rdf:Resource</code> — produces a <em>typed literal</em>, which breaks joining
+      the value into SPARQL repositories and <code>&lt;{{binding.value}}&gt;</code> substitution in templates.
+    </div>
+
+    <br>
+    <h3>Preserving the result order (relevance ranking)</h3>
+    <p>Many REST APIs return their hits as an array ordered by relevance. This order does <strong>not</strong>
+    survive federated joins or <code>GROUP BY</code> aggregation. To make the ranking available to the query,
+    declare a column with <code>ephedra:rowIndex true</code>: instead of reading a value from the response, it
+    binds the <strong>0-based position of the row in the response array</strong> (typed by the column's
+    <code>spl:valueType</code>, by default <code>xsd:integer</code>).</p>
+
+    <mp-code-block mode='text/turtle'>
+    <![CDATA[
+spin:column [
+  a spin:Column ;
+  rdfs:comment "0-based position of the hit in the response (relevance rank)" ;
+  spl:predicate :_ordinal ;
+  spl:valueType xsd:integer ;
+  ephedra:rowIndex true
+] ;
+      ]]>
+    </mp-code-block>
+
+    <p>Expose it through a triple in <code>ephedra:hasSPARQLPattern</code> like any other column, then restore
+    the service ranking in the query with <code>ORDER BY ?ordinal</code> — even after joining the results into
+    other repositories and aggregating with <code>GROUP BY</code>. This is how the Wikidata import keeps the
+    entity search relevance order.</p>
 
     <hr class="divider">
     <h2>Use SPARQL to make requests</h2>
@@ -309,9 +341,33 @@ LIMIT 20
 
     <p><strong>Workarounds:</strong></p>
     <ul>
-      <li><strong>Remove ORDER BY</strong>: If ordering isn't critical, omit it to benefit from lazy evaluation and fast LIMIT</li>
+      <li><strong>Bound the search with <code>ephedra:rowLimit</code> (preferred)</strong>: declare an input argument
+      flagged <code>ephedra:rowLimit true</code> on the search service descriptor and set it in the query:
+      <mp-code-block mode='text/turtle'>
+      <![CDATA[
+spin:constraint [
+  a spl:Argument ;
+  rdfs:comment "local bound on the number of response rows; never sent to the API" ;
+  spl:predicate :_limit ;
+  spl:valueType xsd:integer ;
+  ephedra:rowLimit true
+] ;
+        ]]>
+      </mp-code-block>
+      The value (e.g. <code>?subject :limit "50"</code>) caps how many response rows are parsed — a declared
+      "top N hits" bound that is <em>not</em> sent to the remote API — so downstream per-row services and ORDER BY
+      cannot fan out beyond N. With the source bounded, ordering by an <code>ephedra:rowIndex</code> ordinal is safe
+      and costs nothing extra.</li>
+      <li><strong>Remove ORDER BY</strong>: If ordering isn't critical, omit it to benefit from lazy evaluation and
+      fast LIMIT. Lazy REST joins preserve the first service's response order, so results already arrive in the
+      search API's relevance order</li>
+      <li><strong>ORDER BY the service's own ranking</strong>: Declare an <code>ephedra:rowIndex</code> column on the
+      <em>first</em> service (see above) and order by it — <strong>but only together with an
+      <code>ephedra:rowLimit</code> bound when a per-row REST service is joined downstream</strong>: ORDER BY consumes
+      ALL rows before sorting, so an unbounded per-object detail service behind it fires one request per search hit
+      regardless of LIMIT</li>
       <li><strong>Client-side sorting</strong>: Retrieve unordered results with LIMIT, then sort in your application code</li>
-      <li><strong>ORDER BY on search parameters</strong>: If the first service supports sorting (e.g., via a sort parameter), 
+      <li><strong>ORDER BY on search parameters</strong>: If the first service supports sorting (e.g., via a sort parameter),
       use that instead of SPARQL ORDER BY</li>
     </ul>
 

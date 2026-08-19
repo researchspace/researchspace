@@ -54,13 +54,13 @@ public class ParametrizeVisitorTest extends AbstractIntegrationTest {
     @Test
     public void testSingleTriples() throws Exception {
         assertParametrizationResult("SELECT ?s ?p WHERE { ?s ?p ?iri . ?s ?p ?literal . }",
-                "SELECT ?s ?p WHERE { ?s ?p <test:iri> . ?s ?p \"\"\"TestLiteral\"\"\"^^<" + XMLSchema.STRING + "> . }");
+                "SELECT ?s ?p WHERE { ?s ?p <test:iri> . ?s ?p \"TestLiteral\"^^<" + XMLSchema.STRING + "> . }");
     }
 
     @Test
     public void testBind() throws Exception {
         assertParametrizationResult("SELECT ?s WHERE { BIND(?langLiteral AS ?s) . }",
-                "SELECT ?s WHERE {{} BIND(\"\"\"TestLangLiteral\"\"\"@en AS ?s) . }");
+                "SELECT ?s WHERE {{} BIND(\"TestLangLiteral\"@en AS ?s) . }");
     }
 
     @Test
@@ -73,7 +73,7 @@ public class ParametrizeVisitorTest extends AbstractIntegrationTest {
         assertParametrizationResult(
                 "SELECT ?s ?o WHERE { ?s ?p ?o . FILTER((?iri + \"s\"^^<" + XMLSchema.STRING + ">) = \"abc\"^^<"
                         + XMLSchema.STRING + ">) }",
-                "SELECT ?s ?o WHERE { ?s ?p ?o . FILTER((<test:iri> + \"\"\"s\"\"\"^^<" + XMLSchema.STRING + ">) = \"\"\"abc\"\"\"^^<"
+                "SELECT ?s ?o WHERE { ?s ?p ?o . FILTER((<test:iri> + \"s\"^^<" + XMLSchema.STRING + ">) = \"abc\"^^<"
                         + XMLSchema.STRING + ">) }");
     }
 

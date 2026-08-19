@@ -41,6 +41,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.CONFIG;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
 import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
@@ -49,6 +50,9 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 
+import org.researchspace.federation.repository.MpFederationConfig;
+import org.researchspace.federation.repository.MpFederationSailRepository;
+import org.researchspace.federation.repository.MpFederationSailRepositoryConfig;
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.ObjectRecord;
@@ -111,7 +115,37 @@ public class RepositoryConfigUtils {
             throw new RepositoryConfigException("Repository configuration model must have exactly one repository id.");
         }
 
-        return RepositoryConfig.create(model, repositoryNode.get());
+        return migrateLegacyFederationConfig(RepositoryConfig.create(model, repositoryNode.get()));
+    }
+
+    /**
+     * Pre-rdf4j-5 deployments declared the ephedra federation as a generic
+     * {@code openrdf:SailRepository} wrapping the
+     * {@code researchspace:Federation} sail. Since the FedX rewrite the
+     * federation only works through {@link MpFederationSailRepository} (the
+     * FedX repository wrapper, which wires the FederationContext and registers
+     * the federation members) — under a plain SailRepository every query would
+     * fail with a NullPointerException. Migrate such configurations on read.
+     */
+    private static RepositoryConfig migrateLegacyFederationConfig(RepositoryConfig repConfig) {
+        org.eclipse.rdf4j.repository.config.RepositoryImplConfig impl = repConfig.getRepositoryImplConfig();
+        if (impl instanceof org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig
+                && !(impl instanceof MpFederationSailRepositoryConfig)) {
+            org.eclipse.rdf4j.sail.config.SailImplConfig sailImplConfig = ((org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig) impl)
+                    .getSailImplConfig();
+            if (sailImplConfig instanceof MpFederationConfig) {
+                logger.warn(
+                        "Repository '{}' declares the ephedra federation sail under the generic "
+                                + "'openrdf:SailRepository' repository type; migrating to "
+                                + "'researchspace:FederationSailRepository'. Please update the repository "
+                                + "configuration accordingly.",
+                        repConfig.getID());
+                RepositoryConfig migrated = new RepositoryConfig(repConfig.getID(), repConfig.getTitle(),
+                        new MpFederationSailRepositoryConfig((MpFederationConfig) sailImplConfig));
+                return migrated;
+            }
+        }
+        return repConfig;
     }
 
     /**
@@ -332,9 +366,13 @@ public class RepositoryConfigUtils {
                             "Name of repository configuration file is \"%s\", but need to be equal to the repository id as specified in the configuration (repositoryID=\"%s\").",
                             fileNameId, repConfig.getID()));
                 }
+                repConfig.validate();
                 map.put(repConfig.getID(), repConfig);
-            } catch (IOException | RepositoryConfigException e) {
-                logger.warn("Error while creating the repository config object from the configuration model:{}",
+            } catch (IOException | RDF4JException e) {
+                // RDF4JException covers RepositoryConfigException as well as unchecked
+                // parse/config errors (RDFParseException, SailConfigException, ...);
+                // one broken file must not prevent the remaining repositories from loading
+                logger.warn("Skipping repository configuration file \"{}\": {}", configFile.getPath(),
                         e.getMessage());
             }
         }

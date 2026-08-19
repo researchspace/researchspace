@@ -58,8 +58,6 @@ import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryFactory;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
 import org.eclipse.rdf4j.sail.nativerdf.config.NativeStoreConfig;
 import org.eclipse.rdf4j.federated.repository.FedXRepositoryConfig;
-import org.eclipse.rdf4j.federated.util.Vocabulary;
-import org.eclipse.rdf4j.model.Value;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.Configuration;
 import org.researchspace.data.rdf.container.LDPApiInternalRegistry;
@@ -444,6 +442,14 @@ public class RepositoryManager implements RepositoryManagerInterface {
         getAssetRepository().shutDown();
         initializedRepositories.clear();
 
+        // close the shared HTTP client and its executor threads, otherwise they
+        // survive webapp reloads
+        try {
+            this.client.shutDown();
+        } catch (Throwable t) {
+            logger.warn("Error while shutting down the HTTP client session manager: {}", t.getMessage());
+        }
+
         if (unregisterShutdownHook) {
             // unregister shutdown hook as everything is done
             removeShutdownHook(hookReference.get());
@@ -671,12 +677,8 @@ public class RepositoryManager implements RepositoryManagerInterface {
                         delegates = ((MpDelegatingImplConfig) sailConfig).getDelegateRepositoryIDs();
                     }
                 } else if (implConfig instanceof FedXRepositoryConfig) {
-                    FedXRepositoryConfig fedXConfig = (FedXRepositoryConfig) implConfig;
-                    if (fedXConfig.getMembers() != null) {
-                        fedXConfig.getMembers().filter(null, Vocabulary.FEDX.REPOSITORY_NAME, null).objects().stream()
-                                .map(Value::stringValue)
-                                .forEach(delegates::add);
-                    }
+                    delegates.addAll(
+                            RepositoryDependencySorter.getResolvableFedXMembers((FedXRepositoryConfig) implConfig));
                 }
                 for (String delegate : delegates) {
                     if (configs.containsKey(delegate)) {

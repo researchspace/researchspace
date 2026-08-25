@@ -39,7 +39,7 @@ interface State {
  * <mp-has-permission permission='delete:all:data'></mp-has-permission>
  */
 export class HasPermission extends Component<HasPermisssionProps, State> {
-  private readonly cancellation = new Cancellation();
+  private cancellation = new Cancellation();
 
   constructor(props: HasPermisssionProps) {
     super(props);
@@ -47,9 +47,26 @@ export class HasPermission extends Component<HasPermisssionProps, State> {
   }
 
   componentWillMount() {
+    this.checkPermission(this.props);
+  }
+
+  componentWillReceiveProps(props: HasPermisssionProps) {
+    if (props.permission !== this.props.permission) {
+      this.cancellation.cancelAll();
+      this.cancellation = new Cancellation();
+      this.setState({ allowedToSee: false });
+      this.checkPermission(props);
+    }
+  }
+
+  private checkPermission(props: HasPermisssionProps) {
     this.cancellation
-      .map(Security.isPermitted(this.props.permission))
+      .map(Security.isPermitted(props.permission))
       .onValue((allowedToSee) => this.setState({ allowedToSee }));
+  }
+
+  componentWillUnmount() {
+    this.cancellation.cancelAll();
   }
 
   render() {

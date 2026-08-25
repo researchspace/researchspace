@@ -1,0 +1,64 @@
+diff --git a/node_modules/@reactodia/workspace/dist/typings/data/sparql/sparqlDataProvider.d.ts b/node_modules/@reactodia/workspace/dist/typings/data/sparql/sparqlDataProvider.d.ts
+index a0a8d2d..66f0f38 100644
+--- a/node_modules/@reactodia/workspace/dist/typings/data/sparql/sparqlDataProvider.d.ts
++++ b/node_modules/@reactodia/workspace/dist/typings/data/sparql/sparqlDataProvider.d.ts
+@@ -14,6 +14,7 @@ export interface SparqlDataProviderOptions {
+     prepareImagePredicate?: PropertyTypeIri;
+     prepareLabels?: (resources: Set<string>, signal: AbortSignal | undefined) => Promise<Map<string, Rdf.Literal[]>>;
+     prepareLabelPredicate?: PropertyTypeIri;
++    acceptBlankNodes?: boolean;
+ }
+ export type SparqlQueryFunction = (params: {
+     url: string;
+diff --git a/node_modules/@reactodia/workspace/dist/workspace.js b/node_modules/@reactodia/workspace/dist/workspace.js
+index 13c743a..efe2a38 100644
+--- a/node_modules/@reactodia/workspace/dist/workspace.js
++++ b/node_modules/@reactodia/workspace/dist/workspace.js
+@@ -3171,7 +3171,7 @@ var SparqlDataProvider = class {
+ 	options;
+ 	settings;
+ 	queryFunction;
+-	acceptBlankNodes = false;
++	acceptBlankNodes;
+ 	chunkMeasure;
+ 	linkByPredicate = /* @__PURE__ */ new Map();
+ 	linkById = /* @__PURE__ */ new Map();
+@@ -3186,6 +3186,7 @@ var SparqlDataProvider = class {
+ 		this.options = options;
+ 		this.settings = settings;
+ 		this.queryFunction = queryFunction;
++		this.acceptBlankNodes = options.acceptBlankNodes ?? false;
+ 		const { chunk, queryMethod = "GET", prepareLabelPredicate, prepareImagePredicate } = this.options;
+ 		if (chunk) {
+ 			if (!Number.isSafeInteger(chunk.maxSize)) throw new Error("SparqlDataProviderOptions.chunk.maxSize should be a non-negative number");
+diff --git a/node_modules/@reactodia/workspace/src/data/sparql/sparqlDataProvider.ts b/node_modules/@reactodia/workspace/src/data/sparql/sparqlDataProvider.ts
+index fe4e258..feba040 100644
+--- a/node_modules/@reactodia/workspace/src/data/sparql/sparqlDataProvider.ts
++++ b/node_modules/@reactodia/workspace/src/data/sparql/sparqlDataProvider.ts
+@@ -133,6 +133,9 @@ export interface SparqlDataProviderOptions {
+      * @default "http://www.w3.org/2000/01/rdf-schema#label"
+      */
+     prepareLabelPredicate?: PropertyTypeIri;
++
++    /** Allow blank nodes in navigation and lookup queries. */
++    acceptBlankNodes?: boolean;
+ }
+ 
+ /**
+@@ -179,7 +182,7 @@ export class SparqlDataProvider implements DataProvider {
+     private readonly options: SparqlDataProviderOptions;
+     private readonly settings: SparqlDataProviderSettings;
+     private readonly queryFunction: SparqlQueryFunction;
+-    private readonly acceptBlankNodes = false;
++    private readonly acceptBlankNodes: boolean;
+     private readonly chunkMeasure: ChunkMeasure;
+ 
+     private linkByPredicate = new Map<string, LinkConfiguration[]>();
+@@ -204,6 +207,7 @@ export class SparqlDataProvider implements DataProvider {
+         this.options = options;
+         this.settings = settings;
+         this.queryFunction = queryFunction;
++        this.acceptBlankNodes = options.acceptBlankNodes ?? false;
+ 
+         const {
+             chunk,

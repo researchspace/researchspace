@@ -19,7 +19,7 @@
 
 import { Children, ReactNode } from 'react';
 import * as Immutable from 'immutable';
-import { ElementTypeIri, CancellationToken } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
@@ -123,9 +123,9 @@ export class OntodiaFieldConfiguration extends Component<OntodiaFieldConfigurati
 
 export async function extractFieldConfiguration(
   props: OntodiaFieldConfigurationProps | undefined,
-  ct: CancellationToken
+  ct: AbortSignal
 ): Promise<FieldConfiguration> {
-  const collectedMetadata = new Map<ElementTypeIri, EntityMetadata>();
+  const collectedMetadata = new Map<Reactodia.ElementTypeIri, EntityMetadata>();
   const collectedInputOverrides: Forms.InputOverride[] = [];
 
   let fieldByIri = Immutable.Map<string, Forms.FieldDefinition>();

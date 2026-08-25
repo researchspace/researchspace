@@ -119,6 +119,7 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
   };
 
   private readonly cancellation = new Cancellation();
+  private loadingCancellation = this.cancellation.derive();
   private persistingAnnotation = new Cancellation();
 
   private handlers: WorkspaceHandlers;
@@ -165,13 +166,34 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
         });
     }
 
+    this.loadDocument();
+  }
+
+  componentDidUpdate(prevProps: TextAnnotationWorkspaceProps) {
+    if (this.props.documentIri !== prevProps.documentIri) {
+      this.loadingCancellation = this.cancellation.deriveAndCancel(this.loadingCancellation);
+      this.setState(
+        {
+          loadingDocument: true,
+          loadingError: undefined,
+          editorState: undefined,
+          highlightedAnnotations: new Set<string>(),
+          focusedAnnotation: undefined,
+          editedAnnotation: undefined,
+        },
+        () => this.loadDocument()
+      );
+    }
+  }
+
+  private loadDocument() {
     const annotationTypes = extractAnnotationTypes(this.props.children);
     const customTabs = this.parseSidebarTabs();
     this.setState({ annotationTypes, customTabs });
 
     const documentIri = Rdf.iri(this.props.documentIri);
 
-    this.cancellation
+    this.loadingCancellation
       .map(
         Kefir.combine({
           document: this.fetchDocument(documentIri),

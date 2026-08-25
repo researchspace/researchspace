@@ -196,7 +196,10 @@ function createDateLiteral(date: moment.Moment, config: PatternConfig): Rdf.Lite
       format = config.format;
     }
   }
-  return Rdf.literal(fixZeroYearIssue(date).format(format), dataType);
+  // Date facets represent calendar boundaries rather than exact timestamps.
+  // Recreate in UTC to preserve the selected year, month, day, and time.
+  const utcDate = moment.utc(date.toArray());
+  return Rdf.literal(fixZeroYearIssue(utcDate).format(format), dataType);
 }
 
 function createGeoLiteral(coord: Model.Coordinate, config: PatternConfig) {

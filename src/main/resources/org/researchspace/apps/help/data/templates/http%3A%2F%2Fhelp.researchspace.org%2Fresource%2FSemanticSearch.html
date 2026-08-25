@@ -10,7 +10,7 @@
     </ul>
     <p>Structured search is realized not by means of a single, monolithic component, but as an environment where different functionalities (e.g., query definition, faceted browsing of results, and visualization) can be dynamically composed and exchanged.</p>
   </div>
-  <img src="/assets/images/help/structured-search-life-sciences.png" height=400px />
+  <img src="/assets/images/help/structured-search-cidoc-crm.png" height=400px />
 
   <hr class="divider">
   <h2>Structured Search Environment</h2>
@@ -175,12 +175,11 @@
 	resource-selector='{
 		"query":"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-           SELECT DISTINCT ?suggestion ?label WHERE {
-           	?subject a ?__domain__.
-            ?suggestion a ?__range__.
-            ?suggestion rdfs:label ?label.
-            (?label ?score) <tag:stardog:api:property:textMatch> ?__token__ .
-           }ORDER BY desc(?score)",
+           SELECT ?suggestion (SAMPLE(?matchedLabel) AS ?label) (MAX(?matchedScore) AS ?score) WHERE {
+            FILTER(?__relationPattern__)
+            FILTER(?__labelRelationPattern__)
+            (?matchedLabel ?matchedScore) <tag:stardog:api:property:textMatch> ?__token__ .
+           } GROUP BY ?suggestion ORDER BY DESC(?score)",
    	"suggestionTupleTemplate": "<span title=\"{{label.value}}\">{{label.value}} </span>",
    	"noSuggestionsTemplate": "<div class=\"suggestion-no-matches\">no matches found</div>"
 	}'
@@ -354,44 +353,62 @@ SELECT ?subject ?label WHERE {
   <mp-code-example>
   <![CDATA[
 <semantic-search>
-  <semantic-search-query-keyword 
-    query='
-      PREFIX person: <http://example.com/person/> 
+  <semantic-search-query-keyword
+    default-query='
+      PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       SELECT ?subject WHERE {
-        FILTER REGEX(?label, ?__token__, "i")
-        VALUES(?subject ?label){
-          ( person:alice "Alice" )
-          ( person:carola "Carola" )      
-          ( person:bob "Bob" )
-          ( person:mike "Mike" )
+        VALUES (?subject ?type) {
+          ( <https://artresearch.net/resource/frick/work/991000128789707141> crm:E22_Human-Made_Object )
+          ( <https://artresearch.net/resource/frick/work/991000936599707141> crm:E22_Human-Made_Object )
+          ( <https://artresearch.net/resource/frick/work/991000980959707141> crm:E22_Human-Made_Object )
+          ( <https://artresearch.net/resource/frick/work/991000988029707141> crm:E22_Human-Made_Object )
         }
+        FILTER(?type = crm:E22_Human-Made_Object)
+      }
+    '
+    query='
+      PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+      SELECT ?subject WHERE {
+        VALUES (?subject ?type ?label) {
+          ( <https://artresearch.net/resource/frick/work/991000128789707141> crm:E22_Human-Made_Object "Sunflowers." )
+          ( <https://artresearch.net/resource/frick/work/991000936599707141> crm:E22_Human-Made_Object "The Red Vineyard of Arles." )
+          ( <https://artresearch.net/resource/frick/work/991000980959707141> crm:E22_Human-Made_Object "The Guitarist." )
+          ( <https://artresearch.net/resource/frick/work/991000988029707141> crm:E22_Human-Made_Object "Outdoor Café at Night." )
+        }
+        FILTER(?type = crm:E22_Human-Made_Object)
+        FILTER(REGEX(STR(?label), ?__token__, "i"))
       }
     '
   ></semantic-search-query-keyword>
 
   <semantic-search-result-holder>
     <semantic-search-result>
-      <semantic-table 
-        id='table'
+      <semantic-table
+        id='simple-artworks-table'
         query='
-          PREFIX person: <http://example.com/person/> 
-          SELECT ?subject ?label ?image {
-               VALUES(?subject ?label ?image){
-                  ( person:alice "Alice" "//upload.wikimedia.org/wikipedia/commons/thumb/6/6c/User_icon_3.svg/200px-User_icon_3.svg.png" )
-                  ( person:carola "Carola" "//upload.wikimedia.org/wikipedia/commons/thumb/6/6c/User_icon_3.svg/200px-User_icon_3.svg.png" )      
-                  ( person:bob "Bob" "//upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/200px-User_icon_2.svg.png" )
-                  ( person:mike "Mike" "//upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/200px-User_icon_2.svg.png" )
-                }
+          PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+          SELECT ?subject ?label ?image WHERE {
+            VALUES (?subject ?type ?label ?image) {
+              ( <https://artresearch.net/resource/frick/work/991000128789707141> crm:E22_Human-Made_Object "Sunflowers." "https://iiif.artresearch.net/iiif/3/frick/4107100250558_0001.jp2/full/300,/0/default.jpg" )
+              ( <https://artresearch.net/resource/frick/work/991000936599707141> crm:E22_Human-Made_Object "The Red Vineyard of Arles." "https://iiif.artresearch.net/iiif/3/frick/4107100250764_0001.jp2/full/300,/0/default.jpg" )
+              ( <https://artresearch.net/resource/frick/work/991000980959707141> crm:E22_Human-Made_Object "The Guitarist." "https://iiif.artresearch.net/iiif/3/frick/4107100366638_0001.jp2/full/300,/0/default.jpg" )
+              ( <https://artresearch.net/resource/frick/work/991000988029707141> crm:E22_Human-Made_Object "Outdoor Café at Night." "https://iiif.artresearch.net/iiif/3/frick/4107100250713_0001.jp2/full/300,/0/default.jpg" )
+            }
+            FILTER(?type = crm:E22_Human-Made_Object)
           }
         '
         tuple-template='{{>resultTemplate}}'
         options='{"showFilter": false}'
       >
         <template id='resultTemplate'>
-          <div style="float:left;width:200px;height:193px; margin:0" class="panel panel-default text-center" title="{{subject.value}}">
-            <div class="panel-body"><img src="{{image.value}}" style="width:150px;"/></div>
-            <div class="panel-footer" style="position: relative">{{label.value}}</div>
-          </div>       
+          <div style="float:left;width:200px;height:193px;line-height:1.2;" class="semantic-search-simple-artwork panel panel-default text-center" title="{{subject.value}}">
+            <div class="panel-body" style="padding:0px;line-height:1.2;">
+              <img class="semantic-search-result-thumbnail" src="{{image.value}}" alt="{{label.value}}" style="width:150px;height:150px;object-fit:contain;"/>
+            </div>
+            <div class="panel-footer" title="{{label.value}}" style="position:relative;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              <semantic-link iri="{{subject.value}}">{{label.value}}</semantic-link>
+            </div>
+          </div>
         </template>
       </semantic-table>
     </semantic-search-result>
@@ -409,50 +426,56 @@ SELECT ?subject ?label WHERE {
   <mp-code-example>
   <![CDATA[
 <semantic-search>
-  <semantic-search-query-constant 
+  <semantic-search-query-constant
     query='
-      PREFIX person: <http://example.com/person/> 
+      PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       SELECT ?subject WHERE {
-        VALUES(?subject){
-          ( person:alice )
-          ( person:carola )      
-          ( person:bob )
-          ( person:mike )
+        VALUES (?subject ?type) {
+          ( <https://artresearch.net/resource/frick/work/991000128789707141> crm:E22_Human-Made_Object )
+          ( <https://artresearch.net/resource/frick/work/991000936599707141> crm:E22_Human-Made_Object )
+          ( <https://artresearch.net/resource/frick/work/991000980959707141> crm:E22_Human-Made_Object )
+          ( <https://artresearch.net/resource/frick/work/991000988029707141> crm:E22_Human-Made_Object )
         }
+        FILTER(?type = crm:E22_Human-Made_Object)
       }
     '
   ></semantic-search-query-constant>
 
   <semantic-search-result-holder>
     <semantic-search-result>
-      <semantic-table 
-        id='table'
+      <semantic-table
+        id='constant-artworks-table'
         query='
-          PREFIX person: <http://example.com/person/> 
-          SELECT ?subject ?label ?image {
-               VALUES(?subject ?label ?image){
-                  ( person:alice "Alice" "//upload.wikimedia.org/wikipedia/commons/thumb/6/6c/User_icon_3.svg/200px-User_icon_3.svg.png" )
-                  ( person:carola "Carola" "//upload.wikimedia.org/wikipedia/commons/thumb/6/6c/User_icon_3.svg/200px-User_icon_3.svg.png" )      
-                  ( person:bob "Bob" "//upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/200px-User_icon_2.svg.png" )
-                  ( person:mike "Mike" "//upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/200px-User_icon_2.svg.png" )
-                }
+          PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+          SELECT ?subject ?label ?image WHERE {
+            VALUES (?subject ?type ?label ?image) {
+              ( <https://artresearch.net/resource/frick/work/991000128789707141> crm:E22_Human-Made_Object "Sunflowers." "https://iiif.artresearch.net/iiif/3/frick/4107100250558_0001.jp2/full/300,/0/default.jpg" )
+              ( <https://artresearch.net/resource/frick/work/991000936599707141> crm:E22_Human-Made_Object "The Red Vineyard of Arles." "https://iiif.artresearch.net/iiif/3/frick/4107100250764_0001.jp2/full/300,/0/default.jpg" )
+              ( <https://artresearch.net/resource/frick/work/991000980959707141> crm:E22_Human-Made_Object "The Guitarist." "https://iiif.artresearch.net/iiif/3/frick/4107100366638_0001.jp2/full/300,/0/default.jpg" )
+              ( <https://artresearch.net/resource/frick/work/991000988029707141> crm:E22_Human-Made_Object "Outdoor Café at Night." "https://iiif.artresearch.net/iiif/3/frick/4107100250713_0001.jp2/full/300,/0/default.jpg" )
+            }
+            FILTER(?type = crm:E22_Human-Made_Object)
           }
         '
         tuple-template='{{>resultTemplate}}'
         options='{"showFilter": false}'
       >
         <template id='resultTemplate'>
-          <div style="float:left;width:200px;height:193px;line-height:1.2;" class="panel panel-default text-center" title="{{subject.value}}">
-            <div class="panel-body" style="padding:0px;line-height:1.2;"><img src="{{image.value}}" style="width:150px;"/></div>
-            <div class="panel-footer" style="position: relative; line-height:1.2;">{{label.value}}</div>
-          </div>       
+          <div style="float:left;width:200px;height:193px;line-height:1.2;" class="semantic-search-constant-artwork panel panel-default text-center" title="{{subject.value}}">
+            <div class="panel-body" style="padding:0px;line-height:1.2;">
+              <img class="semantic-search-result-thumbnail" src="{{image.value}}" alt="{{label.value}}" style="width:150px;height:150px;object-fit:contain;"/>
+            </div>
+            <div class="panel-footer" title="{{label.value}}" style="position:relative;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              <semantic-link iri="{{subject.value}}">{{label.value}}</semantic-link>
+            </div>
+          </div>
         </template>
       </semantic-table>
     </semantic-search-result>
   </semantic-search-result-holder>
 </semantic-search>
     ]]>
-  </mp-code-example>  
+  </mp-code-example>
 
   <h3>Search with Facets</h3>
   
@@ -487,4 +510,3 @@ SELECT ?subject ?label WHERE {
   </ul>
   </div>
 </div>
-

@@ -45,6 +45,7 @@ For focused development runs:
 
 ```bash
 npx playwright test tests/smoke.spec.ts --project=chromium
+npx playwright test tests/semantic-search-facets.spec.ts --project=chromium
 npx playwright test --grep "opens the application" --project=chromium
 npm run test:headed
 npm run test:ui
@@ -83,6 +84,7 @@ screens, dialogs, and reusable widgets.
 | `RS_BASE_URL` | `http://localhost:10214` | Application URL |
 | `RS_USER` | `admin` | Login user |
 | `RS_PASSWORD` | `admin` | Login password |
+| `RS_FIXTURE_HOST` | `127.0.0.1` | Hostname the ResearchSpace backend uses to reach the temporary fixture server |
 | `PLAYWRIGHT_CHROMIUM_EXECUTABLE` | unset | Path to a system Chrome or Chromium |
 
 For example, to use an installed browser:
@@ -110,3 +112,30 @@ npm test
 Failure screenshots, videos, and traces are written under `e2e/test-results/`.
 In CI, the workflow also uploads the Playwright report and, when stack startup
 fails, the development-stack log.
+
+## Semantic-search sample data
+
+The semantic-search help example and facet suite share a committed CIDOC-CRM
+snapshot of 20 real ArtResearch work IRIs at
+[`../src/main/webapp/samples/sample-search.ttl`](../src/main/webapp/samples/sample-search.ttl).
+Its manifest, preserved extraction query, and regeneration script are documented in
+[`fixtures/artresearch/README.md`](fixtures/artresearch/README.md).
+
+Regenerate it from the public development endpoint with:
+
+```bash
+cd e2e
+npm run fixtures:artresearch
+```
+
+The facet suite serves the help sample temporarily and loads it with SPARQL
+`LOAD` into `urn:researchspace:e2e:artresearch-semantic-search`. It verifies
+the graph size before testing and executes `DROP SILENT GRAPH` in teardown.
+Set `RS_FIXTURE_HOST` when the backend cannot reach the Playwright host as
+`127.0.0.1`. The browser tests then exercise the shipped structured-search
+help example rather than a test-only page.
+
+The suite covers base CIDOC-CRM search results and ArtResearch thumbnails,
+resource and literal facets, OR within one relation, AND across relations,
+contextual counts, AD and BCE date ranges, and exact-year boundaries in a
+historical non-UTC timezone.

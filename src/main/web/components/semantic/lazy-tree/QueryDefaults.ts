@@ -62,12 +62,12 @@ export const DefaultLightweightPatterns = {
 };
 
 export function createDefaultTreeQueries(params: LightwightTreePatterns = {}): ComplexTreePatterns {
-  const { labelPropertyPattern } = ConfigHolder.getUIConfig();
+  const { labelRelationPattern } = ConfigHolder.getUIConfig();
   const {
     schemePattern = DefaultLightweightPatterns.schemePattern,
     relationPattern = DefaultLightweightPatterns.relationPattern,
     orderByPattern = DefaultLightweightPatterns.orderByPattern,
-    labelPattern = `?item ${labelPropertyPattern} ?label .`
+    labelPattern = labelRelationPattern('?item', '?label')
   } = params;
 
   const prefixes = SparqlUtil.parseQuery('SELECT * WHERE {}').prefixes;

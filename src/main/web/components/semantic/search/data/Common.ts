@@ -144,7 +144,10 @@ export function transformRangePattern(pattern: SparqlJs.Pattern[], range: ValueR
     }
   })();
 
-  clonedPattern.forEach((p) => visitor.pattern(p));
+  const transformedPattern = clonedPattern.map((pattern) => {
+    const replacement = visitor.pattern(pattern);
+    return replacement === undefined ? pattern : replacement;
+  });
 
   if (!visitor.begin || !visitor.end) {
     console.warn(
@@ -155,5 +158,5 @@ export function transformRangePattern(pattern: SparqlJs.Pattern[], range: ValueR
     );
   }
 
-  return clonedPattern;
+  return transformedPattern;
 }

@@ -96,6 +96,9 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
             source: this.props.data.viewState.relationTemplate,
             options: this.props.relation.tuple,
           },
+          componentProps: {
+            className: 'facet__relation__label',
+          },
         }),
         this.isSelectedRelation() && this.props.data.viewState.values.loading ? createElement(Spinner) : D.span({})
       ),

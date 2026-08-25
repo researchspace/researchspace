@@ -18,7 +18,12 @@
  */
 
 import { ConfigHolder } from 'platform/api/services/config-holder';
-import { SEMANTIC_SEARCH_VARIABLES, FACET_VARIABLES, Patterns } from './SearchConfig';
+import {
+  SEMANTIC_SEARCH_VARIABLES,
+  FACET_VARIABLES,
+  RESOURCE_SEGGESTIONS_VARIABLES,
+  Patterns,
+} from './SearchConfig';
 import { defaultKeywordSearchConfig } from 'platform/components/shared/KeywordSearchConfig';
 
 export const DefaultInlineProfile = '<http://www.researchspace.org/semantic-search/dummyInlineDefaultProfile>';
@@ -100,6 +105,7 @@ export const DefaultSearchProfileRelationsQuery = `
 `;
 
 export function DefaultTextPattern(): Patterns {
+  const labelPattern = ConfigHolder.getUIConfig().labelRelationPattern('$subject', '?label');
   return {
     'http://www.researchspace.org/resource/system/semantic-search-profile/TextCategory': [
       {
@@ -107,7 +113,7 @@ export function DefaultTextPattern(): Patterns {
         queryPattern: `
            {
              $subject a ?__domain__ .
-             $subject ${ConfigHolder.getUIConfig().labelPropertyPattern} ?label .
+             ${labelPattern}
              SERVICE <http://www.bigdata.com/rdf/search#search> {
                ?label bds:search ?__value__ ;
                       bds:minRelevance "0.3" ;
@@ -212,17 +218,17 @@ export const DefaultFacetCategoriesTupleTemplate = `
 export function DefaultResourceSelectorQuery() {
   return `
     prefix bds: <http://www.bigdata.com/rdf/search#>
-    SELECT DISTINCT ?suggestion ?label WHERE {
-      ?label bds:search ?__token__ ;
-      bds:relevance ?score ;
+    SELECT ?suggestion (SAMPLE(?matchedLabel) AS ?label) (MAX(?matchedScore) AS ?score) WHERE {
+      ?matchedLabel bds:search ?__token__ ;
+      bds:relevance ?matchedScore ;
       bds:minRelevance "0.5" ;
       bds:matchAllTerms "true"  .
 
-      ?suggestion ${ConfigHolder.getUIConfig().labelPropertyPattern} ?label .
+      FILTER(?${RESOURCE_SEGGESTIONS_VARIABLES.LABEL_RELATION_PATTERN_VAR})
       FILTER(EXISTS {
         { FILTER(?${SEMANTIC_SEARCH_VARIABLES.RELATION_PATTERN_VAR}) }
       })
-    } ORDER BY DESC(?score)  LIMIT 30
+    } GROUP BY ?suggestion ORDER BY DESC(?score) LIMIT 30
   `;
 }
 export const DefaultResourceSelectorRelationPattern = `?subject $${SEMANTIC_SEARCH_VARIABLES.RELATION_VAR} ?suggestion`;

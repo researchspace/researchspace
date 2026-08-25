@@ -66,7 +66,9 @@ export const SEMANTIC_SEARCH_VARIABLES = {
 export const RESOURCE_SEGGESTIONS_VARIABLES = {
   SUGGESTION_IRI: 'suggestion',
   SUGGESTION_LABEL: 'label',
+  MATCHED_LABEL: 'matchedLabel',
   SEARCH_TERM_VAR: '__token__',
+  LABEL_RELATION_PATTERN_VAR: '__labelRelationPattern__',
 };
 
 export const RESULT_VARIABLES = {
@@ -250,6 +252,8 @@ export interface ResourceSelectorConfig {
    *   __domain__ - search domain category IRI
    *   __range__ - conjunct range category IRI
    *   __relation__ - conjunct relation IRI
+   *   __relationPattern__ - relation pattern between ?subject and ?suggestion; use as FILTER(?__relationPattern__)
+   *   __labelRelationPattern__ - preferred-label pattern between ?suggestion and ?matchedLabel; use as FILTER(?__labelRelationPattern__)
    */
   query: string;
 
@@ -281,6 +285,8 @@ export interface ResourceSelectorConfig {
    *   __domain__ - search domain category IRI
    *   __range__ - conjunct range category IRI
    *   __relation__ - conjunct relation IRI
+   *   __relationPattern__ - relation pattern between ?subject and ?suggestion; use as FILTER(?__relationPattern__)
+   *   __labelRelationPattern__ - preferred-label pattern between ?suggestion and ?matchedLabel; use as FILTER(?__labelRelationPattern__)
    */
   defaultQuery?: string;
 

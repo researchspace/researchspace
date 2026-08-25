@@ -131,6 +131,8 @@ export class ConfigHolderClass {
       preferredLanguages: preferredLanguages ? preferredLanguages.value : [],
       preferredThumbnails: thumbnailPaths,
       labelPropertyPattern: makePropertyPattern(labelPaths),
+      labelRelationPattern: (subjectVariable, valueVariable) =>
+        makeRelationPattern(labelPaths, subjectVariable, valueVariable),
       labelPropertyPath: makePropertyPath(labelPaths),
       thumbnailPropertyPattern: makePropertyPattern(thumbnailPaths),
       thumbnailPropertyPath: makePropertyPath(thumbnailPaths),
@@ -167,6 +169,7 @@ export interface UIConfig {
   readonly preferredLanguages: ReadonlyArray<string>;
   readonly preferredThumbnails: ReadonlyArray<string>;
   readonly labelPropertyPattern: string;
+  readonly labelRelationPattern: (subjectVariable: string, valueVariable: string) => string;
   readonly labelPropertyPath: SparqlJs.PropertyPath;
   readonly thumbnailPropertyPattern: string;
   readonly thumbnailPropertyPath: SparqlJs.PropertyPath;
@@ -200,6 +203,25 @@ function makePropertyPattern(paths: ReadonlyArray<string>): string {
   return keepOnlyPropertyPaths(paths).join('|');
 }
 
+function makeRelationPattern(
+  paths: ReadonlyArray<string>,
+  subjectVariable: string,
+  valueVariable: string
+): string {
+  const alternatives = paths
+    .filter(isGraphPattern)
+    .map((pattern) => replacePatternVariables(pattern.trim(), subjectVariable, valueVariable));
+  const propertyPattern = makePropertyPattern(paths);
+  if (propertyPattern) {
+    alternatives.push(`{ ${subjectVariable} (${propertyPattern}) ${valueVariable} . }`);
+  }
+  return alternatives.join(' UNION ');
+}
+
+function replacePatternVariables(pattern: string, subjectVariable: string, valueVariable: string): string {
+  return pattern.replace(/\?subject\b/g, subjectVariable).replace(/\?value\b/g, valueVariable);
+}
+
 function makePropertyPath(paths: ReadonlyArray<string>): SparqlJs.PropertyPath {
   const alternatives: Array<SparqlJs.Term | SparqlJs.PropertyPath> = [];
   for (const path of keepOnlyPropertyPaths(paths)) {
@@ -223,7 +245,12 @@ function makePropertyPath(paths: ReadonlyArray<string>): SparqlJs.PropertyPath {
 }
 
 function keepOnlyPropertyPaths(paths: ReadonlyArray<string>): string[] {
-  return paths.filter((path) => !(path.startsWith('{') || path.endsWith('}')));
+  return paths.filter((path) => !isGraphPattern(path));
+}
+
+function isGraphPattern(path: string): boolean {
+  const trimmed = path.trim();
+  return trimmed.startsWith('{') && trimmed.endsWith('}');
 }
 
 export const ConfigHolder = new ConfigHolderClass();

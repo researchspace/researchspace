@@ -93,6 +93,17 @@ export interface FacetData {
   ast: F.Ast;
 }
 
+function parseFacetDateTime(value: string): moment.Moment {
+  // Moment accepts negative years only in six-digit expanded ISO form.
+  const yearEnd = value.indexOf('-', 1);
+  if (!value.startsWith('-') || yearEnd === -1) {
+    return moment(value, moment.ISO_8601);
+  }
+
+  const year = value.slice(1, yearEnd).padStart(6, '0');
+  return moment(`-${year}${value.slice(yearEnd)}`, moment.ISO_8601);
+}
+
 export type SelectedValues = OrderedMap<Relation, List<F.FacetValue>>;
 export interface FacetViewState {
   category: Data.Maybe<Category>;
@@ -615,8 +626,8 @@ export class FacetStore {
     return this.executeValuesQuery(baseQuery, conjuncts, relation, relationConfig.valuesQuery).map((res) =>
       res.results.bindings
         .map((binding) => ({
-          begin: moment(binding[FACET_VARIABLES.VALUE_DATE_RANGE_BEGIN_VAR].value, moment.ISO_8601),
-          end: moment(binding[FACET_VARIABLES.VALUE_DATE_RANGE_END_VAR].value, moment.ISO_8601),
+          begin: parseFacetDateTime(binding[FACET_VARIABLES.VALUE_DATE_RANGE_BEGIN_VAR].value),
+          end: parseFacetDateTime(binding[FACET_VARIABLES.VALUE_DATE_RANGE_END_VAR].value),
         }))
         .filter(({ begin, end }) => begin.isValid() && end.isValid())
     );

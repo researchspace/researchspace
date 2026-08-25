@@ -1,0 +1,17 @@
+# Copyright (c) 2026 ResearchSpace contributors.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# This is the exact query shape used by extract-artresearch-fixture.mjs.
+# The script replaces {{RESOURCE_IRI}} with one validated IRI from
+# selected-works.tsv or a connected CIDOC-CRM resource, and replaces
+# {{PREDICATE_IRI}} with one allowlisted predicate. Keeping both positions
+# concrete prevents high-cardinality inverse properties from entering the
+# result before client-side filtering.
+
+CONSTRUCT {
+  <{{RESOURCE_IRI}}> <{{PREDICATE_IRI}}> ?object
+}
+WHERE {
+  <{{RESOURCE_IRI}}> <{{PREDICATE_IRI}}> ?object
+}

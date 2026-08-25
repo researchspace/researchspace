@@ -295,7 +295,7 @@ module.exports = function(isProd) {
             }),    
             new CircularDependencyPlugin({
                 // exclude detection of files based on a RegExp
-                exclude: /src\/main\/web\/ontodia|node_modules/,
+                exclude: /node_modules/,
                 // add errors to webpack instead of warnings
                 failOnError: true,
                 // allow import cycles that include an asyncronous import,

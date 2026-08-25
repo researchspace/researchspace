@@ -61,7 +61,7 @@ export interface State {
  * </mp-event-target-template-render>
  */
 export class EventTargetTemplateRender extends Component<Props, State> {
-  private readonly cancellation = new Cancellation();
+  private cancellation = new Cancellation();
 
   constructor(props: Props, context: any) {
     super(props, context);
@@ -72,6 +72,18 @@ export class EventTargetTemplateRender extends Component<Props, State> {
   }
 
   componentDidMount() {
+    this.subscribe();
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.id !== this.props.id) {
+      this.cancellation.cancelAll();
+      this.cancellation = new Cancellation();
+      this.subscribe();
+    }
+  }
+
+  private subscribe() {
     this.cancellation
       .map(
         listen({

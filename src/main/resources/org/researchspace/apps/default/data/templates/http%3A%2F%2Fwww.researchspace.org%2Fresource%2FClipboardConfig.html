@@ -24,10 +24,10 @@
             ?itemHolder platform:setItem ?item .
             platform:ontodiaDiagramContainer ldp:contains ?item .
             BIND(platform:ontodiaDiagramContainer as ?parent) .
-            #FILTER (EXISTS {?item <http://www.researchspace.org/pattern/system/set/visible_in_group_with_id> "[[id]]".})
           } UNION {
-            ?__rootSet__ ontodia:layoutData/ontodia:hasElement ?itemHolder .
-            ?itemHolder ontodia:resource ?item .
+            ?__rootSet__ ontodia:layoutData/ontodia:hasElement/(ontodia:hasItem)? ?layoutItem .
+            ?layoutItem ontodia:resource ?item .
+            BIND(IF(ISIRI(?layoutItem), ?layoutItem, ?item) AS ?itemHolder) .
             BIND(?__rootSet__ as ?parent) .
           } UNION {
             ?itemHolder rdf:type Platform:Set;
@@ -49,12 +49,9 @@
               ?itemHolder platform:setItem ?item .
               FILTER(?__filterPatterns__)
            } UNION {
-              ?uncategorizedSet a platform:Set ;
-                              prov:wasAttributedTo ?__useruri__ ;
-                              rdfs:label "Uncategorized" .
-              ?uncategorizedSet ldp:contains/platform:setItem ?__setToSearch__ .
-              ?__setToSearch__ ontodia:layoutData/ontodia:hasElement ?itemHolder .
-              ?itemHolder ontodia:resource ?item .
+              ?__setToSearch__ ontodia:layoutData/ontodia:hasElement/(ontodia:hasItem)? ?layoutItem .
+              ?layoutItem ontodia:resource ?item .
+              BIND(IF(ISIRI(?layoutItem), ?layoutItem, ?item) AS ?itemHolder) .
               BIND(?__setToSearch__ as ?parent) .
               FILTER(?__filterPatterns__)
           } 
@@ -88,7 +85,15 @@
             OPTIONAL { ?set ldp:contains ?item }
           } UNION {
             platform:ontodiaDiagramContainer ldp:contains ?set .
-            OPTIONAL { ?set ontodia:layoutData/ontodia:hasElement ?item }
+            OPTIONAL {
+              ?set ontodia:layoutData/ontodia:hasElement ?element .
+              {
+                ?element ontodia:resource ?resource .
+                BIND(?element AS ?item)
+              } UNION {
+                ?element ontodia:hasItem ?item
+              }
+            }
           }
       } GROUP BY ?set'
 		item-config='{
@@ -132,7 +137,7 @@
                   } UNION {
                     ?km a ontodia:Diagram ;
                       prov:wasAttributedTo ?__useruri__ ;
-                      ontodia:layoutData/ontodia:hasElement/ontodia:resource/rdf:type ?class .
+                      ontodia:layoutData/ontodia:hasElement/(ontodia:hasItem)?/ontodia:resource/rdf:type ?class .
                   }
                   
                   ?class rdfs:subClassOf* ?value .

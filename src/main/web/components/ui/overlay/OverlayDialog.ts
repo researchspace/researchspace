@@ -155,6 +155,16 @@ export class OverlayComponent extends Component<OverlayComponentProps> {
     }
   }
 
+  componentDidUpdate(prevProps: OverlayComponentProps) {
+    if (this.props.show !== prevProps.show) {
+      if (this.props.show) {
+        this.showDialog();
+      } else {
+        this.onHide();
+      }
+    }
+  }
+
   componentWillUnmount() {
     super.componentWillUnmount();
     this.onHide();

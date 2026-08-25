@@ -138,11 +138,11 @@ public class AppAdminEndpoint {
     @RequiresPermissions(APP.UPLOAD)
     public Response uploadApp(@FormDataParam("file") InputStream fileInputStream,
             @FormDataParam("file") FormDataContentDisposition fileMetaData) {
-        final String fileName = fileMetaData.getFileName();
+        final String fileName = MultipartFileNames.getFileName(fileMetaData);
         if (!StringUtils.endsWith(fileName, ".zip")) {
             return Response.serverError().entity("App artefact must be a zip file.").build();
         }
-        File targetFile = new File(new File(Configuration.getAppsDirectory()), fileMetaData.getFileName());
+        File targetFile = new File(new File(Configuration.getAppsDirectory()), fileName);
         if (targetFile.exists()) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("\"" + targetFile
                     + "\" already exists. This either indicates that a previous installation was not completed successfully "

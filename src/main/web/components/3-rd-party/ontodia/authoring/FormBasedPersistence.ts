@@ -18,7 +18,7 @@
  */
 
 import * as Kefir from 'kefir';
-import { ElementIri, ElementModel, AuthoringState, ElementChange } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Rdf } from 'platform/api/rdf';
 
@@ -108,13 +108,13 @@ export class FormBasedPersistence implements OntodiaPersistence {
 }
 
 interface IntialEntityData {
-  model: ElementModel;
+  model: Reactodia.ElementModel;
   value: CompositeValue;
 }
 
 interface EntityState {
-  iri: ElementIri;
-  newIri?: ElementIri;
+  iri: Reactodia.ElementIri;
+  newIri?: Reactodia.ElementIri;
   metadata: EntityMetadata;
   value: CompositeValue | EmptyValue;
 }
@@ -122,44 +122,37 @@ interface EntityState {
 function collectEntitiesState(params: OntodiaPersistenceParams) {
   const { state } = params;
 
-  const toFetch = new Set<ElementIri>();
-  const changed = new Set<ElementIri>();
+  const toFetch = new Set<Reactodia.ElementIri>();
+  const changed = new Set<Reactodia.ElementIri>();
 
   state.elements.forEach((event) => {
-    if (event.deleted) {
-      const { after } = event;
-      changed.add(after.id);
-      toFetch.add(after.id);
-    } else {
-      const { before, after } = event;
-      if (before) {
-        if (after.id !== before.id) {
+    if (event.type === 'entityDelete') {
+      changed.add(event.data.id);
+      toFetch.add(event.data.id);
+    } else if (event.type === 'entityChange') {
+        if (event.newIri) {
           throw new Error(`Changing IRIs of existing entities is not supported via ldp`);
         }
-        changed.add(after.id);
-        toFetch.add(after.id);
-      } else {
-        changed.add(after.id);
-      }
+        changed.add(event.data.id);
+        toFetch.add(event.data.id);
+    } else {
+      changed.add(event.data.id);
     }
   });
 
   state.links.forEach((event) => {
-    if (event.deleted) {
-      const { after } = event;
-      changed.add(after.sourceId);
-      toFetch.add(after.sourceId);
-      toFetch.add(after.targetId);
+    if (event.type === 'relationDelete') {
+      changed.add(event.data.sourceId);
+      toFetch.add(event.data.sourceId);
+      toFetch.add(event.data.targetId);
+    } else if (event.type === 'relationChange') {
+      changed.add(event.before.sourceId);
+      toFetch.add(event.before.sourceId);
+      toFetch.add(event.before.targetId);
     } else {
-      const { before, after } = event;
-      if (before) {
-        changed.add(before.sourceId);
-        toFetch.add(before.sourceId);
-        toFetch.add(before.targetId);
-      }
-      changed.add(after.sourceId);
-      toFetch.add(after.sourceId);
-      toFetch.add(after.targetId);
+      changed.add(event.data.sourceId);
+      toFetch.add(event.data.sourceId);
+      toFetch.add(event.data.targetId);
     }
   });
 
@@ -169,12 +162,12 @@ function collectEntitiesState(params: OntodiaPersistenceParams) {
 function diffAndFinalizeEntities(
   props: FormBasedPersistenceProps,
   params: OntodiaPersistenceParams,
-  changed: Set<ElementIri>,
-  initials: Map<ElementIri, IntialEntityData>
+  changed: Set<Reactodia.ElementIri>,
+  initials: Map<Reactodia.ElementIri, IntialEntityData>
 ) {
   const { state, entityMetadata } = params;
-  const previousStates = new Map<ElementIri, EntityState>();
-  const currentStates = new Map<ElementIri, EntityState>();
+  const previousStates = new Map<Reactodia.ElementIri, EntityState>();
+  const currentStates = new Map<Reactodia.ElementIri, EntityState>();
 
   changed.forEach((elementIri) => {
     const initial = initials.get(elementIri);
@@ -204,7 +197,7 @@ function diffAndFinalizeEntities(
         initialModel,
       });
       const iri = model.id;
-      const newIri: ElementIri = FieldValue.isEmpty(current) ? model.id : (current.subject.value as ElementIri);
+      const newIri: Reactodia.ElementIri = FieldValue.isEmpty(current) ? model.id : current.subject.value;
       previousState = { iri, metadata, value: initialModel };
       currentState = {
         iri,
@@ -231,10 +224,10 @@ function diffAndFinalizeEntities(
     });
   }
 
-  const finalizedEntities = new Map<ElementIri, ElementModel | null>();
+  const finalizedEntities = new Map<Reactodia.ElementIri, Reactodia.ElementModel | null>();
   currentStates.forEach((current, elementIri) => {
     const { value, metadata } = current;
-    let model: ElementModel | null = null;
+    let model: Reactodia.ElementModel | null = null;
     if (FieldValue.isComposite(value)) {
       const modelWithLinks = convertCompositeValueToElementModel(value, metadata);
       model = filterObjectProperties(modelWithLinks, metadata);
@@ -245,23 +238,20 @@ function diffAndFinalizeEntities(
   return { previousStates, currentStates, finalizedEntities };
 }
 
-function getNewElementModel(state: AuthoringState, elementIri: ElementIri) {
+function getNewElementModel(state: Reactodia.AuthoringState, elementIri: Reactodia.ElementIri) {
   const event = state.elements.get(elementIri);
-  if (event) {
-    const { before, after } = event as ElementChange;
-    if (!before) {
-      return after;
-    }
+  if (event && event.type === 'entityAdd') {
+    return event.data;
   }
   return undefined;
 }
 
 function fetchEntities(
   params: OntodiaPersistenceParams,
-  entities: ReadonlySet<ElementIri>
-): Kefir.Property<Map<ElementIri, IntialEntityData>> {
+  entities: ReadonlySet<Reactodia.ElementIri>
+): Kefir.Property<Map<Reactodia.ElementIri, IntialEntityData>> {
   const { fetchModel, entityMetadata } = params;
-  const tasks = Array.from(entities as Set<ElementIri>, (iri) => {
+  const tasks = Array.from(entities as Set<Reactodia.ElementIri>, (iri) => {
     return fetchModel(iri).flatMap(
       (model): Kefir.Property<IntialEntityData | undefined> => {
         const metadata = getEntityMetadata(model, entityMetadata);
@@ -274,12 +264,12 @@ function fetchEntities(
   });
 
   if (tasks.length === 0) {
-    return Kefir.constant(new Map<ElementIri, IntialEntityData>());
+    return Kefir.constant(new Map<Reactodia.ElementIri, IntialEntityData>());
   }
 
   return Kefir.zip(tasks)
     .map((fetched) => {
-      const result = new Map<ElementIri, IntialEntityData>();
+      const result = new Map<Reactodia.ElementIri, IntialEntityData>();
       fetched.forEach((entity) => {
         if (entity) {
           result.set(entity.model.id, entity);
@@ -290,8 +280,15 @@ function fetchEntities(
     .toProperty();
 }
 
-function filterObjectProperties(model: ElementModel, metadata: EntityMetadata): ElementModel {
-  const filteredProperties: ElementModel['properties'] = {};
+function filterObjectProperties(
+  model: Reactodia.ElementModel,
+  metadata: EntityMetadata
+): Reactodia.ElementModel {
+  const filteredProperties: Record<
+    Reactodia.PropertyTypeIri,
+    ReadonlyArray<Reactodia.Rdf.NamedNode | Reactodia.Rdf.Literal>
+  > = Object.create(null);
+
   for (const propertyIri in model.properties) {
     if (Object.prototype.hasOwnProperty.call(model.properties, propertyIri)) {
       const field = metadata.fieldByIri.get(propertyIri);

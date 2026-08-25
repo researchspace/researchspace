@@ -67,9 +67,20 @@ export class SemanticIf extends Component<SemanticIfProps, State> {
   }
 
   componentDidMount() {
+    this.evaluateQuery(this.props);
+  }
+
+  componentWillReceiveProps(nextProps: SemanticIfProps) {
+    if (nextProps.query !== this.props.query) {
+      this.setState({ loading: true, error: undefined, askResult: undefined });
+      this.evaluateQuery(nextProps);
+    }
+  }
+
+  private evaluateQuery(props: SemanticIfProps) {
     let askQuery: SparqlJs.AskQuery;
     try {
-      askQuery = parseAskQuery(this.props.query);
+      askQuery = parseAskQuery(props.query);
     } catch (error) {
       this.setState({ loading: false, error });
       return;
@@ -77,8 +88,16 @@ export class SemanticIf extends Component<SemanticIfProps, State> {
 
     const { semanticContext } = this.context;
     this.cancellation.map(SparqlClient.ask(askQuery, { context: semanticContext })).observe({
-      value: (askResult) => this.setState({ loading: false, askResult }),
-      error: (error) => this.setState({ loading: false, error }),
+      value: (askResult) => {
+        if (this.props.query === props.query) {
+          this.setState({ loading: false, askResult });
+        }
+      },
+      error: (error) => {
+        if (this.props.query === props.query) {
+          this.setState({ loading: false, error });
+        }
+      },
     });
   }
 

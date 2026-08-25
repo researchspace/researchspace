@@ -18,16 +18,10 @@
  */
 
 import * as Kefir from 'kefir';
+import { pick } from 'lodash';
 import * as maybe from 'data.maybe';
 import * as SparqlJs from 'sparqljs';
-import {
-  Dictionary,
-  ElementModel,
-  PropertySuggestionParams,
-  PropertyScore,
-  SerializedDiagram,
-  DIAGRAM_CONTEXT_URL_V1,
-} from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Rdf } from 'platform/api/rdf';
 import * as JsonLd from 'platform/api/rdf/formats/JsonLd';
@@ -35,7 +29,6 @@ import { rdf, rdfs, crm, VocabPlatform } from 'platform/api/rdf/vocabularies/voc
 import { SparqlClient, SparqlUtil, QueryContext } from 'platform/api/sparql';
 import { LdpService } from 'platform/api/services/ldp';
 import { getThumbnails } from 'platform/api/services/resource-thumbnail';
-import { convertToSerializedDiagram } from 'ontodia';
 
 import { ontodiaNsv0 } from './OntodiaVocabulary';
 
@@ -45,7 +38,10 @@ export const OntodiaContextV1 = require('platform/ontodia/schema/context-v1.json
  * Returns dictionary of images by sparql query
  * Will run on default context
  */
-export function prepareImages(elementsInfo: Dictionary<ElementModel>, imageQuery: string) {
+export function prepareImages(
+  elementsInfo: Iterable<Reactodia.ElementModel>,
+  imageQuery: string
+): Promise<Map<Reactodia.ElementIri, string>> {
   let parametrized: SparqlJs.Query;
   try {
     const parsedQuery = SparqlUtil.parseQuery(imageQuery);
@@ -53,7 +49,7 @@ export function prepareImages(elementsInfo: Dictionary<ElementModel>, imageQuery
       throw new Error('Image query must be a SELECT query');
     }
 
-    const params = Object.keys(elementsInfo).map((id): Dictionary<Rdf.Node> => ({ element: Rdf.iri(id) }));
+    const params = Array.from(elementsInfo, (data): Record<string, Rdf.Node> => ({ element: Rdf.iri(data.id) }));
     parametrized = SparqlClient.prepareParsedQuery(params)(parsedQuery);
   } catch (error) {
     return Promise.reject(error);
@@ -62,10 +58,10 @@ export function prepareImages(elementsInfo: Dictionary<ElementModel>, imageQuery
   return SparqlClient.select(parametrized)
     .map((response) => {
       const elements = response.results.bindings;
-      const images: { [elementIri: string]: string } = {};
+      const images = new Map<Reactodia.ElementIri, string>();
 
       for (const elem of elements) {
-        images[elem['element'].value] = elem['image'].value;
+        images.set(elem['element'].value, elem['image'].value);
       }
 
       return images;
@@ -73,25 +69,30 @@ export function prepareImages(elementsInfo: Dictionary<ElementModel>, imageQuery
     .toPromise();
 }
 
-export function fetchThumbnails(elementsInfo: Dictionary<ElementModel>, context: QueryContext) {
-  const iris = Object.keys(elementsInfo).map((iri) => Rdf.iri(iri));
+export function fetchThumbnails(
+  elementsInfo: Iterable<Reactodia.ElementModel>,
+  context: QueryContext
+): Promise<Map<Reactodia.ElementIri, string>> {
+  const iris = Array.from(elementsInfo, (data) => Rdf.iri(data.id));
   return getThumbnails(iris, { context })
-    .map((res) => res.mapKeys((iri) => iri.value).toObject())
+    .map((res) => {
+      const thumbnails = new Map<Reactodia.ElementIri, string>();
+      res.forEach((thumbnailUrl, iri) => thumbnails.set(iri.value, thumbnailUrl));
+      return thumbnails;
+    })
     .toPromise();
 }
 
-const JSONLD_DIAGRAM_FRAME: object = {
+export const JSONLD_DIAGRAM_FRAME: object = {
   '@context': OntodiaContextV1['@context'],
   '@type': 'Diagram',
   layoutData: {
     '@type': 'Layout',
     elements: {
-      '@type': 'Element',
       '@embed': '@always',
-      'ontodia:resource': { '@embed': '@never' },
     },
     links: {
-      '@type': 'Link',
+      '@embed': '@always',
       source: { '@embed': '@never' },
       target: { '@embed': '@never' },
     },
@@ -107,12 +108,12 @@ export function getDiagramByIri(
   context: QueryContext
 ): Promise<{
   label: string;
-  diagram: SerializedDiagram;
+  diagram: Reactodia.SerializedDiagram;
 }> {
   const ldpService = new LdpService(VocabPlatform.OntodiaDiagramContainer.value, context);
   const documentLoader = JsonLd.makeDocumentLoader({
     overrideContexts: {
-      [DIAGRAM_CONTEXT_URL_V1]: OntodiaContextV1,
+      [Reactodia.DiagramContextV1]: OntodiaContextV1,
     },
   });
   return ldpService
@@ -125,8 +126,7 @@ export function getDiagramByIri(
       })
     )
     .flatMap(
-      (json): Kefir.Property<{ label: string; diagram: SerializedDiagram }> => {
-        // check for old version
+      (json): Kefir.Property<{ label: string; diagram: Reactodia.SerializedDiagram }> => {
         if (
           json.length > 0 &&
           json[0] &&
@@ -134,7 +134,6 @@ export function getDiagramByIri(
           json[0]['@type'] instanceof Array &&
           json[0]['@type'].indexOf(ontodiaNsv0.diagram.value) >= 0
         ) {
-          // this assumes json-ld to be in expanded mode, and it should be right after toRDF
           const oldDiagram = JSON.parse(json[0][ontodiaNsv0.diagramLayoutString.value][0]['@value']);
           return Kefir.constant({
             label: json[0][crm.symbolic_content.value] as string,
@@ -150,7 +149,7 @@ export function getDiagramByIri(
               linkTypeOptions: [],
               ...diagram['@graph'][0],
               ...{ '@context': diagram['@context'] },
-            } as SerializedDiagram,
+            } as Reactodia.SerializedDiagram,
           }));
         }
       }
@@ -158,22 +157,182 @@ export function getDiagramByIri(
     .toPromise();
 }
 
+/**
+ * Element layout state as serialized by the legacy Ontodia fork
+ * (see `serializedDiagram.ts` in `src/main/web/ontodia`).
+ */
+interface LegacySerializedElement extends Reactodia.SerializedElement {
+  size?: { width: number; height: number };
+  fixedSize?: boolean;
+  isExpanded?: boolean;
+}
+
+const LEGACY_PINNED_PROPERTIES = 'ontodia:pinnedProperties';
+const ELEMENT_STATE_JSON = 'elementStateJson';
+const LINK_STATE_JSON = 'linkStateJson';
+
+function restoreStateJson(cell: any, stateKey: string, jsonKey: string): any {
+  const json = cell?.[jsonKey];
+  if (typeof json !== 'string') {
+    return cell;
+  }
+  try {
+    const { [jsonKey]: omitted, ...rest } = cell;
+    return { ...rest, [stateKey]: JSON.parse(json) };
+  } catch {
+    return cell;
+  }
+}
+
+function addStateJson(cell: any, stateKey: string, jsonKey: string): any {
+  const state = cell?.[stateKey];
+  if (state === undefined || (
+    state !== null && typeof state === 'object' && Object.keys(state).length === 0
+  )) {
+    return cell;
+  }
+  const json = JSON.stringify(state);
+  return cell[jsonKey] === json ? cell : { ...cell, [jsonKey]: json };
+}
+
+/** Maps legacy Ontodia layout state to Reactodia. */
+export function upgradeLegacyDiagram(diagram: Reactodia.SerializedDiagram): Reactodia.SerializedDiagram {
+  const { layoutData } = diagram;
+  if (!layoutData || !Array.isArray(layoutData.elements)) {
+    return diagram;
+  }
+  let anyChanged = false;
+  const elements = layoutData.elements.map((sourceElement) => {
+    let element: any = restoreStateJson(sourceElement, 'elementState', ELEMENT_STATE_JSON);
+    if (Array.isArray(element.items)) {
+      const items = element.items.map(item => restoreStateJson(item, 'elementState', ELEMENT_STATE_JSON));
+      if (items.some((item, index) => item !== element.items[index])) {
+        element = { ...element, items };
+      }
+    }
+    const { size, fixedSize, elementState } = element as LegacySerializedElement;
+    let state = elementState;
+    if (
+      fixedSize && size &&
+      typeof size.width === 'number' && typeof size.height === 'number' &&
+      !(state && state[Reactodia.TemplateProperties.ElementSize] !== undefined)
+    ) {
+      state = {
+        ...state,
+        [Reactodia.TemplateProperties.ElementSize]: { width: size.width, height: size.height },
+      };
+    }
+    if (
+      state && state[LEGACY_PINNED_PROPERTIES] !== undefined &&
+      state[Reactodia.TemplateProperties.PinnedProperties] === undefined
+    ) {
+      const { [LEGACY_PINNED_PROPERTIES]: pinned, ...otherState } = state;
+      state = {
+        ...otherState,
+        [Reactodia.TemplateProperties.PinnedProperties]: pinned,
+      };
+    }
+    if (state === elementState && element === sourceElement) {
+      return element;
+    }
+    anyChanged = true;
+    return { ...element, elementState: state };
+  });
+  const links = layoutData.links.map(sourceLink => {
+    let link: any = restoreStateJson(sourceLink, 'linkState', LINK_STATE_JSON);
+    if (Array.isArray(link.items)) {
+      const items = link.items.map(item => restoreStateJson(item, 'linkState', LINK_STATE_JSON));
+      if (items.some((item, index) => item !== link.items[index])) {
+        link = { ...link, items };
+      }
+    }
+    if (link !== sourceLink) {
+      anyChanged = true;
+    }
+    return link;
+  });
+  return anyChanged ? { ...diagram, layoutData: { ...layoutData, elements, links } } : diagram;
+}
+
+/** Mirrors Reactodia state into legacy layout fields. */
+export function addLegacyLayoutFields(diagram: Reactodia.SerializedDiagram): Reactodia.SerializedDiagram {
+  const { layoutData } = diagram;
+  if (!layoutData || !Array.isArray(layoutData.elements)) {
+    return diagram;
+  }
+  let anyChanged = false;
+  const elements = layoutData.elements.map((sourceElement) => {
+    let element: any = addStateJson(sourceElement, 'elementState', ELEMENT_STATE_JSON);
+    if (Array.isArray(element.items)) {
+      const items = element.items.map(item => addStateJson(item, 'elementState', ELEMENT_STATE_JSON));
+      if (items.some((item, index) => item !== element.items[index])) {
+        element = { ...element, items };
+      }
+    }
+    const state = element.elementState;
+    if (!state) {
+      if (element !== sourceElement) {
+        anyChanged = true;
+      }
+      return element;
+    }
+    const legacyFields: Partial<LegacySerializedElement> = {};
+    const size = state[Reactodia.TemplateProperties.ElementSize] as
+      { width?: unknown; height?: unknown } | undefined;
+    if (size && typeof size.width === 'number' && typeof size.height === 'number') {
+      legacyFields.size = { width: size.width, height: size.height };
+      legacyFields.fixedSize = true;
+    }
+    if (state[Reactodia.TemplateProperties.Expanded] === true) {
+      legacyFields.isExpanded = true;
+    }
+    const pinned = state[Reactodia.TemplateProperties.PinnedProperties];
+    if (pinned !== undefined) {
+      legacyFields.elementState = {
+        ...state,
+        [LEGACY_PINNED_PROPERTIES]: pinned,
+      };
+    }
+    if (Object.keys(legacyFields).length === 0) {
+      if (element !== sourceElement) {
+        anyChanged = true;
+      }
+      return element;
+    }
+    anyChanged = true;
+    return { ...element, ...legacyFields };
+  });
+  const links = layoutData.links.map(sourceLink => {
+    let link: any = addStateJson(sourceLink, 'linkState', LINK_STATE_JSON);
+    if (Array.isArray(link.items)) {
+      const items = link.items.map(item => addStateJson(item, 'linkState', LINK_STATE_JSON));
+      if (items.some((item, index) => item !== link.items[index])) {
+        link = { ...link, items };
+      }
+    }
+    if (link !== sourceLink) {
+      anyChanged = true;
+    }
+    return link;
+  });
+  return anyChanged ? { ...diagram, layoutData: { ...layoutData, elements, links } } : diagram;
+}
+
 function makeDiagramResource(
-  diagram: SerializedDiagram,
+  diagram: Reactodia.SerializedDiagram,
   name: string,
   metadata: ReadonlyArray<Rdf.Triple>,
   diagramIri = ''
 ) {
-  const jsonldDiagram: any = { ...diagram };
+  const jsonldDiagram: any = { ...addLegacyLayoutFields(diagram) };
 
-  // force inline context to disable fetching of the context by RDF4J
-  if ((jsonldDiagram['@context'] = DIAGRAM_CONTEXT_URL_V1)) {
+  // RDF4J must not fetch the remote context.
+  if (jsonldDiagram['@context'] === Reactodia.DiagramContextV1) {
     jsonldDiagram['@context'] = OntodiaContextV1['@context'];
   }
   jsonldDiagram[crm.symbolic_content.value] = name;
   jsonldDiagram['@id'] = diagramIri;
-  // warning! this heavily assumes that RDF will only place predicates to diagram resource
-  // otherwise proper ttl-to-jsonld parsing is required, assumed to be done in 3.0
+  // Metadata predicates belong to the diagram resource.
   metadata.forEach((row) => {
     jsonldDiagram[row.p.value] = row.o.isLiteral() ? row.o.value : { '@id': row.o.value };
   });
@@ -186,7 +345,7 @@ function makeDiagramResource(
  */
 export function saveDiagram(
   name: string,
-  diagram: SerializedDiagram,
+  diagram: Reactodia.SerializedDiagram,
   metadata: ReadonlyArray<Rdf.Triple>
 ): Kefir.Property<Rdf.Iri> {
   const jsonldDiagram = makeDiagramResource(diagram, name, metadata);
@@ -204,7 +363,7 @@ export function saveDiagram(
  */
 export function updateDiagram(
   diagramIri: string,
-  diagram: SerializedDiagram,
+  diagram: Reactodia.SerializedDiagram,
   label: string,
   metadata: ReadonlyArray<Rdf.Triple>
 ): Kefir.Property<void> {
@@ -219,7 +378,10 @@ export function updateDiagram(
     });
 }
 
-export function suggestProperties(params: PropertySuggestionParams, query: string): Promise<Dictionary<PropertyScore>> {
+export function suggestProperties(
+  params: Reactodia.PropertySuggestionParams,
+  query: string
+): Promise<Record<string, Reactodia.PropertyScore>> {
   const { token, properties } = params;
   const options = {
     context: {
@@ -239,7 +401,7 @@ export function suggestProperties(params: PropertySuggestionParams, query: strin
     .flatMap((bound) => SparqlClient.select(bound, options))
     .map((response) => {
       const result = response.results.bindings;
-      const dictionary: Dictionary<PropertyScore> = {};
+      const dictionary: Record<string, Reactodia.PropertyScore> = {};
 
       result.forEach((res) => {
         const propertyIri = res.id.value;
@@ -257,4 +419,72 @@ export function suggestProperties(params: PropertySuggestionParams, query: strin
       return dictionary;
     })
     .toPromise();
+}
+
+const serializedCellProperties = [
+  'id',
+  'type',
+  'size',
+  'fixedSize',
+  'angle',
+  'isExpanded',
+  'position',
+  'iri',
+  'group',
+  'typeId',
+  'source',
+  'target',
+  'vertices',
+];
+
+function convertToSerializedDiagram(params: {
+  layoutData: any;
+  linkTypeOptions: any;
+}): Reactodia.SerializedDiagram {
+  const elements: Reactodia.SerializedEntityElement[] = [];
+  const links: Reactodia.SerializedRelationLink[] = [];
+
+  for (const cell of params.layoutData.cells) {
+    const newCell: any = pick(cell, serializedCellProperties);
+
+    if (newCell.type === 'Ontodia.Element' || newCell.type === 'element') {
+      newCell.type = 'Element';
+    }
+
+    if (newCell.type === 'link') {
+      newCell.type = 'Link';
+    }
+
+    if (!newCell.iri) {
+      newCell.iri = newCell.id;
+    }
+
+    newCell['@id'] = newCell.id;
+    delete newCell.id;
+
+    newCell['@type'] = newCell.type;
+    delete newCell.type;
+
+    switch (newCell['@type']) {
+      case 'Element':
+        elements.push(newCell);
+        break;
+      case 'Link':
+        newCell.source['@id'] = newCell.source.id;
+        delete newCell.source.id;
+        newCell.target['@id'] = newCell.target.id;
+        delete newCell.target.id;
+        newCell.property = newCell.typeId;
+        delete newCell.typeId;
+        links.push(newCell);
+        break;
+    }
+  }
+
+  return {
+    '@context': Reactodia.DiagramContextV1,
+    '@type': 'Diagram',
+    layoutData: { '@type': 'Layout', elements, links },
+    linkTypeOptions: params.linkTypeOptions,
+  };
 }

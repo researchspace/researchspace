@@ -127,7 +127,9 @@ export class ConfigHolderClass {
     const labelPaths = preferredLabels ? preferredLabels.value : [];
     const thumbnailPaths = preferredThumbnails ? preferredThumbnails.value : [];
     this.uiConfig = {
+      preferredLabels: labelPaths,
       preferredLanguages: preferredLanguages ? preferredLanguages.value : [],
+      preferredThumbnails: thumbnailPaths,
       labelPropertyPattern: makePropertyPattern(labelPaths),
       labelPropertyPath: makePropertyPath(labelPaths),
       thumbnailPropertyPattern: makePropertyPattern(thumbnailPaths),
@@ -161,7 +163,9 @@ interface RawUIConfig {
 }
 
 export interface UIConfig {
+  readonly preferredLabels: ReadonlyArray<string>;
   readonly preferredLanguages: ReadonlyArray<string>;
+  readonly preferredThumbnails: ReadonlyArray<string>;
   readonly labelPropertyPattern: string;
   readonly labelPropertyPath: SparqlJs.PropertyPath;
   readonly thumbnailPropertyPattern: string;

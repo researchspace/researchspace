@@ -59,6 +59,8 @@ import com.google.inject.Inject;
  * <ul>
  * <li><b>config.proxy.[proxy ID].targetUri</b>: the target URL to redirect the
  * requests to.</li>
+ * <li><b>config.proxy.[proxy ID].stripPathPrefix</b>: an optional path prefix
+ * removed before forwarding.</li>
  * </ul>
  * and two alternative options to pass the login credentials
  * <ul>
@@ -96,7 +98,23 @@ public class MProxyServlet extends ProxyServlet {
     @Override
     protected String rewritePathInfoFromRequest(HttpServletRequest servletRequest) {
         String path = servletRequest.getContextPath().concat(servletRequest.getServletPath());
-        return servletRequest.getRequestURI().substring(path.length());
+        String requestPath = servletRequest.getRequestURI().substring(path.length());
+        return stripPathPrefix(requestPath, getConfigParam("stripPathPrefix"));
+    }
+
+    static String stripPathPrefix(String path, String prefix) {
+        if (StringUtils.isEmpty(prefix) || "/".equals(prefix)) {
+            return path;
+        }
+        String normalized = prefix.startsWith("/") ? prefix : "/" + prefix;
+        while (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        if (!path.equals(normalized) && !path.startsWith(normalized + "/")) {
+            return path;
+        }
+        String stripped = path.substring(normalized.length());
+        return stripped.isEmpty() ? "/" : stripped;
     }
 
     // No need to encode uri.

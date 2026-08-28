@@ -51,6 +51,23 @@ export class EntityViewSearchResults extends Component<Props, State> {
     }
 
     componentDidMount() {
+        this.buildQueries();
+    }
+
+    componentDidUpdate(prevProps: Props) {
+        if (
+            this.props.entityIri !== prevProps.entityIri ||
+            this.props.entityViewConfigIri !== prevProps.entityViewConfigIri ||
+            this.props.navigationEntryIri !== prevProps.navigationEntryIri
+        ) {
+            this.setState(
+                { tableQuery: undefined, searchQuery: undefined, entityDomain: undefined, searchConfig: undefined, viewes: undefined },
+                () => this.buildQueries()
+            );
+        }
+    }
+
+    private buildQueries() {
         const entityConfig = entityConfigs[this.props.entityViewConfigIri];
         // table query
 
@@ -160,7 +177,11 @@ export class EntityViewSearchResults extends Component<Props, State> {
 
         new VariableRenameBinder('value', 'subject').query(tableQuery);
 
+      const requestedProps = this.props;
       generateSearchConfigForFields(relatedEntityConfig.facetKps).onValue(res => {
+        if (this.props !== requestedProps) {
+          return;
+        }
         this.setState({
           tableQuery: SparqlUtil.serializeQuery(tableQuery as any),
           searchQuery: SparqlUtil.serializeQuery(tableQuery),

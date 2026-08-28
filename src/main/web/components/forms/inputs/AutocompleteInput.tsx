@@ -41,7 +41,6 @@ import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLi
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 import { DropdownWithFilter } from './dropdown/DropdownWithFilter';
-import { RdfLiteral } from 'platform/ontodia/src/ontodia';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 
 

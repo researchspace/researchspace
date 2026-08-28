@@ -192,6 +192,27 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     return regions.length > 0 ? regions : undefined;
   }
 
+  componentDidUpdate(prevProps: ImageRegionEditorProps) {
+    if (
+      !isEqual(prevProps.imageOrRegion, this.props.imageOrRegion) ||
+      prevProps.imageIdPattern !== this.props.imageIdPattern ||
+      prevProps.iiifServerUrl !== this.props.iiifServerUrl
+    ) {
+      removeMirador(this.miradorInstance, this.miradorElement);
+      this.miradorInstance = undefined;
+      this.setState(
+        {
+          loading: true,
+          allImages: this.normalizeImageProps(this.props),
+          info: undefined,
+          iiifImageId: undefined,
+          errorMessage: undefined,
+        },
+        () => this.queryAllImagesInfo()
+      );
+    }
+  }
+
   private triggerManifestUpdatedEvent = (resources: IiifManifestResource[]) => {
     const resourcesWithRegions = resources.map(resource => {
       const resourceRegions = this.getRegionsForResource(resource.resourceIri, resources);
@@ -298,11 +319,20 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   }
 
   private queryAllImagesInfo() {
-    this.queryImagesInfo(this.state.allImages).observe({
+    const { allImages } = this.state;
+    this.queryImagesInfo(allImages).observe({
       value: ({ info, iiifImageId }) => {
+        if (this.state.allImages !== allImages) {
+          return;
+        }
         this.setState({ loading: false, iiifImageId, info });
       },
-      error: (error) => this.setState({ loading: false, errorMessage: error }),
+      error: (error) => {
+        if (this.state.allImages !== allImages) {
+          return;
+        }
+        this.setState({ loading: false, errorMessage: error });
+      },
     });
   }
 

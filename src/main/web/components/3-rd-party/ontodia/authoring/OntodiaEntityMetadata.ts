@@ -20,7 +20,7 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
 import * as Immutable from 'immutable';
-import { ElementTypeIri, CancellationToken } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Rdf } from 'platform/api/rdf';
 import { FieldDefinition, FieldMapping, mapChildToComponent } from 'platform/components/forms';
@@ -102,7 +102,7 @@ export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadata
     return null;
   }
 
-  static getRequiredFields(props: OntodiaEntityMetadataProps, ct: CancellationToken): Promise<Rdf.Iri[]> {
+  static getRequiredFields(props: OntodiaEntityMetadataProps, ct: AbortSignal): Promise<Rdf.Iri[]> {
     const fieldIris: Rdf.Iri[] = [];
     if (props.labelIri) {
       fieldIris.push(Rdf.iri(props.labelIri));
@@ -126,7 +126,7 @@ export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadata
 
 assertFieldConfigurationItem(OntodiaEntityMetadata);
 
-function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: FieldConfigurationContext) { console.log("extracting metadata for"+props);
+function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: FieldConfigurationContext) {
   const { fieldByIri: allFieldByIri, typeIri, datatypeFields } = context;
   const {
     entityTypeIri,
@@ -178,7 +178,7 @@ function extractAuthoringMetadata(props: OntodiaEntityMetadataProps, context: Fi
   const fieldByIri = Immutable.Map(entityFields.map((f) => [f.iri, f] as [string, FieldDefinition]));
 
   const metadata: EntityMetadata = {
-    entityType: entityTypeIri as ElementTypeIri,
+    entityType: entityTypeIri as Reactodia.ElementTypeIri,
     fields: entityFields,
     fieldByIri,
     datatypeFields: Immutable.Set<string>(datatypeFields.filter((fieldIri) => fieldByIri.has(fieldIri))),

@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import { Element, Link, Highlighter, getContentFittingBox } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { listen } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
@@ -50,20 +50,31 @@ export class OntodiaPanel extends Component<OntodiaProps, {}> {
   }
 
   private highlightItems(iris: Array<string> | undefined) {
-    const view = this.ontodia.workspace.getDiagram();
-    let highlighter: Highlighter;
+    const { model, view } = this.ontodia.workspace.getContext();
+    let highlighter: Reactodia.CellHighlighter | undefined;
     if (iris) {
       const highlightedElements = new Set<string>();
       iris.forEach((iri) => highlightedElements.add(iri));
+      const containsHighlightedEntity = (element: Reactodia.Element | undefined) => {
+        if (!element) {
+          return false;
+        }
+        for (const entity of Reactodia.iterateEntitiesOf(element)) {
+          if (highlightedElements.has(entity.id)) {
+            return true;
+          }
+        }
+        return false;
+      };
       highlighter = (item) => {
-        if (item instanceof Element) {
-          return highlightedElements.has(item.iri);
+        if (item instanceof Reactodia.Element) {
+          return containsHighlightedEntity(item);
         }
-        if (item instanceof Link) {
-          const { sourceId, targetId } = item.data;
-          return highlightedElements.has(sourceId) || highlightedElements.has(targetId);
+        if (item instanceof Reactodia.Link) {
+          return containsHighlightedEntity(model.getElement(item.sourceId)) ||
+            containsHighlightedEntity(model.getElement(item.targetId));
         }
-        throw Error('Unknown item type');
+        return false;
       };
     }
     view.setHighlighter(highlighter);
@@ -71,12 +82,22 @@ export class OntodiaPanel extends Component<OntodiaProps, {}> {
 
   private centerToElement(iri: string) {
     const workspace = this.ontodia.workspace;
-    const model = workspace.getModel();
-    const selectedElement = model.elements.find((element) => element.iri === iri);
+    const { model, view } = workspace.getContext();
+    const canvas = view.findAnyCanvas();
+    const selectedElement = model.elements.find((element) => {
+      for (const entity of Reactodia.iterateEntitiesOf(element)) {
+        if (entity.id === iri) {
+          return true;
+        }
+      }
+      return false;
+    });
     if (selectedElement) {
-      const bbox = getContentFittingBox([selectedElement], []);
-      workspace.zoomToFitRect(bbox);
-      workspace.getEditor().setSelection([selectedElement]);
+      if (canvas) {
+        const bbox = Reactodia.getContentFittingBox([selectedElement], [], canvas.renderingState);
+        canvas.zoomToFitRect(bbox);
+      }
+      model.setSelection([selectedElement]);
     }
   }
 

@@ -74,7 +74,7 @@ public class LocalLDPAPIClient implements LDPAPIClient {
 
     @Override
     public Model getObjectModel(Resource object) throws APICallFailedException {
-        if (!(object instanceof Resource)) {
+        if (!(object instanceof IRI)) {
             throw new APICallFailedException(object.stringValue() + " must be an IRI");
         }
 

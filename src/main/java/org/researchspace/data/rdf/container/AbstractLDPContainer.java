@@ -76,7 +76,10 @@ public abstract class AbstractLDPContainer extends AbstractLDPResource implement
         // include all outgoing edges from contained resources
         Model m = new LinkedHashModel(containerModel);
         for (Value o : getContainedResources()) {
-            m.addAll(getReadConnection().getOutgoingStatements((IRI) o));
+            // Only process IRI resources, skip BNodes
+            if (o instanceof IRI) {
+                m.addAll(getReadConnection().getOutgoingStatements((IRI) o));
+            }
         }
 
         return m;

@@ -17,21 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  ValidationApi,
-  ElementError,
-  LinkTypeIri,
-  PropertyTypeIri,
-  ElementIri,
-  ElementTypeIri,
-  LinkModel,
-  LinkError,
-  ValidationEvent,
-  Element,
-  DiagramModel,
-  AuthoringState,
-  DataProvider,
-} from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
@@ -53,15 +39,15 @@ import { BaseTypeClosureRequest, hasCompatibleType } from './FieldBasedMetadataA
 import { EntityMetadata, isObjectProperty } from './FieldConfigurationCommon';
 import { fetchInitialModel, getEntityMetadata, applyEventsToCompositeValue } from './OntodiaPersistenceCommon';
 
-export class FieldBasedValidationApi implements ValidationApi {
-  private dataProvider: DataProvider | undefined;
+export class FieldBasedValidationApi implements Reactodia.ValidationProvider {
+  private dataProvider: Reactodia.DataProvider | undefined;
 
   constructor(
-    private entityMetadata: Map<ElementTypeIri, EntityMetadata>,
+    private entityMetadata: Map<Reactodia.ElementTypeIri, EntityMetadata>,
     private enforceConstraints: boolean
   ) { }
 
-  setDataProvider(dataProvider: DataProvider) {
+  setDataProvider(dataProvider: Reactodia.DataProvider) {
     this.dataProvider = dataProvider;
   }
 
@@ -69,17 +55,20 @@ export class FieldBasedValidationApi implements ValidationApi {
     return this.enforceConstraints;
   }
 
-  validate(e: ValidationEvent): Promise<Array<ElementError | LinkError>> {
+  validate(
+    e: Reactodia.ValidationEvent
+  ): Promise<Reactodia.ValidationResult> {
     const { target, state } = e;
     const metadata = getEntityMetadata(target, this.entityMetadata);
 
     if (metadata === undefined && state.elements.has(target.id)) {
-      const error: ElementError = {
+      const error: Reactodia.ValidatedElement = {
         type: 'element',
         target: target.id,
+        severity: 'error',
         message: `Cannot find metadata for any of the entity types`,
       };
-      return Promise.resolve([error]);
+      return Promise.resolve({ items: [error] });
     }
 
     const combinedTask = Kefir.combine(
@@ -87,64 +76,72 @@ export class FieldBasedValidationApi implements ValidationApi {
         domainRangeErrors: this.checkDomainRangeCompatibility(e, metadata),
         relatedElementsErrors: this.checkRelatedElements(e, metadata),
       },
-      ({ domainRangeErrors, relatedElementsErrors }) => {
-        return [...domainRangeErrors, ...relatedElementsErrors];
+      ({ domainRangeErrors, relatedElementsErrors }): Reactodia.ValidationResult => {
+        return {
+          items: [...domainRangeErrors, ...relatedElementsErrors],
+        };
       }
-    ).flatMapErrors<Array<ElementError | LinkError>>((err) => {
-      const error: ElementError = {
+    ).flatMapErrors<Reactodia.ValidationResult>((err) => {
+      const error: Reactodia.ValidatedElement = {
         type: 'element',
         target: target.id,
+        severity: 'error',
         message: `Unexpected error during the validation process: ${err.message}`,
       };
-      return Kefir.constant([error]);
+      return Kefir.constant({ items: [error] });
     });
-    return observableToCancellablePromise(combinedTask, e.cancellation);
+    return observableToCancellablePromise(combinedTask, e.signal);
   }
 
-  private checkDomainRangeCompatibility(e: ValidationEvent, metadata: EntityMetadata): Kefir.Property<LinkError[]> {
-    const { target, outboundLinks, model } = e;
+  private checkDomainRangeCompatibility(
+    e: Reactodia.ValidationEvent,
+    metadata: EntityMetadata
+  ): Kefir.Property<Reactodia.ValidatedLink[]> {
+    const { target, outboundLinks, graph } = e;
 
     const typeRequest = new BaseTypeClosureRequest();
     typeRequest.addAll(target.types);
 
     for (const link of outboundLinks) {
-      const linkSource = findLinkSource(model, link);
+      const linkSource = findLinkSource(graph, link);
       if (linkSource) {
         typeRequest.addAll(linkSource.data.types);
       }
 
-      const linkTarget = findLinkTarget(model, link);
+      const linkTarget = findLinkTarget(graph, link);
       if (linkTarget) {
         typeRequest.addAll(linkTarget.data.types);
       }
     }
 
     return typeRequest.query().map((typeClosure) => {
-      const errors: LinkError[] = [];
+      const errors: Reactodia.ValidatedLink[] = [];
       for (const link of outboundLinks) {
         const definition = metadata.fieldByIri.get(link.linkTypeId);
         if (!definition) {
           continue;
         }
 
-        const linkSource = findLinkSource(model, link);
+        const linkSource = findLinkSource(graph, link);
         const sourceTypes = linkSource ? linkSource.data.types : undefined;
         if (sourceTypes && !hasCompatibleType(definition.domain, sourceTypes, typeClosure)) {
           const domainStr = definition.domain.map(({ value }) => value).join(', ');
           errors.push({
             type: 'link',
             target: link,
+            severity: 'error',
             message: `The source element should have one of the types '${domainStr}'`,
           });
         }
 
-        const linkTarget = findLinkTarget(model, link);
+        const linkTarget = findLinkTarget(graph, link);
         const targetTypes = linkTarget ? linkTarget.data.types : undefined;
         if (targetTypes && !hasCompatibleType(definition.range, targetTypes, typeClosure)) {
           const rangeStr = definition.range.map(({ value }) => value).join(', ');
           errors.push({
             type: 'link',
             target: link,
+            severity: 'error',
             message: `The target element should have one of the types '${rangeStr}'`,
           });
         }
@@ -154,16 +151,16 @@ export class FieldBasedValidationApi implements ValidationApi {
   }
 
   private checkRelatedElements(
-    e: ValidationEvent,
+    e: Reactodia.ValidationEvent,
     metadata: EntityMetadata
-  ): Kefir.Property<Array<ElementError | LinkError>> {
+  ): Kefir.Property<Array<Reactodia.ValidatedElement | Reactodia.ValidatedLink>> {
     const { target, state } = e;
 
     if (!this.dataProvider) {
       return Kefir.constantError<any>(new Error('Missing data provider to fetch entity state'));
     }
 
-    const initialModelTask = AuthoringState.isNewElement(state, target.id)
+    const initialModelTask = Reactodia.AuthoringState.isAddedEntity(state, target.id)
       ? Kefir.constant<CompositeValue>({
         type: CompositeValue.type,
         subject: Rdf.iri(target.id),
@@ -183,21 +180,33 @@ export class FieldBasedValidationApi implements ValidationApi {
         });
         return FieldValue.isEmpty(composite) ? Kefir.constant(composite) : validateWholeComposite(composite);
       })
-      .map<Array<ElementError | LinkError>>((composite) => {
+      .map<Array<Reactodia.ValidatedElement | Reactodia.ValidatedLink>>((composite) => {
         return extractValidationErrorsFromComposite(e, composite, metadata);
       })
       .toProperty();
   }
 }
 
-function findLinkSource(model: DiagramModel, data: LinkModel): Element | undefined {
-  const foundLink = model.links.find((link) => link.data === data);
-  return foundLink ? model.sourceOf(foundLink) : undefined;
+function findLinkSource(
+  model: Reactodia.DataGraphStructure,
+  data: Reactodia.LinkModel
+): Reactodia.EntityElement | undefined {
+  const foundLink = model.links.find((link): link is Reactodia.RelationLink =>
+    link instanceof Reactodia.RelationLink && link.data === data
+  );
+  const source = foundLink ? model.sourceOf(foundLink) : undefined;
+  return source instanceof Reactodia.EntityElement ? source : undefined;
 }
 
-function findLinkTarget(model: DiagramModel, data: LinkModel): Element | undefined {
-  const foundLink = model.links.find((link) => link.data === data);
-  return foundLink ? model.targetOf(foundLink) : undefined;
+function findLinkTarget(
+  model: Reactodia.DataGraphStructure,
+  data: Reactodia.LinkModel
+): Reactodia.EntityElement | undefined {
+  const foundLink = model.links.find((link): link is Reactodia.RelationLink =>
+    link instanceof Reactodia.RelationLink && link.data === data
+  );
+  const target = foundLink ? model.targetOf(foundLink) : undefined;
+  return target instanceof Reactodia.EntityElement ? target: undefined;
 }
 
 function validateWholeComposite(composite: CompositeValue): Kefir.Property<CompositeValue> {
@@ -234,10 +243,10 @@ function validateWholeComposite(composite: CompositeValue): Kefir.Property<Compo
 }
 
 function extractValidationErrorsFromComposite(
-  e: ValidationEvent,
+  e: Reactodia.ValidationEvent,
   composite: CompositeValue | EmptyValue,
   metadata: EntityMetadata
-): Array<ElementError | LinkError> {
+): Array<Reactodia.ValidatedElement | Reactodia.ValidatedLink> {
   const { target, outboundLinks } = e;
 
   if (FieldValue.isEmpty(composite)) {
@@ -247,17 +256,18 @@ function extractValidationErrorsFromComposite(
   const collectedErrors: CollectedError[] = [];
   collectErrors([], composite, collectedErrors);
 
-  const errors: Array<ElementError | LinkError> = [];
+  const errors: Array<Reactodia.ValidatedElement | Reactodia.ValidatedLink> = [];
   collectedErrors.forEach(({ message, path }) => {
     errors.push({
       type: 'element',
       target: target.id,
       message: message,
-      propertyType: path.join('/') as PropertyTypeIri,
+      severity: 'error',
+      propertyType: path.join('/'),
     });
   });
 
-  const linkByType = new Map<LinkTypeIri, LinkModel[]>();
+  const linkByType = new Map<Reactodia.LinkTypeIri, Reactodia.LinkModel[]>();
   for (const link of outboundLinks) {
     if (!linkByType.has(link.linkTypeId)) {
       linkByType.set(link.linkTypeId, []);
@@ -269,12 +279,13 @@ function extractValidationErrorsFromComposite(
     const definition = composite.definitions.get(fieldId);
     checkCardinalityAndDuplicates(fieldState.values, definition).forEach(({ message }) => {
       if (isObjectProperty(definition, metadata)) {
-        const links = linkByType.get(definition.iri as LinkTypeIri);
+        const links = linkByType.get(definition.iri);
         if (links) {
           for (const link of links) {
             errors.push({
               type: 'link',
               target: link,
+              severity: 'error',
               message,
             });
           }
@@ -284,7 +295,8 @@ function extractValidationErrorsFromComposite(
         type: 'element',
         target: target.id,
         message,
-        propertyType: definition.iri as PropertyTypeIri,
+        severity: 'error',
+        propertyType: definition.iri,
       });
     });
   });
@@ -293,11 +305,11 @@ function extractValidationErrorsFromComposite(
 }
 
 function fetchExistingEnitityState(
-  target: ElementIri,
+  target: Reactodia.ElementIri,
   metadata: EntityMetadata,
-  dataProvider: DataProvider
+  dataProvider: Reactodia.DataProvider
 ): Kefir.Property<CompositeValue> {
-  return Kefir.fromPromise(dataProvider.linkTypesOf({ elementId: target }))
+  return Kefir.fromPromise(dataProvider.connectedLinkStats({ elementId: target, inexactCount: true }))
     .flatMap((linkCounts) => {
       const foundFields = new Set<FieldDefinition>();
       for (const { id, outCount } of linkCounts) {

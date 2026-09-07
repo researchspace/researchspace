@@ -45,9 +45,14 @@ export class Cancellation {
 
   private isCancelled = false;
   private cancelHandlers: Array<() => void> = [];
+  private controller = new AbortController();
 
-  get aborted() {
+  get aborted(): boolean {
     return this.isCancelled;
+  }
+
+  get signal(): AbortSignal {
+    return this.controller.signal;
   }
 
   /**
@@ -114,6 +119,7 @@ export class Cancellation {
       return;
     }
     this.isCancelled = true;
+    this.controller.abort();
     for (const onCancel of this.cancelHandlers) {
       onCancel();
     }

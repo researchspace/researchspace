@@ -19,6 +19,78 @@
 
 //rs-card-default is the default card for Clipboard, Search and Knowledge Map */
 
+$compact-resource-card-height: 42px;
+
+@mixin compact-resource-card {
+    height: $compact-resource-card-height;
+    border: 1.5px solid $color-border;
+    border-radius: $border-radius;
+    background-color: $color-white;
+}
+
+@mixin compact-resource-card-label {
+    display: flow-root;
+    overflow: hidden;
+    font-size: $font-size-small;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.set-management--list-view .resource-card,
+.reactodia-standard-element--group[class] .reactodia-standard-element__item[class] {
+    @include compact-resource-card;
+    box-sizing: border-box;
+    width: 100%;
+    height: $compact-resource-card-height !important;
+}
+
+.set-management--list-view .resource-card {
+    width: 100% !important;
+    height: $compact-resource-card-height !important;
+
+    .resource-card__media-container {
+        display: none;
+    }
+
+    .resource-card__footer {
+        width: calc(100% - 70px) !important;
+        height: 40px;
+        gap: 0;
+    }
+}
+
+.reactodia-standard-element--group[class] .reactodia-standard-element__item-body[class] {
+    align-items: center;
+    min-width: 0;
+    padding: 0 10px;
+}
+
+.reactodia-standard-element--group[class] {
+    border-color: $color-border;
+}
+
+.reactodia-standard-element--group[class] .reactodia-standard-element__item-labels[class] {
+    display: flex;
+    flex: auto;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.reactodia-standard-element--group[class] .reactodia-standard-element__type-label[class] {
+    overflow: hidden;
+    font-size: 11px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.set-management--list-view .resource-card__footer-title,
+.reactodia-standard-element--group[class] .reactodia-standard-element__label[class] {
+    @include compact-resource-card-label;
+}
+
 .card {
     position: relative;
     display: -webkit-box;
@@ -287,31 +359,15 @@
     }
 }
 
-.resource-card__kmTopButtons {
-
-    z-index: 1;
-    position: absolute;
-    right: 6px;
-    top: 37px;
-
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    
-    .resource-card__button {
-        display: flex;
-        padding: 5px;
-        border: 1px solid $color-medium;
-        opacity: 0;
-    }
-}
-
-.ontodia-exported-element {
-
-    .resource-card__header-actions,
-    .resource-card__kmTopButtons {
+.reactodia-exported-canvas {
+    .resource-card__header-actions {
         display: none;
-    }    
+    }
+
+    // Match link label background to the white export background.
+    .reactodia-link-label {
+        background-color: #fff;
+    }
 }
 
 /*  Card deck */
@@ -833,8 +889,44 @@ $card-deck-margin: $card-group-margin !default;
 }*/
 
 
-/*  Knowledge Map card */
-.ontodia .ontodia-paper-area {
+/*  Knowledge Map card (live canvas + SVG/PNG/PDF export) */
+.reactodia-workspace .reactodia-canvas,
+.reactodia-exported-canvas {
+
+    /* Make the element root (which carries the default and the user-resized
+       card size) the containing block for the card and pin the card to it,
+       so the wrapper markup the card templates render in between does not
+       need to participate in the height chain */
+    .reactodia-overlaid-element > div {
+      position: relative;
+    }
+
+    .reactodia-overlaid-element > div .resource-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100% !important;
+      width: 100% !important;
+    }
+
+    /* let the media area absorb the extra vertical space when the card
+       grows (mirrors .resource-card__media-container-autosize) */
+    .reactodia-overlaid-element > div .resource-card .resource-card__media-container {
+      height: calc(100% - 50px);
+      min-height: unset;
+      max-height: unset;
+
+      .image-thumbnail,
+      .resource-card__thumbnail,
+      .resource-card__icon-container {
+        min-height: unset;
+        overflow: hidden;
+      }
+
+      iframe {
+        height: 100% !important;
+      }
+    }
 
     /*  Knowledge Map card */
     .rs-KM-card-container {

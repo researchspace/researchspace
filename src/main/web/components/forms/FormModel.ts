@@ -389,7 +389,7 @@ const DISALLOWED_CHARACTERS = /[\u0000-\u0020<>:?*"|/\\&$@=+,#\u007f-\u00ff%\s]/
 const COLLAPSE_UNDERSCORES = /_+/gi;
 
 export function encodeIri(fileName: string) {
-  let transformed = fileName;
+  let transformed = String(fileName);
   transformed = transformed.replace(DISALLOWED_CHARACTERS, '_');
   transformed = transformed.replace(COLLAPSE_UNDERSCORES, '_');
   return transformed;

@@ -552,7 +552,7 @@
 
 .search-all-tree-input-container {
 
-  position: absolute;
+  /* position: absolute; it ends up on top of new button*/
   padding: 25px 0 0 30px; 
   display: flex; 
   align-items: baseline;
@@ -798,13 +798,92 @@
   gap: 6px;
 }
 
-
-.authority-listOfResourceSearch {
+.resource-editView-container .resource-editView-form-container .authority-listOfResourceSearch {
   height: 100%;
+  padding: 0 20px;
   overflow: auto;
 
   & .search-container {
-
     height: 100%;
   }
+  
+  .semantic-form .btn-form-actions {
+    padding: 0;
+  }
 }
+
+/* Getting the search-keyword box to stretch */
+.search-page-container .search-container .semantic-search-content .semantic-search-header-content .semantic-search-header-title {
+  display: none;
+}
+
+/* Make the complete header row occupy the available width */
+.semantic-search-header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Allow the actions area to consume the rest of the header */
+.semantic-search-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Left-hand group: keep its intrinsic width */
+.semantic-search-header-actions .btn-newDraggableTab-container {
+  flex: 0 0 auto;
+
+  /* Overrides the inline margin-right: 20px */
+  margin-right: 0 !important;
+}
+
+/* Middle group: consume all remaining space */
+.semantic-search-header-actions .search-results-header-keyword {
+  flex: 1 1 0;
+  min-width: 180px;
+  width: auto !important;
+  max-width: none !important;
+}
+
+/* Propagate the available width through the search wrappers */
+.search-results-header-keyword .keyword-search-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.search-results-header-keyword .keyword-search-container .form-group {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.search-results-header-keyword .input-keyword-search {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Right-hand controls: retain their intrinsic widths */
+.semantic-search-header-actions > .btn,
+.semantic-search-header-actions > .dropdown,
+.semantic-search-header-actions > .btn-group {
+  flex: 0 0 auto;
+}
+
+/* Optional: remove the empty element between the search and refresh button */
+.semantic-search-header-actions
+  > .search-results-header-keyword
+  + div:empty {
+  display: none;
+}
+/* end section of getting the search-keyword to stretch */

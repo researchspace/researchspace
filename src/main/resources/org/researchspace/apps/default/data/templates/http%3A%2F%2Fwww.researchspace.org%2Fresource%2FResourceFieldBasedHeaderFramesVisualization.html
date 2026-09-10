@@ -1,0 +1,48 @@
+{{#unless noData}}
+  <dl
+    class="resource-record-header__facts"
+    aria-label="Key facts"
+  >
+    {{#each fields as |field|}}
+      {{#if field.values}}
+        <div class="resource-record-header__fact">
+          {{#if (eq hideFieldLabel  "true")}}
+          {{else}}
+            <dt class="resource-record-header__fact-label">
+              {{field.label.0.value}}
+            </dt>
+          {{/if}}
+
+          <dd class="resource-record-header__fact-content">
+            {{#ifCond (objectLength field.values) '>' 1}}
+              <ul class="resource-record-header__fact-values">
+                {{#each field.values as |value|}}
+                  <li class="resource-record-header__fact-value">
+
+                    {{>
+                      rsp:ResourceFieldValueFramesVisualization
+                      field=field
+                      value=value
+                    }}
+                  </li>
+                {{/each}}
+              </ul>
+            {{/ifCond}}
+
+            {{#ifCond (objectLength field.values) '===' 1}}
+              {{#each field.values as |value|}}
+                <span class="resource-record-header__fact-value">
+                  {{>
+                    rsp:ResourceFieldValueFramesVisualization
+                    field=field
+                    value=value
+                  }}
+                </span>
+              {{/each}}
+            {{/ifCond}}
+          </dd>
+        </div>
+      {{/if}}
+    {{/each}}
+  </dl>
+{{/unless}}

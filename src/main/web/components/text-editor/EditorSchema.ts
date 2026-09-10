@@ -143,7 +143,6 @@ export const schema: Slate.SchemaProperties = {
       normalize: (editor: Slate.Editor, error: Slate.SlateError) => {
         switch (error.code) {
           case 'child_text_invalid' as any:
-            console.log('changing empty to block')
             editor.setNodeByKey(error.node.key, Block.p);
             return;
         }

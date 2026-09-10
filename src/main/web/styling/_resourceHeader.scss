@@ -18,6 +18,105 @@
  */
 
  
+:root {
+  /* =========================================================
+     1) PRIMITIVES (raw palette)
+     ========================================================= */
+
+  /* Neutrals */
+  --c-white: #FFFFFF;
+  --c-text: #1F2937;
+  --c-text-muted: #4B5563;
+  --c-placeholder: #6B7280;
+
+  /* Dark UI chrome */
+  --c-slate-900: #2D3D4F;   /* navbar */
+
+  /* Split your “light greys” into two tints (green + blue) */
+  --c-mint-050: #F1FBF7;    /* page background (green-tinted) */
+  --c-sky-050:  #E8F0F8;    /* secondary surface tint (blue-tinted) */
+
+  /* Borders: keep cool but slightly bluer for definition */
+  --c-border: #C9D6E6;
+
+  /* Primary/action blue (from the blue pill) */
+  --c-blue-500: #4080F0;
+  --c-blue-600: #2F6AE0;
+
+  /* Green accent (from the avatar) */
+  --c-green-500: #60B898;
+  --c-green-600: #3FA683;
+
+  /* Status colours (keep yours, but with coherent tints) */
+  --c-red-500:   #E74E3E;
+  --c-amber-500: #F39C11;
+
+  /* Light “tints” for panels/alerts */
+  --c-red-050:   #FBDFDC;
+  --c-amber-050: #FDEDD4;
+  --c-green-050: #DDF3EA;  /* minty success background (more distinct) */
+  --c-blue-050:  var(--c-sky-050);
+
+  /* =========================================================
+     2) SEMANTIC TOKENS (meaning)
+     ========================================================= */
+
+  /* Canvas and surfaces */
+  --color-bg: var(--c-mint-050);        /* greener canvas to diverge from blues */
+  --color-surface: var(--c-white);      /* cards */
+  --color-surface-alt: var(--c-sky-050);/* blue-tinted panels/strips */
+
+  --color-border: var(--c-border);
+
+   --color-text: var(--c-text);
+  --color-text-muted: var(--c-text-muted);
+
+  /* Primary/action */
+  --color-primary: var(--c-green-600);
+  --color-primary-hover: var(--c-blue-600);
+  --color-on-primary: var(--c-white);
+
+  /* Status */
+  /*
+  --color-danger: var(--c-red-500);
+  --color-danger-bg: var(--c-red-050);
+
+  --color-warning: var(--c-amber-500);
+  --color-warning-bg: var(--c-amber-050);
+
+  --color-success: var(--c-green-600);   
+  --color-success-bg: var(--c-green-050);
+
+  --color-info: var(--c-blue-600);
+  --color-info-bg: var(--c-blue-050); */
+
+  /* =========================================================
+     3) COMPONENT TOKENS — map onto your existing names
+     ========================================================= */
+
+  /*
+  --color-navbar-bg: var(--c-slate-900);
+  --color-navbar-text: var(--c-white);
+
+  --color-action: var(--color-primary);
+  --color-action-hover: var(--color-primary-hover);
+  --color-on-action: var(--color-on-primary);
+
+  --color-navbar-btn-bg: var(--color-action);
+  --color-navbar-btn-text: var(--color-on-action);
+
+  --color-info-text: var(--color-info);
+  */
+  /* Inputs */
+  --input-color-bg: var(--c-white);
+  --input-border-color: #B1C3DA;            /* a touch bluer than border */
+  --input-placeholder-color: var(--c-placeholder);
+
+  /* Shape */
+  --border-radius: 1.5px;
+  --input-border-radius: 6px;
+}
+
 /* Object template - header section */
 .rs-resource-header {
 
@@ -257,3 +356,613 @@
     height: 100%;
 }
 
+.resource-header-container {
+    padding: 15px 0;
+    background: $color-lighter;
+    border: 1px solid $color-border;
+}
+
+.resource-record-header {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    width: inherit;
+    padding: 0 20px;
+    margin-left:20px;
+    margin-right:5px;
+
+    .resource-record-header-title-container {
+        flex: 1 1 0%;
+        display: flex;
+        align-items: center;
+        column-gap: 30px;
+        max-height: 35px;
+
+        overflow: hidden;
+
+        .text-type-subheader {
+            display: flex; 
+            align-items: center;
+            column-gap: 8px;
+        }
+    }
+
+    .resource-record-header-title {
+        margin: 0;
+        font-size: 20px;
+
+        overflow: hidden;
+        span {
+      //      text-transform: lowercase;
+        }
+    }
+}
+
+
+.resource-record-header {
+  --resource-header-title-size: 30px;
+  --resource-header-action-size: 36px;
+
+  display: flex !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+
+  padding: 16px 20px 18px;
+
+  color: var(--color-text);
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--input-border-radius);
+
+  box-sizing: border-box;
+}
+
+.resource-record-header-title-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-width: 0;
+}
+
+.resource-record-header-title {
+  flex: 0 1 auto;
+
+  min-width: 0;
+  max-width: min(50vw, 620px);
+
+  margin: 0;
+
+  color: var(--color-text);
+
+  font-size: var(--resource-header-title-size);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.resource-record-header-title .link-draggable,
+.resource-record-header-title .text-truncate {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.resource-record-header-title .text-truncate {
+  display: block;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.resource-record-header-title-container > .color-base {
+  flex: 0 0 auto;
+
+  color: var(--color-text-muted);
+}
+
+.resource-record-header-title-container > .text-type-subheader {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+
+  color: var(--color-text-muted);
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.resource-record-header-title-container
+  > .text-type-subheader
+  .material-symbols-rounded {
+  font-size: 19px;
+}
+
+.resource-record-header .btn-inline-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+
+  justify-self: end;
+
+  min-width: max-content;
+}
+
+.resource-record-header .btn-inline-container > .btn,
+.resource-record-header .btn-inline-container
+  > .dropdown
+  > .dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: var(--resource-header-action-size);
+  min-width: var(--resource-header-action-size);
+  height: var(--resource-header-action-size);
+
+  padding: 0;
+
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+
+  box-shadow: none;
+}
+
+.resource-record-header
+  .btn-inline-container
+  .material-symbols-rounded {
+  font-size: 20px;
+}
+
+/* ==========================================================
+   RESOURCE RECORD HEADER
+
+   Supports:
+   - thumbnail + content
+   - content without thumbnail
+   ========================================================== */
+
+header.resource-record-header {
+  --resource-header-thumbnail-size: 88px;
+  --resource-header-title-size: 30px;
+  --resource-header-action-size: 36px;
+
+  /*
+   * The old declaration uses flex !important, so this must
+   * initially retain !important until the duplicate rule is removed.
+   */
+  display: flex !important;
+  align-items: flex-start;
+  justify-content: flex-start !important;
+
+  gap: 20px;
+
+  width: 100%;
+  min-width: 0;
+
+  /*
+   * Explicitly reset the old inherited header positioning.
+   */
+  margin: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+
+  padding: 16px 20px 18px;
+
+  color: var(--color-text);
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--input-border-radius);
+
+  box-sizing: border-box;
+
+  /*
+   * These properties are irrelevant in flex mode, but resetting
+   * them makes the resulting computed styles unambiguous.
+   */
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+}
+
+
+/* ==========================================================
+   OPTIONAL THUMBNAIL
+   ========================================================== */
+
+.resource-record-header__thumbnail {
+  flex: 0 0 var(--resource-header-thumbnail-size);
+
+  width: var(--resource-header-thumbnail-size);
+  min-width: var(--resource-header-thumbnail-size);
+  max-width: var(--resource-header-thumbnail-size);
+
+  align-self: flex-start;
+}
+
+/*
+ * When the component renders an empty thumbnail wrapper,
+ * remove it completely so it does not leave a gap.
+ */
+.resource-record-header__thumbnail:empty {
+  display: none;
+}
+
+.resource-record-header__thumbnail img {
+  display: block;
+
+  width: var(--resource-header-thumbnail-size);
+  height: var(--resource-header-thumbnail-size);
+
+  object-fit: cover;
+
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+}
+
+
+/* ==========================================================
+   HEADER BODY
+
+   This is the critical rule missing from the current layout.
+   It forces the body to consume all remaining space.
+   ========================================================== */
+
+.resource-record-header__body {
+  flex: 1 1 0;
+
+  width: auto;
+  min-width: 0;
+  max-width: none;
+}
+
+
+/* ==========================================================
+   TOP ROW: IDENTITY + ACTIONS
+   ========================================================== */
+
+.resource-record-header__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+
+  align-items: start;
+
+  column-gap: 20px;
+
+  width: 100%;
+  min-width: 0;
+}
+
+.resource-record-header__identity {
+  min-width: 0;
+}
+
+
+/* ==========================================================
+   TITLE
+   ========================================================== */
+
+.resource-record-header__title-row {
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+}
+
+.resource-record-header__title {
+  min-width: 0;
+  max-width: 100%;
+
+  margin: 0;
+
+  color: var(--color-text);
+
+  font-size: var(--resource-header-title-size);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.resource-record-header__title .link-draggable,
+.resource-record-header__title .text-truncate {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.resource-record-header__title .text-truncate {
+  display: block;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.resource-record-header__title .text-truncate > span {
+  display: block;
+
+  overflow: hidden;
+
+  color: inherit;
+  visibility: visible;
+  opacity: 1;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+/* ==========================================================
+   CLASSIFICATION / RESOURCE TYPE
+   ========================================================== */
+
+.resource-record-header__classification {
+  margin-top: 12px;
+}
+
+.resource-record-header__classification
+  .resource-record-header__facts {
+  display: block;
+
+  margin: 0;
+  padding: 0;
+}
+
+.resource-record-header__classification
+  .resource-record-header__fact {
+  margin: 0;
+}
+
+.resource-record-header__classification
+  .resource-record-header__fact-content {
+  margin: 0;
+}
+
+
+/* ==========================================================
+   ACTIONS
+   ========================================================== */
+
+/* ---------- actions ---------- */
+
+.resource-record-header__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
+  align-self: start;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-top: 2px;
+}
+
+.resource-record-header__actions:empty {
+  display: none;
+}
+
+/* custom action buttons */
+.resource-record-header__action,
+/* bootstrap buttons inside the header actions */
+.resource-record-header__actions > .btn,
+.resource-record-header__actions > .btn-group > .btn,
+.resource-record-header__actions > .dropdown > .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: var(--resource-header-action-size);
+  height: var(--resource-header-action-size);
+  min-width: var(--resource-header-action-size);
+  padding: 0;
+
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+.resource-record-header__action:hover,
+.resource-record-header__actions > .btn:hover,
+.resource-record-header__actions > .btn-group > .btn:hover,
+.resource-record-header__actions > .dropdown > .btn:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.resource-record-header__action .material-symbols-rounded,
+.resource-record-header__actions .btn .material-symbols-rounded,
+.resource-record-header__actions .btn-group .material-symbols-rounded,
+.resource-record-header__actions .dropdown .material-symbols-rounded {
+  font-size: 21px;
+  line-height: 1;
+}
+
+.resource-record-header__actions .caret {
+  display: none;
+}
+
+
+
+/* ==========================================================
+   MAIN FACTS
+
+   Only the facts directly inside the body use this grid.
+   It does not affect the classification fact above.
+   ========================================================== */
+
+.resource-record-header__body
+  > .resource-record-header__facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  column-gap: 28px;
+  row-gap: 18px;
+
+  width: 100%;
+  min-width: 0;
+
+  margin: 20px 0 0;
+  padding: 0;
+}
+
+.resource-record-header__body
+  > .resource-record-header__facts
+  .resource-record-header__fact {
+  min-width: 0;
+
+  margin: 0;
+  padding: 0;
+}
+
+.resource-record-header__fact-label {
+  margin: 0 0 6px;
+
+  color: var(--color-text-muted);
+
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.resource-record-header__fact-content {
+  min-width: 0;
+
+  margin: 0;
+}
+
+.resource-record-header__fact-values {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 3px 6px;
+
+  min-width: 0;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.resource-record-header__fact-value {
+  min-width: 0;
+
+  margin: 0;
+  padding: 0;
+}
+
+.resource-record-header__fact-value a {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+
+.resource-record-header__thumbnail {
+    width: var(--resource-header-thumbnail-size);
+    height: var(--resource-header-thumbnail-size);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface-alt);
+}
+
+
+.resource-record-header {
+    display: grid;
+    grid-template-columns: var(--resource-header-thumbnail-size) minmax(0, 1fr);
+    align-items: start;
+    gap: 0 20px;
+    width: inherit;
+    padding: 16px 20px 18px;
+    color: var(--color-text);
+
+    background: var(--color-surface);
+
+    border: 1px solid var(--color-border);
+
+    border-radius: var(--input-border-radius);
+
+    box-sizing: border-box;
+}
+   
+
+.resource-record-header {
+    display: flex !important;
+
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    align-items: center;
+
+    gap: 20px;
+}
+
+
+
+/* ==========================================================
+   RESPONSIVE LAYOUT
+   ========================================================== */
+
+@media (max-width: 1100px) {
+  header.resource-record-header {
+    --resource-header-thumbnail-size: 76px;
+    --resource-header-title-size: 26px;
+
+    gap: 18px;
+  }
+
+  .resource-record-header__body
+    > .resource-record-header__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  header.resource-record-header {
+    --resource-header-thumbnail-size: 68px;
+    --resource-header-title-size: 23px;
+
+    gap: 14px;
+
+    padding: 14px 16px;
+  }
+
+  .resource-record-header__top {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 12px;
+  }
+
+  .resource-record-header__actions {
+    justify-self: end;
+  }
+
+  .resource-record-header__body
+    > .resource-record-header__facts {
+    grid-template-columns: minmax(0, 1fr);
+
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 460px) {
+  header.resource-record-header {
+    flex-direction: column;
+  }
+
+  .resource-record-header__thumbnail {
+    align-self: flex-start;
+  }
+
+  .resource-record-header__body {
+    width: 100%;
+  }
+}

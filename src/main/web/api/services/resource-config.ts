@@ -31,6 +31,8 @@ export interface ResourceConfig {
   resourceDescription?: string;
   restrictionPattern?: string;
   resourceFormIRI?: string;
+  resourceVisualisationTemplateIRI?: string;
+  resourceDefaultSearchViewType?: string;
   resourceMembershipProperty?: string;
   resourceBroaderProperty?: string;
   resourceOrderPattern?: string;
@@ -58,6 +60,8 @@ CONSTRUCT {
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_description> ?resourceDescription .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplateIRI .
+  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type> ?resourceDefaultSearchViewType .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?resourceOrderPattern .
@@ -90,6 +94,14 @@ CONSTRUCT {
   }
   
   OPTIONAL {
+    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplateIRI .
+  }
+
+  OPTIONAL {
+    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type> ?resourceDefaultSearchViewType .
+  }
+
+  OPTIONAL {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
   }
 
@@ -112,7 +124,7 @@ CONSTRUCT {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory> ?resourceSearchKPCategory .
   }
   OPTIONAL {
-    ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> .
+    ?resourceConfiguration <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> .
     BIND(true as ?systemConfig)
   }
   OPTIONAL {
@@ -122,7 +134,7 @@ CONSTRUCT {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?displayInFinder.
   }
   OPTIONAL { 
-    ?navigationMenuItem crm:P67_refers_to ?resourceConfiguration ;
+    ?navigationMenuItem <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> ?resourceConfiguration ;
         a <http://www.researchspace.org/resource/system/FinderNavigationItem> .
   }
 } 
@@ -156,6 +168,12 @@ CONSTRUCT {
         const resourceFormIRI =
           Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_form')], pg).map(l => l.value).getOrElse(undefined);
         
+        const resourceVisualisationTemplateIRI =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation')], pg).map(l => l.value).getOrElse(undefined);
+
+        const resourceDefaultSearchViewType =
+          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type')], pg).map(l => l.value).getOrElse(undefined);
+          
         const resourceMembershipProperty =
           Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property')], pg).map(l => l.value).getOrElse(undefined);
         
@@ -192,7 +210,8 @@ CONSTRUCT {
         return [
           configIri.value,
           {
-            resourceLabel, resourceOntologyClass, p2HasType, resourceDescription, restrictionPattern, resourceFormIRI, 
+            resourceLabel, resourceOntologyClass, p2HasType, resourceDescription, restrictionPattern, 
+            resourceFormIRI, resourceVisualisationTemplateIRI, resourceDefaultSearchViewType,      
             resourceMembershipProperty, resourceBroaderProperty, resourceOrderPattern, 
             resourceLabelPattern, resourceIcon, resourceSearchKPCategory, isSystemConfig, 
             listInAuthorityDocument, displayInFinder, hasResourceType, navigationMenuItem
@@ -205,13 +224,25 @@ CONSTRUCT {
   }); 
 }
 
-export function getResourceConfigurationValue(iri: string, key: string)  {
-    if (iri in resourceConfigs) { 
-      if (key in resourceConfigs[iri]) { 
-        return resourceConfigs[iri][key];
-      }
-    }
+export function getResourceConfigurationValue<K extends keyof ResourceConfig>(
+  iri: string,
+  key: K
+): ResourceConfig[K] | undefined;
+export function getResourceConfigurationValue(
+  iri: string,
+  key: string
+): string | undefined;
+export function getResourceConfigurationValue(
+  iri: string,
+  key: string
+): string | undefined {
+  const config = resourceConfigs && resourceConfigs[iri];
+
+  if (!config || !Object.prototype.hasOwnProperty.call(config, key)) {
     return undefined;
+  }
+
+  return config[key as keyof ResourceConfig];
 }
 
 const RESOURCE_CONFIGURATION_SERVICE_URL = '/rest/data/rdf/utils/getResourceConfiguration';
@@ -228,56 +259,103 @@ interface CacheEntry {
 }
 
 function cacheSet(key: string, value: string): void {
-  const entry: CacheEntry = { value, timestamp: Date.now() };
+  const entry: CacheEntry = {
+    value,
+    timestamp: Date.now(),
+  };
+
   storage.set(key, JSON.stringify(entry));
 }
 
 function cacheGet(key: string, ttlMs: number): string | null {
   const raw = storage.get(key);
-  if (!raw) return null;
+
+  if (!raw) {
+    return null;
+  }
 
   try {
     const entry = JSON.parse(raw) as CacheEntry;
-    if (Date.now() - entry.timestamp > ttlMs) {
+
+    if (
+      typeof entry.value !== 'string' ||
+      typeof entry.timestamp !== 'number'
+    ) {
       storage.remove(key);
-      console.log(`Cache expired for key: ${key}`);
+      console.warn(`Invalid resource configuration cache entry: ${key}`);
       return null;
     }
+
+    if (Date.now() - entry.timestamp > ttlMs) {
+      storage.remove(key);
+      return null;
+    }
+
     return entry.value;
-  } catch {
+  } catch (error) {
     storage.remove(key);
-    console.warn(`Invalid cache entry for key: ${key}, discarding`);
+    console.warn(
+      `Could not parse resource configuration cache entry: ${key}`,
+      error
+    );
     return null;
   }
 }
 
+function normaliseRepository(repository?: string): string {
+  const repositoryId = repository ? repository.trim() : '';
+  return repositoryId || 'default';
+}
+
+function createResourceConfigurationCacheKey(
+  iri: Rdf.Iri,
+  repositoryId: string
+): string {
+  const repositoryHash = Rdf.hashString(repositoryId).toString();
+  const iriHash = Rdf.hashString(iri.value).toString();
+
+  // v2 separates these entries from the previous IRI-only cache keys.
+  return `v2:${repositoryHash}:${iriHash}`;
+}
+
 export function getResourceConfiguration(
   iri: Rdf.Iri,
-  repository: string
-): string {
-  const hash = Rdf.hashString(iri.value);
-  const repositoryId = repository||"default";
+  repository?: string
+): Promise<string> {
+  const repositoryId = normaliseRepository(repository);
+  const cacheKey = createResourceConfigurationCacheKey(iri, repositoryId);
 
-  // 1) Try TTL-checked cache
-  const cached = cacheGet(hash.toString(), TTL_MS);
+  const cached = cacheGet(cacheKey, TTL_MS);
   if (cached !== null) {
-   console.log('Returning cached configuration for', cached+" "+iri.value);
-   return cached;
+    return Promise.resolve(cached);
   }
 
-  // 2) Cache miss → fetch from server
-  try {
-    const res = request
-      .get(RESOURCE_CONFIGURATION_SERVICE_URL)
-      .query({ iri: iri.value, repository: repositoryId })
-      .accept('text/plain').then(response => {
-          const value = response.text;
-          cacheSet(hash.toString(), value);          
-          return value;
+  return request
+    .get(RESOURCE_CONFIGURATION_SERVICE_URL)
+    .query({
+      iri: iri.value,
+      repository: repositoryId,
+    })
+    .accept('text/plain')
+    .then(response => {
+      const value = response.text;
+
+      if (typeof value !== 'string') {
+        throw new Error(
+          `Resource configuration service returned a non-text response for ` +
+          `${iri.value} in repository ${repositoryId}`
+        );
       }
-    );
-  } catch (err) {
-    console.error('Error fetching resource configuration for', iri.value, err);
-    throw err;
-  }
+
+      cacheSet(cacheKey, value);
+      return value;
+    })
+    .catch(error => {
+      console.error(
+        `Failed to retrieve resource configuration for ${iri.value} ` +
+        `from repository ${repositoryId}`,
+        error
+      );
+      throw error;
+    });
 }

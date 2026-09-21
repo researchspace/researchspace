@@ -75,6 +75,13 @@ To integrate the SemanticMapAdvanced component into your HTML page, you need to 
 | `base-map-template` | string | No | Template for base maps panel |
 | `buildings-template` | string | No | Template for buildings panel |
 | `template-mapping` | JSON Object | No | Mapping of data kinds to templates |
+| `spatial-filter-default` | boolean | No | Initial state of the "filter by zoom" checkbox (default: true) |
+| `temporal-filter-default` | boolean | No | Initial state of the "filter by time" checkbox (default: false) |
+| `sync-filter-default` | boolean | No | Initial state of the "sync with time" checkbox (default: false) |
+| `spatial-filter-label` | string | No | Label of the spatial filter checkbox (default: "Filter by zoom") |
+| `temporal-filter-label` | string | No | Label of the temporal filter checkbox (default: "Filter by time") |
+| `sync-filter-label` | string | No | Label of the sync checkbox (default: "Sync with time") |
+| `time-filter-mode` | string | No | `snapshot` (default), `cumulative` or `exact` — see "Historical Map Filters" |
 
 ## SPARQL Query Format
 
@@ -271,6 +278,38 @@ Timeline configuration options:
 | `default` | number | Default year value |
 | `locked` | boolean | Whether timeline is locked (default: false) |
 | `tour` | boolean | Whether tour mode is enabled (default: false) |
+
+## Historical Map Filters
+
+When the map carries historical-map overlays (tile layers with `level="overlay"`), the layers panel
+shows three checkboxes above the layer list. They only appear when at least one overlay exists.
+
+| Checkbox | Effect |
+|----------|--------|
+| **Filter by zoom** | Lists only the sources whose island point (`?lat`/`?lng`) or geometry (`?wkt`) falls inside the current viewport. List only — it does not change what the map draws. |
+| **Filter by time** | Lists only the sources that match the timeline year according to `time-filter-mode`. List only. |
+| **Sync with time** | The timeline year **drives the actual visibility** of the overlays on the map: scrubbing the timeline switches historical maps on and off. |
+
+`time-filter-mode` decides what "matches the year" means, and is shared by "Filter by time" and
+"Sync with time":
+
+- `snapshot` (default) — per `?group`, only the most recent source with year ≤ the selected year.
+  With `?group` bound to the island, each island shows its own period map.
+- `cumulative` — every source with year ≤ the selected year.
+- `exact` — only sources whose year equals the selected year.
+
+Notes on "Sync with time":
+
+- It honours "Filter by zoom": with that checkbox on, only overlays inside the current viewport are
+  switched on, so panning and zooming re-apply the sync too. A source with no spatial data passes
+  the spatial test unconditionally and can therefore be shown while off-screen.
+- Sources **without a year** are never touched by the sync and stay under manual control.
+- The per-layer toggles remain clickable while the sync is on, but the timeline takes them back on
+  the next year change; their tooltip says so.
+- Switching the sync off **restores** the visibility the overlays had when it was switched on.
+- The query must supply `?year` (numeric, or `YYYY-...`) and, for `snapshot`, a `?group` that is
+  stable per place — the island IRI in VeNiSS. If `?group` is missing it falls back to `?location`
+  and then to `?identifier`, which makes `snapshot` behave like `cumulative`.
 
 ## Feature Styling
 

@@ -133,6 +133,11 @@ These components communicate through a custom event system, allowing them to be 
 | `activePanel` | string | Currently active panel |
 | `isPlaying` | boolean | Whether timeline is playing |
 | `generalizedData` | GeneralizedEventData | Generalized data for rendering |
+| `filterByZoom` | boolean | "Filter by zoom" — spatial filter on the overlay list |
+| `filterByTime` | boolean | "Filter by time" — temporal filter on the overlay list |
+| `syncWithTime` | boolean | "Sync with time" — the timeline year drives overlay visibility on the map |
+| `syncPreviousVisibility` | object \| null | Overlay visibility captured when the sync was switched on, restored when it is switched off |
+| `viewportExtent` | number[] \| null | Current map viewport in EPSG:3857, fed by `SemanticMap.SendViewportExtent` |
 
 #### Key Methods
 
@@ -149,6 +154,9 @@ These components communicate through a custom event system, allowing them to be 
 | `handleTimelinePlay()` | Handles timeline play/pause |
 | `handleColorPickerChange()` | Handles color picker changes |
 | `generateColorPalette()` | Generates a color palette for features |
+| `filterOverlayLayers()` | Shared spatial/temporal filter behind both the overlay list and the sync |
+| `applySyncWithTime()` | Switches overlays on/off for the current year; no-ops when nothing changed |
+| `restorePreSyncVisibility()` | Hands overlay visibility back to the user when the sync is switched off |
 
 ## Event System
 

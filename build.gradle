@@ -173,6 +173,25 @@ def defaultJvmArgs = [
     "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
 ]
 
+// Optional local overrides for the historical-map tile proxies.
+//
+// config/proxy.prop targets host.docker.internal, which only resolves inside a
+// Docker container; running the platform natively (runAll) that name does not
+// resolve and every tile request fails with HTTP 500. ProxyConfigs builds a
+// CompositeConfiguration where SystemConfiguration is added first and therefore
+// wins, so a -D here is the only override that beats the app config.
+//
+// Inert unless the property is defined. Set it per machine, outside the repo, in
+// ~/.gradle/gradle.properties, e.g.
+//   xdtilerTarget=http://92.223.159.139:9000
+//   xdtiler3dTarget=http://92.223.159.139:8443
+if (project.hasProperty('xdtilerTarget')) {
+    defaultJvmArgs += "-Dconfig.proxy.xdtiler.targetUri=${project.property('xdtilerTarget')}".toString()
+}
+if (project.hasProperty('xdtiler3dTarget')) {
+    defaultJvmArgs += "-Dconfig.proxy.xdtiler3d.targetUri=${project.property('xdtiler3dTarget')}".toString()
+}
+
 // configuration for local jetty container
 gretty {
     // see actual jetty version in gradle.properties

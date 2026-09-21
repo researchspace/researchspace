@@ -88,6 +88,8 @@ interface State {
   isLegendHovered: boolean; // Whether the legend is being hovered
   filterByZoom: boolean; // Spatial ("filter by zoom") filter on historical-map overlays
   filterByTime: boolean; // Temporal ("filter by time") filter on historical-map overlays
+  syncWithTime: boolean; // When true, the timeline year drives overlay visibility on the map
+  syncPreviousVisibility: { [identifier: string]: boolean } | null; // Visibility snapshot taken when sync was enabled
   viewportExtent: number[] | null; // Current map viewport [minX,minY,maxX,maxY] in EPSG:3857
 }
 
@@ -189,6 +191,16 @@ interface Props {
    */
   temporalFilterLabel?: string;
   /**
+   * Default state of the "sync with time" toggle. Unlike the two filters above, this one drives
+   * the actual visibility of the historical-map overlays on the map from the timeline year.
+   * Default: false.
+   */
+  syncFilterDefault?: boolean;
+  /**
+   * Label for the "sync with time" checkbox. Default: "Sync with time".
+   */
+  syncFilterLabel?: string;
+  /**
    * Behaviour of the temporal ("filter by time") filter applied to the sidebar list of
    * historical-map sources:
    * - `snapshot`   : per `filterGroup`, list only the single most-recent source with `year <= selectedYear`.
@@ -201,6 +213,11 @@ interface Props {
 
 export class SemanticMapControls extends Component<Props, State> {
   private cancelation = new Cancellation();
+  /**
+   * Viewport-driven re-sync. `moveend` is not debounced on the map side, so panning would
+   * otherwise flip overlay visibility (and start tile fetches) on every step of the pan.
+   */
+  private applySyncWithTimeDebounced = _.debounce(() => this.applySyncWithTime(), 200);
   private featuresTaxonomies = [];
   private featuresColorTaxonomies = [];
   private defaultFeaturesColor: string;
@@ -261,6 +278,8 @@ export class SemanticMapControls extends Component<Props, State> {
       isLegendHovered: false,
       filterByZoom: this.props.spatialFilterDefault ?? true,
       filterByTime: this.props.temporalFilterDefault ?? false,
+      syncWithTime: this.props.syncFilterDefault ?? false,
+      syncPreviousVisibility: null,
       viewportExtent: null,
     };
     this.toggleGroupDisabled = this.toggleGroupDisabled.bind(this);
@@ -429,6 +448,7 @@ export class SemanticMapControls extends Component<Props, State> {
 
   public componentWillUnmount() {
     console.log('Will unmount: ', this.props.id);
+    this.applySyncWithTimeDebounced.cancel();
     this.triggerUnregisterToMap();
 
     // Remove event listener when component unmounts
@@ -549,6 +569,14 @@ export class SemanticMapControls extends Component<Props, State> {
           }
         }
         this.triggerSendYear();
+        // Newly (re)loaded overlays start hidden, so apply the sync straight away — this is also
+        // what makes `sync-filter-default="true"` take effect on page load. That path never went
+        // through the checkbox, so take the restore baseline here if it is still missing.
+        if (this.state.syncWithTime && !this.state.syncPreviousVisibility) {
+          this.setState({ syncPreviousVisibility: this.captureSyncBaseline() }, () => this.applySyncWithTime());
+        } else {
+          this.applySyncWithTime();
+        }
         if (this.props.featuresTaxonomies) {
           this.setFeaturesColorTaxonomy();
         }
@@ -605,8 +633,9 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   private handleFilterByZoomChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Toggling only re-filters the sidebar list (via render); it never changes map display.
-    this.setState({ filterByZoom: event.target.checked });
+    // Toggling only re-filters the sidebar list (via render); it never changes map display by
+    // itself, but it does narrow the set "Sync with time" keeps visible.
+    this.setState({ filterByZoom: event.target.checked }, () => this.applySyncWithTime());
   };
 
   private handleFilterByTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -614,12 +643,129 @@ export class SemanticMapControls extends Component<Props, State> {
   };
 
   /**
+   * "Sync with time" — unlike the two filters above, this one drives what is actually drawn on
+   * the map. Enabling it snapshots the current overlay visibility (so it can be restored) and
+   * hands control over to the timeline; disabling it puts the snapshot back.
+   */
+  private handleSyncWithTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      this.setState({ syncWithTime: true, syncPreviousVisibility: this.captureSyncBaseline() }, () =>
+        this.applySyncWithTime()
+      );
+    } else {
+      this.setState({ syncWithTime: false }, () => this.restorePreSyncVisibility());
+    }
+  };
+
+  /**
+   * Visibility of the overlays the sync is about to take over, so it can be handed back untouched
+   * when the sync is switched off. Only dated overlays are captured: undated ones are never
+   * driven by the sync, so whatever the user does with them meanwhile must survive.
+   */
+  private captureSyncBaseline(): { [identifier: string]: boolean } {
+    const snapshot: { [identifier: string]: boolean } = {};
+    this.getOverlayLayers().forEach((layer) => {
+      if (layer.get('filterYear') != null) {
+        snapshot[layer.get('identifier')] = layer.getVisible();
+      }
+    });
+    return snapshot;
+  }
+
+  /**
+   * Makes the map show the historical maps of the current timeline year: the overlays returned by
+   * `getSyncedOverlayLayers` are switched on, every other dated overlay off. Overlays without a
+   * `filterYear` are left alone, so undated sources stay under manual control.
+   *
+   * No-ops when the resulting visibility is already correct — this is what keeps timeline
+   * auto-play (a tick every 500ms) and `moveend` bursts cheap, since in `snapshot` mode the set
+   * only changes when the year crosses a source's date.
+   */
+  private applySyncWithTime() {
+    if (!this.state.syncWithTime) {
+      return;
+    }
+    const shouldBeVisible = new Set(this.getSyncedOverlayLayers());
+    const changed = this.applyOverlayVisibility((layer) =>
+      layer.get('filterYear') == null ? null : shouldBeVisible.has(layer)
+    );
+    if (changed) {
+      this.commitOverlayVisibilityChange();
+    }
+  }
+
+  /**
+   * Restores the overlay visibility captured when "Sync with time" was switched on, so leaving
+   * sync mode is never destructive. Keyed by identifier because the map replaces the layer
+   * objects wholesale on every refresh (see `receiveMapLayers`).
+   */
+  private restorePreSyncVisibility() {
+    const snapshot = this.state.syncPreviousVisibility;
+    if (!snapshot) {
+      return;
+    }
+    const changed = this.applyOverlayVisibility((layer) => {
+      const previous = snapshot[layer.get('identifier')];
+      return previous === undefined ? null : previous;
+    });
+    this.setState({ syncPreviousVisibility: null }, () => {
+      if (changed) {
+        this.commitOverlayVisibilityChange();
+      }
+    });
+  }
+
+  /**
+   * Applies a target visibility to every overlay layer. The callback returns the wanted value,
+   * or null to leave that layer untouched. Returns whether anything actually changed.
+   */
+  private applyOverlayVisibility(getTarget: (layer: any) => boolean | null): boolean {
+    let changed = false;
+    this.getOverlayLayers().forEach((layer) => {
+      const target = getTarget(layer);
+      if (target === null || layer.getVisible() === target) {
+        return;
+      }
+      layer.setVisible(target);
+      changed = true;
+    });
+    return changed;
+  }
+
+  /**
+   * Tooltip for an overlay's visibility toggle. While "Sync with time" is on, a dated overlay can
+   * still be toggled by hand, but the timeline takes it back on the next year change — say so
+   * rather than letting the toggle look broken.
+   */
+  private getOverlayToggleTitle(layer: any, visible: boolean): string {
+    if (this.state.syncWithTime && layer.get('filterYear') != null) {
+      return 'Managed by "' + (this.props.syncFilterLabel || 'Sync with time') +
+        '" — will be reset on the next year change';
+    }
+    return visible ? 'Hide layer' : 'Show layer';
+  }
+
+  /**
+   * Same follow-up `setMapLayerProperty` performs after a manual visibility toggle: push the
+   * layers to the map and drop back to the plain visualization, since spyglass/swipe bind their
+   * render hooks to one specific layer that may have just been hidden.
+   */
+  private commitOverlayVisibilityChange() {
+    this.setState({ overlayVisualization: 'normal' }, () => {
+      this.triggerSendLayers();
+      this.triggerVisualization('normal');
+    });
+  }
+
+  /**
    * Receives the map's current viewport extent (EPSG:3857 [minX,minY,maxX,maxY]).
    * Used by the "filter by zoom" list filter so only sources whose island point falls in
    * the current view are listed in the sidebar.
    */
   private receiveViewportExtent = (event: any) => {
-    this.setState({ viewportExtent: event.data as number[] });
+    // "Sync with time" honours the spatial filter, so panning/zooming can change which historical
+    // maps should be on.
+    this.setState({ viewportExtent: event.data as number[] }, () => this.applySyncWithTimeDebounced());
   };
 
   private triggerSendToggle3d() {
@@ -1471,6 +1617,17 @@ export class SemanticMapControls extends Component<Props, State> {
                   />
                   <span>{this.props.temporalFilterLabel || 'Filter by time'}</span>
                 </label>
+                <label
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}
+                  title="Let the timeline year decide which historical maps are drawn on the map"
+                >
+                  <input
+                    type="checkbox"
+                    checked={this.state.syncWithTime}
+                    onChange={this.handleSyncWithTimeChange}
+                  />
+                  <span>{this.props.syncFilterLabel || 'Sync with time'}</span>
+                </label>
               </div>
             )}
 
@@ -1596,6 +1753,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                         {mapLayer.get('visible') && (
                                           <i
                                             className="fa fa-toggle-on layerCheck cursorPointer"
+                                            title={this.getOverlayToggleTitle(mapLayer, true)}
                                             onClick={() => {
                                               this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', false);
                                             }}
@@ -1604,6 +1762,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                         {!mapLayer.get('visible') && (
                                           <i
                                             className="fa fa-toggle-off layerCheck cursorPointer"
+                                            title={this.getOverlayToggleTitle(mapLayer, false)}
                                             onClick={() => {
                                               this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
                                             }}
@@ -2358,8 +2517,10 @@ export class SemanticMapControls extends Component<Props, State> {
 
   /**
    * Overlay (historical-map) layers that pass the active sidebar filters. This decides which
-   * sources are LISTED in the sidebar as editable layer items — it never changes what is drawn
-   * on the map (that stays under the user's manual eye-toggle control).
+   * sources are LISTED in the sidebar as editable layer items — the two filter checkboxes never
+   * change what is drawn on the map (that stays under the user's manual eye-toggle control).
+   * The one exception is the separate "Sync with time" toggle, which does drive map visibility;
+   * see `applySyncWithTime`.
    *
    * - "Filter by zoom": keep a source only if its island point (`filterCoordinate`, EPSG:3857) —
    *   or `filterExtent` polygon — lies within the map's current viewport. Sources without spatial
@@ -2369,11 +2530,33 @@ export class SemanticMapControls extends Component<Props, State> {
    *   year <= selected year). Sources without a year are always kept.
    */
   private getFilteredOverlayLayers(): any[] {
-    const overlays = this.getOverlayLayers();
+    return this.filterOverlayLayers(this.getOverlayLayers(), {
+      spatial: this.state.filterByZoom,
+      temporal: this.state.filterByTime,
+    });
+  }
+
+  /**
+   * Overlay layers that "Sync with time" should have visible at the current timeline year.
+   * Same implementation as the sidebar list, except the temporal filter is always on: the sync
+   * toggle is independent of the "filter by time" checkbox, while it does honour "filter by zoom".
+   */
+  private getSyncedOverlayLayers(): any[] {
+    return this.filterOverlayLayers(this.getOverlayLayers(), {
+      spatial: this.state.filterByZoom,
+      temporal: true,
+    });
+  }
+
+  /**
+   * Shared spatial/temporal filtering used both by the sidebar list and by "Sync with time",
+   * so the two can never drift apart. See `getFilteredOverlayLayers` for the filter semantics.
+   */
+  private filterOverlayLayers(overlays: any[], opts: { spatial: boolean; temporal: boolean }): any[] {
     let result = overlays;
 
     // Spatial ("filter by zoom") — needs the viewport extent broadcast by the map.
-    if (this.state.filterByZoom && this.state.viewportExtent) {
+    if (opts.spatial && this.state.viewportExtent) {
       const extent = this.state.viewportExtent;
       result = result.filter((layer) => {
         const coordinate = layer.get('filterCoordinate');
@@ -2388,7 +2571,7 @@ export class SemanticMapControls extends Component<Props, State> {
     }
 
     // Temporal ("filter by time") — compared against the current timeline year.
-    if (this.state.filterByTime) {
+    if (opts.temporal) {
       const selectedYear = Number(this.state.year);
       if (Number.isFinite(selectedYear)) {
         const mode = this.props.timeFilterMode || 'snapshot';
@@ -2523,6 +2706,7 @@ export class SemanticMapControls extends Component<Props, State> {
       },
       () => {
         this.triggerSendYear();
+        this.applySyncWithTime();
       }
     );
   };
@@ -2557,6 +2741,7 @@ export class SemanticMapControls extends Component<Props, State> {
         // Update year and send to map
         this.setState({ year: current }, () => {
           this.triggerSendYear();
+          this.applySyncWithTime();
 
           // Add pulse animation to year label
           const yearLabel = document.querySelector(`.${styles.yearLabel}`) as HTMLElement;

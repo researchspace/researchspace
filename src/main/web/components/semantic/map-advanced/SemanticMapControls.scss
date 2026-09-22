@@ -103,6 +103,8 @@
 }
 
 .timeSliderContainer {
+  user-select: none;
+  -webkit-user-select: none;
   position: fixed;
   bottom: 10px;
   left: 50%;
@@ -136,6 +138,7 @@
 .timelineSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
+  box-sizing: border-box;
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -146,6 +149,7 @@
 }
 
 .timelineSlider::-moz-range-thumb {
+  box-sizing: border-box;
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -203,18 +207,157 @@
   padding: 0 10px;
 }
 
-.timeline-tooltip {
-  position: fixed;
-  left: 40px;
-  top: 20px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  width: 250px;
-  font-size: 12px;
-  display: none;
-  z-index: 100001;
+/* Historical-map year markers on the timeline.
+   .timelineTrack wraps the slider so markers can be positioned against the track itself and not
+   against the padded container. Offsets are computed in getMarkerOffset(), which mirrors the
+   20px thumb inset so a dot sits exactly under the thumb centre for its year. */
+/* Snap control row above the slider. Kept left-aligned so it never collides with the play
+   button, which is absolutely positioned at the container's top right. */
+.timelineToolbar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 6px;
+  line-height: normal;
+}
+
+.timelineSnapToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: normal;
+  color: #555;
+  cursor: pointer;
+}
+
+.timelineSnapCheckbox {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.timelineTrack {
+  position: relative;
+  width: 100%;
+  line-height: 0;
+}
+
+.timelineMarkers {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+/* Kept deliberately small: every year gets its own dot and they are laid out at least
+   MARKER_MIN_SEPARATION apart, so the smaller the dot the less the layout has to nudge
+   near-coincident years away from their true position. */
+.timelineMarker {
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #2c3e50;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.12s ease-out, background-color 0.12s ease-out;
+}
+
+/* A larger invisible hit area, so a 6px dot is still comfortable to hit with a mouse.
+   Its width must stay <= MARKER_MIN_SEPARATION in SemanticMapControls.tsx, otherwise adjacent
+   dots overlap each other's target and the left one becomes impossible to hover. The extra
+   comfort is taken vertically, where there is nothing to collide with. */
+.timelineMarker::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+}
+
+.timelineMarker:hover {
+  transform: translate(-50%, -50%) scale(1.9);
+  background: #f1c40f;
+  z-index: 2;
+}
+
+.timelineMarkerActive {
+  background: #e67e22;
+  border-color: #b34f00;
+}
+
+/* Sits just clear of the dots' hit areas (9px above each dot centre): close enough that the
+   pointer crosses to it well within the close delay, without covering any neighbouring dot. */
+.timelineMarkerPreview {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 400px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  line-height: normal;
+  z-index: 1;
+}
+
+
+.timelineMarkerPreviewItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 84px;
+  flex: 0 0 auto;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.timelineMarkerPreviewItem:hover {
+  background: rgba(241, 196, 15, 0.25);
+}
+
+.timelineMarkerThumb {
+  width: 76px;
+  height: 76px;
+  object-fit: cover;
+  border-radius: 3px;
+  background: #e6e6e6;
+  border: 1px solid #ccc;
+}
+
+.timelineMarkerCaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #333;
+  text-align: center;
+}
+
+.timelineMarkerCaption span {
+  color: #666;
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.25;
+  max-width: 100%;
 }
 
 .mapLayersTitle {

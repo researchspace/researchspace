@@ -138,6 +138,8 @@ These components communicate through a custom event system, allowing them to be 
 | `syncWithTime` | boolean | "Sync with time" — the timeline year drives overlay visibility on the map |
 | `syncPreviousVisibility` | object \| null | Overlay visibility captured when the sync was switched on, restored when it is switched off |
 | `viewportExtent` | number[] \| null | Current map viewport in EPSG:3857, fed by `SemanticMap.SendViewportExtent` |
+| `snapToMapYears` | boolean | "Snap to map years" — the slider sticks to the historical-map year markers |
+| `hoveredMarkerYear` | number \| null | Year marker whose preview is open |
 
 #### Key Methods
 
@@ -157,6 +159,11 @@ These components communicate through a custom event system, allowing them to be 
 | `filterOverlayLayers()` | Shared spatial/temporal filter behind both the overlay list and the sync |
 | `applySyncWithTime()` | Switches overlays on/off for the current year; no-ops when nothing changed |
 | `restorePreSyncVisibility()` | Hands overlay visibility back to the user when the sync is switched off |
+| `getYearMarkers()` | Groups the in-view overlays by year into the timeline markers |
+| `getMarkerLayout()` | Positions the dots, nudging apart any that would overlap |
+| `getMarkerOffset()` | Offset of a year on the slider track, mirroring the 20px thumb inset |
+| `snapYearToMarkers()` | Magnetic snap of a dragged year onto a nearby marker |
+| `renderYearMarkers()` | Draws the marker dots and the hover preview |
 
 ## Event System
 

@@ -82,6 +82,9 @@ To integrate the SemanticMapAdvanced component into your HTML page, you need to 
 | `temporal-filter-label` | string | No | Label of the temporal filter checkbox (default: "Filter by time") |
 | `sync-filter-label` | string | No | Label of the sync checkbox (default: "Sync with time") |
 | `time-filter-mode` | string | No | `snapshot` (default), `cumulative` or `exact` — see "Historical Map Filters" |
+| `snap-filter-default` | boolean | No | Initial state of the "snap to map years" button (default: true) |
+| `snap-filter-label` | string | No | Label of the snap button on the timeline (default: "Snap to map years") |
+| `snap-tolerance-years` | number | No | How close the slider must come to a marker to snap (default: 3) |
 
 ## SPARQL Query Format
 
@@ -284,6 +287,8 @@ Timeline configuration options:
 When the map carries historical-map overlays (tile layers with `level="overlay"`), the layers panel
 shows three checkboxes above the layer list. They only appear when at least one overlay exists.
 
+The three checkboxes sit under the **Maps** divider, since they scope the map list below them.
+
 | Checkbox | Effect |
 |----------|--------|
 | **Filter by zoom** | Lists only the sources whose island point (`?lat`/`?lng`) or geometry (`?wkt`) falls inside the current viewport. List only — it does not change what the map draws. |
@@ -310,6 +315,34 @@ Notes on "Sync with time":
 - The query must supply `?year` (numeric, or `YYYY-...`) and, for `snapshot`, a `?group` that is
   stable per place — the island IRI in VeNiSS. If `?group` is missing it falls back to `?location`
   and then to `?identifier`, which makes `snapshot` behave like `cumulative`.
+
+## Timeline Year Markers
+
+While "Sync with time" or "Filter by time" is on, the timeline shows a dot for every year that has
+a historical map, so it is obvious where along the bar the maps actually change. Hovering a dot
+opens a preview with the thumbnail, the year as recorded (forms like `1800 ca.` and `1860-1870` are
+kept verbatim) and the island, and clicking it jumps straight to that year.
+
+- The dots follow "Filter by zoom", so they describe the islands currently in view. They are never
+  narrowed by the temporal filter — that would hide exactly the information they exist to show.
+- One dot per year, always distinct — dots are never merged. A year covering several islands, such
+  as 1982, shows all its thumbnails side by side in a single preview.
+- Some years fall within a pixel or two of each other (1800 and 1801 on a 1500-2026 bar), which
+  would stack their dots and make the left one unclickable. Such dots are nudged apart by the
+  minimum that keeps them separable, so they can sit a few pixels away from their exact year; each
+  run is re-centred on its true midpoint to keep that drift as small as possible.
+- Years outside the timeline range, and maps with no year, get no dot.
+
+A **Snap to map years** button sits on the timeline itself, just above the slider, and appears with
+the dots. It is **on by default**. With it the slider is magnetic: it sticks to a marker when dragged within `snap-tolerance-years` of
+it, while years in between stay selectable — which matters because features are filtered by their
+own `bob`/`eoe` dates independently of the maps. Unchecking it leaves the dots visible and the drag
+completely free. Timeline auto-play (`tour`) is never snapped.
+
+Note that the snap is immediate rather than elastic, so the years within the tolerance of a marker
+cannot be selected while it is on. With the default range that band is only two or three pixels
+wide and a mouse cannot reliably hit it anyway, but stepping with the arrow keys will jump over it
+— uncheck the box when a specific year in that band is needed.
 
 ## Feature Styling
 

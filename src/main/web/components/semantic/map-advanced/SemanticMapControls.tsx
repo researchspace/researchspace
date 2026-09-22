@@ -90,6 +90,9 @@ interface State {
   filterByTime: boolean; // Temporal ("filter by time") filter on historical-map overlays
   syncWithTime: boolean; // When true, the timeline year drives overlay visibility on the map
   syncPreviousVisibility: { [identifier: string]: boolean } | null; // Visibility snapshot taken when sync was enabled
+  snapToMapYears: boolean; // Whether the timeline slider snaps to the historical-map year markers
+  hoveredMarkerYear: number | null; // Year marker whose preview is currently open
+  trackWidth: number; // Measured px width of the slider track, used to merge colliding markers
   viewportExtent: number[] | null; // Current map viewport [minX,minY,maxX,maxY] in EPSG:3857
 }
 
@@ -201,6 +204,19 @@ interface Props {
    */
   syncFilterLabel?: string;
   /**
+   * Default state of the "snap to map years" toggle, which makes the timeline slider stick to the
+   * years that have historical maps. Default: true.
+   */
+  snapFilterDefault?: boolean;
+  /**
+   * Label for the "snap to map years" checkbox. Default: "Snap to map years".
+   */
+  snapFilterLabel?: string;
+  /**
+   * How close (in years) the slider must come to a marker before it snaps to it. Default: 3.
+   */
+  snapToleranceYears?: number;
+  /**
    * Behaviour of the temporal ("filter by time") filter applied to the sidebar list of
    * historical-map sources:
    * - `snapshot`   : per `filterGroup`, list only the single most-recent source with `year <= selectedYear`.
@@ -211,6 +227,11 @@ interface Props {
   timeFilterMode?: 'snapshot' | 'cumulative' | 'exact';
 }
 
+/** Width of the slider thumb in px; marker offsets must use the same inset to line up with it. */
+const MARKER_THUMB_WIDTH = 20;
+/** Smallest gap in px between two year dots before they stop being separately clickable. */
+const MARKER_MIN_SEPARATION = 8;
+
 export class SemanticMapControls extends Component<Props, State> {
   private cancelation = new Cancellation();
   /**
@@ -218,6 +239,11 @@ export class SemanticMapControls extends Component<Props, State> {
    * otherwise flip overlay visibility (and start tile fetches) on every step of the pan.
    */
   private applySyncWithTimeDebounced = _.debounce(() => this.applySyncWithTime(), 200);
+  private timelineTrackRef = React.createRef<HTMLDivElement>();
+  /** Grace period before a marker preview closes, so the pointer can travel from dot to panel. */
+  private previewCloseTimer: number | undefined;
+  /** Marker collision depends on how wide the bar actually is, so remeasure when the window changes. */
+  private measureTrackWidthDebounced = _.debounce(() => this.measureTrackWidth(), 150);
   private featuresTaxonomies = [];
   private featuresColorTaxonomies = [];
   private defaultFeaturesColor: string;
@@ -280,6 +306,9 @@ export class SemanticMapControls extends Component<Props, State> {
       filterByTime: this.props.temporalFilterDefault ?? false,
       syncWithTime: this.props.syncFilterDefault ?? false,
       syncPreviousVisibility: null,
+      snapToMapYears: this.props.snapFilterDefault ?? true,
+      hoveredMarkerYear: null,
+      trackWidth: 0,
       viewportExtent: null,
     };
     this.toggleGroupDisabled = this.toggleGroupDisabled.bind(this);
@@ -365,6 +394,9 @@ export class SemanticMapControls extends Component<Props, State> {
     // Add event listener for the feature-close-clicked custom event
     document.addEventListener('feature-close-clicked', this.clearSelectedFeature);
 
+    this.measureTrackWidth();
+    window.addEventListener('resize', this.measureTrackWidthDebounced);
+
     // Start animation if tour is enabled
     if (this.props.timeline && this.props.timeline.tour) {
       // Use setTimeout to ensure the component is fully mounted
@@ -449,6 +481,11 @@ export class SemanticMapControls extends Component<Props, State> {
   public componentWillUnmount() {
     console.log('Will unmount: ', this.props.id);
     this.applySyncWithTimeDebounced.cancel();
+    this.measureTrackWidthDebounced.cancel();
+    if (this.previewCloseTimer) {
+      window.clearTimeout(this.previewCloseTimer);
+    }
+    window.removeEventListener('resize', this.measureTrackWidthDebounced);
     this.triggerUnregisterToMap();
 
     // Remove event listener when component unmounts
@@ -640,6 +677,68 @@ export class SemanticMapControls extends Component<Props, State> {
 
   private handleFilterByTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ filterByTime: event.target.checked });
+  };
+
+  private handleSnapToMapYearsToggle = () => {
+    // Nothing to re-apply: the flag is only read on the next drag.
+    this.setState((prev) => ({ snapToMapYears: !prev.snapToMapYears }));
+  };
+
+  /**
+   * Pulls a year onto the nearest map-year marker when it is close enough. `findClosestMark`
+   * always returns the nearest mark at any distance, so the tolerance check is what makes this
+   * magnetic rather than a hard quantisation: years between two maps stay selectable, which
+   * matters because buildings are filtered by bob/eoe independently of the maps.
+   */
+  private snapYearToMarkers(year: number): number {
+    if (!this.state.snapToMapYears) {
+      return year;
+    }
+    const markerYears = this.getYearMarkers().map((marker) => marker.year);
+    if (!markerYears.length) {
+      return year;
+    }
+    const tolerance = this.props.snapToleranceYears ?? 3;
+    const closest = this.findClosestMark(year, markerYears);
+    return Math.abs(closest - year) <= tolerance ? closest : year;
+  }
+
+  /**
+   * Opening is immediate; closing waits a moment. Without the delay the dot's mouseleave removed
+   * the panel before the pointer could reach it, so the preview was unusable.
+   */
+  private openMarkerPreview = (year: number) => {
+    if (this.previewCloseTimer) {
+      window.clearTimeout(this.previewCloseTimer);
+      this.previewCloseTimer = undefined;
+    }
+    if (this.state.hoveredMarkerYear !== year) {
+      this.setState({ hoveredMarkerYear: year });
+    }
+  };
+
+  private closeMarkerPreviewSoon = (year: number) => {
+    if (this.previewCloseTimer) {
+      window.clearTimeout(this.previewCloseTimer);
+    }
+    this.previewCloseTimer = window.setTimeout(() => {
+      this.previewCloseTimer = undefined;
+      this.setState((prev) => (prev.hoveredMarkerYear === year ? { hoveredMarkerYear: null } : null));
+    }, 220);
+  };
+
+  /**
+   * Jump straight to a marker's year, ignoring the snap tolerance — clicking a dot is an explicit
+   * request for exactly that year.
+   */
+  private handleMarkerClick = (year: number) => {
+    if (this.props.timeline && this.props.timeline.locked) {
+      return;
+    }
+    this.setState({ year }, () => {
+      this.triggerSendYear();
+      this.applySyncWithTime();
+    });
   };
 
   /**
@@ -1589,48 +1688,6 @@ export class SemanticMapControls extends Component<Props, State> {
 
             </div>
 
-            {/* Overlay tile-layer filters — shown above the layer list when historical maps exist */}
-            {this.getOverlayLayers().length > 0 && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px',
-                  padding: '4px 2px 10px',
-                  marginBottom: '6px',
-                  borderBottom: '1px solid rgba(0,0,0,0.08)',
-                }}
-              >
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}>
-                  <input
-                    type="checkbox"
-                    checked={this.state.filterByZoom}
-                    onChange={this.handleFilterByZoomChange}
-                  />
-                  <span>{this.props.spatialFilterLabel || 'Filter by zoom'}</span>
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}>
-                  <input
-                    type="checkbox"
-                    checked={this.state.filterByTime}
-                    onChange={this.handleFilterByTimeChange}
-                  />
-                  <span>{this.props.temporalFilterLabel || 'Filter by time'}</span>
-                </label>
-                <label
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}
-                  title="Let the timeline year decide which historical maps are drawn on the map"
-                >
-                  <input
-                    type="checkbox"
-                    checked={this.state.syncWithTime}
-                    onChange={this.handleSyncWithTimeChange}
-                  />
-                  <span>{this.props.syncFilterLabel || 'Sync with time'}</span>
-                </label>
-              </div>
-            )}
-
             {/* Geometry Layers Section */}
             {this.getGeometryLayers().length > 0 && (
               <div className={styles.geometryLayersSection}>
@@ -1693,6 +1750,48 @@ export class SemanticMapControls extends Component<Props, State> {
               </div>
             )}
             
+            {/* Overlay tile-layer filters — they scope the Maps list below, so they sit under its divider */}
+            {this.getOverlayLayers().length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  padding: '2px 2px 8px',
+                  marginBottom: '8px',
+                  borderBottom: '1px solid rgba(0,0,0,0.08)',
+                }}
+              >
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={this.state.filterByZoom}
+                    onChange={this.handleFilterByZoomChange}
+                  />
+                  <span>{this.props.spatialFilterLabel || 'Filter by zoom'}</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={this.state.filterByTime}
+                    onChange={this.handleFilterByTimeChange}
+                  />
+                  <span>{this.props.temporalFilterLabel || 'Filter by time'}</span>
+                </label>
+                <label
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}
+                  title="Let the timeline year decide which historical maps are drawn on the map"
+                >
+                  <input
+                    type="checkbox"
+                    checked={this.state.syncWithTime}
+                    onChange={this.handleSyncWithTimeChange}
+                  />
+                  <span>{this.props.syncFilterLabel || 'Sync with time'}</span>
+                </label>
+              </div>
+            )}
+
             {/* Tile/Overlay Layers Section (Draggable) */}
             <DragDropContext onDragEnd={this.onDragEnd}>
               <Droppable droppableId="droppable">
@@ -1781,7 +1880,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                       min={0}
                                       max={1}
                                       step={0.01}
-                                      value={mapLayer.get('opacity')}
+                                      value={mapLayer.get('opacity') ?? 1}
                                       onChange={(event) => {
                                         const input = event.target as HTMLInputElement;
                                         const opacity = parseFloat(input.value);
@@ -2024,16 +2123,40 @@ export class SemanticMapControls extends Component<Props, State> {
 
             {this.props.timeline.mode === 'normal' && (
               <React.Fragment>
-                <input
-                  type={'range'}
-                  className={styles.timelineSlider}
-                  min={this.props.timeline.min}
-                  max={this.getTimelineMax()}
-                  step={1}
-                  value={this.state.year}
-                  onChange={this.handleTimelineChange}
-                  disabled={this.props.timeline.locked}
-                />
+                {/* Snap toggle lives on the timeline because that is what it governs, and shows
+                    only alongside the markers, when there is something to snap to. */}
+                {this.areYearMarkersVisible() && (
+                  <div className={styles.timelineToolbar}>
+                    <label
+                      className={styles.timelineSnapToggle}
+                      title="Make the timeline stick to the years that have historical maps"
+                    >
+                      <input
+                        type="checkbox"
+                        className={styles.timelineSnapCheckbox}
+                        checked={this.state.snapToMapYears}
+                        onChange={this.handleSnapToMapYearsToggle}
+                      />
+                      <span>{this.props.snapFilterLabel || 'Snap to map years'}</span>
+                    </label>
+                  </div>
+                )}
+
+                {/* Wrapper so the year markers can be positioned against the slider itself,
+                    rather than against the padded container around it. */}
+                <div className={styles.timelineTrack} ref={this.timelineTrackRef}>
+                  <input
+                    type={'range'}
+                    className={styles.timelineSlider}
+                    min={this.props.timeline.min}
+                    max={this.getTimelineMax()}
+                    step={1}
+                    value={this.state.year}
+                    onChange={this.handleTimelineChange}
+                    disabled={this.props.timeline.locked}
+                  />
+                  {this.areYearMarkersVisible() && this.renderYearMarkers()}
+                </div>
                 <div className={styles.yearLabel}>{this.state.year}</div>
 
                 {/* Tick marks */}
@@ -2549,6 +2672,142 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   /**
+   * Overlay layers that feed the timeline year markers. Spatially filtered like the list, so the
+   * markers follow the islands actually in view, but never temporally filtered: the markers exist
+   * precisely to show WHERE ON THE TIMELINE other maps are, which the temporal filter would hide.
+   */
+  private getMarkerSourceLayers(): any[] {
+    return this.filterOverlayLayers(this.getOverlayLayers(), {
+      spatial: this.state.filterByZoom,
+      temporal: false,
+    });
+  }
+
+  /**
+   * The year markers drawn under the timeline: one entry per distinct year, carrying every map of
+   * that year (1982 covers six islands in the current data). Years outside the timeline range, and
+   * undated layers, are dropped — they have nowhere to sit on the bar.
+   */
+  private getYearMarkers(): Array<{ year: number; layers: any[] }> {
+    const min = this.props.timeline ? this.props.timeline.min : null;
+    const max = this.getTimelineMax();
+    const byYear: { [year: number]: any[] } = {};
+    this.getMarkerSourceLayers().forEach((layer) => {
+      const year = layer.get('filterYear');
+      if (year == null || !Number.isFinite(year)) return;
+      if (min != null && (year < min || year > max)) return;
+      (byYear[year] = byYear[year] || []).push(layer);
+    });
+    return Object.keys(byYear)
+      .map((year) => ({ year: Number(year), layers: byYear[year] }))
+      .sort((a, b) => a.year - b.year);
+  }
+
+  private measureTrackWidth() {
+    const node = this.timelineTrackRef.current;
+    if (!node) return;
+    const width = node.offsetWidth;
+    if (width && width !== this.state.trackWidth) {
+      this.setState({ trackWidth: width });
+    }
+  }
+
+  /**
+   * Screen position of every year marker: one dot per year, never merged.
+   *
+   * Several years genuinely fall within a pixel or two of each other — 1800 and 1801 land ~1px
+   * apart on a 1500-2026 bar — so drawing them at their exact offsets would stack them and make
+   * the left one impossible to hover or click. Instead of merging them, colliding dots are pushed
+   * apart by the minimum that keeps them separable, which costs a few pixels of positional
+   * accuracy only where they would otherwise be indistinguishable. A backward pass then keeps the
+   * run inside the track, so nothing is pushed off the right end.
+   *
+   * Until the track has been measured there is nothing to detect collisions against, so the
+   * offsets fall back to the exact CSS calc.
+   */
+  private getMarkerLayout(): Array<{ year: number; layers: any[]; left: string }> {
+    const markers = this.getYearMarkers();
+    const usable = this.state.trackWidth - MARKER_THUMB_WIDTH;
+    if (!markers.length || usable <= 0) {
+      return markers.map(({ year, layers }) => ({ year, layers, left: this.getMarkerOffset(year) }));
+    }
+
+    const min = this.props.timeline.min;
+    const span = this.getTimelineMax() - min;
+    const half = MARKER_THUMB_WIDTH / 2;
+    const positions = markers.map(({ year }) => {
+      const fraction = span > 0 ? Math.min(1, Math.max(0, (year - min) / span)) : 0;
+      return half + fraction * usable;
+    });
+
+    // Forward: never closer than MARKER_MIN_SEPARATION.
+    let previous = -Infinity;
+    for (let i = 0; i < positions.length; i++) {
+      positions[i] = Math.max(positions[i], previous + MARKER_MIN_SEPARATION);
+      previous = positions[i];
+    }
+    // The forward pass can only push right, so a crowded run drifts rightwards and drags its
+    // uncrowded neighbours with it. Re-centre each run on its true midpoint, which roughly halves
+    // how far any dot ends up from the year it stands for.
+    for (let start = 0; start < positions.length; ) {
+      let end = start;
+      while (end + 1 < positions.length && positions[end + 1] - positions[end] <= MARKER_MIN_SEPARATION + 0.001) {
+        end++;
+      }
+      if (end > start) {
+        const count = end - start + 1;
+        let rawSum = 0;
+        let laidSum = 0;
+        for (let i = start; i <= end; i++) {
+          const fraction = span > 0 ? Math.min(1, Math.max(0, (markers[i].year - min) / span)) : 0;
+          rawSum += half + fraction * usable;
+          laidSum += positions[i];
+        }
+        const delta = rawSum / count - laidSum / count;
+        for (let i = start; i <= end; i++) {
+          positions[i] += delta;
+        }
+      }
+      start = end + 1;
+    }
+    // Backward: pull everything back inside the track, and keep the separation the passes above
+    // established, in case re-centring pushed the first or last run past an edge.
+    let next = this.state.trackWidth - half;
+    for (let i = positions.length - 1; i >= 0; i--) {
+      positions[i] = Math.min(positions[i], next);
+      next = positions[i] - MARKER_MIN_SEPARATION;
+    }
+    let lower = half;
+    for (let i = 0; i < positions.length; i++) {
+      positions[i] = Math.max(positions[i], lower);
+      lower = positions[i] + MARKER_MIN_SEPARATION;
+    }
+
+    return markers.map(({ year, layers }, i) => ({ year, layers, left: `${positions[i]}px` }));
+  }
+
+  /**
+   * Markers are only meaningful while the timeline is actually driving something — either the map
+   * (sync) or the sidebar list (temporal filter).
+   */
+  private areYearMarkersVisible(): boolean {
+    return Boolean(this.props.timeline) && (this.state.syncWithTime || this.state.filterByTime);
+  }
+
+  /**
+   * Horizontal offset of a year on the slider track. A range input's thumb centre travels from
+   * half a thumb in to half a thumb from the end, so markers must follow the same inset to line up
+   * with it — hence the 20px thumb width baked in here.
+   */
+  private getMarkerOffset(year: number): string {
+    const min = this.props.timeline.min;
+    const max = this.getTimelineMax();
+    const span = max - min;
+    const fraction = span > 0 ? Math.min(1, Math.max(0, (year - min) / span)) : 0;
+    return `calc(${MARKER_THUMB_WIDTH / 2}px + ${fraction} * (100% - ${MARKER_THUMB_WIDTH}px))`;
+  }
+
+  /**
    * Shared spatial/temporal filtering used both by the sidebar list and by "Sync with time",
    * so the two can never drift apart. See `getFilteredOverlayLayers` for the filter semantics.
    */
@@ -2649,8 +2908,72 @@ export class SemanticMapControls extends Component<Props, State> {
       } else {
         // For other property changes on tile layers, just sync with map
         this.triggerSendLayers();
+        // Mutating an OpenLayers layer changes no React state, and the opacity slider is a
+        // controlled input reading layer.get('opacity'). Without a re-render React keeps pinning
+        // the DOM value to the last rendered one, so the thumb springs back and the control looks
+        // frozen even though the map opacity did change. The feature-layer branch above does the
+        // same thing for the same reason.
+        this.forceUpdate();
       }
     }
+  }
+
+  /**
+   * Dots under the slider marking every year that has a historical map, plus the hover preview.
+   *
+   * The preview is a plain positioned panel rather than a react-bootstrap Popover: the timeline
+   * sits at z-index 99999 while `.popover` is at 1060, so an Overlay would be drawn behind it.
+   */
+  private renderYearMarkers() {
+    const markers = this.getMarkerLayout();
+    if (!markers.length) {
+      return null;
+    }
+    return (
+      <div className={styles.timelineMarkers}>
+        {markers.map(({ year, layers, left }) => (
+          <div
+            key={year}
+            className={`${styles.timelineMarker} ${year === this.state.year ? styles.timelineMarkerActive : ''}`}
+            style={{ left }}
+            title={`${year} — ${layers.length} ${layers.length === 1 ? 'map' : 'maps'}`}
+            onMouseEnter={() => this.openMarkerPreview(year)}
+            onMouseLeave={() => this.closeMarkerPreviewSoon(year)}
+            onClick={() => this.handleMarkerClick(year)}
+          />
+        ))}
+        {markers
+          .filter(({ year }) => year === this.state.hoveredMarkerYear)
+          .map(({ year, layers, left }) => (
+            <div
+              key={`preview-${year}`}
+              className={styles.timelineMarkerPreview}
+              style={{ left }}
+              onMouseEnter={() => this.openMarkerPreview(year)}
+              onMouseLeave={() => this.closeMarkerPreviewSoon(year)}
+            >
+              {layers.map((layer) => (
+                <div
+                  key={layer.get('identifier')}
+                  className={styles.timelineMarkerPreviewItem}
+                  title={`Go to ${year}`}
+                  onClick={() => this.handleMarkerClick(year)}
+                >
+                  {layer.get('thumbnail') ? (
+                    <img src={layer.get('thumbnail')} className={styles.timelineMarkerThumb} />
+                  ) : (
+                    <div className={styles.timelineMarkerThumb} />
+                  )}
+                  <div className={styles.timelineMarkerCaption}>
+                    <strong>{layer.get('year') || year}</strong>
+                    <span>{layer.get('location') || layer.get('name')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+      </div>
+    );
   }
 
   /**
@@ -2689,7 +3012,7 @@ export class SemanticMapControls extends Component<Props, State> {
     }
 
     const input = event.target as HTMLInputElement;
-    const value = parseInt(input.value);
+    const value = this.snapYearToMarkers(parseInt(input.value));
 
     // Add pulse animation class to year label
     const yearLabel = document.querySelector(`.${styles.yearLabel}`) as HTMLElement;

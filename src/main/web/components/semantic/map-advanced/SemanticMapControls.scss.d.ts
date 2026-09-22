@@ -65,6 +65,17 @@ declare namespace SemanticMapControlsScssNamespace {
     colorPickerFadeOut: string;
     filtersLabel: string;
     timelineSlider: string;
+    timelineToolbar: string;
+    timelineSnapToggle: string;
+    timelineSnapCheckbox: string;
+    timelineTrack: string;
+    timelineMarkers: string;
+    timelineMarker: string;
+    timelineMarkerActive: string;
+    timelineMarkerPreview: string;
+    timelineMarkerPreviewItem: string;
+    timelineMarkerThumb: string;
+    timelineMarkerCaption: string;
     
     // New styles for the sidebar and panels
     mapControlsContainer: string;

@@ -52,6 +52,7 @@ interface RelationFacetProps extends Props<RelationFacetComponent> {
   data: FacetData;
   actions: F.Actions;
   config: SemanticFacetConfig;
+  hidden?: boolean
 }
 
 /**
@@ -74,6 +75,9 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
   }
 
   render() {
+    if (this.props.hidden) {
+      return null;
+    }
     return this.props.relation.available === true ? this.renderRelation() : null;
   }
 

@@ -73,6 +73,8 @@ export interface FacetContext extends BaseSearchContext {
   setFacetStructure(structure: FacetModel.Ast): void;
   setFacetedQuery(query: SparqlJs.SparqlQuery): void;
   setFacetActions(actions: FacetModel.Actions): void;
+  readonly facetBreadcrumbsMounted?: boolean;
+  setFacetBreadcrumbsMounted(mounted: boolean): void;
 }
 
 export type ResultOperation =

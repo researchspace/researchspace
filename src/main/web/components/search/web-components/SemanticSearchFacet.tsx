@@ -39,6 +39,7 @@ import * as FacetModel from 'platform/components/semantic/search/data/facet/Mode
 
 import Facet from '../facet/Facet';
 import { FacetStore, FacetData } from '../facet/FacetStore';
+import { getHiddenPresetRelationIris } from '../facet/PresetFacetBuilder';
 import { SearchFilterToggled } from 'platform/components/search/query-builder/SearchEvents';
 
 interface SemanticSearchFacetProps extends SemanticFacetConfig {}
@@ -180,6 +181,8 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
   render() {
     if (this.props.context.baseQuery.isJust) {
       const facetIsShown = this.state.facetData && this.state.showFacets;
+      const hiddenRelations = this.getHiddenPresetRelations();
+      const forceShowHiddenRelations = !!this.props.context.facetBreadcrumbsMounted;
 
       const toggleButton = (
         <button 
@@ -203,6 +206,8 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
             data={this.state.facetData} 
             actions={this.facetStore.facetActions()}
             config={this.props}
+            hiddenRelations={hiddenRelations}
+            forceShowHiddenRelations={forceShowHiddenRelations}
           /> : null}
           {!this.props.hideToggleButton && toggleButton}
         </div>
@@ -216,6 +221,16 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
     this.setState((state) => ({ showFacets: !state.showFacets }));
     trigger({ eventType: SearchFilterToggled, source: this.props.id });
   };
+
+  private getHiddenPresetRelations(): ReadonlySet<string> | undefined {
+    const presetFacets = this.props.context.baseConfig.presetFacets;
+    
+    const hiddenIris = getHiddenPresetRelationIris(presetFacets);
+    if (!hiddenIris.length) {
+      return undefined;
+    }
+    return new Set(hiddenIris.map((iri) => iri.value));
+  }
 }
 
 export default SemanticSearchFacet;

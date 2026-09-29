@@ -2,6 +2,22 @@
                         {{#if dragAndDropInputCard}}resource-card__dropdown-dragAndDropInputCard{{/if}}
                         {{#if knowledgeMapCard}}resource-card__dropdown-km{{/if}}">
 
+  [[!-- Single-control clipboard rows remove the set membership through the
+        current set/item context. This does not delete the resource itself. --]]
+  {{#if clipboardRow}}
+    {{#if isSetItem}}
+      {{#unless (or clipboardKm clipboardSet)}}
+        <mp-set-management-action-remove-set-item>
+          <bs-menu-item event-key="remove" draggable="false">
+            <rs-icon icon-type="rounded" icon-name="disabled_by_default" class="icon-left" symbol="true"></rs-icon>
+            <span>Remove from clipboard</span>
+          </bs-menu-item>
+        </mp-set-management-action-remove-set-item>
+        <hr>
+      {{/unless}}
+    {{/if}}
+  {{/if}}
+
   {{#if hidePreview}}
   {{else}}
     <mp-overlay-dialog  id="{{iri}}-resource-preview-dialog"  

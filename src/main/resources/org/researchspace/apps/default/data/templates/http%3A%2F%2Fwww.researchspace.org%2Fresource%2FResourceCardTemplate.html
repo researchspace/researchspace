@@ -1,9 +1,13 @@
-<div  class="resource-card {{#if (or narrativeCard knowledgeMapCard knowledgeMapPreviewCard)}}resource-card__no-hover{{/if}}{{#if dragAndDropInputCard}}{{/if}}"
-      style="{{#if autosize}}{{else if clipboardList}}width:100%; height:{{#if height}}{{height}}{{else}}190{{/if}}px;
+<div  class="resource-card {{#if (or narrativeCard knowledgeMapCard knowledgeMapPreviewCard)}}resource-card__no-hover{{/if}}{{#if (or (eq cardLayout 'row') (eq cardLayout 'tile') (eq cardLayout 'search'))}} resource-card--layout resource-card--{{cardLayout}}{{/if}}{{#if hideMediaSection}} resource-card--no-media{{/if}}{{#if (eq cardLayout 'row')}}{{#if (or clipboardCard clipboardList)}} resource-card--clipboard-row{{/if}}{{/if}}"
+      style="{{#if (or (eq cardLayout 'row') (eq cardLayout 'tile') (eq cardLayout 'search'))}}{{#if cardMargin}}margin:{{cardMargin}}px;{{/if}}{{else if autosize}}{{else if clipboardList}}width:100%; height:{{#if height}}{{height}}{{else}}190{{/if}}px;
               {{else}}width:{{#if width}}{{width}}{{else}}150{{/if}}px; 
                       height:{{#if height}}{{height}}{{else}}190{{/if}}px; 
                       margin:{{#if cardMargin}}{{cardMargin}}{{else}}0{{/if}}px;{{/if}}">
       [[!-- when autosize is set we don't set any fixed height and width, used in semantic narratives where user can resize the card --]]
+
+      [[!-- cardLayout="row", "tile" or "search" opts into shared theme-neutral layouts.
+            Omit cardLayout to retain the existing dimensions. Layout variants use
+            --rs-card-* CSS properties for sizing, rather than inline width/height. --]]
 
       [[!-- to render smaller card add class resource-card resource-card-small and give to card height=150 width=120 --]]
   
@@ -25,8 +29,21 @@
                                             resourceLabel=resourceLabel
                                             resourceFormIRI=resourceFormIRI
                                             resourceOntologyClass=resourceOntologyClass
+                                            clipboardRow=(and (eq cardLayout 'row') (or clipboardCard clipboardList))
+                                            isSetItem=isSetItem
             }}
           </rs-resource-dropdown>
+          {{#if (and (eq cardLayout 'row') (or clipboardCard clipboardList))}}
+            {{#if isSetItem}}
+              <mp-anonymous-hidden>
+                <mp-set-management-action-remove-set-item>
+                  <button type="button" class="btn btn-default resource-card__button resource-card__button--remove" title="Remove from clipboard" aria-label="Remove from clipboard">
+                    <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                  </button>
+                </mp-set-management-action-remove-set-item>
+              </mp-anonymous-hidden>
+            {{/if}}
+          {{/if}}
         </div>
     </div>
   {{else}}
@@ -39,7 +56,7 @@
           {{/if}}
         {{/if}}
       [[/if]]
-      <div class="resource-card__buttons-container" style="{{#if clipboardList}}gap:5px{{/if}}">
+      <div class="resource-card__buttons-container" style="{{#if clipboardList}}{{#if (eq cardLayout 'row')}}{{else}}gap:5px{{/if}}{{/if}}">
     
         {{#if (or narrativeCard knowledgeMapCard)}}
           <mp-draggable iri='{{iri}}' drag-image-selector='.resource-card'>
@@ -56,18 +73,28 @@
                                           resourceLabel=resourceLabel
                                           resourceFormIRI=resourceFormIRI
                                           resourceOntologyClass=resourceOntologyClass
+                                            clipboardRow=(and (eq cardLayout 'row') (or clipboardCard clipboardList))
+                                            isSetItem=isSetItem
           }}
         </rs-resource-dropdown>
 
         {{#if (or clipboardCard clipboardList)}}
           {{#if isSetItem}}
             <mp-anonymous-hidden>
-              <mp-set-management-action-remove-set-item item="{{iri.value}}">
-                <button type="button" class="btn btn-default resource-card__button" title="Remove">
-                  <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
-                </button>
-              </mp-set-management-action-remove-set-item>
-            </mp-anonymous-hidden> 
+              {{#if (eq cardLayout 'row')}}
+                <mp-set-management-action-remove-set-item>
+                  <button type="button" class="btn btn-default resource-card__button resource-card__button--remove" title="Remove from clipboard" aria-label="Remove from clipboard">
+                    <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                  </button>
+                </mp-set-management-action-remove-set-item>
+              {{else}}
+                <mp-set-management-action-remove-set-item item="{{iri.value}}">
+                  <button type="button" class="btn btn-default resource-card__button resource-card__button--remove" title="Remove from clipboard" aria-label="Remove from clipboard">
+                    <rs-icon icon-type="rounded" icon-name="close" symbol="true"></rs-icon>
+                  </button>
+                </mp-set-management-action-remove-set-item>
+              {{/if}}
+            </mp-anonymous-hidden>
           {{/if}}
         {{else if dragAndDropInputCard}}
           <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
@@ -262,11 +289,11 @@
     </div>
   {{/if}}
 
-  <div class="resource-card__footer" style="{{#if hideMediaSection}}width: 200px;{{/if}}{{#if clipboardList}}width: calc(100% - 70px); height: 40px; gap: 0;{{/if}}">
+  <div class="resource-card__footer" style="{{#unless (or (eq cardLayout 'row') (eq cardLayout 'tile') (eq cardLayout 'search'))}}{{#if hideMediaSection}}width: 200px;{{/if}}{{#if clipboardList}}width: calc(100% - 70px); height: 40px; gap: 0;{{/if}}{{/unless}}">
     [[#if customFooter]]
       [[#block "customFooter"]][[/block]]
     [[else]]
-      <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall" style="{{#if clipboardList}}font-size:11px;{{/if}}">
+      <div class="resource-card__footer-type color-secondary-light text-font-size__xsmall" style="{{#unless (or (eq cardLayout 'row') (eq cardLayout 'tile') (eq cardLayout 'search'))}}{{#if clipboardList}}font-size:11px;{{/if}}{{/unless}}">
         {{#if resourceLabel}}
           {{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
             <semantic-query query='SELECT DISTINCT ?systemUser  { 
@@ -291,7 +318,7 @@
             <mp-label iri='{{data.types}}'></mp-label>
           </div>
         {{else if resourceOntologyClass}}
-          <mp-label iri='{{resourceOntologyClass}}' class="resource-card__footer-class text-truncate-line1" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label>
+          <mp-label iri='{{resourceOntologyClass}}' class="resource-card__footer-class text-truncate-line1" highlight='{{highlight}}' highlight-props='{"style": {"color": "var(--rs-card-accent, var(--rs-color-action, var(--color-action, #396efe)))"}}'></mp-label>
         {{/if}}
       </div>
 
@@ -343,7 +370,7 @@
               [[!-- Label from KM props --]]
               <span class="text-link" title="{{label}}">{{label}}</span>
             {{else}}
-              <div><mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label></div>
+              <div><mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "var(--rs-card-accent, var(--rs-color-action, var(--color-action, #396efe)))"}}'></mp-label></div>
             {{/if}}
           </semantic-link-container>
         {{/if}}

@@ -1,0 +1,191 @@
+// Related-media presentation. Neutral defaults inherit the active theme tokens.
+.form-assets-sidebar {
+  align-self: start;
+  min-width: 0;
+  width: 100%;
+  color: var(--rs-color-text, #{$color-dark});
+
+  [hidden] { display: none !important; }
+
+  .form-assets-sidebar__heading {
+    padding: 0 0 12px;
+    margin: 0;
+    font-weight: 600;
+    color: var(--rs-asset-heading-text, var(--rs-color-text, #{$color-dark}));
+  }
+
+  .form-assets-sidebar__tabs, .form-assets-sidebar__single {
+    margin: 0;
+    border: 1px solid var(--rs-asset-border, var(--rs-color-border, #{$color-border}));
+    background: var(--rs-asset-surface, var(--rs-color-surface, #fff));
+  }
+  .form-assets-sidebar__tabs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    align-content: start;
+    gap: 0;
+    flex: 0 0 auto;
+    &:has(> .form-asset-navigation[data-orientation='vertical']) {
+      grid-template-columns: var(--rs-asset-nav-width, 168px) minmax(0, 1fr);
+    }
+  }
+  .form-assets-sidebar__single { padding: 12px 14px; }
+  .form-assets-sidebar__content {
+    min-width: 0;
+    width: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    border: 0;
+    background: transparent;
+  }
+  .form-assets-sidebar__pane { min-width: 0; padding: 0; height: auto; }
+  .form-asset-navigation {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: stretch;
+    border-bottom: 1px solid var(--rs-asset-border, var(--rs-color-border, #{$color-border}));
+    background: var(--rs-asset-header-surface, var(--rs-color-surface, #fff));
+  }
+  .form-asset-media-nav { display: flex; flex: 1; min-width: 0; padding: 0; margin: 0; }
+  .form-asset-navigation__tab, .form-asset-navigation__more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-height: 44px;
+    margin: 0;
+    padding: 10px 12px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    color: var(--rs-asset-nav-text, var(--rs-color-text-secondary, #525156));
+    background: transparent;
+    font: inherit;
+    line-height: 1.35;
+    white-space: nowrap;
+    cursor: pointer;
+    &:hover { background: var(--rs-asset-nav-hover, var(--rs-color-surface-subtle, #f0f0f5)); }
+    &:focus-visible { outline: 2px solid var(--rs-color-focus, #396efe); outline-offset: -3px; }
+    &:disabled { cursor: default; opacity: .5; }
+    > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  }
+  .form-asset-navigation__tab[aria-selected='true'] {
+    color: var(--rs-asset-nav-active-text, var(--rs-color-action, #396efe));
+    border-bottom-color: currentColor;
+    font-weight: 600;
+  }
+  .form-asset-navigation__more { gap: 4px; margin-left: auto; i { font-size: 18px; } }
+  .form-asset-navigation__measure {
+    // A zero-sized, clipped measuring surface cannot enlarge scroll ancestors.
+    position: absolute; width: 0; height: 0; overflow: hidden; visibility: hidden;
+    display: flex; white-space: nowrap; pointer-events: none;
+    .form-asset-navigation__tab { font-weight: 600; max-width: none; }
+  }
+  .form-asset-navigation[data-orientation='vertical'] {
+    align-self: stretch;
+    border-bottom: 0;
+    border-right: 1px solid var(--rs-asset-border, var(--rs-color-border, #{$color-border}));
+    .form-asset-media-nav { flex-direction: column; }
+    .form-asset-navigation__tab {
+      justify-content: flex-start;
+      white-space: normal;
+      text-align: left;
+      border-bottom: 0;
+      border-left: 3px solid transparent;
+      > span { overflow-wrap: break-word; }
+      &[aria-selected='true'] { border-left-color: currentColor; }
+    }
+  }
+  .form-asset-navigation__menu {
+    position: absolute;
+    z-index: 1050;
+    top: 100%; right: 0;
+    width: var(--rs-asset-menu-width, 280px);
+    max-height: 400px;
+    margin: 0;
+    padding: 5px;
+    list-style: none;
+    border: 1px solid var(--rs-asset-border, var(--rs-color-border, #{$color-border}));
+    background: var(--rs-asset-surface, var(--rs-color-surface, #fff));
+    color: var(--rs-asset-nav-text, var(--rs-color-text-secondary, #525156));
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .16);
+    scrollbar-width: thin;
+    li { margin: 0; padding: 0; }
+    button {
+      display: block; width: 100%; padding: 9px 12px; min-height: 40px;
+      border: 0; border-radius: 0; background: transparent; color: inherit;
+      text-align: left; white-space: normal; font: inherit; cursor: pointer;
+      &:hover, &:focus { background: var(--rs-asset-nav-hover, var(--rs-color-surface-subtle, #f0f0f5)); }
+    }
+  }
+  .form-asset-view {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .form-asset-view__actions {
+    grid-area: 1 / 1;
+    display: flex;
+    justify-content: flex-end;
+    min-width: 0;
+    .form-tabs-subtabs-content--title-actions { display: flex; align-items: center; gap: 3px; }
+  }
+  .form-asset-view__layout {
+    grid-area: 1 / 2;
+    display: flex;
+    gap: 2px;
+    .btn {
+      border: 0;
+      border-radius: 0;
+      min-width: 32px;
+      min-height: 32px;
+      background: transparent;
+      color: var(--rs-color-text-secondary, #525156);
+      &[aria-pressed='true'] {
+        color: var(--rs-asset-nav-active-text, var(--rs-color-action, #396efe));
+        background: var(--rs-asset-nav-hover, var(--rs-color-surface-subtle, #f0f0f5));
+      }
+    }
+  }
+  .form-asset-view__body { grid-column: 1 / -1; min-width: 0; }
+  // The toolbar already provides separation above the first media field.
+  // Preserve the label-to-input gap and the spacing between later fields.
+  .form-asset-view__body > .dragAndDrop-input-container:first-child
+    > .semantic-form-input-decorator > .semantic-form-input-decorator__header {
+    margin-top: 0;
+  }
+  .form-asset-url { padding: 8px 0; }
+  .form-asset-relationships { margin-top: 16px; summary { cursor: pointer; font-weight: 600; margin-bottom: 12px; } }
+  .form-asset-cards--row, .form-asset-cards--grid {
+    .dragAndDrop-input-container .DragAndDropInput--itemArea,
+    .form-asset-relationships .DragAndDropInput--itemArea {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--rs-asset-card-min-width, 280px)), 1fr));
+      gap: var(--rs-asset-card-gap, 8px);
+      align-items: start;
+      min-height: 0;
+      > div { flex: 0 0 auto; width: 100%; min-width: 0; }
+      > .placeholder-item, > div:has(.placeholder-item), > .DragAndDropInput--placeholderContainer {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+  .form-asset-cards--grid {
+    .dragAndDrop-input-container .DragAndDropInput--itemArea,
+    .form-asset-relationships .DragAndDropInput--itemArea {
+      // Match SetGridView's standard 150px card; never stretch a lone card.
+      grid-template-columns: repeat(auto-fill, min(100%, 150px));
+      justify-content: start;
+    }
+    .resource-card { max-width: 100%; }
+  }
+  @media (pointer: coarse) {
+    .form-asset-view__layout .btn { min-width: 44px; min-height: 44px; }
+    .form-asset-navigation__menu button { min-height: 44px; }
+  }
+}

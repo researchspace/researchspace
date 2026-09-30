@@ -1,13 +1,14 @@
 <mp-event-proxy id='[[> iri]]-update-resourceWorkspace-on-form-actions'
+    on-event-source='[[> iri]]-resource-form'
     on-event-types='["Form.ResourceUpdated"]'      
     proxy-event-type='Component.TemplateUpdate' 
-    proxy-targets='["[[urlParam 'resourceIri' escape=true]]-resourceWorkspace-frame","[[urlParam 'uri' escape=true]]-resourceWorkspace-frame","resource-detailed-visualisation"]'>
+    proxy-targets='["[[> iri]]-resourceWorkspace-frame"]'>
 </mp-event-proxy> 
-<mp-event-target-template-render id="[[urlParam 'resourceIri' escape=true]]-resourceWorkspace-frame" template='{{> template}}'>
+<mp-event-target-template-render id="[[> iri]]-resourceWorkspace-frame" template='{{> template}}'>
 
 <template id='template'>
   <div class="page__grid-container">
-    <div class="page__content-container resource-editView-form-container">
+    <div class="page__content-container resource-editView-form-container resource-view">
     [[#if (urlParam "uri")]]
         [[> rsp:ResourceHeader frameView=false]]
     [[else]]
@@ -20,7 +21,7 @@
           
           <rs-tab event-key="perspectives" title="Explore" icon="explore" icon-type="round">
             <div class="tab-panel__header">          
-            <span class="muted">Explore this resource through maps, networks, timelines, media, and other visual research views.</span>
+            <span class="muted">Explore this resource through visual annotations and interactive research views.</span>
             </div>  
             <div class="rs-visualisation-workspace">
             <div class="rs-tabs-workspace">
@@ -34,53 +35,8 @@
                   
                 </div>
               </rs-tab>
-              <rs-tab event-key="map" title="Map" class-name="p-0" icon="place" icon-type="round"></rs-tab>
-              <rs-tab event-key="timeline" title="Timeline" icon="timeline" icon-type="round" class-name="p-0"></rs-tab>
             </rs-tabs> </div>   
             </div>   
-          </rs-tab>
-          <rs-tab event-key="context" title="Context" icon="edit_note" icon-type="round">
-            <div class="tab-panel__header">          
-                <span class="muted">Add, structure, and enrich what is known about this resource.</span>
-            </div>
-[[!-- 
-            <rs-tabs class="rs-secondary-tabs">
-         
-         
-                <rs-tab event-key="excavation" title="Excavation &amp; Looting">
-                
-                
-                <mp-collapsible-div class='search-page-container' expanded='false'>
-                    <mp-collapsible-div-trigger>
-                    <div><b>Archaeological Excavations </b>
-                    <span> </span>
-                    <span></span></div>
-                    </mp-collapsible-div-trigger>
-                    <mp-collapsible-div-content>
-                    <inline-template template-iri="http://www.researchspace.org/resource/ResourceSearchContent" 
-                        options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Archaeological_Excavation",
-                                "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
-                                "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
-                    </inline-template>
-                    </mp-collapsible-div-content>
-                </mp-collapsible-div>
-                
-                <mp-collapsible-div class='search-page-container' expanded='false'>
-                    <mp-collapsible-div-trigger>
-                    <div><b>Looting Activities </b>
-                    <span> </span>
-                    <span></span></div>
-                    </mp-collapsible-div-trigger>
-                    <mp-collapsible-div-content>
-                    <inline-template template-iri="rsp:ResourceSearchContent" 
-                        options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Looting_Activity",
-                                "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
-                                "searchRestrictions":"?subject crm:P16_used_specific_object <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
-                    </inline-template>
-                    </mp-collapsible-div-content>
-                </mp-collapsible-div>
-                </rs-tab>
-            </rs-tabs>   --]]
           </rs-tab>
           <rs-tab event-key="research" title="Research Outputs" icon="library_books" icon-type="round">
             <div class="tab-panel__header">          

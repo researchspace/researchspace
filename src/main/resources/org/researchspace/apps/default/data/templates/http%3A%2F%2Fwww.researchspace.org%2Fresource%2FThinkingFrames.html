@@ -102,7 +102,7 @@
 
     {
     	"id": "resource",
-      "label": "Entity record",
+      "label": "Resource view",
       "description": "Drag and drop an entity here to display the entity record",
       "dropAreaDescription": "Drag and drop any entity here to display the entity record",
       "iconName": "insert_drive_file",
@@ -112,7 +112,7 @@
 
     {
     	"id": "resource-editor",
-      "label": "Resource editor",
+      "label": "Edit",
       "description": "Create and author an entity through custom forms",
       "iconName": "edit_note",
       "template": "{{> resourceEditor}}",
@@ -121,7 +121,7 @@
     },
     {
     	"id": "resource-detailed-visualisation",
-      "label": "Resource Detailed Visualisation",
+      "label": "Interactive resource view",
       "description": "Visualise the details of an entity using interaction semantic tools",
       "template": "{{> resourceVisualisation}}",
       "iconName": "frame_inspect",
@@ -495,7 +495,11 @@
     <template id='resourceTemplate'>  
       <mp-event-target-template-render id='{{iri}}-resource-view' template='{{> template}}'>
         <template id='template'>
-          [[> rsp:ResourceTemplate iri=iri]]
+          <mp-page-loader iri='{{iri}}' context='{{iri}}'
+                          urlqueryparam-frame=true urlqueryparam-uri='{{iri}}'
+                          urlqueryparam-resource-iri='{{iri}}'
+                          urlqueryparam-resource-config='{{data.resourceConfig}}'>
+          </mp-page-loader>
         </template>
       </mp-event-target-template-render>
     </template>
@@ -522,7 +526,7 @@
     </template>
 
     <template id='resourceVisualisation'>
-      <mp-page-loader urlqueryparam-frame=true iri="{{data.resourceVisualisationTemplate}}" urlqueryparam-resource-config="{{data.resourceConfig}}" urlqueryparam-resource-iri="{{data.resourceIri}}">
+      <mp-page-loader urlqueryparam-frame=true urlqueryparam-uri="" context="{{iri}}" iri="{{data.resourceVisualisationTemplate}}" urlqueryparam-resource-config="{{data.resourceConfig}}" urlqueryparam-resource-iri="{{iri}}">
       </mp-page-loader>
     </template>
 

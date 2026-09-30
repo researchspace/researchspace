@@ -88,13 +88,24 @@ export function init() {
  */
 export const RAW_STYLE_ATTRIBUTE = '__style';
 
+export interface ParseHtmlOptions {
+  /**
+   * Isolate automatic component keys for a new page load. Inline template updates
+   * omit this to retain stable keys. Explicit key/fixed-key values are preserved.
+   */
+  componentKeyPrefix?: string;
+}
+
 /**
  * Parse HTML string into ReactElements hierarchy.
  * @param  {string} html
  *         Plain html string to be parsed to React.
  * @return {Array} Array of @ReactElement
  */
-export function parseHtmlToReact(html: string): Promise<ReactElement<any> | ReactElement<any>[]> {
+export function parseHtmlToReact(
+  html: string,
+  options: ParseHtmlOptions = {}
+): Promise<ReactElement<any> | ReactElement<any>[]> {
   const processingInstructions: Instruction[] = [
     {
       shouldProcessNode: isCodeExample,
@@ -122,7 +133,8 @@ export function parseHtmlToReact(html: string): Promise<ReactElement<any> | Reac
     },
     {
       shouldProcessNode: isReactComponent,
-      processNode: processReactComponent,
+      processNode: (node, children, index) =>
+        processReactComponent(node, children, index, options.componentKeyPrefix),
     },
     {
       shouldProcessNode: isNativeComponent,
@@ -269,7 +281,8 @@ function processStyle(node: Node, children: Array<React.ReactNode>): Promise<Rea
 function processReactComponent(
   node: Node,
   children: Array<ReactNode>,
-  index?: number
+  index?: number,
+  componentKeyPrefix = ''
 ): Promise<React.ReactElement<any>> {
   let attributes;
   try {
@@ -280,16 +293,16 @@ function processReactComponent(
     throw new Error(msg);
   }
 
-  // stable key (id-based, else position) so re-parsing an equivalent template
-  // updates components in place instead of remounting, as a random key did
+  // Keep inline template updates stable, but let page loads isolate automatic
+  // keys so a different resource does not inherit the previous page's state.
   const computedKey =
     attributes['key'] && !attributes['fixedKey']
       ? attributes['key']
       : attributes['fixedKey']
       ? attributes['fixedKey']
       : typeof attributes['id'] === 'string' && attributes['id'] !== ''
-      ? `component-${node.name}-id-${attributes['id']}`
-      : `component-${node.name}-${index ?? 0}`;
+      ? `${componentKeyPrefix}component-${node.name}-id-${attributes['id']}`
+      : `${componentKeyPrefix}component-${node.name}-${index ?? 0}`;
 
   // we propagate attributes as-is, but also put them into special config field
   let props = assign({ key: computedKey }, attributes);

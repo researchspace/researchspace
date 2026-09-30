@@ -1,13 +1,13 @@
-<header class="resource-record-header">
+<header class="resource-record-header resource-record-header--view">
     {{#bind resourceIcon=(getResourceConfigurationValue "[[urlParam "resourceConfig" escape=false]]" "resourceIcon") }}   
       <!-- Thumbnail -->
       <div class="resource-record-header__thumbnail">                
-        <mp-resource-thumbnail iri='[[> iri]]' class='resource-thumbnail-small'>
+        <mp-resource-thumbnail iri='[[> iri]]' class='resource-record-header__image'>
             <mp-resource-thumbnail-fallback>
-            <div>  [[#if (urlParam 'resourceicon') ]]
-                <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+            <div class="resource-record-header__thumbnail-fallback">  [[#if (urlParam 'resourceicon') ]]
+                <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true"></rs-icon>
               [[else]]
-                <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                <rs-icon icon-type="rounded" icon-name="image" symbol="true"></rs-icon>
               [[/if]]</div>
             </mp-resource-thumbnail-fallback>
         </mp-resource-thumbnail>
@@ -21,7 +21,6 @@
         <div class="resource-record-header__identity">
           <div class="resource-record-header__title-row">
             <h3
-              id="resource-title"
               class="resource-record-header__title"
             >
               <span class="link-draggable">
@@ -64,8 +63,9 @@
     <nav class="resource-record-header__actions" aria-label="Actions for Resource">
       <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
           urlqueryparam-view='resource-editor' urlqueryparam-resource='[[> iri]]'>
-        <button type="button" class="resource-record-header__action" title="Edit resource"  aria-label="Edit resource">
+        <button type="button" class="resource-record-header__action resource-record-header__action--primary">
           <i class="material-symbols-rounded" aria-hidden="true">edit_note</i>
+          <span>Edit</span>
         </button>
       </semantic-link-container>  
           

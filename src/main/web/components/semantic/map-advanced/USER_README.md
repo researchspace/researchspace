@@ -53,6 +53,7 @@ To integrate the SemanticMapAdvanced component into your HTML page, you need to 
 | `year-filtering` | boolean | No | Enable filtering by year (default: false) |
 | `vector-levels` | JSON Array | No | Possible levels of features in the map |
 | `selected-feature-style` | JSON Object | No | Style configuration for selected features |
+| `labels-min-zoom` | number | No | Draw feature labels only above this zoom level (default: all zoom levels). Useful with many features, since labels are drawn on the CPU |
 
 ### SemanticMapControls Attributes
 

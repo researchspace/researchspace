@@ -38,7 +38,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { CirclePicker, GithubPicker, SwatchesPicker } from 'react-color';
 import reactCSS from 'reactcss';
 import _ = require('lodash');
-import VectorLayer from 'ol/layer/Vector';
+import { isFeatureLayer } from './FeatureLayerUtils';
 import { containsCoordinate, intersects } from 'ol/extent';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
@@ -2490,7 +2490,7 @@ export class SemanticMapControls extends Component<Props, State> {
     }
     let vectorLayers = [];
     allLayers.forEach((layer) => {
-      if (layer instanceof VectorLayer) {
+      if (isFeatureLayer(layer)) {
         vectorLayers.push(layer);
       }
     });
@@ -2626,7 +2626,7 @@ export class SemanticMapControls extends Component<Props, State> {
    */
   private getGeometryLayers(): any[] {
     return this.state.mapLayers.filter(layer => 
-      layer.get('level') === 'feature' || layer instanceof VectorLayer
+      isFeatureLayer(layer)
     );
   }
   
@@ -2885,11 +2885,11 @@ export class SemanticMapControls extends Component<Props, State> {
     }
     
     // Check if this is a features/geometry layer vs a tile/overlay layer
-    const isFeatureLayer = layer.get('level') === 'feature' || layer instanceof VectorLayer;
+    const isFeatureLayerChange = isFeatureLayer(layer);
     
     // For features layers, don't reset visualization mode - just update the layer directly
     // Features layers are independent of the tile layer visualization modes
-    if (isFeatureLayer) {
+    if (isFeatureLayerChange) {
       // Force re-render without changing any other state
       this.forceUpdate();
     } else {

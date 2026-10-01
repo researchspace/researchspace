@@ -21,6 +21,10 @@ These components communicate through a custom event system, allowing them to be 
 - **SemanticMapControlsEvents.ts**: Event definitions for controls-to-map communication
 - **TilesLayer.ts**: Component for defining tile layers
 - **SemanticMapLoading.scss**: Styling for loading indicators
+- **FeatureStyling.ts**: Precomputed feature rendering values, cached canvas styles and the WebGL style
+- **FeatureLayerUtils.ts**: Feature-layer detection shared with the controls, WebGL support check
+- **StableWebGLVectorLayer.ts**: WebGL vector layer that does not rebuild its buffers on every move
+- **MapPerfMonitor.ts**: `?mapPerf` render profiler
 - **SemanticMapControls.scss**: Styling for the controls component
 
 ## Core Classes and Interfaces
@@ -251,14 +255,33 @@ Features can be selected by clicking, which:
 
 ## Performance Optimizations
 
-The component includes several optimizations for handling large datasets:
+Feature rendering is designed so that the cost of interacting with the map does not grow with the
+number of geometries.
 
-- Feature clustering for point data
-- Dynamic cluster distance based on zoom level
-- Style caching to reduce style creation overhead
-- Visible feature tracking to optimize rendering
-- Debounced updates for viewport changes
-- Optimized feature filtering
+- **GPU rendering of polygons and lines.** Each features layer is a `WebGLVectorLayer`
+  (`StableWebGLVectorLayer.ts`): geometries are triangulated and uploaded once, then pan, zoom and
+  rotation are drawn by the GPU. The stock OpenLayers renderer rebuilds every buffer after each
+  `moveend`; `StableWebGLVectorLayer` keeps the buffers while they still render precisely and only
+  rebuilds them when the data change.
+- **Filters and selection as style variables.** The year filter (`year`, `yearOn`) and the dimming of
+  non-selected features (`dim`) are WebGL style variables: the timeline only updates uniforms.
+- **Colors and groups as feature attributes.** `FeatureStyling.ts` resolves each taxonomy group once
+  and writes color, opacity and visibility on the features as packed numbers (`sma_rgb`, `sma_flags`,
+  `sma_bob`, `sma_eoe`; WebGL only guarantees a few vertex attributes). A change of colors or groups
+  is one buffer rebuild, not a `setStyle()` per feature.
+- **Helper layers for what WebGL cannot draw.** Every features layer has canvas companions that mirror
+  its visibility, opacity and stacking: point markers (FontAwesome glyph), decluttered labels
+  (`labels-min-zoom` can restrict them to close zoom levels) and a highlight overlay for the
+  selected features and the flash animation. They are marked `auxiliary` and never listed in the
+  controls (`FeatureLayerUtils.isFeatureLayer`).
+- **Spyglass and swipe** clip canvas layers with the 2D context and WebGL layers with a CSS
+  `clip-path` on their canvas.
+- **Cheap event handlers.** Hover hit detection runs at most once per frame and never while dragging;
+  the map re-renders on mouse move only in spyglass mode; the visible-groups legend is computed from
+  the precomputed values through the spatial index; cluster distances change only on `moveend`.
+- **No WebGL:** the same layers fall back to canvas `VectorImageLayer`s (redrawn once per movement,
+  shown as a bitmap while interacting) with cached, shared styles.
+- **Profiling:** add `?mapPerf` to the page URL to log fps and frame compose time once per second.
 
 ## Integration Example
 

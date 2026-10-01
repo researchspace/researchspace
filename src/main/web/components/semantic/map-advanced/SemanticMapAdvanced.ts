@@ -28,6 +28,11 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
+import VectorImageLayer from 'ol/layer/VectorImage';
+import WebGLVectorLayer from 'ol/layer/WebGLVector';
+import BaseLayer from 'ol/layer/Base';
+import { EventsKey } from 'ol/events';
+import { asArray as asColorArray } from 'ol/color';
 import Vector from 'ol/source/Vector';
 import Cluster from 'ol/source/Cluster';
 import Style from 'ol/style/Style';
@@ -130,6 +135,22 @@ import { options } from 'superagent';
 import { __values } from 'tslib';
 import { year } from 'platform/components/search/date/SimpleDateInput.scss';
 import { attachMapPerfMonitor, isMapPerfEnabled } from './MapPerfMonitor';
+import { AUXILIARY_LAYER, isFeatureLayer, isWebglSupported } from './FeatureLayerUtils';
+import { StableWebGLVectorLayer } from './StableWebGLVectorLayer';
+import {
+  CanvasStyleCache,
+  ColorContext,
+  FeatureAppearanceResolver,
+  LayerOpacityOverrides,
+  buildWebglFeatureStyle,
+  isPointFeature,
+  isShownByGroup,
+  isShownByYear,
+  parseYearFilter,
+  prepareFeatureYears,
+  setFeatureColor,
+  webglStyleVariables,
+} from './FeatureStyling';
 
 enum Source {
   OSM = 'osm',
@@ -319,6 +340,18 @@ export interface SemanticMapAdvancedConfig {
   defaultFeaturesColor?: string;
 
   /**
+   * Optional zoom level above which feature labels (selected in the controls) are drawn.
+   * Labels are rendered on the CPU, so with many features showing them only when zoomed in keeps
+   * the map responsive. By default labels are drawn at every zoom level.
+   *
+   * Example:
+   * ```html
+   * <semantic-map-advanced labels-min-zoom="16" ...>
+   * ```
+   */
+  labelsMinZoom?: number;
+
+  /**
    * Optional comma-separated list of Cesium Ion asset IDs to load as 3D tilesets
    * when 3D mode is enabled. The assets are fetched through the platform's proxy
    * system (configured in proxy.prop as config.proxy.cesium.*), so the Cesium Ion
@@ -411,6 +444,25 @@ interface MapState {
 
 const MAP_REF = 'researchspace-map-widget';
 
+/**
+ * A data layer of features plus the helper layers that render what WebGL cannot:
+ * - `main`: polygons and lines (WebGLVectorLayer, or a canvas VectorImageLayer without WebGL);
+ * - `points`: canvas layer for point features, which keep the map-marker glyph (WebGL only);
+ * - `labels`: canvas layer with decluttered labels of polygons and lines.
+ * The helper layers mirror the visibility, opacity and stacking of `main`.
+ */
+interface FeatureLayerBundle {
+  main: BaseLayer;
+  source: VectorSource;
+  isWebgl: boolean;
+  overrides: LayerOpacityOverrides;
+  points: VectorImageLayer<any> | null;
+  labels: VectorImageLayer<any>;
+  listenerKeys: EventsKey[];
+  /** Copies visibility, opacity and stacking of `main` to the helper layers. */
+  syncHelpers: () => void;
+}
+
 export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, MapState> {
   /**
    * Deterministic layer bands (lower value = below):
@@ -419,9 +471,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private readonly BASEMAP_ZINDEX_START = 0;
   private readonly OVERLAY_ZINDEX_START = 100;
   private readonly VECTOR_ZINDEX_START = 1000;
-  private readonly GEOMETRY_OPACITY_BOOST = 1.8;
 
-  private layers: { [id: string]: VectorLayer<any> };
+  private layers: { [id: string]: any };
   private map: Map;
   private cancelation = new Cancellation();
   private mousePosition = null;
@@ -456,12 +507,19 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private sunHeightDeg: number = 45;
   private sunDirectionDeg: number = 180;
 
-  // Performance optimization properties
-  private styleCache: { [key: string]: Style } = {};
-  private visibleFeatures: Set<string> = new Set();
+  // Feature rendering (see FeatureStyling.ts)
+  private canvasStyles = new CanvasStyleCache();
+  private appearance = new FeatureAppearanceResolver();
+  private featureBundles: FeatureLayerBundle[] = [];
+  private highlightSource = new VectorSource();
+  private highlightLayer: VectorLayer<any> | null = null;
+  private highlightActive = false;
+  private lastVisibleGroupsKey: string | null = null;
   private debouncedUpdateVisibleFeatures: any;
   private featureCache: any = {}; // Cache for features by ID
   private detachPerfMonitor: (() => void) | null = null;
+  private hoverPixel: number[] | null = null;
+  private hoverCheckPending = false;
 
   constructor(props: SemanticMapAdvancedProps, context: ComponentContext) {
     super(props, context);
@@ -779,7 +837,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private getMaskableLayers(): Array<any> {
     return this.state.mapLayers.filter(layer => {
       const level = layer.get('level');
-      return level === 'overlay' || level === 'feature' || layer instanceof VectorLayer;
+      return level === 'overlay' || isFeatureLayer(layer);
     });
   }
 
@@ -790,7 +848,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const maskable = this.getMaskableLayers();
     const visibleOverlay = maskable.find(l => l.get('level') === 'overlay' && l.get('visible'));
     if (visibleOverlay) return visibleOverlay;
-    const visibleFeature = maskable.find(l => (l.get('level') === 'feature' || l instanceof VectorLayer) && l.get('visible'));
+    const visibleFeature = maskable.find(l => isFeatureLayer(l) && l.get('visible'));
     return visibleFeature || maskable[0] || null;
   }
 
@@ -818,13 +876,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     if (!targetLayer) return;
 
     this.setState({ maskTargetIdentifier: identifier }, () => {
-      if (currentMode === 'spyglass') {
-        targetLayer.on('prerender', this.spyglassFunction);
-        targetLayer.on('postrender', function (event) { event.context.restore(); });
-      } else if (currentMode === 'swipe') {
-        targetLayer.on('prerender', this.swipeFunction);
-        targetLayer.on('postrender', function (event) { event.context.restore(); });
-      }
+      this.attachMask(targetLayer);
       this.map.render();
     });
   };
@@ -1295,37 +1347,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    */
   private findFeatureById(featureId: string): Feature | null {
     if (!this.map) return null;
-    
+
+    // Feature ids are the subject IRIs (see createGeometries): use the sources' id index.
     const vectorLayers = this.getVectorLayersFromMap();
-    let foundFeature = null;
-    
-    // Search through all vector layers
     for (let i = 0; i < vectorLayers.length; i++) {
-      const vectorLayer = vectorLayers[i];
-      const source = vectorLayer.getSource();
-      let features;
-      
-      if (source instanceof Cluster) {
-        features = source.getSource().getFeatures();
-      } else {
-        features = source.getFeatures();
+      const source = this.getFeatureSource(vectorLayers[i]);
+      const feature = source ? (source.getFeatureById(featureId) as Feature) : null;
+      if (feature && feature.get('subject') && feature.get('subject').value === featureId) {
+        return feature;
       }
-      
-      // Find the feature with the matching ID
-      for (let j = 0; j < features.length; j++) {
-        const feature = features[j];
-        const subject = feature.get('subject');
-        
-        if (subject && subject.value === featureId) {
-          foundFeature = feature;
-          break;
-        }
-      }
-      
-      if (foundFeature) break;
     }
-    
-    return foundFeature;
+    return null;
   }
 
   /** REACT COMPONENT FUNCTIONS **/
@@ -1373,6 +1405,20 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       this.detachPerfMonitor();
       this.detachPerfMonitor = null;
     }
+    if (this.debouncedUpdateVisibleFeatures) {
+      this.debouncedUpdateVisibleFeatures.cancel();
+    }
+    // WebGL layers hold a GPU context that is only released by an explicit dispose.
+    if (this.map) {
+      this.map.setTarget(undefined);
+    }
+    this.featureBundles.forEach((bundle) => {
+      unByKey(bundle.listenerKeys);
+      if (bundle.isWebgl) {
+        bundle.main.dispose();
+      }
+    });
+    this.featureBundles = [];
   }
 
   public componentWillReceiveProps(props: SemanticMapAdvancedProps, context: ComponentContext) {
@@ -1680,8 +1726,20 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           map.getTarget().style.cursor = ''; // Default cursor when not resizing
         }
       } else {
-        const hasFeatureAtPixel = map.hasFeatureAtPixel(e.pixel);
-        map.getTarget().style.cursor = hasFeatureAtPixel ? 'pointer' : '';
+        // Hit detection at most once per frame, never while dragging the map.
+        if (e.dragging) return;
+        this.hoverPixel = e.pixel;
+        if (this.hoverCheckPending) return;
+        this.hoverCheckPending = true;
+        requestAnimationFrame(() => {
+          this.hoverCheckPending = false;
+          const mode = this.state.overlayVisualization;
+          if (!this.hoverPixel || mode === 'measure' || mode === 'swipe' || mode === 'spyglass') return;
+          const hasFeatureAtPixel = map.hasFeatureAtPixel(this.hoverPixel, {
+            layerFilter: (layer) => layer !== this.measureVector,
+          });
+          (map.getTarget() as HTMLElement).style.cursor = hasFeatureAtPixel ? 'pointer' : '';
+        });
       }
     });
   }
@@ -1805,6 +1863,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private registerControlsFromEvent = (event: Event<any>) => {
     this.registerControl(event.source).then(() => {
+      // A newly registered control has not received the visible groups yet.
+      this.lastVisibleGroupsKey = null;
       console.log('Layers updated and map view fitted to extents');
       this.sendLayersToControls();
       // Send the current viewport so the controls can apply their "filter by zoom" list filter.
@@ -2014,7 +2074,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private isFeatureLayer(layer: any): boolean {
-    return layer && (layer.get('level') === 'feature' || layer instanceof VectorLayer);
+    return isFeatureLayer(layer);
   }
 
   /**
@@ -2063,158 +2123,206 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     });
   }
 
-  private createHiddenFeatureStyle() {
-    return new Style({});
+  /** FEATURE RENDERING **/
+
+  private getColorContext(): ColorContext {
+    const hasControls = this.state.registeredControls.length > 0;
+    const taxonomy = this.state.featuresColorTaxonomy;
+    return {
+      defaultColor: this.defaultFeaturesColor,
+      hideTaxonomy: hasControls && taxonomy ? taxonomy : null,
+      colorTaxonomy: hasControls && taxonomy && taxonomy !== 'default' ? taxonomy : null,
+      associations: this.state.groupColorAssociations || {},
+    };
+  }
+
+  private getYearFilter() {
+    return parseYearFilter(this.state.yearFiltering, this.state.year);
+  }
+
+  /** Label text of a feature for the label taxonomy selected in the controls ('' when none). */
+  private getFeatureLabel(feature: Feature<Geometry>): string {
+    const labelProperty = this.state.featuresLabel;
+    if (!labelProperty || labelProperty === 'none') {
+      return '';
+    }
+    const value = feature.get(labelProperty);
+    return value && value.value !== undefined ? String(value.value) : '';
+  }
+
+  private labelsEnabled(): boolean {
+    return !!this.state.featuresLabel && this.state.featuresLabel !== 'none';
+  }
+
+  /** True when the feature passes the year and group filters. */
+  private isFeatureShown(feature: Feature<Geometry>): boolean {
+    return isShownByGroup(feature) && isShownByYear(feature, this.getYearFilter());
+  }
+
+  /** Canvas style of a data feature (point markers, and polygons when WebGL is not available). */
+  private canvasFeatureStyle(feature: Feature<Geometry>, overrides: LayerOpacityOverrides): Style | null {
+    const label = isPointFeature(feature) ? this.getFeatureLabel(feature) : '';
+    return this.canvasStyles.featureStyle(feature, this.getYearFilter(), this.highlightActive, overrides, label);
+  }
+
+  private canvasLabelStyle(feature: Feature<Geometry>): Style | null {
+    return this.canvasStyles.labelStyle(
+      feature,
+      this.getYearFilter(),
+      this.getFeatureLabel(feature),
+      this.state.labelBackgroundEnabled
+    );
   }
 
   /**
-   * Increases color alpha channel by a factor (clamped to 1).
-   * Used to make geometry maximum opacity visually stronger.
+   * Creates a features layer and its helper layers (see FeatureLayerBundle) and returns the main
+   * layer, which is the one listed in the controls. The helper layers are added to the map, the
+   * main layer is added by the caller.
    */
-  private boostColorOpacity(color: string, factor: number = this.GEOMETRY_OPACITY_BOOST): string {
-    if (!color || typeof color !== 'string') return color;
+  private createFeatureBundle(
+    features: Feature<Geometry>[],
+    options: { zIndex: number; visible?: boolean; opacity?: number; overrides?: LayerOpacityOverrides }
+  ): BaseLayer {
+    const overrides = options.overrides || {};
+    const source = new VectorSource({ features });
+    if (this.appearance.update(this.getColorContext())) {
+      // Colors changed since the existing layers were last refreshed: bring them up to date too.
+      this.featureBundles.forEach((bundle) => {
+        this.appearance.applyTo(bundle.source.getFeatures());
+        bundle.source.changed();
+        if (bundle.points) {
+          bundle.points.changed();
+        }
+      });
+    }
+    this.appearance.applyTo(features);
 
-    const rgbaMatch = color.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/i);
-    if (rgbaMatch) {
-      const r = parseInt(rgbaMatch[1], 10);
-      const g = parseInt(rgbaMatch[2], 10);
-      const b = parseInt(rgbaMatch[3], 10);
-      const a = parseFloat(rgbaMatch[4]);
-      const boostedAlpha = Math.min(1, Math.max(0, a * factor));
-      return `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`;
+    const useWebgl = isWebglSupported();
+    const layerOptions = {
+      source,
+      zIndex: options.zIndex,
+      visible: options.visible !== undefined ? options.visible : true,
+      opacity: options.opacity !== undefined ? options.opacity : 1,
+    };
+    const main: BaseLayer = useWebgl
+      ? new StableWebGLVectorLayer({
+          ...layerOptions,
+          style: buildWebglFeatureStyle(overrides),
+          variables: webglStyleVariables(this.getYearFilter(), this.highlightActive),
+        })
+      : new VectorImageLayer({
+          ...layerOptions,
+          imageRatio: 1.5,
+          style: (feature: Feature<Geometry>) => this.canvasFeatureStyle(feature, overrides),
+        });
+
+    let points: VectorImageLayer<any> | null = null;
+    if (useWebgl) {
+      const pointFeatures = features.filter(isPointFeature);
+      if (pointFeatures.length > 0) {
+        points = new VectorImageLayer({
+          source: new VectorSource({ features: pointFeatures }),
+          imageRatio: 1.5,
+          style: (feature: Feature<Geometry>) => this.canvasFeatureStyle(feature, overrides),
+        });
+      }
     }
 
-    const rgbMatch = color.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i);
-    if (rgbMatch) {
-      const r = parseInt(rgbMatch[1], 10);
-      const g = parseInt(rgbMatch[2], 10);
-      const b = parseInt(rgbMatch[3], 10);
-      const boostedAlpha = Math.min(1, Math.max(0, 1 * factor));
-      return `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`;
-    }
+    const labelsMinZoom = parseFloat(this.props.labelsMinZoom as any);
+    const labels = new VectorImageLayer({
+      source,
+      imageRatio: 1.5,
+      declutter: true,
+      minZoom: Number.isFinite(labelsMinZoom) ? labelsMinZoom : undefined,
+      style: (feature: Feature<Geometry>) => this.canvasLabelStyle(feature),
+    });
 
-    return color;
+    const bundle: FeatureLayerBundle = {
+      main,
+      source,
+      isWebgl: useWebgl,
+      overrides,
+      points,
+      labels,
+      listenerKeys: [],
+      syncHelpers: () => undefined,
+    };
+
+    const helpers: Array<[BaseLayer, number, () => boolean]> = [[labels, 0.2, () => this.labelsEnabled()]];
+    if (points) {
+      helpers.push([points, 0.1, () => true]);
+    }
+    const syncHelpers = () => {
+      helpers.forEach(([helper, zOffset, enabled]) => {
+        helper.setVisible(main.getVisible() && enabled());
+        helper.setOpacity(main.getOpacity());
+        helper.setZIndex((main.getZIndex() || 0) + zOffset);
+      });
+    };
+    helpers.forEach(([helper]) => {
+      helper.set(AUXILIARY_LAYER, true);
+      if (this.map) {
+        this.map.addLayer(helper);
+      }
+    });
+    bundle.listenerKeys.push(main.on('propertychange', syncHelpers) as EventsKey);
+    bundle.syncHelpers = syncHelpers;
+    syncHelpers();
+
+    this.featureBundles.push(bundle);
+    return main;
   }
 
-  private createFeatureStyle(feature) {
-    const geometry = feature.getGeometry();
-    let label = '';
-    if (feature.get(this.state.featuresLabel) !== undefined) {
-      if (this.state.featuresLabel && this.state.featuresLabel !== 'none') {
-        label = feature.get(this.state.featuresLabel).value;
-      }
-    }
-    let color = this.defaultFeaturesColor;
-    // Only apply color taxonomy if it's set and not 'default' or empty
-    if (this.state.registeredControls.length > 0 && 
-        this.state.featuresColorTaxonomy && 
-        this.state.featuresColorTaxonomy !== 'default' && 
-        this.state.featuresColorTaxonomy !== '') {
-      const taxonomyValue = feature.get(this.state.featuresColorTaxonomy);
-      if (taxonomyValue && taxonomyValue.value) {
-        let feature_group = taxonomyValue.value;
-        var group_color = this.state.groupColorAssociations[feature_group];
-        if (feature_group in this.state.groupColorAssociations && group_color !== this.defaultFeaturesColor) {
-          if (typeof group_color === 'string') {
-            color = group_color;
-          } else if (group_color && group_color.rgb) {
-            let color_rgba = group_color.rgb;
-            let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
-            color = rgba_string;
-          }
+  /**
+   * Brings every features layer up to date with the current filters, colors, labels and selection.
+   * Year filter and dimming are GPU variables; colors and group visibility are rewritten on the
+   * features only when they actually changed.
+   */
+  private refreshFeatureRendering(): void {
+    const colorsChanged = this.appearance.update(this.getColorContext());
+    const variables = webglStyleVariables(this.getYearFilter(), this.highlightActive);
+
+    this.featureBundles.forEach((bundle) => {
+      if (colorsChanged) {
+        this.appearance.applyTo(bundle.source.getFeatures());
+        // Rebuilds the WebGL buffers from the new attributes and redraws the canvas layers of this source.
+        bundle.source.changed();
+      } else {
+        bundle.labels.changed();
+        if (!bundle.isWebgl) {
+          bundle.main.changed();
         }
       }
+      if (bundle.points) {
+        bundle.points.changed();
+      }
+      if (bundle.isWebgl) {
+        (bundle.main as WebGLVectorLayer<any>).updateStyleVariables(variables);
+      }
+      bundle.syncHelpers();
+    });
+
+    if (this.highlightLayer) {
+      this.highlightLayer.changed();
     }
-    color = this.boostColorOpacity(color);
-    let featureStyle = getFeatureStyle(geometry, color, this.state.labelBackgroundEnabled);
-    if (label) {
-      featureStyle.getText().setText(label);
-    }
-    return featureStyle;
   }
 
   private applyFeaturesFilteringFromControls() {
     if (!this.map) return;
 
-    console.log('Setting year: ' + this.state.year);
-    const year = this.state.year;
-    const vectorLayers = this.getVectorLayersFromMap();
-
-    // Clear style cache when filtering changes
-    this.styleCache = {};
-
-    // Process only features in the current viewport for better performance
+    // Any change of filters or styling removes the selection highlight, as it always did.
+    this.clearHighlight(false);
+    this.refreshFeatureRendering();
     this.updateVisibleFeatures();
 
-    vectorLayers.forEach((vectorLayer) => {
-      const source = vectorLayer.getSource();
-      let features;
-
-      if (source instanceof Cluster) {
-        features = source.getSource().getFeatures();
-      } else {
-        features = source.getFeatures();
-      }
-
-      // Read per-layer fill/stroke opacity overrides (set by features-layer template attributes)
-      const layerFillOpacity = vectorLayer.get('fillOpacity');
-      const layerStrokeOpacity = vectorLayer.get('strokeOpacity');
-      const hasLayerOpacityOverride = layerFillOpacity !== undefined || layerStrokeOpacity !== undefined;
-
-      features.forEach((feature) => {
-        try {
-          // Use the optimized style function that includes caching
-          const style = this.getFeatureStyleWithFilters(feature);
-          // Apply per-layer fill/stroke opacity overrides if configured
-          if (hasLayerOpacityOverride && style) {
-            const fill = style.getFill();
-            const stroke = style.getStroke();
-            if (fill && layerFillOpacity !== undefined) {
-              const fillColor = fill.getColor();
-              if (fillColor && typeof fillColor === 'string') {
-                fill.setColor(this.ensureRgbaWithAlpha(fillColor, layerFillOpacity));
-              }
-            }
-            if (stroke && layerStrokeOpacity !== undefined) {
-              const strokeColor = stroke.getColor();
-              if (strokeColor && typeof strokeColor === 'string') {
-                stroke.setColor(this.ensureRgbaWithAlpha(strokeColor, layerStrokeOpacity));
-              }
-            }
-          }
-          feature.setStyle(style);
-        } catch (ex) {
-          console.log('Error styling feature: ', feature);
-          console.log(ex);
-          feature.setStyle(this.createHiddenFeatureStyle());
-        }
-      });
-    });
-
-    // After applying filters, check if the selected feature (if any) is now hidden.
-    // If so, hide its popup.
-    if (this.markerPopup && this.state.selectedFeature) {
-      const selectedFeatureStyle = this.state.selectedFeature.getStyle() as Style;
-      // An empty style object (no fill, stroke, or image) signifies a hidden feature.
-      const isSelectedFeatureHidden = !selectedFeatureStyle ||
-                                    (!selectedFeatureStyle.getFill() &&
-                                     !selectedFeatureStyle.getStroke() &&
-                                     !selectedFeatureStyle.getImage());
-      
-      if (isSelectedFeatureHidden) {
-        this.markerPopup.hide();
-        // We don't necessarily need to set this.state.selectedFeature to null here,
-        // as the feature might become visible again with different filters.
-        // The main goal is to hide the popup of a non-visible feature.
-      }
+    // After applying filters, hide the popup of the selected feature if it is now filtered out.
+    if (this.markerPopup && this.state.selectedFeature && !this.isFeatureShown(this.state.selectedFeature)) {
+      this.markerPopup.hide();
     }
   }
 
   private updateFeatureColorsByGroups(groupColorsAssociationsNew) {
     console.log('Updating feature colors by groups');
-
-    // Clear style cache when color groups change
-    this.styleCache = {};
 
     this.setState(
       {
@@ -2273,6 +2381,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         this.setState({ errorMessage: maybe.Just(msg) });
       } else {
         f.setGeometry(geo);
+        prepareFeatureYears(f);
 
         // Explicitly set the feature ID using the 'subject' property from the marker data.
         // The 'subject' property (e.g., an IRI) is often used as a unique identifier in this codebase.
@@ -2396,12 +2505,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    * @param feature The feature to animate
    */
   private flashFeature(feature: Feature) {
-    // Find a suitable layer to use for the animation
-    const vectorLayers = this.getVectorLayersFromMap();
-    if (!vectorLayers.length) return;
-    
-    // Use the first vector layer for the animation
-    const animationLayer = vectorLayers[0];
+    if (!this.map) return;
+
+    // Draw the animation on the canvas highlight overlay (WebGL layers have no vector context)
+    const animationLayer = this.ensureHighlightLayer();
     
     // Clone the geometry to avoid modifying the original
     const flashGeom = feature.getGeometry().clone();
@@ -2554,100 +2661,14 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     });
   }
 
-  private getFeatureStyleWithFilters(feature: Feature): Style {
-    // Check if year filtering is enabled and we have a year set
-    if (this.state.yearFiltering && this.state.year) {
-      const selectedYearString = this.state.year.split('-')[0];
-      const selectedYear = parseInt(selectedYearString);
-
-      if (Number.isNaN(selectedYear)) {
-        console.warn('Selected year is not a valid number:', this.state.year);
-        // Potentially hide all features or handle as an error, for now, proceed without year filtering.
-      } else {
-        const bobProperty = feature.get('bob');
-        const eoeProperty = feature.get('eoe');
-
-        if (bobProperty && typeof bobProperty.value === 'string') {
-          const featureBobYearString = bobProperty.value.split('-')[0];
-          const featureBobYear = parseInt(featureBobYearString);
-
-          if (Number.isNaN(featureBobYear)) {
-            console.warn('Could not parse bob year from value:', bobProperty.value, 'for feature:', feature.get('subject')?.value);
-            return this.createHiddenFeatureStyle(); // Hide if bob year can't be parsed
-          }
-
-          if (eoeProperty && typeof eoeProperty.value === 'string' && eoeProperty.value.trim() !== '') {
-            // Feature has bob and eoe
-            const featureEoeYearString = eoeProperty.value.split('-')[0];
-            const featureEoeYear = parseInt(featureEoeYearString);
-
-            if (Number.isNaN(featureEoeYear)) {
-              console.warn('Could not parse eoe year from value:', eoeProperty.value, 'for feature:', feature.get('subject')?.value);
-              return this.createHiddenFeatureStyle(); // Hide if eoe year can't be parsed
-            }
-
-            // Standard range check: bob <= selectedYear <= eoe
-            if (!(featureBobYear <= selectedYear && selectedYear <= featureEoeYear)) {
-              return this.createHiddenFeatureStyle();
-            }
-          } else {
-            // Feature has bob but no eoe (or eoe is empty string) - treat as ongoing
-            // Show if bob <= selectedYear
-            if (!(featureBobYear <= selectedYear)) {
-              return this.createHiddenFeatureStyle();
-            }
-          }
-        }
-        // If a feature does not have a valid 'bob' property, it is not subject to this specific year filter.
-        // It will remain visible unless other filters hide it.
-        // Or, if strict filtering is desired for features missing bob:
-        // else { return this.createHiddenFeatureStyle(); }
-      }
-    }
-    
-    // We don't need special handling for selected features anymore
-    // The highlightFeaturesByIris method handles all highlighting
-
-    // Check if feature has a group and if that group is toggled on
-    if (this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy) {
-      if (feature.get(this.state.featuresColorTaxonomy) !== undefined) {
-        let feature_group = feature.get(this.state.featuresColorTaxonomy).value;
-
-        // If the feature's group is in groupColorAssociations
-        if (feature_group in this.state.groupColorAssociations) {
-          // Get the color for this group
-          let color = this.state.groupColorAssociations[feature_group];
-
-          // Check if the color is a string with rgba format
-          if (typeof color === 'string' && color.startsWith('rgba')) {
-            // Extract the alpha value
-            const alphaMatch = color.match(/rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([\d.]+)\s*\)/);
-            if (alphaMatch && parseFloat(alphaMatch[1]) === 0) {
-              // If alpha is 0, the group is toggled off, so hide the feature and its label
-              return this.createHiddenFeatureStyle();
-            }
-          } else if (typeof color === 'object' && color.rgb && color.rgb.a === 0) {
-            // If it's a color object with alpha 0
-            return this.createHiddenFeatureStyle();
-          }
-        }
-      }
-    }
-
-    // If we get here, the feature should be visible with normal style
-    return this.createFeatureStyle(feature);
-  }
-
-  private createLayer = (features: Feature[], type: string): VectorLayer<any> => {
+  private createLayer = (features: Feature[], type: string): BaseLayer => {
     console.log('Create Layer');
-
-    const source = new Vector({ features });
 
     if (type === 'Point') {
       // Create a Cluster Source with Dynamic Zoom Adjustment
       const clusterSource = new Cluster({
         distance: this.getClusterDistance(this.map.getView().getZoom()), // Initial clustering distance
-        source,
+        source: new Vector({ features }),
       });
 
       const clusteredLayer = new AnimatedCluster({
@@ -2658,10 +2679,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         zIndex: 1, // Keep clusters on top
       });
 
-      // Listen for zoom changes and update clustering dynamically
-      this.map.getView().on('change:resolution', () => {
-        const zoom = this.map.getView().getZoom();
-        clusterSource.setDistance(this.getClusterDistance(zoom));
+      // Adapt the clustering distance to the zoom once the view settles (re-clustering on every
+      // animation frame of a zoom is O(points) per frame).
+      this.map.on('moveend', () => {
+        const distance = this.getClusterDistance(this.map.getView().getZoom());
+        if (clusterSource.getDistance() !== distance) {
+          clusterSource.setDistance(distance);
+        }
       });
 
       return clusteredLayer;
@@ -2687,12 +2711,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
     }
     
-    const vectorLayer = new VectorLayer({
-      source,
-      style: (feature: Feature) => this.getFeatureStyleWithFilters(feature),
-      zIndex: layerZIndex,
-      declutter: true,
-    });
+    const vectorLayer = this.createFeatureBundle(features, { zIndex: layerZIndex });
     // Set level property to ensure it appears in controls
     vectorLayer.set('level', 'feature');
     vectorLayer.set('name', layerName);
@@ -2890,40 +2909,14 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       return;
     }
 
-    const source = new Vector({ features: allFeatures });
-
-    // Capture fill/stroke opacity for the style closure
     const layerFillOpacity = layerConfig.fillOpacity;
     const layerStrokeOpacity = layerConfig.strokeOpacity;
-    const hasFillStrokeOverride = layerFillOpacity !== undefined || layerStrokeOpacity !== undefined;
 
-    const vectorLayer = new VectorLayer({
-      source,
-      style: (feature: Feature) => {
-        const baseStyle = this.getFeatureStyleWithFilters(feature);
-        // Apply per-layer fill/stroke opacity overrides if configured
-        if (hasFillStrokeOverride && baseStyle) {
-          const fill = baseStyle.getFill();
-          const stroke = baseStyle.getStroke();
-          if (fill && layerFillOpacity !== undefined) {
-            const fillColor = fill.getColor();
-            if (fillColor && typeof fillColor === 'string') {
-              fill.setColor(this.ensureRgbaWithAlpha(fillColor, layerFillOpacity));
-            }
-          }
-          if (stroke && layerStrokeOpacity !== undefined) {
-            const strokeColor = stroke.getColor();
-            if (strokeColor && typeof strokeColor === 'string') {
-              stroke.setColor(this.ensureRgbaWithAlpha(strokeColor, layerStrokeOpacity));
-            }
-          }
-        }
-        return baseStyle;
-      },
+    const vectorLayer = this.createFeatureBundle(allFeatures, {
       zIndex: layerConfig.zIndex,
       visible: layerConfig.visible,
       opacity: layerConfig.opacity,
-      declutter: true,
+      overrides: { fillOpacity: layerFillOpacity, strokeOpacity: layerStrokeOpacity },
     });
 
     // Set metadata for controls
@@ -3176,13 +3169,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
               this.spyglassRadius = newRadius;
             }
             
-            // Always render the map to update spyglass position and/or size
-            this.map.render();
+            // Only the spyglass depends on the mouse position: re-render just in that mode
+            if (this.state.overlayVisualization === 'spyglass' || this.isResizingSpyglass) {
+              this.map.render();
+            }
           });
 
           node.addEventListener('mouseout', () => {
             this.mousePosition = null;
-            this.map.render();
+            if (this.state.overlayVisualization === 'spyglass') {
+              this.map.render();
+            }
           });
           
           // Add event listener for right-click or ctrl+click to start resizing spyglass
@@ -3302,9 +3299,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       this.queryExecutionCount = 0;
     }
     this.queryExecutionCount++;
-
-    // Clear style cache when loading new data
-    this.styleCache = {};
 
     const startTime = performance.now();
     const stream = SparqlClient.select(query, { context: context.semanticContext });
@@ -3450,14 +3444,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   };
 
   private getAllVectorLayers() {
-    const allLayers = this.state.mapLayers;
-    let vectorLayers = [];
-    allLayers.forEach((layer) => {
-      if (layer instanceof VectorLayer) {
-        vectorLayers.push(layer);
-      }
-    });
-    return vectorLayers;
+    return this.state.mapLayers.filter((layer) => isFeatureLayer(layer));
   }
 
   private calculateExtent() {
@@ -3587,25 +3574,30 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
      * }
      *
      */
-    // It updates only the last layer, assuming it contains the features
-    const layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer<any>;
-
-    event.data['features'].forEach((feature) => {
-      const i = this.getIndexBySubject(feature.subject, layer.getSource().getFeatures());
-
-      layer
-        .getSource()
-        .getFeatures()
-        [i].setStyle(
-          new Style({
-            fill: new Fill({
-              color: feature.color,
-            }),
-            stroke: new Stroke({
-              color: feature.color,
-            }),
-          })
-        );
+    // Recolor the given features wherever they are. Colors are rendering attributes of the
+    // features, so the change is a single buffer rebuild per affected layer.
+    const touched = new Set<FeatureLayerBundle>();
+    event.data['features'].forEach((entry) => {
+      this.featureBundles.forEach((bundle) => {
+        const feature = bundle.source.getFeatureById(entry.subject) as Feature<Geometry>;
+        if (!feature) return;
+        // The event color is used as-is (no opacity boost), as before.
+        let c: number[];
+        try {
+          c = asColorArray(entry.color);
+        } catch (e) {
+          console.warn('Invalid feature color', entry.color);
+          return;
+        }
+        setFeatureColor(feature, c);
+        touched.add(bundle);
+      });
+    });
+    touched.forEach((bundle) => {
+      bundle.source.changed();
+      if (bundle.points) {
+        bundle.points.changed();
+      }
     });
   };
 
@@ -3675,21 +3667,23 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return result;
   }
 
-  private getVectorLayersFromMap() {
-    if (this.map) {
-      console.log('Getting Vector Layers from Map: ', this.map);
-      const allLayers = this.map.getLayers().getArray();
-      let vectorLayers = [];
-      allLayers.forEach((layer) => {
-        if (layer instanceof VectorLayer) {
-          vectorLayers.push(layer);
-        }
-      });
-      return vectorLayers;
-    } else {
-      console.log('Map', this.props.id, 'not yet ready.');
+  private getVectorLayersFromMap(): any[] {
+    if (!this.map) {
       return [];
     }
+    return this.map
+      .getLayers()
+      .getArray()
+      .filter((layer) => isFeatureLayer(layer));
+  }
+
+  /** Vector source holding the original features of a features layer (unwraps clusters). */
+  private getFeatureSource(layer: any): VectorSource | null {
+    let source = layer.getSource ? layer.getSource() : null;
+    if (source instanceof Cluster) {
+      source = source.getSource();
+    }
+    return source instanceof VectorSource ? source : null;
   }
 
   // Performance optimization methods
@@ -3697,40 +3691,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     if (!this.map) return;
 
     try {
-      // Get the current viewport extent with a buffer
+      // Current viewport extent with a buffer
       const extent = this.map.getView().calculateExtent(this.map.getSize());
       const bufferedExtent = buffer(extent, getWidth(extent) * 0.3);
 
-      // Clear previous visible features
-      this.visibleFeatures.clear();
-
-      // Get features in current viewport
-      this.getVectorLayersFromMap().forEach((vectorLayer) => {
-        const source = vectorLayer.getSource();
-        let featuresInExtent;
-
-        if (source instanceof Cluster) {
-          // For clustered layers, get features from the source of the cluster that are within the extent
-          featuresInExtent = source.getSource().getFeaturesInExtent(bufferedExtent);
-        } else if (source instanceof VectorSource) { // Check if it's a VectorSource
-          featuresInExtent = source.getFeaturesInExtent(bufferedExtent);
-        } else {
-          // If it's not a Cluster or a direct VectorSource, we might not be able to get features in extent.
-          // Fallback to all features from this source, though this might not be ideal for performance.
-          console.warn('Source type not directly supported for getFeaturesInExtent, falling back to getFeatures:', source);
-          featuresInExtent = source.getFeatures ? source.getFeatures() : [];
-        }
-
-        featuresInExtent.forEach((feature) => {
-          const featureId = feature.getId();
-          if (featureId) {
-            this.visibleFeatures.add(featureId.toString());
-          }
-        });
-      });
-
-      console.log(`Visible features in extent: ${this.visibleFeatures.size}`);
-      
       // Compute and send visible taxonomy groups to controls
       this.computeAndSendVisibleGroups(bufferedExtent);
     } catch (error) {
@@ -3750,38 +3714,31 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const taxonomy = this.state.featuresColorTaxonomy;
     if (!taxonomy || taxonomy === '' || taxonomy === 'default') return;
 
+    const yearFilter = this.getYearFilter();
     const visibleGroups: Set<string> = new Set();
-    
+
     this.getVectorLayersFromMap().forEach((vectorLayer) => {
-      const source = vectorLayer.getSource();
-      let featuresInExtent;
-
-      if (source instanceof Cluster) {
-        featuresInExtent = source.getSource().getFeaturesInExtent(extent);
-      } else if (source instanceof VectorSource) {
-        featuresInExtent = source.getFeaturesInExtent(extent);
-      } else {
-        featuresInExtent = source.getFeatures ? source.getFeatures() : [];
-      }
-
-      featuresInExtent.forEach((feature) => {
+      const source = this.getFeatureSource(vectorLayer);
+      if (!source) return;
+      // Spatial index lookup; visibility comes from the precomputed filter values, no styles involved.
+      source.forEachFeatureInExtent(extent, (feature: Feature<Geometry>) => {
         const taxonomyValue = feature.get(taxonomy);
-        if (taxonomyValue && taxonomyValue.value) {
-          // Also check that this feature would be visible (not hidden by year filter etc.)
-          const style = this.getFeatureStyleWithFilters(feature);
-          const isHidden = !style.getFill() && !style.getStroke() && !style.getImage();
-          if (!isHidden) {
-            visibleGroups.add(taxonomyValue.value);
-          }
+        if (taxonomyValue && taxonomyValue.value && isShownByGroup(feature) && isShownByYear(feature, yearFilter)) {
+          visibleGroups.add(taxonomyValue.value);
         }
       });
     });
+
+    const groups = Array.from(visibleGroups);
+    const key = taxonomy + '\u0001' + groups.slice().sort().join('\u0001');
+    if (key === this.lastVisibleGroupsKey) return;
+    this.lastVisibleGroupsKey = key;
 
     // Send to controls
     trigger({
       eventType: SemanticMapSendVisibleGroups,
       source: this.props.id,
-      data: Array.from(visibleGroups),
+      data: groups,
       targets: this.state.registeredControls,
     });
   }
@@ -4297,6 +4254,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         }),
         zIndex: 1000, // Ensure it's on top
       });
+      this.measureVector.set(AUXILIARY_LAYER, true);
       this.map.addLayer(this.measureVector);
     }
     
@@ -4684,281 +4642,90 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   };
   
   /**
+   * Canvas layer on top of the features that draws the highlighted (selected) features and the
+   * flash animation. It only ever holds a handful of features.
+   */
+  private ensureHighlightLayer(): VectorLayer<any> {
+    if (!this.highlightLayer) {
+      this.highlightLayer = new VectorLayer({
+        source: this.highlightSource,
+        zIndex: this.VECTOR_ZINDEX_START + 5000,
+        style: (feature: Feature<Geometry>) =>
+          this.canvasStyles.highlightStyle(feature, isPointFeature(feature) ? this.getFeatureLabel(feature) : ''),
+      });
+      this.highlightLayer.set(AUXILIARY_LAYER, true);
+      this.map.addLayer(this.highlightLayer);
+    }
+    return this.highlightLayer;
+  }
+
+  /**
+   * Removes the selection highlight.
+   * @param refresh false when the caller refreshes the feature rendering itself
+   */
+  private clearHighlight(refresh: boolean = true) {
+    const hadHighlight = this.highlightActive || this.highlightSource.getFeatures().length > 0;
+    this.highlightActive = false;
+    this.highlightSource.clear(true);
+    if (this.highlightLayer) {
+      this.highlightLayer.changed();
+    }
+    if (hadHighlight && refresh) {
+      this.refreshFeatureRendering();
+    }
+  }
+
+  /**
    * Highlights features by their subject IRIs
    */
   private highlightFeaturesByIris(subjectIris: string[]) {
     if (!this.map || subjectIris.length === 0) return;
-    
-    // Get all vector layers
-    const vectorLayers = this.getVectorLayersFromMap();
-    
-    // Track if we found any features to highlight
-    let foundFeatures = false;
-    
-    // Create an empty extent to combine all highlighted features
+
+    const iris = new Set(subjectIris);
     const combinedExtent = createEmpty();
-    
-    // Collection to store all highlighted features for zooming
     const highlightedFeatures: Feature[] = [];
-    
-    // Process each vector layer
-    vectorLayers.forEach(vectorLayer => {
-      const source = vectorLayer.getSource();
-      let features;
-      
+
+    this.getVectorLayersFromMap().forEach((vectorLayer) => {
+      let source = vectorLayer.getSource();
       if (source instanceof Cluster) {
-        features = source.getSource().getFeatures();
-      } else {
-        features = source.getFeatures();
+        source = source.getSource();
       }
-      
-      // Find features that match the subject IRIs
-      features.forEach(feature => {
-        // Check if this feature has a subject property that matches one of our IRIs
-        if (feature.get('subject') && subjectIris.includes(feature.get('subject').value)) {
-          console.log('Highlighting feature:', feature.get('subject').value);
-          
-          // Add this feature to our collection for zooming
+      if (!source || typeof source.getFeatureById !== 'function') return;
+
+      // Feature ids are the subject IRIs (see createGeometries): constant-time lookup per IRI.
+      iris.forEach((iri) => {
+        const feature = source.getFeatureById(iri) as Feature;
+        if (feature && feature.get('subject') && feature.get('subject').value === iri) {
           highlightedFeatures.push(feature);
-          
-          // Extend the combined extent with this feature's geometry
-          const geometry = feature.getGeometry();
-          if (geometry) {
-            extend(combinedExtent, geometry.getExtent());
-          }
-          
-          // Create a custom style that preserves the original color but with full opacity
-          const originalStyle = this.getFeatureStyleWithFilters(feature);
-          
-          // For polygon features
-          if (feature.getGeometry() instanceof Polygon || feature.getGeometry() instanceof MultiPolygon) {
-            // Get the original fill color
-            const originalFill = originalStyle.getFill();
-            let fillColor = originalFill ? originalFill.getColor() : 'rgba(200,50,50,0.5)';
-            
-            // If the color is in rgba format, set opacity to 1
-            if (typeof fillColor === 'string' && fillColor.startsWith('rgba')) {
-              fillColor = fillColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 'rgba($1, $2, $3, 0.8)');
-            }
-            
-            // Get the original stroke color
-            const originalStroke = originalStyle.getStroke();
-            let strokeColor = (originalStroke ? originalStroke.getColor() : fillColor) as string;
-            
-            // Create a new style with the original color but full opacity
-            const highlightStyle = new Style({
-              fill: new Fill({
-                color: fillColor,
-              }),
-              stroke: new Stroke({
-                color: strokeColor, // Use original stroke color
-                width: 2, // Thinner border
-              }),
-              text: originalStyle.getText(),
-            });
-            
-            feature.setStyle(highlightStyle);
-          } 
-          // For point features
-          else if (feature.getGeometry() instanceof Point || feature.getGeometry() instanceof MultiPoint) {
-            // Create a new style with the original color but full opacity and larger size
-            const highlightStyle = new Style({
-              image: new CircleStyle({
-                radius: 10,
-                fill: new Fill({
-                  color: 'rgba(255, 165, 0, 1.0)', // Full opacity
-                }),
-                stroke: new Stroke({
-                  color: '#FFFFFF',
-                  width: 3,
-                }),
-              }),
-              text: originalStyle.getText(),
-            });
-            
-            feature.setStyle(highlightStyle);
-          }
-          // For other geometry types
-          else {
-            // Default highlight style
-            const highlightStyle = new Style({
-              stroke: new Stroke({
-                color: '#FFFFFF',
-                width: 1,
-              }),
-              text: originalStyle.getText(),
-            });
-            
-            feature.setStyle(highlightStyle);
-          }
-          
-          foundFeatures = true;
-          
-          // Zoom to the first matching feature
-          if (!this.state.selectedFeature) {
-            this.zoomToFeature(feature);
-          }
-        } else {
-          // For non-highlighted features, first get their style based on current filters (including year)
-          const baseStyleForNonHighlighted = this.getFeatureStyleWithFilters(feature);
-
-          // Check if the base style is the hidden style
-          // The hidden style is an empty Style object, so its properties would be undefined or default.
-          // A more robust check might be to compare with `this.createHiddenFeatureStyle()` if it's a unique instance,
-          // or check for a specific property/flag if you set one on hidden styles.
-          // For now, we assume an empty style (no fill, no stroke, no image) means hidden.
-          const isHiddenByFilter = !baseStyleForNonHighlighted.getFill() &&
-                                 !baseStyleForNonHighlighted.getStroke() &&
-                                 !baseStyleForNonHighlighted.getImage();
-
-          if (isHiddenByFilter) {
-            // If the feature is already meant to be hidden by filters, keep it hidden
-            feature.setStyle(this.createHiddenFeatureStyle());
-          } else {
-            // If the feature is visible according to filters, apply a low opacity version of its style
-            let lowOpacityStyle;
-            const geometryType = feature.getGeometry().getType();
-
-            if (geometryType === 'Polygon' || geometryType === 'MultiPolygon') {
-              const fill = baseStyleForNonHighlighted.getFill();
-              const stroke = baseStyleForNonHighlighted.getStroke();
-              let fillColor = fill ? fill.getColor() : 'rgba(200,50,50,0.5)';
-              let strokeColor = stroke ? stroke.getColor() : (fillColor || 'rgba(200,50,50,0.5)');
-
-              // Ensure colors are in rgba format and set low alpha
-              fillColor = this.ensureRgbaWithAlpha(fillColor, 0.1);
-              strokeColor = this.ensureRgbaWithAlpha(strokeColor, 0.1);
-              
-              lowOpacityStyle = new Style({
-                fill: new Fill({ color: fillColor }),
-                stroke: new Stroke({
-                  color: strokeColor,
-                  width: stroke ? stroke.getWidth() : 1,
-                }),
-                text: baseStyleForNonHighlighted.getText(), // Preserve text style
-              });
-            } else if (geometryType === 'Point' || geometryType === 'MultiPoint') {
-              const image = baseStyleForNonHighlighted.getImage();
-              if (image instanceof CircleStyle) {
-                const fill = image.getFill();
-                const stroke = image.getStroke();
-                let fillColor = fill ? fill.getColor() : 'rgba(200,50,50,0.5)';
-                
-                fillColor = this.ensureRgbaWithAlpha(fillColor, 0.1);
-
-                lowOpacityStyle = new Style({
-                  image: new CircleStyle({
-                    radius: image.getRadius(),
-                    fill: new Fill({ color: fillColor }),
-                    stroke: stroke ? new Stroke({ // Preserve original stroke color but make it more transparent if needed
-                      color: this.ensureRgbaWithAlpha(stroke.getColor(), 0.2),
-                      width: stroke.getWidth(),
-                    }) : undefined,
-                  }),
-                  text: baseStyleForNonHighlighted.getText(), // Preserve text style
-                });
-              } else { // Fallback for other image types or if no image
-                 lowOpacityStyle = new Style({
-                    image: image, // Keep original image if not CircleStyle
-                    text: baseStyleForNonHighlighted.getText(),
-                 });
-                 // Attempt to make generic style transparent if possible
-                 // This part is tricky without knowing the exact style structure
-              }
-            } else { // For LineString, MultiLineString, etc.
-              const stroke = baseStyleForNonHighlighted.getStroke();
-              let strokeColor = stroke ? stroke.getColor() : 'rgba(200,50,50,0.5)';
-              strokeColor = this.ensureRgbaWithAlpha(strokeColor, 0.1);
-              lowOpacityStyle = new Style({
-                stroke: new Stroke({
-                  color: strokeColor,
-                  width: stroke ? stroke.getWidth() : 1,
-                }),
-                text: baseStyleForNonHighlighted.getText(),
-              });
-            }
-            feature.setStyle(lowOpacityStyle);
-          }
         }
       });
     });
-    
-    if (!foundFeatures) {
+
+    if (highlightedFeatures.length === 0) {
       console.warn('No features found on the map matching the highlight IRIs');
-    } else {
-      // If we found features to highlight, zoom to their combined extent
-      console.log('Zooming to combined extent of highlighted features');
-      this.zoomToExtent(combinedExtent);
+      return;
     }
-    
-    // Force a re-render of the map
-    this.map.render();
-  }
 
-  /**
-   * Ensures a color string is in rgba format with a specific alpha.
-   * Handles hex, rgb, rgba strings, and OpenLayers color arrays.
-   * @param color The input color (string or array [r,g,b,a?]).
-   * @param alpha The desired alpha value (0-1).
-   * @returns An rgba string e.g., "rgba(255,0,0,0.5)".
-   */
-  private ensureRgbaWithAlpha(color: any, alpha: number): string {
-    let r = 0, g = 0, b = 0;
+    this.ensureHighlightLayer();
+    this.highlightSource.clear(true);
+    this.highlightSource.addFeatures(highlightedFeatures);
+    // Every other feature is dimmed: a single style variable for the WebGL layers.
+    this.highlightActive = true;
+    this.refreshFeatureRendering();
 
-    if (typeof color === 'string') {
-      const trimmedColor = color.trim();
-      if (trimmedColor.startsWith('#')) { // Hex color
-        const hex = trimmedColor.substring(1);
-        if (hex.length === 3) {
-          r = parseInt(hex[0] + hex[0], 16);
-          g = parseInt(hex[1] + hex[1], 16);
-          b = parseInt(hex[2] + hex[2], 16);
-        } else if (hex.length === 6) {
-          r = parseInt(hex.substring(0, 2), 16);
-          g = parseInt(hex.substring(2, 4), 16);
-          b = parseInt(hex.substring(4, 6), 16);
-        } else {
-          console.warn(`Invalid hex color format: ${trimmedColor}. Defaulting to black.`);
-        }
-      } else if (trimmedColor.startsWith('rgb(')) { // rgb(r,g,b)
-        const parts = trimmedColor.substring(4, trimmedColor.length - 1).split(',');
-        if (parts.length >= 3) {
-          r = parseInt(parts[0].trim());
-          g = parseInt(parts[1].trim());
-          b = parseInt(parts[2].trim());
-        } else {
-          console.warn(`Invalid rgb color format: ${trimmedColor}. Defaulting to black.`);
-        }
-      } else if (trimmedColor.startsWith('rgba(')) { // rgba(r,g,b,a)
-        const parts = trimmedColor.substring(5, trimmedColor.length - 1).split(',');
-        if (parts.length >= 3) { // We only need r,g,b, alpha will be overridden
-          r = parseInt(parts[0].trim());
-          g = parseInt(parts[1].trim());
-          b = parseInt(parts[2].trim());
-        } else {
-          console.warn(`Invalid rgba color format: ${trimmedColor}. Defaulting to black.`);
-        }
-      } else {
-        console.warn(`Unrecognized color string format: ${trimmedColor}. Defaulting to black.`);
+    highlightedFeatures.forEach((feature) => {
+      const geometry = feature.getGeometry();
+      if (geometry) {
+        extend(combinedExtent, geometry.getExtent());
       }
-    } else if (Array.isArray(color) && color.length >= 3) { // OpenLayers color array [r,g,b,a?]
-      r = color[0];
-      g = color[1];
-      b = color[2];
-      // Existing alpha in array (color[3]) is ignored, new alpha is used
-    } else {
-      // Handle CanvasPattern, CanvasGradient, or other unexpected types by returning a default.
-      // It's not feasible to generically apply alpha to these.
-      console.warn(`Cannot apply alpha to color type: ${typeof color}. Value: ${JSON.stringify(color)}. Defaulting to semi-transparent gray.`);
-      return `rgba(128,128,128,${alpha})`;
-    }
+      // Zoom to the matching feature(s)
+      if (!this.state.selectedFeature) {
+        this.zoomToFeature(feature);
+      }
+    });
 
-    // Ensure r,g,b are valid numbers, default to 0 if NaN
-    r = Number.isNaN(r) ? 0 : r;
-    g = Number.isNaN(g) ? 0 : g;
-    b = Number.isNaN(b) ? 0 : b;
-    
-    return `rgba(${r},${g},${b},${alpha})`;
+    console.log('Zooming to combined extent of highlighted features');
+    this.zoomToExtent(combinedExtent);
   }
 
   private setOverlaySwipe = (event: Event<any>) => {
@@ -5026,21 +4793,79 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.resetAllVisualizations();
   }
 
-  private resetVisualization(layerIndex: number) {
-    const overlayLayer = this.state.mapLayers[layerIndex];
-    overlayLayer.un('prerender', this.spyglassFunction);
-    overlayLayer.un('prerender', this.swipeFunction);
-    overlayLayer.un('postrender', function (event) {
-      const ctx = event.context;
-      ctx.restore();
+  /** Layers clipped by the spyglass/swipe mask: the target and, for features layers, its helper layers. */
+  private maskedLayers: BaseLayer[] = [];
+  /** Layer that draws the spyglass ring (the first canvas layer of the masked ones). */
+  private maskRingLayer: BaseLayer | null = null;
+  /** Canvases of WebGL layers clipped with CSS, to be released when the mask is removed. */
+  private maskedWebglCanvases: Set<HTMLCanvasElement> = new Set();
+
+  private getHelperLayers(layer: BaseLayer): BaseLayer[] {
+    const bundle = this.featureBundles.find((b) => b.main === layer);
+    if (!bundle) return [];
+    return bundle.points ? [bundle.points, bundle.labels] : [bundle.labels];
+  }
+
+  private attachMask(targetLayer: BaseLayer) {
+    this.detachMask();
+    const helpers = this.getHelperLayers(targetLayer);
+    this.maskedLayers = [targetLayer, ...helpers];
+    this.maskRingLayer = targetLayer instanceof WebGLVectorLayer ? helpers[0] || null : targetLayer;
+    this.maskedLayers.forEach((layer) => {
+      layer.on('prerender' as any, this.maskPrerender);
+      layer.on('postrender' as any, this.maskPostrender);
     });
   }
 
-  private resetAllVisualizations() {
-    this.state.mapLayers.forEach((tilesLayer, index) => {
-      this.resetVisualization(index);
+  private detachMask() {
+    this.maskedLayers.forEach((layer) => {
+      layer.un('prerender' as any, this.maskPrerender);
+      layer.un('postrender' as any, this.maskPostrender);
     });
-    
+    this.maskedLayers = [];
+    this.maskRingLayer = null;
+    this.maskedWebglCanvases.forEach((canvas) => {
+      canvas.style.clipPath = '';
+    });
+    this.maskedWebglCanvases.clear();
+  }
+
+  private maskPrerender = (event) => {
+    const mode = this.state.overlayVisualization;
+    const ctx = event.context;
+    if (typeof CanvasRenderingContext2D !== 'undefined' && ctx instanceof CanvasRenderingContext2D) {
+      if (mode === 'spyglass') {
+        this.spyglassFunction(event, event.target === this.maskRingLayer);
+      } else if (mode === 'swipe') {
+        this.swipeFunction(event);
+      }
+    } else if (ctx && ctx.canvas) {
+      // WebGL layer: clip its own canvas element with CSS (map viewport pixels).
+      const canvas = ctx.canvas as HTMLCanvasElement;
+      this.maskedWebglCanvases.add(canvas);
+      if (mode === 'spyglass') {
+        canvas.style.clipPath = this.mousePosition
+          ? `circle(${this.spyglassRadius}px at ${this.mousePosition[0]}px ${this.mousePosition[1]}px)`
+          : 'circle(0px at 0px 0px)';
+      } else if (mode === 'swipe') {
+        const mapSize = this.map.getSize();
+        const width = mapSize[0] * (this.swipeValue / 100);
+        canvas.style.clipPath = `inset(0px ${Math.max(0, mapSize[0] - width)}px 0px 0px)`;
+        this.createOrUpdateSwipeButton(width);
+      }
+    }
+  };
+
+  private maskPostrender = (event) => {
+    const ctx = event.context;
+    if (typeof CanvasRenderingContext2D !== 'undefined' && ctx instanceof CanvasRenderingContext2D) {
+      ctx.restore();
+    }
+  };
+
+  private resetAllVisualizations() {
+    this.detachMask();
+
     // Remove swipe button and line when changing visualization mode
     this.removeSwipeControls();
   }
@@ -5094,10 +4919,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           }
           case 'spyglass': {
             this.resetAllVisualizations();
-            targetLayer.on('prerender', this.spyglassFunction);
-            targetLayer.on('postrender', function (event) {
-              event.context.restore();
-            });
+            this.attachMask(targetLayer);
             if (!this.escKeyListener) {
               this.addEscapeKeyListener();
             }
@@ -5106,10 +4928,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           }
           case 'swipe': {
             this.resetAllVisualizations();
-            targetLayer.on('prerender', this.swipeFunction);
-            targetLayer.on('postrender', function (event) {
-              event.context.restore();
-            });
+            this.attachMask(targetLayer);
             if (!this.escKeyListener) {
               this.addEscapeKeyListener();
             }
@@ -5128,7 +4947,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private spyglassResizeStartRadius = 0;
   private spyglassFixedPosition = null; // Store fixed position during resize
   
-  private spyglassFunction = (event) => {
+  private spyglassFunction = (event, drawRing: boolean = true) => {
     const ctx = event.context;
     ctx.save();
     ctx.beginPath();
@@ -5137,9 +4956,11 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       const offset = getRenderPixel(event, [this.mousePosition[0] + this.spyglassRadius, this.mousePosition[1]]);
       const canvasRadius = Math.sqrt(Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2));
       ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
-      ctx.lineWidth = (2 * canvasRadius) / this.spyglassRadius;
-      ctx.strokeStyle = 'rgba(102,0,0,0.5)';
-      ctx.stroke();
+      if (drawRing) {
+        ctx.lineWidth = (2 * canvasRadius) / this.spyglassRadius;
+        ctx.strokeStyle = 'rgba(102,0,0,0.5)';
+        ctx.stroke();
+      }
     }
     ctx.clip();
   };
@@ -5397,104 +5218,6 @@ export class AnnotateControl extends Control {
     });
   }
   */
-}
-
-function getMarkerStyle() {
-  const styleCache = {};
-
-  const clusterStyle = (size, radius, color) =>
-    new Style({
-      image: new Circle({
-        radius,
-        fill: new Fill({ color }),
-      }),
-      text: new Text({
-        text: size.toString(),
-        fill: new Fill({ color: '#fff' }),
-      }),
-    });
-
-  return function (feature: Feature): Style {
-    const features = feature.get('features');
-    const size = features.length;
-
-    const { value: color } = features[0].get('color') || { value: '#000' };
-
-    let style = styleCache[`${size}${color}`];
-    if (!style) {
-      if (size === 1) {
-        const geometry = feature.getGeometry();
-        style = getFeatureStyle(geometry, color);
-      } else {
-        const radius = Math.max(8, Math.min(size * 0.75, 20));
-        style = clusterStyle(size, radius, color);
-      }
-
-      styleCache[size] = style;
-    }
-    // Return the first style instead of an array
-    return style;
-  };
-}
-
-function getFeatureStyle(geometry: Geometry, color: string | undefined, labelBackgroundEnabled: boolean = false): Style {
-  if (geometry instanceof Point || geometry instanceof MultiPoint) {
-    return new Style({
-      geometry,
-      text: new Text({
-        text: '\uf041',
-        font: 'normal 22px FontAwesome',
-        textBaseline: 'bottom',
-        fill: new Fill({ color: color || '#000' }),
-      }),
-    });
-  } else if (geometry instanceof GeometryCollection) {
-    // For geometry collections, use the first geometry's style
-    const geometries = geometry.getGeometries();
-    if (geometries.length > 0) {
-      return getFeatureStyle(geometries[0], color, labelBackgroundEnabled);
-    }
-    // Fallback if no geometries
-    return new Style({
-      fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
-      stroke: new Stroke({ color: color || 'rgba(202, 255, 36, .3)', width: 1.25 }),
-    });
-  }
-  
-  // Create text style options
-  const textOptions: any = {
-    font: '12px Calibri,sans-serif',
-    overflow: true,
-    fill: new Fill({
-      color: '#000',
-    }),
-    stroke: new Stroke({
-      color: '#fff',
-      width: 3,
-    }),
-  };
-  
-  // Add background if enabled
-  if (labelBackgroundEnabled) {
-    textOptions.backgroundFill = new Fill({
-      color: 'rgba(255, 255, 255, 0.8)',
-    });
-    textOptions.backgroundStroke = new Stroke({
-      color: 'rgba(0, 0, 0, 0.1)',
-      width: 1,
-    });
-    textOptions.padding = [2, 4, 2, 4];
-  }
-  
-  return new Style({
-    geometry,
-    text: new Text(textOptions),
-    fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
-    stroke: new Stroke({
-      color: color || 'rgba(202, 255, 36, .3)',
-      width: 1.25,
-    }),
-  });
 }
 
 function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {

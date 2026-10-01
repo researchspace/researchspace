@@ -3812,14 +3812,11 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
 
       // NOW import OLCesium (after Cesium is on window)
-      const { default: OLCesium } = await import('olcs/OLCesium');
+      const { default: OLCesium } = await import('olcs/OLCesium.js');
 
-      // Create the OLCesium instance
-      const resolutionScale =
-        typeof window !== 'undefined' && window.devicePixelRatio
-          ? Math.max(1, window.devicePixelRatio)
-          : 1.0;
-      this.ol3d = new OLCesium({ map: this.map, resolutionScale });
+      // Create the OLCesium instance.
+      // olcs >= 2.2x already multiplies its resolution scale by window.devicePixelRatio.
+      this.ol3d = new OLCesium({ map: this.map });
       console.log('OLCesium initialized successfully');
 
       // Configure scene for better 3D visualization
@@ -4746,7 +4743,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             
             // Get the original stroke color
             const originalStroke = originalStyle.getStroke();
-            let strokeColor = originalStroke ? originalStroke.getColor() : fillColor;
+            let strokeColor = (originalStroke ? originalStroke.getColor() : fillColor) as string;
             
             // Create a new style with the original color but full opacity
             const highlightStyle = new Style({

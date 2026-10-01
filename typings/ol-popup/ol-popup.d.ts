@@ -1,13 +1,14 @@
-/// <reference types="ol" />
-
 declare module 'ol-popup' {
-  class Popup {
-    constructor(options?: ol.olx.OverlayOptions)
-    hide(): void
-    show(p: ol.Coordinate, content: string): void
-    setOffset(p: ol.Coordinate)
+  import Overlay, { Options } from 'ol/Overlay';
+  import { Coordinate } from 'ol/coordinate';
+
+  class Popup extends Overlay {
+    constructor(options?: Partial<Options>);
+    hide(): void;
+    show(p: Coordinate, content: string | HTMLElement): this;
+    isOpened(): boolean;
   }
 
-  const popup = Popup;
+  const popup: typeof Popup;
   export = popup;
 }

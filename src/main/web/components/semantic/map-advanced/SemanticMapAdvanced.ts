@@ -129,6 +129,7 @@ import CircleStyle from 'ol/style/Circle';
 import { options } from 'superagent';
 import { __values } from 'tslib';
 import { year } from 'platform/components/search/date/SimpleDateInput.scss';
+import { attachMapPerfMonitor, isMapPerfEnabled } from './MapPerfMonitor';
 
 enum Source {
   OSM = 'osm',
@@ -460,6 +461,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private visibleFeatures: Set<string> = new Set();
   private debouncedUpdateVisibleFeatures: any;
   private featureCache: any = {}; // Cache for features by ID
+  private detachPerfMonitor: (() => void) | null = null;
 
   constructor(props: SemanticMapAdvancedProps, context: ComponentContext) {
     super(props, context);
@@ -1366,6 +1368,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   public componentWillUnmount() {
     if (this.registrationIntervalId !== null) {
       clearInterval(this.registrationIntervalId);
+    }
+    if (this.detachPerfMonitor) {
+      this.detachPerfMonitor();
+      this.detachPerfMonitor = null;
     }
   }
 
@@ -3121,6 +3127,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
           // Enforce deterministic layering as soon as map is created.
           this.enforceLayerStackingOrder();
+
+          if (isMapPerfEnabled()) {
+            this.detachPerfMonitor = attachMapPerfMonitor(map, this.props.id || 'map');
+          }
 
           // Initialize OLCesium for 3D view lazily (after map is created)
           this.initOlCesium().catch(err => console.error('Failed to init OLCesium:', err));

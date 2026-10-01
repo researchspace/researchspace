@@ -160,6 +160,11 @@ interface Props {
    */
   showPaletteControls?: boolean;
   /**
+   * Initial state of the "Enable Feature Styling" toggle (coloring, labels and legend).
+   * Default: false.
+   */
+  stylingEnabled?: boolean;
+  /**
    * Default color taxonomy to use when styling is enabled.
    * Should match one of the values in featuresColorTaxonomies.
    * If not specified, defaults to 'default' (no taxonomy coloring).
@@ -295,7 +300,7 @@ export class SemanticMapControls extends Component<Props, State> {
       yearMarks: [],
       registeredMap: '',
       activePanel: null,
-      stylingEnabled: false, // Default to OFF
+      stylingEnabled: this.props.stylingEnabled ?? false, // Default to OFF
       labelBackgroundEnabled: false, // Default to OFF
       sunHeightDeg: 45,
       sunDirectionDeg: 180,

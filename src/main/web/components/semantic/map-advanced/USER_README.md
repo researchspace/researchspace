@@ -54,6 +54,8 @@ To integrate the SemanticMapAdvanced component into your HTML page, you need to 
 | `vector-levels` | JSON Array | No | Possible levels of features in the map |
 | `selected-feature-style` | JSON Object | No | Style configuration for selected features |
 | `labels-min-zoom` | number | No | Draw feature labels only above this zoom level (default: all zoom levels). Useful with many features, since labels are drawn on the CPU |
+| `features-fill-opacity` | number | No | Fill opacity (0-1) of the features loaded by `query`, replacing the opacity of their colors |
+| `features-stroke-opacity` | number | No | Stroke opacity (0-1) of the features loaded by `query` |
 
 ### SemanticMapControls Attributes
 
@@ -76,6 +78,7 @@ To integrate the SemanticMapAdvanced component into your HTML page, you need to 
 | `base-map-template` | string | No | Template for base maps panel |
 | `buildings-template` | string | No | Template for buildings panel |
 | `template-mapping` | JSON Object | No | Mapping of data kinds to templates |
+| `styling-enabled` | boolean | No | Initial state of the "Enable Feature Styling" toggle, which also shows the colors legend (default: false) |
 | `spatial-filter-default` | boolean | No | Initial state of the "filter by zoom" checkbox (default: true) |
 | `temporal-filter-default` | boolean | No | Initial state of the "filter by time" checkbox (default: false) |
 | `sync-filter-default` | boolean | No | Initial state of the "sync with time" checkbox (default: false) |

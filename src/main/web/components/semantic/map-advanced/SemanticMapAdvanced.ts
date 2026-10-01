@@ -352,6 +352,18 @@ export interface SemanticMapAdvancedConfig {
   labelsMinZoom?: number;
 
   /**
+   * Optional fill / stroke opacity (0-1) of the features loaded by `query`, replacing the opacity
+   * of their colors. `features-layer` children have their own `fill-opacity` / `stroke-opacity`.
+   *
+   * Example:
+   * ```html
+   * <semantic-map-advanced features-fill-opacity="1" ...>
+   * ```
+   */
+  featuresFillOpacity?: number;
+  featuresStrokeOpacity?: number;
+
+  /**
    * Optional comma-separated list of Cesium Ion asset IDs to load as 3D tilesets
    * when 3D mode is enabled. The assets are fetched through the platform's proxy
    * system (configured in proxy.prop as config.proxy.cesium.*), so the Cesium Ion
@@ -2125,6 +2137,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   /** FEATURE RENDERING **/
 
+  /** Opacity attribute (0-1) as a number, undefined when not set or invalid. */
+  private parseOpacityProp(value: any): number | undefined {
+    const opacity = parseFloat(value);
+    return Number.isFinite(opacity) ? Math.min(1, Math.max(0, opacity)) : undefined;
+  }
+
   private getColorContext(): ColorContext {
     const hasControls = this.state.registeredControls.length > 0;
     const taxonomy = this.state.featuresColorTaxonomy;
@@ -2727,7 +2745,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
     }
     
-    const vectorLayer = this.createFeatureBundle(features, { zIndex: layerZIndex });
+    const vectorLayer = this.createFeatureBundle(features, {
+      zIndex: layerZIndex,
+      overrides: {
+        fillOpacity: this.parseOpacityProp(this.props.featuresFillOpacity),
+        strokeOpacity: this.parseOpacityProp(this.props.featuresStrokeOpacity),
+      },
+    });
     // Set level property to ensure it appears in controls
     vectorLayer.set('level', 'feature');
     vectorLayer.set('name', layerName);

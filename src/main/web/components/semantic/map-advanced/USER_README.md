@@ -97,6 +97,7 @@ The `query` attribute expects a SPARQL SELECT query that projects geographic dat
 Additional variables can be included for feature properties:
 
 - `?subject`: IRI of the corresponding resource
+- `?id`: Unique id of the geometry, when a resource has several of them (e.g. one per epoch, with its own `?bob`/`?eoe`). Defaults to `?subject`; rows repeating an id are ignored. Selection, highlight, zoom and recoloring still work by `?subject`, on all its geometries
 - `?description`: Short textual description
 - `?link`: IRI for linking
 - `?color`: Custom color for the feature

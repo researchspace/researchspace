@@ -517,6 +517,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private lastVisibleGroupsKey: string | null = null;
   private debouncedUpdateVisibleFeatures: any;
   private featureCache: any = {}; // Cache for features by ID
+  /** Features of each subject IRI: a subject can have several geometries (e.g. one per epoch). */
+  private featuresBySubject: { [subject: string]: Feature[] } = {};
   private detachPerfMonitor: (() => void) | null = null;
   private hoverPixel: number[] | null = null;
   private hoverCheckPending = false;
@@ -1348,16 +1350,14 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private findFeatureById(featureId: string): Feature | null {
     if (!this.map) return null;
 
-    // Feature ids are the subject IRIs (see createGeometries): use the sources' id index.
-    const vectorLayers = this.getVectorLayersFromMap();
-    for (let i = 0; i < vectorLayers.length; i++) {
-      const source = this.getFeatureSource(vectorLayers[i]);
-      const feature = source ? (source.getFeatureById(featureId) as Feature) : null;
-      if (feature && feature.get('subject') && feature.get('subject').value === featureId) {
-        return feature;
-      }
-    }
-    return null;
+    // Ids sent by the controls are subject IRIs: prefer the geometry visible in the current year.
+    const features = this.getFeaturesOfSubject(featureId);
+    return features.find((f) => this.isFeatureShown(f as Feature<Geometry>)) || features[0] || null;
+  }
+
+  /** All features (one per geometry) of a subject IRI. */
+  private getFeaturesOfSubject(subjectIri: string): Feature[] {
+    return this.featuresBySubject[subjectIri] || [];
   }
 
   /** REACT COMPONENT FUNCTIONS **/
@@ -2365,8 +2365,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   private createGeometries = (markersData: any[]) => {
     const geometries: { [type: string]: Feature[] } = {};
+    // A layer source keeps only the first feature of each id: skip later rows up front
+    // (e.g. one row per extra label of the same geometry).
+    const seenIds = new Set<string>();
 
     markersData.forEach((marker) => {
+      const rowId = (marker['id'] && marker['id'].value) || (marker['subject'] && marker['subject'].value);
+      if (rowId) {
+        if (seenIds.has(rowId)) return;
+        seenIds.add(rowId);
+      }
       const f = new Feature(marker);
       let geo: Geometry = undefined;
       if (!_.isUndefined(marker['lat']) && !_.isUndefined(marker['lng'])) {
@@ -2383,10 +2391,14 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         f.setGeometry(geo);
         prepareFeatureYears(f);
 
-        // Explicitly set the feature ID using the 'subject' property from the marker data.
-        // The 'subject' property (e.g., an IRI) is often used as a unique identifier in this codebase.
-        if (marker['subject'] && marker['subject'].value) {
-          f.setId(marker['subject'].value);
+        // Feature id: the optional `?id` binding when a subject has several geometries (e.g. one
+        // per epoch), otherwise the subject IRI. Features sharing an id are dropped by the source,
+        // so `?id` must be unique per geometry. Lookups by subject go through featuresBySubject.
+        const subjectIri = marker['subject'] && marker['subject'].value;
+        if (marker['id'] && marker['id'].value) {
+          f.setId(marker['id'].value);
+        } else if (subjectIri) {
+          f.setId(subjectIri);
         } else {
           // If 'subject' or 'subject.value' is not available, log a warning.
           // This helps in debugging if the expected ID field is missing from query results.
@@ -2397,8 +2409,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           // ensuring 'subject.value' is present and used is the preferred approach.
         }
 
+        if (subjectIri) {
+          (this.featuresBySubject[subjectIri] || (this.featuresBySubject[subjectIri] = [])).push(f);
+        }
+
         const type = geo.getType();
-        geometries[type] = geometries[type] ? geometries[type].concat(f) : [f];
+        (geometries[type] || (geometries[type] = [])).push(f);
       }
     });
 
@@ -3298,6 +3314,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       this.queryExecutionCount = 0;
     }
     this.queryExecutionCount++;
+    this.featuresBySubject = {};
+    this.featureCache = {};
 
     const startTime = performance.now();
     const stream = SparqlClient.select(query, { context: context.semanticContext });
@@ -3577,9 +3595,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     // features, so the change is a single buffer rebuild per affected layer.
     const touched = new Set<FeatureLayerBundle>();
     event.data['features'].forEach((entry) => {
-      this.featureBundles.forEach((bundle) => {
-        const feature = bundle.source.getFeatureById(entry.subject) as Feature<Geometry>;
-        if (!feature) return;
+      this.getFeaturesOfSubject(entry.subject).forEach((feature: Feature<Geometry>) => {
+        const bundle = this.featureBundles.find((b) => b.source.hasFeature(feature));
+        if (!bundle) return;
         // The event color is used as-is (no opacity boost), as before.
         let c: number[];
         try {
@@ -4685,7 +4703,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         source: this.highlightSource,
         zIndex: this.VECTOR_ZINDEX_START + 5000,
         style: (feature: Feature<Geometry>) =>
-          this.canvasStyles.highlightStyle(feature, isPointFeature(feature) ? this.getFeatureLabel(feature) : ''),
+          this.isFeatureShown(feature)
+            ? this.canvasStyles.highlightStyle(feature, isPointFeature(feature) ? this.getFeatureLabel(feature) : '')
+            : null,
       });
       this.highlightLayer.set(AUXILIARY_LAYER, true);
       this.map.addLayer(this.highlightLayer);
@@ -4719,20 +4739,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     const combinedExtent = createEmpty();
     const highlightedFeatures: Feature[] = [];
 
-    this.getVectorLayersFromMap().forEach((vectorLayer) => {
-      let source = vectorLayer.getSource();
-      if (source instanceof Cluster) {
-        source = source.getSource();
-      }
-      if (!source || typeof source.getFeatureById !== 'function') return;
-
-      // Feature ids are the subject IRIs (see createGeometries): constant-time lookup per IRI.
-      iris.forEach((iri) => {
-        const feature = source.getFeatureById(iri) as Feature;
-        if (feature && feature.get('subject') && feature.get('subject').value === iri) {
-          highlightedFeatures.push(feature);
-        }
-      });
+    iris.forEach((iri) => {
+      this.getFeaturesOfSubject(iri).forEach((feature) => highlightedFeatures.push(feature));
     });
 
     if (highlightedFeatures.length === 0) {
@@ -4749,9 +4757,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
     highlightedFeatures.forEach((feature) => {
       const geometry = feature.getGeometry();
-      if (geometry) {
-        extend(combinedExtent, geometry.getExtent());
-      }
+      // Only the geometries visible in the current year (a subject may have one per epoch)
+      if (!geometry || !this.isFeatureShown(feature as Feature<Geometry>)) return;
+      extend(combinedExtent, geometry.getExtent());
       // Zoom to the matching feature(s)
       if (!this.state.selectedFeature) {
         this.zoomToFeature(feature);

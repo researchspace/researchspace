@@ -3125,8 +3125,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             this.detachPerfMonitor = attachMapPerfMonitor(map, this.props.id || 'map');
           }
 
-          // Initialize OLCesium for 3D view lazily (after map is created)
-          this.initOlCesium().catch(err => console.error('Failed to init OLCesium:', err));
+          // OLCesium (3D view) is created on the first switch to 3D, see toggle3d.
 
           // Set up viewport change listeners
           map.on('moveend', () => {
@@ -3749,6 +3748,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    * Initialize OLCesium for 3D view
    * This must be called lazily AFTER the map is created to ensure window.Cesium is set first
    */
+  private olCesiumInit: Promise<void> | null = null;
+
+  /** Creates OLCesium once; resolves when the 3D scene can be enabled (tilesets keep loading). */
+  private ensureOlCesium(): Promise<void> {
+    if (!this.olCesiumInit) {
+      this.olCesiumInit = this.initOlCesium();
+    }
+    return this.olCesiumInit;
+  }
+
   private async initOlCesium(): Promise<void> {
     try {
       // Set up Cesium globals FIRST, before importing OLCesium
@@ -3769,11 +3778,24 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
 
       // NOW import OLCesium (after Cesium is on window)
-      const { default: OLCesium } = await import('olcs/OLCesium.js');
+      const [{ default: OLCesium }, { default: RasterSynchronizer }, { default: OverlaySynchronizer }] =
+        await Promise.all([
+          import('olcs/OLCesium.js'),
+          import('olcs/RasterSynchronizer.js'),
+          import('olcs/OverlaySynchronizer.js'),
+        ]);
 
       // Create the OLCesium instance.
       // olcs >= 2.2x already multiplies its resolution scale by window.devicePixelRatio.
-      this.ol3d = new OLCesium({ map: this.map });
+      // No VectorSynchronizer: it would mirror every 2D feature into Cesium primitives (and redo it
+      // on every feature change) even while the 2D map is shown; the 3D view shows the tilesets.
+      this.ol3d = new OLCesium({
+        map: this.map,
+        createSynchronizers: (map, scene) => [
+          new RasterSynchronizer(map, scene),
+          new OverlaySynchronizer(map, scene) as any,
+        ],
+      });
       console.log('OLCesium initialized successfully');
 
       // Configure scene for better 3D visualization
@@ -3802,11 +3824,13 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       
       console.log('Cesium scene configured with lighting');
 
-      // Load 3D Tilesets from Cesium Ion (cesium-asset-ids prop)
-      await this.load3DTileset(Cesium);
-
-      // Load 3D Tilesets from direct URLs (cesium-asset-urls prop)
-      await this.loadUrlTilesets(Cesium);
+      // Load 3D Tilesets in the background: the scene can be shown meanwhile.
+      (async () => {
+        // Load 3D Tilesets from Cesium Ion (cesium-asset-ids prop)
+        await this.load3DTileset(Cesium);
+        // Load 3D Tilesets from direct URLs (cesium-asset-urls prop)
+        await this.loadUrlTilesets(Cesium);
+      })().catch((err) => console.error('Failed to load 3D tilesets:', err));
     } catch (err) {
       console.error('Failed to initialize OLCesium:', err);
     }
@@ -4104,7 +4128,17 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    */
   private toggle3d = (event: Event<any>) => {
     if (!this.ol3d) {
-      console.warn('OLCesium not initialized yet');
+      if (!this.map) {
+        console.warn('Map not initialized yet');
+        return;
+      }
+      this.ensureOlCesium().then(() => {
+        if (this.ol3d && !this.ol3d.getEnabled()) {
+          this.toggle3d(event);
+        } else if (!this.ol3d) {
+          console.warn('OLCesium could not be initialized');
+        }
+      });
       return;
     }
     this.ol3d.setEnabled(!this.ol3d.getEnabled());

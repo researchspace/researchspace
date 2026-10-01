@@ -279,6 +279,8 @@ number of geometries.
 - **Cheap event handlers.** Hover hit detection runs at most once per frame and never while dragging;
   the map re-renders on mouse move only in spyglass mode; the visible-groups legend is computed from
   the precomputed values through the spatial index; cluster distances change only on `moveend`.
+- **3D on demand.** OLCesium is created on the first switch to 3D, without the vector synchronizer,
+  so the 2D map never mirrors its features into Cesium.
 - **No WebGL:** the same layers fall back to canvas `VectorImageLayer`s (redrawn once per movement,
   shown as a bitmap while interacting) with cached, shared styles.
 - **Profiling:** add `?mapPerf` to the page URL to log fps and frame compose time once per second.

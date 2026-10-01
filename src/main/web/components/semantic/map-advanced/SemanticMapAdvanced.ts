@@ -136,7 +136,7 @@ import { __values } from 'tslib';
 import { year } from 'platform/components/search/date/SimpleDateInput.scss';
 import { attachMapPerfMonitor, isMapPerfEnabled } from './MapPerfMonitor';
 import { AUXILIARY_LAYER, isFeatureLayer, isWebglSupported } from './FeatureLayerUtils';
-import { StableWebGLVectorLayer } from './StableWebGLVectorLayer';
+import { createStableWebGLVectorLayer } from './StableWebGLVectorLayer';
 import {
   CanvasStyleCache,
   ColorContext,
@@ -2205,7 +2205,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       opacity: options.opacity !== undefined ? options.opacity : 1,
     };
     const main: BaseLayer = useWebgl
-      ? new StableWebGLVectorLayer({
+      ? createStableWebGLVectorLayer({
           ...layerOptions,
           style: buildWebglFeatureStyle(overrides),
           variables: webglStyleVariables(this.getYearFilter(), this.highlightActive),
@@ -3100,7 +3100,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
               attributionOptions: {
                 collapsible: false,
               },
-            }).extend([new AnnotateControl()]),
+            }).extend([createAnnotateControl()]),
             // TODO: If we want to allow templating to disable interactions with map, we could read a prop and enable this:
             // interactions: interaction.defaults({ mouseWheelZoom: false }),
             interactions: interactionDefaults({}),
@@ -5217,30 +5217,24 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   // };
 }
 
-export class AnnotateControl extends Control {
-  editingMode: boolean;
+/**
+ * Placeholder control for the (disabled) annotation button.
+ * Built as a plain Control instance rather than a subclass: OpenLayers ships native ES classes and
+ * this project compiles TypeScript to ES5, where `class X extends Control` cannot call `super`.
+ */
+export function createAnnotateControl(): Control {
+  // Create edit button
+  //const button = document.createElement('button');
+  //button.type = 'button';
+  //button.className = 'ol-control editButton';
+  //button.innerHTML = 'E';
+  //button.addEventListener('click', () => click());
 
-  constructor() {
-    super({});
+  const element = document.createElement('div');
+  element.className = 'ol-feature ol-control';
+  //element.appendChild(button);
+  return new Control({ element });
 
-    // default editing mode
-    //this.editingMode = false;
-
-    // Create edit button
-    //const button = document.createElement('button');
-    //button.type = 'button';
-    //button.className = 'ol-control editButton';
-    //button.innerHTML = 'E';
-
-    //
-    const element = document.createElement('div');
-    element.className = 'ol-feature ol-control';
-    //element.appendChild(button);
-    Control.call(this, {
-      element: element,
-    });
-    //button.addEventListener('click', () => this.click());
-  }
   /*
   click() {
     this.editingMode = !this.editingMode;

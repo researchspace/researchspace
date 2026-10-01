@@ -1,5 +1,4 @@
-import WebGLVectorLayer from 'ol/layer/WebGLVector';
-import WebGLVectorLayerRenderer from 'ol/renderer/webgl/VectorLayer';
+import WebGLVectorLayer, { Options } from 'ol/layer/WebGLVector';
 import { FrameState } from 'ol/Map';
 import { equals } from 'ol/extent';
 import ViewHint from 'ol/ViewHint';
@@ -18,67 +17,73 @@ interface BuildView {
   width: number;
 }
 
+function isCloseToBuildView(built: BuildView, frameState: FrameState): boolean {
+  const viewState = frameState.viewState;
+  const ratio = viewState.resolution / built.resolution;
+  if (ratio > MAX_RESOLUTION_RATIO || ratio < 1 / MAX_RESOLUTION_RATIO) {
+    return false;
+  }
+  const viewportWidth = built.resolution * Math.max(built.width, frameState.size[0], 1);
+  const dx = viewState.center[0] - built.center[0];
+  const dy = viewState.center[1] - built.center[1];
+  return Math.sqrt(dx * dx + dy * dy) <= MAX_CENTER_DRIFT_IN_VIEWPORTS * viewportWidth;
+}
+
 /**
  * OpenLayers' WebGL vector renderer regenerates the buffers of ALL features after every pan or
  * zoom (each `moveend`), which costs O(features) on the main thread even when nothing but the
- * view changed. This renderer keeps the existing buffers while they still render precisely and
- * only rebuilds them when the source changes (new features, colors, groups) or the view moved far.
+ * view changed. This wrapper keeps the existing buffers while they still render precisely and
+ * only lets the renderer rebuild them when the source changes (new features, colors, groups) or
+ * the view moved far.
  *
  * It relies on two internal fields of `ol/renderer/webgl/VectorLayer` (`previousExtent_`,
  * `sourceRevision_`, checked at runtime): if a future OpenLayers version renames them, it simply
  * falls back to the default behaviour.
  */
-class StableBuffersRenderer extends WebGLVectorLayerRenderer {
-  private builtFor: BuildView | null = null;
+function keepBuffersAcrossMoves(renderer: any): void {
+  const prepareFrameInternal = renderer.prepareFrameInternal;
+  let builtFor: BuildView | null = null;
 
-  prepareFrameInternal(frameState: FrameState): boolean {
-    const internals = this as any;
-    if (!Array.isArray(internals.previousExtent_) || typeof internals.sourceRevision_ !== 'number') {
-      return super.prepareFrameInternal(frameState);
+  renderer.prepareFrameInternal = function (frameState: FrameState): boolean {
+    if (!Array.isArray(this.previousExtent_) || typeof this.sourceRevision_ !== 'number') {
+      return prepareFrameInternal.call(this, frameState);
     }
 
     const source = this.getLayer().getSource();
-    const sourceChanged = !!source && internals.sourceRevision_ < source.getRevision();
+    const sourceChanged = !!source && this.sourceRevision_ < source.getRevision();
     const viewState = frameState.viewState;
     const viewNotMoving = !frameState.viewHints[ViewHint.ANIMATING] && !frameState.viewHints[ViewHint.INTERACTING];
-    const extentChanged = !equals(internals.previousExtent_, frameState.extent);
+    const extentChanged = !equals(this.previousExtent_, frameState.extent);
 
-    if (!sourceChanged && extentChanged && this.builtFor && this.isCloseToBuildView(frameState)) {
+    if (!sourceChanged && extentChanged && builtFor && isCloseToBuildView(builtFor, frameState)) {
       // The current buffers still render this view precisely: skip the rebuild.
-      internals.previousExtent_ = frameState.extent.slice();
+      this.previousExtent_ = frameState.extent.slice();
     } else if (viewNotMoving && (extentChanged || sourceChanged)) {
       // The base renderer rebuilds the buffers for this view.
-      this.builtFor = {
+      builtFor = {
         resolution: viewState.resolution,
         center: viewState.center.slice(),
         width: frameState.size[0],
       };
     }
-    return super.prepareFrameInternal(frameState);
-  }
-
-  private isCloseToBuildView(frameState: FrameState): boolean {
-    const built = this.builtFor;
-    const viewState = frameState.viewState;
-    const ratio = viewState.resolution / built.resolution;
-    if (ratio > MAX_RESOLUTION_RATIO || ratio < 1 / MAX_RESOLUTION_RATIO) {
-      return false;
-    }
-    const viewportWidth = built.resolution * Math.max(built.width, frameState.size[0], 1);
-    const dx = viewState.center[0] - built.center[0];
-    const dy = viewState.center[1] - built.center[1];
-    return Math.sqrt(dx * dx + dy * dy) <= MAX_CENTER_DRIFT_IN_VIEWPORTS * viewportWidth;
-  }
+    return prepareFrameInternal.call(this, frameState);
+  };
 }
 
-/** WebGLVectorLayer that does not rebuild its GPU buffers after every pan/zoom. */
-export class StableWebGLVectorLayer extends WebGLVectorLayer<any> {
-  createRenderer() {
-    const self = this as any;
-    return new StableBuffersRenderer(this, {
-      style: self.style_,
-      variables: self.styleVariables_,
-      disableHitDetection: self.hitDetectionDisabled_,
-    });
-  }
+/**
+ * WebGLVectorLayer that does not rebuild its GPU buffers after every pan/zoom.
+ *
+ * Built by wrapping an instance rather than subclassing: OpenLayers ships native ES classes and
+ * this project compiles TypeScript to ES5, where `class X extends WebGLVectorLayer` cannot call
+ * `super` ("class constructors must be invoked with 'new'").
+ */
+export function createStableWebGLVectorLayer(options: Options<any>): WebGLVectorLayer<any> {
+  const layer: any = new WebGLVectorLayer(options);
+  const createRenderer = layer.createRenderer;
+  layer.createRenderer = function () {
+    const renderer = createRenderer.call(this);
+    keepBuffersAcrossMoves(renderer);
+    return renderer;
+  };
+  return layer;
 }

@@ -7,6 +7,7 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'node:path';
 import { KnowledgeMap, sel } from '../pages';
+import { inspectExportedDiagram } from '../pages/ExportedDiagram';
 
 const TEST_IMAGE = path.resolve('fixtures/test-image.jpg');
 const uid = () => Date.now().toString(36);
@@ -160,31 +161,45 @@ test.describe('Knowledge Map lifecycle', () => {
     await km.createEntity({ name: `Export Icon Node ${s}` });
     await km.saveData();
     await expect(page.locator(`${sel.km.anyNode} .resource-card__icon-container`)).toBeVisible();
+    const icon = page.locator(`${sel.km.anyNode} .resource-card__icon-container i`);
+    await expect(icon).toBeVisible();
+    const liveIcon = await icon.evaluate(element => ({
+      text: element.textContent?.trim() ?? '',
+      family: getComputedStyle(element).fontFamily.replace(/["']/g, '').split(',')[0].trim().toLowerCase(),
+      variations: getComputedStyle(element).getPropertyValue('font-variation-settings'),
+    }));
 
-    const svg = await km.exportSvgSource();
-
-    expect(svg).toMatch(
-      /resource-card__icon-container[^>]*>\s*<i\b[^>]*>\s*<svg[^>]*viewBox="0 -960 960 960"/
-    );
-    // a leftover ligature would render as the raw icon name, or as nothing
-    expect(svg).not.toMatch(/<i\b[^>]*class="[^"]*material-[^"]*"[^>]*>\s*\w+\s*<\/i>/);
-    expect(svg).not.toContain('resource-card__header-actions');
+    const exported = await inspectExportedDiagram(page, await km.exportSvgSource());
+    expect(exported.parseError).toBeNull();
+    // Export preserves the installed ligature font and variations, rather than
+    // replacing it with a potentially different SVG glyph from another icon set.
+    expect(exported.icons).toContainEqual(liveIcon);
+    const iconFaces = exported.fontFaces.filter(face => face.family === liveIcon.family);
+    expect(iconFaces.length).toBeGreaterThan(0);
+    for (const face of iconFaces) {
+      expect(face.embedded).toBe(true);
+      expect(face.payloadLength).toBeGreaterThan(0);
+    }
+    expect(exported.headerActions).toBe(0);
   });
 
-  test('export embeds the app text fonts, not the icon font', async ({ page }) => {
+  test('export embeds the app text fonts and any rendered icon fonts', async ({ page }) => {
     const s = uid();
     const km = await KnowledgeMap.openNew(page);
     await km.createEntity({ name: `Export Font Node ${s}` });
     await km.saveData();
 
-    const svg = await km.exportSvgSource();
-
-    const faces = svg.match(/@font-face\{[^}]*\}/g) ?? [];
-    expect(faces.length).toBeGreaterThan(0);
-    for (const face of faces) {
-      expect(face).toContain('src:url(data:');
-      // the icon font is 4 MB and is exported as SVG instead
-      expect(face.toLowerCase()).not.toContain('material symbols');
+    const title = page.locator(`${sel.km.anyNode} .resource-card__footer-title`);
+    await expect(title).toHaveText(`Export Font Node ${s}`);
+    const liveFamily = await title.evaluate(element =>
+      getComputedStyle(element).fontFamily.replace(/["']/g, '').split(',')[0].trim().toLowerCase());
+    const exported = await inspectExportedDiagram(page, await km.exportSvgSource());
+    expect(exported.parseError).toBeNull();
+    expect(exported.titles).toContainEqual({text: `Export Font Node ${s}`, family: liveFamily});
+    expect(exported.fontFaces.some(face => face.family === liveFamily)).toBe(true);
+    for (const face of exported.fontFaces) {
+      expect(face.embedded).toBe(true);
+      expect(face.payloadLength).toBeGreaterThan(0);
     }
   });
 
@@ -203,7 +218,9 @@ test.describe('Knowledge Map lifecycle', () => {
           }
         })
         .filter((rule): rule is CSSFontFaceRule => rule instanceof CSSFontFaceRule);
-      const source = faces.map(face => face.style.getPropertyValue('src'))
+      const source = faces
+        .filter(face => !/material (symbols|icons)/i.test(face.style.getPropertyValue('font-family')))
+        .map(face => face.style.getPropertyValue('src'))
         .find(value => value.includes('.woff2'));
       const url = source ? /url\(\s*["']?([^"')]+\.woff2)["']?\s*\)/.exec(source)?.[1] : undefined;
       if (!url) {
@@ -222,11 +239,20 @@ test.describe('Knowledge Map lifecycle', () => {
     await km.createEntity({ name: `Override Node ${s}` });
     await km.saveData();
 
-    const svg = await km.exportSvgSource();
-
-    expect(svg).toContain("--reactodia-font-family-base: 'Override Test Font'");
-    expect(svg).toContain('@font-face{font-family:"Override Test Font"');
-    // no longer the rendered font, so it must not be shipped
-    expect(svg).not.toContain('Source Sans Pro');
+    const title = page.locator(`${sel.km.anyNode} .resource-card__footer-title`);
+    await expect(title).toHaveText(`Override Node ${s}`);
+    await expect(title).toHaveCSS('font-family', /Override Test Font/);
+    const exported = await inspectExportedDiagram(page, await km.exportSvgSource());
+    expect(exported.parseError).toBeNull();
+    expect(exported.titles).toContainEqual({text: `Override Node ${s}`, family: 'override test font'});
+    const customFaces = exported.fontFaces.filter(face => face.family === 'override test font');
+    expect(customFaces.length).toBeGreaterThan(0);
+    for (const face of customFaces) {
+      expect(face.embedded).toBe(true);
+      expect(face.payloadLength).toBeGreaterThan(0);
+    }
+    // An unused brand/theme variable may still name Source Sans Pro. Check the
+    // embedded faces instead of rejecting that string anywhere in the SVG.
+    expect(exported.fontFaces.some(face => face.family === 'source sans pro')).toBe(false);
   });
 });

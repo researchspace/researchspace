@@ -1,0 +1,28 @@
+<div>
+  {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#string"}}
+    "{{value.value.value}}"
+  {{/ifCond}}
+  {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#langString"}}
+    "{{value.value.value}}"{{#if value.value.language}} - {{value.value.language}}{{/if}}
+  {{/ifCond}}
+  {{#ifCond field.xsdDatatype.value "==" "http://www.w3.org/2001/XMLSchema#dateTime"}}
+    {{value.value.value}}
+  {{/ifCond}}
+  {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#anyURI"}}
+    {{#if value.value.datatype}}
+      [[!-- in the messy data it can happen that field is anyURI but actual data is literal --]]
+      {{value.value.value}}
+    {{else}} 
+        <mp-event-trigger id='{{viewId}}-resource-visualisation-trigger' 
+                  type='Dashboard.AddFrame'
+                  data='{"viewId":"resource-detailed-visualisation", 
+                          "resourceIri": "{{value.value.value}}",
+                          "resourceConfig": "{{#if resourceConfig}}{{resourceConfig}}{{/if}}",
+                          "resourceVisualisationTemplate": "{{#if resourceTemplate}}{{resourceTemplate}}{{else}}rsp:ResourceTemplate{{/if}}"
+                        }' 
+                  targets='["thinking-frames"]'>
+          <span><mp-label iri='{{value.value.value}}' class="text-truncate-line1" style="text-decoration:none;"></mp-label></span>
+          </mp-event-trigger>
+    {{/if}}
+  {{/ifCond}}
+</div>

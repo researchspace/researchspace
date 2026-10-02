@@ -110,3 +110,27 @@ npm test
 Failure screenshots, videos, and traces are written under `e2e/test-results/`.
 In CI, the workflow also uploads the Playwright report and, when stack startup
 fails, the development-stack log.
+
+## Resource styling and navigation regression checks
+
+These checks do not require a backend or login. From the repository root:
+
+```sh
+npm ci
+npm run prod
+node node_modules/karma/bin/karma start webpack/karma/karma.config.resources.js
+npm --prefix e2e ci
+npm --prefix e2e run install-browsers
+npm --prefix e2e run test:resource-styles
+```
+
+Karma uses `CHROMIUM_BIN` when Chromium is not on the system path. Playwright
+uses `PLAYWRIGHT_CHROMIUM_EXECUTABLE` for an alternative browser executable.
+
+The component tests cover default/configured resource navigation, frame reuse,
+and retention of unsaved input when returning to Edit. The isolated browser
+checks load the production stylesheet and actual action markup in representative
+resource/editor headers at 320, 480 and 900px pane widths. They verify title
+wrapping, visible actions, matching page insets, underline-only tab focus,
+portrait/landscape thumbnail proportions, fact readability and theme overrides.
+They do not replace integration checks against server-rendered entity templates.

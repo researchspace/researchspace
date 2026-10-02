@@ -15,7 +15,7 @@
           {{#if [[urlParam "searchall" escape=false]]}}
             <div class="semantic-search-header-title text-truncate-line1" style="min-height: 31px; min-width: 340px;flex: 0;"></div>
           {{else}}
-            <h3 class="semantic-search-header-title text-truncate-line1" title="[[urlParam 'resourcelabel' escape=false]]">[[urlParam "resourcelabel" escape=false]]</h3>
+            [[!-- <h3 class="semantic-search-header-title text-truncate-line1" title="[[urlParam 'resourcelabel' escape=false]]">[[urlParam "resourcelabel" escape=false]]</h3> --]]
           {{/if}}
       
           <div class="semantic-search-header-actions">
@@ -81,13 +81,14 @@
               <template id='http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation'>
               </template>
 
-              <template id='default'>
+              <template id='default'>                
                 [[#if (urlParam "resourceform")]]
-                  <div class="btn-newDraggableTab-container" style="margin-right: 20px;">
+                 <div class="btn-newDraggableTab-container" style="margin-right: 20px;">
                     <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                               urlqueryparam-view="resource-editor"
                                               urlqueryparam-entity-type-config='[[urlParam "resourceconfig" escape=false]]'
                                               urlqueryparam-mode='new'
+                                              urlqueryparam-parent-node='[[urlParam "parentnode" escape=false]]'
                                               urlqueryparam-custom-label='New [[urlParam "resourcelabel" escape=false]]'>
                       <button id="create-new-btn" class="btn btn-action btn-textAndIcon">
                         <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
@@ -98,6 +99,7 @@
                                               urlqueryparam-view="resource-editor"
                                               urlqueryparam-entity-type-config='[[urlParam "resourceconfig" escape=false]]'
                                               urlqueryparam-mode='new'
+                                              urlqueryparam-parent-node='[[urlParam "parentnode" escape=false]]'
                                               urlqueryparam-open-as-drag-and-drop='true'
                                               urlqueryparam-custom-label='New [[urlParam "resourcelabel" escape=false]]'>
                       <button class="btn btn-action btn-textAndIcon btn-newDraggableTab" title='Open in new draggable tab'>
@@ -199,7 +201,7 @@
               <semantic-search-query-keyword  domain='[[urlParam "resourceontologyclass" escape=false]]'
                                               query='SELECT ?subject WHERE { 
                                                       ?subject a [[urlParam "resourceontologyclass" escape=false]] .
-                                                      
+                                                      [[#if (urlParam "searchrestrictions")]] [[urlParam "searchrestrictions" escape=false]] [[/if]]
                                                       [[#if (urlParam "resourcetype")]] 
                                                         ?subject crm:P2_has_type [[urlParam "resourcetype" escape=false]] .
                                                       [[/if]]
@@ -272,7 +274,8 @@
     
                                                 default-query='SELECT ?subject WHERE { 
                                                                 ?subject a [[urlParam "resourceontologyclass" escape=false]] .
-                                                                
+                                                                [[#if (urlParam "searchrestrictions")]] [[urlParam "searchrestrictions" escape=false]] [[/if]]
+
                                                                 [[#if (urlParam "resourcetype")]] 
                                                                   ?subject crm:P2_has_type [[urlParam "resourcetype" escape=false]] .
                                                                 [[/if]]
@@ -328,12 +331,16 @@
             </div>
 
             [[!-- View as dropdown/button --]]
-            <semantic-query query='SELECT ?resourceConfig ?viewid ?searchViewType ?searchViewLabel WHERE {
+            <semantic-query query='SELECT ?resourceConfig ?viewid ?searchViewType ?searchViewLabel ?searchDefaultViewType ?searchDefaultViewLabel WHERE {
                                     BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig)
                                     BIND("[[urlParam "viewid" escape=false]]" as ?viewid)
                                     ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_search_view_type> ?searchViewType.
                                     ?searchViewType crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/search_view_type> .
                                     ?searchViewType skos:prefLabel ?searchViewLabel .
+                                    OPTIONAL {
+                                      ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type> ?searchDefaultViewType.
+                                      ?searchDefaultViewType skos:prefLabel ?searchDefaultViewLabel .
+                                    }
                                   } '
 
                             template='{{> search-views}}'
@@ -347,12 +354,12 @@
                                       bs-style="default"
                                       class="btn-textAndIcon search-view-dropdown"
                                       pull-right=true
-                                      title="{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else}}List{{/if}}"
+                                      title="{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else if bindings.0.searchDefaultViewType.value}}{{bindings.0.searchDefaultViewLabel.value}}{{else}}List{{/if}}"
                         > 
                           <bs-dropdown-toggle>
                             <div>
                               <span class="color-secondary-light" style="font-weight: 400;">View as: </span>
-                              <span style="font-weight: 600;">{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else}}List{{/if}}</span>
+                              <span style="font-weight: 600;">{{#if viewTypeIndex}}{{#with (lookup bindings viewTypeIndex)}}{{searchViewLabel.value}}{{/with}}{{else if bindings.0.searchDefaultViewType.value}}{{bindings.0.searchDefaultViewLabel.value}}{{else}}List{{/if}}</span>
                             </div>
                           </bs-dropdown-toggle>
 
@@ -382,6 +389,7 @@
                   {{/if}}
                 
               </template>
+              
             </semantic-query>
 
             [[!-- Refresh button --]]
@@ -693,10 +701,11 @@
             <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
 
             <mp-event-target-template-render id="[[urlParam 'viewid' escape=false]]-search-result-views" template="{{> resultViews}}">
-              <template id='resultViews'>
+              <template id='resultViews'>                     
+                {{#bind defaultSearchViewType="[[urlParam "resourcedefaultsearchview" escape=false]]"}}  
+                  {{#bind isSearchViewTypeNotSet=(not searchViewType)}} 
                   <semantic-search-result-holder>
-                    {{#if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid")}}
-                      
+                    {{#if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid"))) }}
                     [[!-- grid view --]]
                       <semantic-search-result>
                         <semantic-table id='semantic-search-result-grid'
@@ -731,9 +740,10 @@
 
                         [[> numberOfResults]]
                       </semantic-search-result>
-                    {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")}}
+                    
+                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")))}}
                       <div>no map results</div>
-                    {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")}}
+                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")))}}
                     
                     [[!-- timeline view: currently enabled only for crm:E21_Person and rdfs:subClassOf* crm:E2_Temporal_Entity  --]]
                       <div>
@@ -929,7 +939,7 @@
                           </semantic-search-result>
                         </semantic-search-result-context>
                       </div>
-                    {{else if (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")}}
+                    {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")))}}
 
                       [[!-- chart view --]]
                       <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept","http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
@@ -1007,9 +1017,10 @@
                                             {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map')
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart')
-                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
+                                                      (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline'))}}{{else}}{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description WHERE {
                                                     BIND(?subject as ?iri) .
+                                                    {{#if searchRestrictions}}{{searchRestrictions}}{{/if}}
                                                     #?subject a ?type .
                                                     #?type rdfs:label ?typeLabel .
                                                     #FILTER (lang(?typeLabel) = "en")
@@ -1029,7 +1040,7 @@
                                                      }' 
 
                                             column-configuration='[
-                                                                    {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
+                                                            
                                                                     {"variableName": "subject", "displayName": "{{#if bindings.0.columnTitle1.value}}{{bindings.0.columnTitle1.value}}{{else}}[[urlParam "resourcelabel" escape=false]] name{{/if}}", "cellTemplate": "{{> column1}}" },
                                                                     {{#if bindings.0.columnTitle2.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle2.value}}", "cellTemplate": "{{> column2}}" },{{/if}}
                                                                     {{#if bindings.0.columnTitle3.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle3.value}}", "cellTemplate": "{{> column3}}" },{{/if}}
@@ -1038,130 +1049,137 @@
                                                                   ]'   
                             >
     
-                              <template id='selectionCheckbox'>
-                                [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
-                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
-                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
-                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
-                                        )}}
-                                  {{else}}
-                                    <div>
-                                      <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
-                                    </div>
-                                  {{/if}}
-                                [[/if]]
-                              </template>
-    
                               <template id='column1'>
                                 <div>
-                                  <div style="display: flex; align-items: center; gap: 15px;"> 
-                                    <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
-                                                        type="modal" 
-                                                        class="modal-xlSize preview_modal"
-                                                        title="Preview">
-                                      <mp-overlay-dialog-trigger>
-                                        <div class="resource-thumbnail-small-container">
-                                          <mp-draggable iri='{{iri.value}}'>
-                                            {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-                                              <div>
-                                                <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%; max-height: 40px;'
-                                                                          image-or-region='{{iri.value}}'      
-                                                                          [[> rsp:IIIFConfig]]
-                                                                        >
-                                                </rs-iiif-image-thumbnail>
-                                              </div>
-                                            {{else}}
-                                              <div>
-                                                <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
-                                                    <mp-resource-thumbnail-fallback>
-                                                      [[#if (urlParam 'resourceicon') ]]
-                                                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                                                      [[else]]
-                                                        <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                                                      [[/if]]
-                                                    </mp-resource-thumbnail-fallback>
-                                                </mp-resource-thumbnail>
-                                              </div>
-                                            {{/if}}    
-                                          </mp-draggable>     
-                                        </div>
-                                      </mp-overlay-dialog-trigger>
-                                      <mp-overlay-dialog-content>
-                                        <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                        options='{"resource": "{{iri.value}}", 
-                                                                    "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
-                                                                    "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
-                                                                    "resourceDescription": "{{description.value}}",
-                                                                    "resourceDetailSection": true
-                                                                    }' >
-                                        </inline-template> 
-                                      </mp-overlay-dialog-content>
-                                    </mp-overlay-dialog>
-                                    <div>
-                                      <mp-draggable iri='{{iri.value}}'>
-                                        <div>
-                                          {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
-                                            <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
-                                                              type='Dashboard.AddFrame'
-                                                              data='{"viewId":"knowledge-map", 
-                                                                      "resourceIri": "{{iri.value}}"}' 
-                                                              targets='["thinking-frames"]'>
-                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
-                                            </mp-event-trigger>
-                                          {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
-                                            <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
-                                                              type='Dashboard.AddFrame'
-                                                              data='{"viewId":"chart", 
-                                                                      "resourceIri": "{{iri.value}}"}' 
-                                                              targets='["thinking-frames"]'>
-                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
-                                            </mp-event-trigger>
-                                          {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
-                                            <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
-                                                              type='Dashboard.AddFrame'
-                                                              data='{"viewId":"timeline", 
-                                                                      "resourceIri": "{{iri.value}}"}' 
-                                                              targets='["thinking-frames"]'>
-                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
-                                            </mp-event-trigger>
-                                          {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='authority-list'
-                                                            urlqueryparam-resource='{{iri.value}}'>
-                                              <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                            </semantic-link>
-                                          {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='single-set-management'
-                                                            urlqueryparam-resource='{{iri.value}}'>
-                                              <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                            </semantic-link>
-                                          {{else}}
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='{{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
-                                                            urlqueryparam-resource='{{iri.value}}'>
-                                              <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                            </semantic-link>
-                                          {{/if}}
-                                        </div>
-                                      </mp-draggable>
-
-                                      {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
-                                        <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
-                                                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                                              } LIMIT 1'>
-                                          <template id='template'>
-                                            {{#ifCond bindings.0.systemUser.value "===" iri.value}}
-                                              <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
-                                            {{else}}
-                                              <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
-                                            {{/ifCond}}
-                                          </template>
-                                        </semantic-query>
+                                  <div style="display: flex; align-items: center; gap: 5px;"> 
+                                    [[#if (hasPermission "forms:ldp:*")]]
+                                      {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
+                                                (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+                                                (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
+                                                (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
+                                            )}}
                                       {{else}}
-                                        <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                        <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
                                       {{/if}}
+                                    [[/if]]
+                                    <div style="display: flex; align-items: center; gap: 15px;"> 
+                                      <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
+                                                          type="modal" 
+                                                          class="modal-xlSize preview_modal"
+                                                          title="Preview">
+                                        <mp-overlay-dialog-trigger>
+                                          <div class="resource-thumbnail-small-container">
+                                            <mp-draggable iri='{{iri.value}}'>
+                                              {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
+                                                <div>
+                                                  <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%; max-height: 40px;'
+                                                                            image-or-region='{{iri.value}}'      
+                                                                            [[> rsp:IIIFConfig]]
+                                                                          >
+                                                  </rs-iiif-image-thumbnail>
+                                                </div>
+                                              {{else}}
+                                                <div>
+                                                  <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
+                                                      <mp-resource-thumbnail-fallback>
+                                                        [[#if (urlParam 'resourceicon') ]]
+                                                          <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                        [[else]]
+                                                          <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                        [[/if]]
+                                                      </mp-resource-thumbnail-fallback>
+                                                  </mp-resource-thumbnail>
+                                                </div>
+                                              {{/if}}    
+                                            </mp-draggable>     
+                                          </div>
+                                        </mp-overlay-dialog-trigger>
+                                        <mp-overlay-dialog-content>
+                                          <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                          options='{"resource": "{{iri.value}}", 
+                                                                      "resourceConfig": "{{bindings.0.resourceConfig.value}}", 
+                                                                      "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
+                                                                      "resourceDescription": "{{description.value}}",
+                                                                      "resourceDetailSection": true
+                                                                      }' >
+                                          </inline-template> 
+                                        </mp-overlay-dialog-content>
+                                      </mp-overlay-dialog>
+                                      <div>
+                                        <mp-draggable iri='{{iri.value}}'>
+                                          <div>
+                                            {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+                                              <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
+                                                                type='Dashboard.AddFrame'
+                                                                data='{"viewId":"knowledge-map", 
+                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
+                                            {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                              <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
+                                                                type='Dashboard.AddFrame'
+                                                                data='{"viewId":"chart", 
+                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
+                                            
+                                            {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+                                              <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
+                                                                type='Dashboard.AddFrame'
+                                                                data='{"viewId":"timeline", 
+                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
+                                            {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                              urlqueryparam-view='authority-list'
+                                                              urlqueryparam-resource='{{iri.value}}'>
+                                                <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                              </semantic-link>
+                                            {{else if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                              urlqueryparam-view='single-set-management'
+                                                              urlqueryparam-resource='{{iri.value}}'>
+                                                <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                              </semantic-link>
+                                            {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
+                                              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                              urlqueryparam-view='semantic-narrative'
+                                                              urlqueryparam-resource='{{iri.value}}'>
+                                                <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                              </semantic-link>
+                                            {{else}}
+                                              <mp-event-trigger id='{{viewId}}-resource-visualisation-trigger' 
+                                                      type='Dashboard.AddFrame'
+                                                      data='{"viewId":"resource-detailed-visualisation", 
+                                                              "resourceIri": "{{iri.value}}",
+                                                              "resourceConfig": "{{bindings.0.resourceConfig.value}}",
+                                                              "resourceVisualisationTemplate": "[[#if (urlParam "resourcevisualisationtemplate")]][[urlParam "resourcevisualisationtemplate"]][[else]]rsp:ResourceContent[[/if]]"
+                                                            }' 
+                                                      targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
+                                            {{/if}}
+                                          </div>
+                                        </mp-draggable>
+
+                                        {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                                          <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
+                                                                  BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                                                } LIMIT 1'>
+                                            <template id='template'>
+                                              {{#ifCond bindings.0.systemUser.value "===" iri.value}}
+                                                <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
+                                              {{else}}
+                                                <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                              {{/ifCond}}
+                                            </template>
+                                          </semantic-query>                                       
+                                        {{/if}}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -1369,7 +1387,7 @@
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map')
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart')
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline')
-                                            )}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
+                                            )}}{{else}}{{/if}}"
                                             query='SELECT DISTINCT ?subject ?iri ?description ?resourceConfig WHERE {
                                                     BIND(?subject as ?iri) .
                                                     BIND(<[[urlParam "resourceconfig" escape=false]]> as ?resourceConfig) .
@@ -1388,138 +1406,143 @@
                                                       "useFixedHeader":true
                                                     }' 
                                             column-configuration='[
-                                                                    {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                     {"variableName": "subject", "displayName": "[[urlParam "resourcelabel" escape=false]] name", "cellTemplate": "{{> column1}}" },
                                                                     {"variableName": "description", "displayName": "Description", "cellTemplate": "{{> column2}}" },
                                                                     {"variableName": "", "displayName": "", "cellTemplate": "{{> actions}}" }
                                                                   ]'   
                             >
     
-                              <template id='selectionCheckbox'>
-                                [[#if (hasPermission "forms:ldp:*")]]
-                                  {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
-                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
-                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
-                                            (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
-                                  )}}
-                                  {{else}}
-                                    <div>
-                                      <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
-                                    </div>
-                                  {{/if}}
-                                [[/if]]
-                              </template>
-    
                               <template id='column1'>
                                 <div>
-                                  <div style="display: flex; align-items: center; gap: 15px;">                                 
-                                    
-                                    <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
-                                                        type="modal" 
-                                                        class="modal-xlSize preview_modal"
-                                                        title="Preview">
-                                      <mp-overlay-dialog-trigger>
-                                        <div class="resource-thumbnail-small-container">
-                                          <mp-draggable iri='{{iri.value}}'>
-                                            {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
-                                              <div>
-                                                <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%; max-height: 40px;'
-                                                                          image-or-region='{{iri.value}}'      
-                                                                          [[> rsp:IIIFConfig]]
-                                                                        >
-                                                </rs-iiif-image-thumbnail>
-                                              </div>
-                                            {{else}}
-                                              <div>
-                                                <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
-                                                    <mp-resource-thumbnail-fallback>
-                                                      [[#if (urlParam 'resourceicon') ]]
-                                                        <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                                                      [[else]]
-                                                        <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
-                                                      [[/if]]
-                                                    </mp-resource-thumbnail-fallback>
-                                                </mp-resource-thumbnail>
-                                              </div>
-                                            {{/if}}         
-                                          </mp-draggable>
-                                        </div>
-                                      </mp-overlay-dialog-trigger>
-                                      <mp-overlay-dialog-content>
-                                        <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
-                                                        options='{"resource": "{{iri.value}}", 
-                                                                    "resourceConfig": "{{resourceConfig.value}}", 
-                                                                    "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
-                                                                    "resourceDescription": "{{description.value}}",
-                                                                    "resourceDetailSection": true
-                                                                    }' >
-                                        </inline-template> 
-                                      </mp-overlay-dialog-content>
-                                    </mp-overlay-dialog>
-                                    <div>
-                                      <mp-draggable iri='{{iri.value}}'>
-                                        <div>
-                                          {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
-                                            <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
-                                                              type='Dashboard.AddFrame'
-                                                              data='{"viewId":"knowledge-map", 
-                                                                      "resourceIri": "{{iri.value}}"}' 
-                                                              targets='["thinking-frames"]'>
-                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
-                                            </mp-event-trigger>
-                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
-                                            <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
-                                                              type='Dashboard.AddFrame'
-                                                              data='{"viewId":"chart", 
-                                                                      "resourceIri": "{{iri.value}}"}' 
-                                                              targets='["thinking-frames"]'>
-                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
-                                            </mp-event-trigger>
-                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
-                                            <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
-                                                              type='Dashboard.AddFrame'
-                                                              data='{"viewId":"timeline", 
-                                                                      "resourceIri": "{{iri.value}}"}' 
-                                                              targets='["thinking-frames"]'>
-                                              <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
-                                            </mp-event-trigger>
-                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='authority-list'
-                                                            urlqueryparam-resource='{{iri.value}}'>
-                                              <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                            </semantic-link>
-                                          {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='single-set-management'
-                                                            urlqueryparam-resource='{{iri.value}}'>
-                                              <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                            </semantic-link>
-                                          {{else}}
-                                            <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                                            urlqueryparam-view='{{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
-                                                            urlqueryparam-resource='{{iri.value}}'>
-                                              <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
-                                            </semantic-link>
-                                          {{/if}}
-                                        </div>
-                                      </mp-draggable>
-
-                                      {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
-                                        <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
-                                                                BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
-                                                              } LIMIT 1'>
-                                          <template id='template'>
-                                            {{#ifCond bindings.0.systemUser.value "===" iri.value}}
-                                              <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
-                                            {{else}}
-                                              <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
-                                            {{/ifCond}}
-                                          </template>
-                                        </semantic-query>
+                                  <div style="display: flex; align-items: center; gap: 5px;">                                 
+                                    [[#if (hasPermission "forms:ldp:*")]]
+                                      {{#if (or (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set") 
+                                                (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+                                                (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")
+                                                (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")
+                                      )}}
                                       {{else}}
-                                        <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                          <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
                                       {{/if}}
+                                    [[/if]]
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                      <mp-overlay-dialog  id="{{iri.value}}-resource-preview-dialog"  
+                                                          type="modal" 
+                                                          class="modal-xlSize preview_modal"
+                                                          title="Preview">
+                                        <mp-overlay-dialog-trigger>
+                                          <div class="resource-thumbnail-small-container">
+                                            <mp-draggable iri='{{iri.value}}'>
+                                              {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation")}}
+                                                <div>
+                                                  <rs-iiif-image-thumbnail  height='40' width='45' style='height: 100%; width: 100%; max-height: 40px;'
+                                                                            image-or-region='{{iri.value}}'      
+                                                                            [[> rsp:IIIFConfig]]
+                                                                          >
+                                                  </rs-iiif-image-thumbnail>
+                                                </div>
+                                              {{else}}
+                                                <div>
+                                                  <mp-resource-thumbnail iri='{{iri.value}}' class='resource-thumbnail-small'>
+                                                      <mp-resource-thumbnail-fallback>
+                                                        [[#if (urlParam 'resourceicon') ]]
+                                                          <rs-icon icon-type="rounded" icon-name="[[urlParam 'resourceicon']]" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                        [[else]]
+                                                          <rs-icon icon-type="rounded" icon-name="image" symbol="true" class='resource-thumbnail-small-fallback-icon'></rs-icon>
+                                                        [[/if]]
+                                                      </mp-resource-thumbnail-fallback>
+                                                  </mp-resource-thumbnail>
+                                                </div>
+                                              {{/if}}         
+                                            </mp-draggable>
+                                          </div>
+                                        </mp-overlay-dialog-trigger>
+                                        <mp-overlay-dialog-content>
+                                          <inline-template template-iri='[[resolvePrefix "rsp:ResourcePreview"]]' 
+                                                          options='{"resource": "{{iri.value}}", 
+                                                                      "resourceConfig": "{{resourceConfig.value}}", 
+                                                                      "resourceConfigLabel": "[[urlParam "resourcelabel" escape=false]]",
+                                                                      "resourceDescription": "{{description.value}}",
+                                                                      "resourceDetailSection": true
+                                                                      }' >
+                                          </inline-template> 
+                                        </mp-overlay-dialog-content>
+                                      </mp-overlay-dialog>
+                                      <div>
+                                        <mp-draggable iri='{{iri.value}}'>
+                                          <div>
+                                            {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")}}
+                                              <mp-event-trigger id='{{iri.value}}-open-km-title-trigger' 
+                                                                type='Dashboard.AddFrame'
+                                                                data='{"viewId":"knowledge-map", 
+                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
+                                            
+                                            {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart")}}
+                                              <mp-event-trigger id='{{iri.value}}-open-chart-title-trigger' 
+                                                                type='Dashboard.AddFrame'
+                                                                data='{"viewId":"chart", 
+                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
+                                            {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline")}}
+                                              <mp-event-trigger id='{{iri.value}}-open-timeline-title-trigger' 
+                                                                type='Dashboard.AddFrame'
+                                                                data='{"viewId":"timeline", 
+                                                                        "resourceIri": "{{iri.value}}"}' 
+                                                                targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
+                                            {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
+                                              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                              urlqueryparam-view='authority-list'
+                                                              urlqueryparam-resource='{{iri.value}}'>
+                                                <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                              </semantic-link>
+                                            {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
+                                              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                              urlqueryparam-view='single-set-management'
+                                                              urlqueryparam-resource='{{iri.value}}'>
+                                                <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                              </semantic-link>
+                                            {{else if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
+                                              <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                              urlqueryparam-view='semantic-narrative'
+                                                              urlqueryparam-resource='{{iri.value}}'>
+                                                <mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label>
+                                              </semantic-link>
+                                            {{else}}
+                                              <mp-event-trigger id='{{viewId}}-resource-visualisation-trigger' 
+                                                      type='Dashboard.AddFrame'
+                                                      data='{"viewId":"resource-detailed-visualisation", 
+                                                              "resourceIri": "{{iri.value}}",
+                                                              "resourceConfig": "{{resourceConfig.value}}",
+                                                              "resourceVisualisationTemplate": "[[#if (urlParam "resourcevisualisationtemplate")]][[urlParam "resourcevisualisationtemplate"]][[else]]rsp:ResourceContent[[/if]]"
+                                                            }' 
+                                                      targets='["thinking-frames"]'>
+                                                <div><mp-label iri='{{iri.value}}' class="text-link text-truncate-line1"></mp-label></div>
+                                              </mp-event-trigger>
+                                            {{/if}}
+                                          </div>
+                                        </mp-draggable>
+
+                                        {{#if (eq resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/User")}}
+                                          <semantic-query query='SELECT DISTINCT ?systemUser WHERE { 
+                                                                  BIND(IRI(REPLACE(STR(?__useruri__), "%40", "_")) as ?systemUser)
+                                                                } LIMIT 1'>
+                                            <template id='template'>
+                                              {{#ifCond bindings.0.systemUser.value "===" iri.value}}
+                                                <div class="color-action text-bold600 text-font-size__xsmall text-truncate-line1">My profile</div>
+                                              {{else}}
+                                                <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">[[urlParam "resourcelabel" escape=false]]</div>
+                                              {{/ifCond}}
+                                            </template>
+                                          </semantic-query>                                  
+                                        {{/if}}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -1547,6 +1570,8 @@
                       </semantic-query>
                     {{/if}}
                   </semantic-search-result-holder>
+                  {{/bind}}
+                {{/bind}}
               </template>
             </mp-event-target-template-render>
           </div>
@@ -1628,6 +1653,7 @@
                                       resourceOntologyClass="[[urlParam "resourceontologyclass" escape=false]]"
                                       resourceDescription=description.value
                                       resourceFormIRI="[[urlParam "resourceform" escape=false]]"
+                                      resourceVisualisationTemplateIRI="[[urlParam "resourcevisualisationtemplate" escape=false]]"
                                       allowResourceDelete=true
       }}
     </rs-resource-dropdown>

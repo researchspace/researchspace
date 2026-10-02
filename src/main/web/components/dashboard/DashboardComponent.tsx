@@ -437,7 +437,7 @@ export class DashboardComponent extends Component<Props, State> {
   componentWillUnmount() {
     setFrameNavigation(false);
     this.cancellation.cancelAll();
-    this.subscription.unsubscribe();
+    this.subscription?.unsubscribe();
   }
 
   private onAddNewItem = (item: Item = this.frameLabel()) => {

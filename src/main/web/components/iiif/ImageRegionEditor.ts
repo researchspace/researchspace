@@ -45,11 +45,23 @@ import { OARegionAnnotation, getAnnotationTextResource } from 'platform/data/iii
 import { LayoutChanged } from '../dashboard/DashboardEvents';
 
 export interface ImageRegionEditorConfig {
+  /** Component event ID. IRIs are supported; the viewer uses a separate safe DOM ID when needed. */
   id?: string;
   imageOrRegion: string | { [iri: string]: Array<string> } | IiifManifestResource[];
   imageIdPattern: string;
   iiifServerUrl: string;
   repositories?: Array<string>;
+
+  /** auto keeps all annotations for images, and only selected regions for region inputs. */
+  annotationMode?: 'auto' | 'selected';
+  /** Keep legacy region framing unless a contextual whole-image view is requested. */
+  initialView?: 'region' | 'whole-image';
+  /** Disable annotation creation, updates and deletion in this viewer. */
+  readOnly?: boolean;
+  /** Show framing controls below the canvas. */
+  showViewControls?: boolean;
+  wholeImageLabel?: string;
+  zoomLabel?: string;
 
   /**
    * Use details sidebar instead of built-in mirador details view
@@ -94,6 +106,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
   private readonly cancellation = new Cancellation();
   private annotationEndpoint: AnnotationEndpoint;
+  private viewerCancellation = this.cancellation.derive();
   private infoQueryingCancellation = this.cancellation.derive();
   private manifestQueryingCancellation = this.cancellation.derive();
 
@@ -134,8 +147,17 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     if (
       !isEqual(prevProps.imageOrRegion, this.props.imageOrRegion) ||
       prevProps.imageIdPattern !== this.props.imageIdPattern ||
-      prevProps.iiifServerUrl !== this.props.iiifServerUrl
+      prevProps.iiifServerUrl !== this.props.iiifServerUrl ||
+      prevProps.annotationMode !== this.props.annotationMode ||
+      prevProps.initialView !== this.props.initialView ||
+      prevProps.readOnly !== this.props.readOnly ||
+      prevProps.showViewControls !== this.props.showViewControls ||
+      !isEqual(prevProps.repositories, this.props.repositories) ||
+      !isEqual(prevProps.semanticAnnotationMode, this.props.semanticAnnotationMode) ||
+      !isEqual(prevProps.annotationDataContext, this.props.annotationDataContext)
     ) {
+      this.cleanupSemanticModeListeners();
+      this.viewerCancellation = this.cancellation.deriveAndCancel(this.viewerCancellation);
       removeMirador(this.miradorInstance, this.miradorElement);
       this.miradorInstance = undefined;
       this.setState(
@@ -175,7 +197,8 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     }
 
   public shouldComponentUpdate(nextProps: ImageRegionEditorProps, nextState: ImageRegionEditorState) {
-    return nextState.loading !== this.state.loading || !isEqual(nextProps, this.props);
+    return nextState.loading !== this.state.loading ||
+      nextState.errorMessage !== this.state.errorMessage || !isEqual(nextProps, this.props);
   }
 
   private queryAllImagesInfo() {
@@ -279,19 +302,59 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     );
 
     this.manifestQueryingCancellation = this.cancellation.deriveAndCancel(this.manifestQueryingCancellation);
-    this.manifestQueryingCancellation.map(Kefir.zip(manifestQuerying)).onValue((allManifests) => {
-      const manifests = allManifests.filter((manifest) => manifest !== undefined);
-      const miradorConfig = this.miradorConfigFromManifest(manifests);
-      this.miradorInstance = renderMirador({
-        targetElement: element,
-        miradorConfig,
-        onInitialized: this.onMiradorInitialized,
-      });
+    this.manifestQueryingCancellation.map(Kefir.zip(manifestQuerying)).observe({
+      value: (allManifests) => {
+        const manifests = allManifests.filter((manifest) => manifest !== undefined);
+        if (!manifests.length) {
+          this.onViewerError(new Error('No IIIF image could be loaded. Check the image identifier and IIIF service.'));
+          return;
+        }
+        try {
+          const miradorConfig = this.miradorConfigFromManifest(manifests);
+          this.miradorInstance = renderMirador({
+            targetElement: element,
+            miradorConfig,
+            onInitialized: this.onMiradorInitialized,
+          });
+        } catch (error) {
+          this.onViewerError(error);
+        }
+      },
+      error: this.onViewerError,
     });
   }
 
+  private onViewerError = (error: any) => {
+    const message = error instanceof Error ? error.message : String(error);
+    this.setState({ loading: false, errorMessage: `Unable to display the image. ${message}` });
+  };
+
   private onMiradorInitialized = (mirador: Mirador.Instance) => {
-    scrollToRegions(mirador, ({ canvasId }) => {
+    this.miradorInstance = mirador;
+    this.viewerCancellation = this.cancellation.deriveAndCancel(this.viewerCancellation);
+    if (this.props.initialView !== 'whole-image') { this.zoomToSelectedRegions(); }
+    this.listenToEvents();
+    this.triggerManifestUpdatedEvent(this.state.allImages);
+
+    /** Multiple objects/images retain the existing image selection workflow. */
+    const { allImages } = this.state;
+    if (allImages.length > 1 || (allImages.length === 1 && size(allImages[0].images) > 1)) {
+      mirador.eventEmitter.publish('TOGGLE_LOAD_WINDOW');
+    }
+    if (this.props.onMiradorInitialized) { this.props.onMiradorInitialized(mirador); }
+  }
+
+  private showWholeImage = () => {
+    if (!this.miradorInstance) { return; }
+    this.miradorInstance.viewer.workspace.windows.forEach(window => {
+      const view = window.focusModules.ImageView;
+      if (view) { view.osd.viewport.goHome(); }
+    });
+  };
+
+  private zoomToSelectedRegions = () => {
+    if (!this.miradorInstance) { return; }
+    scrollToRegions(this.miradorInstance, ({ canvasId }) => {
       for (const [iri, image] of Array.from(this.state.info)) {
         if (canvasId === image.imageIRI.value) {
           return image.boundingBox;
@@ -299,28 +362,10 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       }
       return undefined;
     });
-    this.listenToEvents();
-    this.triggerManifestUpdatedEvent(this.state.allImages);
-
-    /**
-     * If we have one than one object or one than one image for the object then show
-     * image selection view in the mirador
-     */
-    const { allImages } = this.state;
-    if (
-      allImages.length > 1 || (allImages.length == 1 && size(allImages[0].images) > 1)
-    ) {
-      mirador.eventEmitter.publish('TOGGLE_LOAD_WINDOW');
-    }
-
-
-    if (this.props.onMiradorInitialized) {
-      this.props.onMiradorInitialized(mirador);
-    }
-  }
+  };
 
   private listenToEvents = () => {
-    this.cancellation
+    this.viewerCancellation
       .map(
         listen({
           eventType: AddResourceImagesEvent,
@@ -396,7 +441,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
 
 
-    this.cancellation
+    this.viewerCancellation
       .map(
         listen({
           eventType: RemoveRegion,
@@ -405,13 +450,14 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       )
       .observe({
         value: (event) => {
+          if (this.props.readOnly) { return; }
           const windows = this.miradorInstance.viewer.workspace.windows;
           const windowForImage = windows.find(w => w.canvasID === event.data.imageIri);
 
           if (windowForImage) {
             const annotation = windowForImage.annotationsList.find(a => a['@id'] === event.data.regionIri) as OARegionAnnotation;
             
-            this.cancellation.map(
+            this.viewerCancellation.map(
               this.annotationEndpoint.remove(annotation)
             )
             .onError(() => { 
@@ -428,7 +474,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               }
             })
           } else {
-            this.cancellation.map(
+            this.viewerCancellation.map(
               this.annotationEndpoint
                 .search(Rdf.iri(event.data.imageIri))
                 .flatMap(
@@ -445,7 +491,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         }
       });
 
-    this.cancellation
+    this.viewerCancellation
       .map(
         listen({
           eventType: HighlightRegion,
@@ -459,7 +505,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       });
 
 
-    this.cancellation
+    this.viewerCancellation
       .map(
         listen({
           eventType: ZoomToRegionEvent,
@@ -506,7 +552,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         }
       })
 
-      this.cancellation
+      this.viewerCancellation
       .map(
         listen({
           eventType: LayoutChanged
@@ -566,13 +612,14 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
   private miradorConfigFromManifest(manifests: Array<Manifest>): Mirador.Options {
     const {
-      id, annotationEndpoint, useDetailsSidebar,
+      annotationEndpoint, useDetailsSidebar,
       annotationViewTooltipTemplate,
     } = this.props;
     const imagesInfo = this.state.info as ImagesInfoByIri;
 
+    const endpoint = annotationEndpoint || new LdpAnnotationEndpoint({ imagesInfo, annotationMode: this.props.annotationMode });
     this.annotationEndpoint = new AnnotationEndpointProxy(
-      annotationEndpoint || new LdpAnnotationEndpoint({ imagesInfo }),
+      this.props.readOnly ? new ReadOnlyAnnotationEndpoint(endpoint) : endpoint,
       this.triggerRegionUpdatedEvent(RegionCreatedEvent),
       this.triggerRegionUpdatedEvent(RegionUpdatedEvent),
       this.triggerRegionUpdatedEvent(RegionRemovedEvent),
@@ -587,15 +634,19 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
           annotations: {
             annotationState: 'on',
             annotationRefresh: true,
+            annotationCreation: !this.props.readOnly,
           },
         },
       }];
 
     return {
-      id: id, // The CSS ID selector for the containing element.
+      id: this.miradorDomId,
       useDetailsSidebar, annotationViewTooltipTemplate,
+      mainMenuSettings: this.props.showViewControls ? { show: false } : undefined,
       windowSettings: {
-        sidePanel: !useDetailsSidebar
+        sidePanel: this.props.showViewControls ? false : !useDetailsSidebar,
+        ...(this.props.showViewControls ? { bottomPanel: false, displayLayout: false, availableViews: ['ImageView' as Mirador.WindowView] } : {}),
+        canvasControls: { annotations: { annotationCreation: !this.props.readOnly } },
       },
       saveSession: false,
       data: manifests.map((manifest) => ({
@@ -631,22 +682,32 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
   render() {
     const { errorMessage } = this.state;
+    const viewer = errorMessage ? React.createElement(ErrorNotification, { errorMessage }) : D.div({
+      ref: (element) => {
+        this.miradorElement = element;
+        this.renderMirador(element);
+      },
+      id: this.miradorDomId,
+      className: 'researchspace-mirador',
+      style: { width: '100%', height: '100%', position: 'relative' },
+    });
+    // Keep the existing DOM and sizing for viewers that do not opt into these controls.
+    if (!this.props.showViewControls) {
+      return D.div({className: 'mirador', style: {position: 'relative', width: '100%', height: '100%'}}, viewer);
+    }
     return D.div(
       {
         className: 'mirador',
-        style: { position: 'relative', width: '100%', height: '100%' }
+        style: { position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }
       },
-      errorMessage
-        ? React.createElement(ErrorNotification, { errorMessage })
-        : D.div({
-          ref: (element) => {
-            this.miradorElement = element;
-            this.renderMirador(element);
-          },
-          id: this.props.id,
-          className: 'researchspace-mirador',
-          style: { width: '100%', height: '100%', position: 'relative' },
-        })
+      D.div({ style: { position: 'relative', flex: '1 1 0', minHeight: 0 } }, viewer),
+      this.props.showViewControls && !errorMessage ? D.div({ className: 'rs-iiif-view-controls' },
+        D.button({ type: 'button', className: 'text-link-action', onClick: this.showWholeImage,
+          disabled: this.state.loading }, this.props.wholeImageLabel || 'Whole image'),
+        D.button({ type: 'button', className: 'text-link-action', onClick: this.zoomToSelectedRegions,
+          disabled: this.state.loading || !this.state.info ||
+            !Array.from(this.state.info.values()).some(info => Boolean(info.boundingBox)) }, this.props.zoomLabel || 'Zoom to selection')
+      ) : null
     );
   }
 

@@ -68,6 +68,14 @@
           <span>Edit</span>
         </button>
       </semantic-link-container>  
+
+      <mp-event-trigger id='{{viewId}}-refresh-resource'
+                        type='Component.TemplateUpdate'
+                        targets='["{{#if refreshTarget}}{{refreshTarget}}{{else}}[[> iri]]-resourceWorkspace-frame{{/if}}"]'>
+        <button type="button" class="resource-record-header__action" title="Refresh resource" aria-label="Refresh">
+          <rs-icon icon-type="rounded" icon-name="refresh" symbol="true" aria-hidden="true"></rs-icon>
+        </button>
+      </mp-event-trigger>
           
       <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret">
         {{> rsp:ResourceDropdownActions viewId=viewId
@@ -98,4 +106,3 @@
   </header>
 
 [[#*inline "iri"]][[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]][[/inline]]
-

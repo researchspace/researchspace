@@ -7,13 +7,18 @@ import * as Handlebars from 'handlebars';
 import { mount } from 'platform-tests/configuredEnzyme';
 import { mockConfig } from 'platform-tests/mocks';
 import { DashboardComponent } from 'platform/components/dashboard/DashboardComponent';
-import { EventTrigger } from 'platform/components/events/EventTrigger';
+import { ResourceLinkContainer } from 'platform/api/navigation/components/ResourceLinkContainer';
+import * as Navigation from 'platform/api/navigation';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 import * as Labels from 'platform/api/services/resource-label';
 import { Rdf } from 'platform/api/rdf';
 
 const source = require('!!raw-loader!../../../../main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FResourceViewButton.html').default;
+const framesSource = require('!!raw-loader!../../../../main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FThinkingFrames.html').default;
 const iri = 'https://example.org/entity/one';
 const resourceConfiguration = 'https://example.org/config/person';
+const dashboardIri = Rdf.iri('http://www.researchspace.org/resource/ThinkingFrames');
+const customTemplate = 'https://example.org/templates/person';
 mockConfig();
 
 function viewAction(resourceVisualisationTemplateIRI?: string) {
@@ -21,12 +26,26 @@ function viewAction(resourceVisualisationTemplateIRI?: string) {
   fragment.innerHTML = Handlebars.compile(source)({
     iri, resourceConfiguration, resourceVisualisationTemplateIRI, viewId: 'editor-frame',
   });
-  const trigger = fragment.querySelector('mp-event-trigger');
-  return {
-    id: trigger.getAttribute('id'), type: trigger.getAttribute('type'),
-    targets: JSON.parse(trigger.getAttribute('targets')),
-    data: JSON.parse(trigger.getAttribute('data')),
-  };
+  const link = fragment.querySelector('semantic-link-container');
+  expect(link, 'View must provide navigation outside the dashboard').not.to.equal(null);
+  const props = {uri: link.getAttribute('uri')};
+  Array.from(link.attributes).filter(attr => attr.name.startsWith('urlqueryparam-'))
+    .forEach(attr => props[attr.name] = attr.value);
+  return props;
+}
+
+// This initial-view fragment uses only standard Handlebars conditionals and
+// urlParam. Exercise its branches without needing the Java template server.
+function initialView(params: {[key: string]: string} = {}, context = {}) {
+  const fragment = framesSource.slice(framesSource.indexOf('[[#if (urlParam "view")]]'),
+    framesSource.indexOf("views='["));
+  const engine = Handlebars.create();
+  engine.registerHelper('urlParam', (name: string) => params[name] || '');
+  const rendered = engine.compile(fragment.replace(/\[\[/g, '{{').replace(/\]\]/g, '}}'))(context);
+  expect(rendered.match(/initial-view=/g)).to.have.length(1);
+  const element = document.createElement('div');
+  element.innerHTML = `<rs-dashboard ${rendered}></rs-dashboard>`;
+  return JSON.parse(element.firstElementChild.getAttribute('initial-view'));
 }
 
 async function waitFor(check: () => boolean) {
@@ -38,53 +57,126 @@ async function waitFor(check: () => boolean) {
 }
 
 describe('Resource view navigation', () => {
-  it('opens the same entity with its configuration in the default resource view', () => {
-    expect(viewAction().data).to.deep.equal({viewId: 'resource', resourceIri: iri, resourceConfig: resourceConfiguration});
+  let label: sinon.SinonStub;
+  beforeEach(() => {
+    label = sinon.stub(Labels, 'getLabel').callsFake(() => Kefir.constant('Example entity'));
+  });
+  afterEach(() => {
+    label.restore();
+    Navigation.setFrameNavigation(false);
   });
 
-  it('uses the configured resource visualisation when available', () => {
-    const template = 'https://example.org/templates/person';
-    expect(viewAction(template).data).to.deep.equal({
-      viewId: 'resource-detailed-visualisation', resourceIri: iri,
-      resourceConfig: resourceConfiguration, resourceVisualisationTemplate: template,
+  it('opens the same entity with its configuration in the default resource view', () => {
+    expect(viewAction().uri).to.equal(dashboardIri.value);
+    expect(Navigation.NavigationUtils.extractParams(viewAction())).to.deep.equal({
+      view: 'resource', resource: iri, resourceConfig: resourceConfiguration,
     });
   });
 
-  it('retains unsaved input when View resource and Edit reactivate existing frames', async () => {
-    const label = sinon.stub(Labels, 'getLabel').callsFake(() => Kefir.constant('Example entity'));
-    const host = document.createElement('div');
-    host.style.cssText = 'position:relative;width:1000px;height:700px';
-    document.body.appendChild(host);
-    const dashboard = mount(createElement(DashboardComponent, {
-      id: 'thinking-frames', dashboardIri: Rdf.iri('http://www.researchspace.org/resource/ThinkingFrames'),
-      initialView: {view: 'resource-editor', resource: iri, data: {}},
-      views: [
-        {id: 'resource-editor', label: 'Edit', template: '<input aria-label="Entity label" value="Original" />'},
-        {id: 'resource', label: 'Resource view', template: '<p data-resource-view="true">{{iri}}</p>'},
-      ],
-    }), {attachTo: host});
-    let action;
-    try {
-      await waitFor(() => Boolean(host.querySelector('input')));
-      const input = host.querySelector('input');
-      input.value = 'Unsaved new label';
-      action = mount(createElement(EventTrigger as any, viewAction(), createElement('button', {}, 'View resource')));
-      action.find('button').simulate('click');
-      await waitFor(() => Boolean(host.querySelector('[data-resource-view]')));
-      expect(host.querySelector('[data-resource-view]').textContent).to.equal(iri);
-      expect(host.contains(input)).to.equal(true);
-      action.find('button').simulate('click');
-      action.setProps({data: {viewId: 'resource-editor', resourceIri: iri}});
-      action.find('button').simulate('click');
-      await waitFor(() => dashboard.state('layout').getActiveTabset().getSelectedNode().getId() === iri + 'resource-editor');
-      expect(dashboard.state('items')).to.have.length(2);
-      expect(host.querySelector('input')).to.equal(input);
-      expect(input.value).to.equal('Unsaved new label');
-    } finally {
-      if (action) { action.unmount(); }
-      dashboard.unmount();
-      host.remove();
-      label.restore();
-    }
+  it('uses the configured resource visualisation when available', () => {
+    expect(Navigation.NavigationUtils.extractParams(viewAction(customTemplate))).to.deep.equal({
+      view: 'resource-detailed-visualisation', resource: iri,
+      resourceConfig: resourceConfiguration, resourceVisualisationTemplate: customTemplate,
+    });
+  });
+
+  it('retains the create-form defaults and URL label when initialising a frame', () => {
+    expect(initialView({view: 'resource-editor', entityTypeConfig: resourceConfiguration,
+      customLabel: 'New person'})).to.deep.equal({
+      view: 'resource-editor', resource: '', data: {
+        resourceConfig: '', resourceVisualisationTemplate: '', entityTypeConfig: resourceConfiguration,
+        mode: 'new', customLabel: 'New person',
+      },
+    });
+    expect(initialView({view: 'resource-editor', entityTypeConfig: resourceConfiguration,
+      mode: 'edit'}).data.mode).to.equal('edit');
+    expect(initialView()).to.deep.equal({view: 'dashboard'});
+    expect(initialView({}, {view: 'resource', resource: iri})).to.deep.equal({view: 'resource', resource: iri});
+  });
+
+  [undefined, customTemplate].forEach(template => {
+    const view = template ? 'resource-detailed-visualisation' : 'resource';
+
+    it(`opens the ${view} frame from a standalone editor`, async () => {
+      const environment = ConfigHolder.getEnvironmentConfig();
+      (ConfigHolder.getEnvironmentConfig as sinon.SinonStub).returns({
+        resourceUrlMapping: {value: '/resource/'},
+      });
+      const browserUrl = window.location.href;
+      const browserState = window.history.state;
+      const previousResource = Navigation.getCurrentResource();
+      Navigation.setFrameNavigation(false);
+      let requested;
+      const unsubscribe = Navigation.listen({eventType: 'NAVIGATED', callback: () => {
+        requested = initialView(Navigation.getCurrentUrl().search(true));
+      }});
+      const action = mount(createElement(ResourceLinkContainer as any, viewAction(template),
+        createElement('button', {type: 'button'}, 'View')));
+      let dashboard;
+      try {
+        action.find('button').simulate('click', {button: 0});
+        await waitFor(() => Boolean(requested));
+        expect(new URL(window.location.href).searchParams.get('uri')).to.equal(dashboardIri.value);
+        expect(requested).to.deep.equal({view, resource: iri, data: {
+          resourceConfig: resourceConfiguration, resourceVisualisationTemplate: template || '',
+        }});
+        dashboard = mount(createElement(DashboardComponent, {
+          id: 'thinking-frames', dashboardIri, initialView: requested,
+          views: [{id: view, label: 'Resource view', template:
+            '<p data-resource-view="true">{{iri}}|{{data.resourceConfig}}|{{data.resourceVisualisationTemplate}}</p>'}],
+        }));
+        await waitFor(() => {
+          dashboard.update();
+          return dashboard.find('[data-resource-view]').length === 1;
+        });
+        expect(dashboard.find('[data-resource-view]').text()).to.equal(
+          `${iri}|${resourceConfiguration}|${template || ''}`);
+      } finally {
+        if (dashboard) { dashboard.unmount(); }
+        action.unmount();
+        unsubscribe();
+        (ConfigHolder.getEnvironmentConfig as sinon.SinonStub).returns(environment);
+        window.history.replaceState(browserState, '', browserUrl);
+        Navigation.init().onValue(() => {});
+        Navigation.__unsafe__setCurrentResource(previousResource);
+      }
+    });
+
+    it(`retains unsaved input when View and Edit reactivate existing ${view} frames`, async () => {
+      const host = document.createElement('div');
+      host.style.cssText = 'position:relative;width:1000px;height:700px';
+      document.body.appendChild(host);
+      const dashboard = mount(createElement(DashboardComponent, {
+        id: 'thinking-frames', dashboardIri,
+        initialView: {view: 'resource-editor', resource: iri, data: {}},
+        views: [
+          {id: 'resource-editor', label: 'Edit', template: '<input aria-label="Entity label" default-value="Original" />'},
+          {id: view, label: 'Resource view', template: '<p data-resource-view="true">{{iri}}</p>'},
+        ],
+      }), {attachTo: host});
+      let action;
+      try {
+        await waitFor(() => Boolean(host.querySelector('input')));
+        const input = host.querySelector('input');
+        input.value = 'Unsaved new label';
+        action = mount(createElement(ResourceLinkContainer as any, viewAction(template), createElement('button', {type: 'button'}, 'View')));
+        action.find('button').simulate('click', {button: 0});
+        await waitFor(() => Boolean(host.querySelector('[data-resource-view]')));
+        expect(host.querySelector('[data-resource-view]').textContent).to.equal(iri);
+        expect(host.contains(input)).to.equal(true);
+        expect(dashboard.state('layout').getActiveTabset().getSelectedNode().getId()).to.equal(iri + view);
+        action.find('button').simulate('click', {button: 0});
+        action.setProps({'urlqueryparam-view': 'resource-editor'});
+        action.find('button').simulate('click', {button: 0});
+        await waitFor(() => dashboard.state('layout').getActiveTabset().getSelectedNode().getId() === iri + 'resource-editor');
+        expect(dashboard.state('items')).to.have.length(2);
+        expect(host.querySelector('input')).to.equal(input);
+        expect(input.value).to.equal('Unsaved new label');
+      } finally {
+        if (action) { action.unmount(); }
+        dashboard.unmount();
+        host.remove();
+      }
+    });
   });
 });

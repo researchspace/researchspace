@@ -165,9 +165,18 @@ a {
     user-select: none;
 } */
  
-// A visible keyboard focus indicator must survive component hover/active styles.
-a:focus-visible,
+// Text links use one underline for pointer and keyboard interaction. Keep the
+// stronger rectangular indicator for buttons and controls without link text.
+a:not(.btn):not([role="button"]):focus-visible {
+    outline: none !important;
+    box-shadow: none;
+    text-decoration: underline dotted !important;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.15em;
+}
+
 button:focus-visible,
+a[role="button"]:focus-visible,
 .btn:focus-visible,
 [role="tab"]:focus-visible {
     outline: 2px solid $rs-color-focus !important;

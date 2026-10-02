@@ -51,7 +51,7 @@ async function render(page: Page, width: number, editor = false, imageSize = [60
         <li class="active" role="presentation"><a role="tab" aria-selected="true" href="#details">Details</a></li>
         <li role="presentation"><a role="tab" aria-selected="false" href="#context">Context</a></li>
       </ul>
-      </div></div></div>`});
+      </div></div></div><a href="#visited-resource" class="text-link">Resource link</a>`});
   });
   await page.goto('http://resource.test/index.html');
   await page.evaluate(() => document.fonts.ready);
@@ -61,7 +61,7 @@ for (const width of [320, 480, 900]) {
   for (const editor of [false, true]) {
     test(`${editor ? 'editor' : 'resource'} header fits a ${width}px pane in a wide viewport`, async ({page}) => {
       await render(page, width, editor);
-      const button = page.getByRole('button', {name: editor ? 'View resource' : 'Edit', exact: true});
+      const button = page.getByRole('button', {name: editor ? 'View' : 'Edit', exact: true});
       await expect(button).toBeVisible();
       const box = await button.boundingBox();
       expect(box!.height).toBeGreaterThanOrEqual(36);
@@ -117,6 +117,7 @@ test('selected resource tabs retain their underline without a box on click or ke
   await expect(selected).toBeFocused();
   expect(await selected.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('none');
   expect(await selected.evaluate(el => getComputedStyle(el).borderTopWidth)).toBe('0px');
+  expect(await selected.evaluate(el => getComputedStyle(el).textDecorationLine)).toBe('none');
   expect(await selected.evaluate(el => getComputedStyle(el.parentElement!).boxShadow)).toContain('inset');
   await page.keyboard.press('Tab');
   const next = page.getByRole('tab', {name: 'Context'});
@@ -124,6 +125,22 @@ test('selected resource tabs retain their underline without a box on click or ke
   expect(await next.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('none');
   expect(await next.evaluate(el => getComputedStyle(el).textDecorationLine)).toBe('underline');
   expect(await next.evaluate(el => getComputedStyle(el).textDecorationStyle)).toBe('dotted');
+});
+
+test('a clicked resource link retains an underline without a focus box on subsequent hover', async ({page}) => {
+  await render(page, 900);
+  const link = page.getByRole('link', {name: 'Resource link'});
+  await link.click();
+  await page.mouse.move(1, 1);
+  await link.hover();
+  const style = await link.evaluate(el => ({outline: getComputedStyle(el).outlineStyle,
+    shadow: getComputedStyle(el).boxShadow, decoration: getComputedStyle(el).textDecorationLine}));
+  expect(style).toEqual({outline: 'none', shadow: 'none', decoration: 'underline'});
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+  await expect(link).toBeFocused();
+  expect(await link.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('none');
+  expect(await link.evaluate(el => getComputedStyle(el).textDecorationStyle)).toBe('dotted');
 });
 
 for (const imageSize of [[60, 160], [160, 60]]) {

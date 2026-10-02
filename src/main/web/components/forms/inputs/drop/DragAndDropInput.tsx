@@ -288,7 +288,22 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
                     <TemplateItem
                       template={{
                         source: this.props.itemTemplate,
-                        options: { iri: v.value.value, inputId: this.state.id, cardLayout }
+                        options: {
+                          iri: v.value.value, inputId: this.state.id, cardLayout,
+                          // The captured template context belongs to the enclosing
+                          // form, not this selected value. Nulls deliberately shadow
+                          // its card metadata so ResourceCard resolves the asset's
+                          // own type, renderer and actions (including fallback cards).
+                          // An item template can still pass explicit overrides.
+                          resourceConfig: null,
+                          resourceOntologyClass: null,
+                          resourceLabel: null,
+                          resourceIcon: null,
+                          resourceDescription: null,
+                          resourceFormIRI: null,
+                          resourceVisualisationTemplate: null,
+                          resourceVisualisationTemplateIRI: null,
+                        }
                       }}
                     />
                   </div>

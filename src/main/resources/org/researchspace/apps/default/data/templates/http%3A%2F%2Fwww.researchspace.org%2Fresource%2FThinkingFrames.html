@@ -29,43 +29,32 @@
     home-page-iri="http://www.researchspace.org/resource/Start"
 
     [[#if (urlParam "view")]]
-      initial-view='{"view": "[[urlParam "view"]]", 
-                    "resource": "[[urlParam "resource"]]", 
-                    "data": {[[#if (urlParam "entityTypeConfig")]]
-                              [[#if (urlParam "mode")]]
-                                [[#if (urlParam "customLabel")]]
-                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
-                                  "mode": "[[urlParam "mode"]]",
-                                  "customLabel": "[[urlParam "customLabel"]]"
-                                [[else]]
-                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
-                                  "mode": "[[urlParam "mode"]]"
-                                [[/if]]
-                              [[else]]
-                                [[#if (urlParam "customLabel")]]
-                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
-                                  "mode": "new",
-                                  "customLabel": "[[urlParam "customLabel"]]"
-                                [[else]]
-                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
-                                  "mode": "new"  
-                                [[/if]]                             
-                              [[/if]]
-                            
-                            [[else]]
-                              [[#if (urlParam "resource")]]
-                                  [[#if (urlParam "customLabel")]]
-                                    "customLabel": "[[urlParam "customLabel"]]"
-                                  [[/if]]
-                              [[/if]]
-                            [[/if]]
-
-                            } 
-                    }'
-    [[/if]] 
-    [[#if view]]
-      initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
-    [[/if]] 
+      initial-view='{
+        "view": "[[urlParam "view"]]",
+        "resource": "[[urlParam "resource"]]",
+        "data": {
+          "resourceConfig": "[[urlParam "resourceConfig"]]",
+          "resourceVisualisationTemplate": "[[urlParam "resourceVisualisationTemplate"]]"
+          [[#if (urlParam "entityTypeConfig")]]
+            , "entityTypeConfig": "[[urlParam "entityTypeConfig"]]"
+            , "mode": "[[#if (urlParam "mode")]][[urlParam "mode"]][[else]]new[[/if]]"
+            [[#if (urlParam "customLabel")]]
+              , "customLabel": "[[urlParam "customLabel"]]"
+            [[/if]]
+          [[else]]
+            [[#if (urlParam "resource")]]
+              [[#if (urlParam "customLabel")]]
+                , "customLabel": "[[urlParam "customLabel"]]"
+              [[/if]]
+            [[/if]]
+          [[/if]]
+        }
+      }'
+    [[else]]
+      [[#if view]]
+        initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
+      [[/if]]
+    [[/if]]
 
     views='[
 

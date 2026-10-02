@@ -41,11 +41,16 @@ function initialView(params: {[key: string]: string} = {}, context = {}) {
     framesSource.indexOf("views='["));
   const engine = Handlebars.create();
   engine.registerHelper('urlParam', (name: string) => params[name] || '');
-  const rendered = engine.compile(fragment.replace(/\[\[/g, '{{').replace(/\]\]/g, '}}'))(context);
-  expect(rendered.match(/initial-view=/g)).to.have.length(1);
+  // Protect literal JSON braces from becoming triple-brace Handlebars syntax.
+  // The HTML parser below decodes these entities when reading the attribute.
+  const clientFragment = fragment.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;')
+    .replace(/\[\[/g, '{{').replace(/\]\]/g, '}}');
+  const rendered = engine.compile(clientFragment)(context);
+  expect((rendered.match(/initial-view=/g) || []).length).to.be.at.most(1);
   const element = document.createElement('div');
   element.innerHTML = `<rs-dashboard ${rendered}></rs-dashboard>`;
-  return JSON.parse(element.firstElementChild.getAttribute('initial-view'));
+  const initialViewJson = element.firstElementChild.getAttribute('initial-view');
+  return initialViewJson === null ? undefined : JSON.parse(initialViewJson);
 }
 
 async function waitFor(check: () => boolean) {
@@ -70,6 +75,7 @@ describe('Resource view navigation', () => {
     expect(viewAction().uri).to.equal(dashboardIri.value);
     expect(Navigation.NavigationUtils.extractParams(viewAction())).to.deep.equal({
       view: 'resource', resource: iri, resourceConfig: resourceConfiguration,
+      resourceVisualisationTemplate: '',
     });
   });
 
@@ -90,8 +96,22 @@ describe('Resource view navigation', () => {
     });
     expect(initialView({view: 'resource-editor', entityTypeConfig: resourceConfiguration,
       mode: 'edit'}).data.mode).to.equal('edit');
-    expect(initialView()).to.deep.equal({view: 'dashboard'});
+  });
+
+  it('leaves the dashboard default unchanged when no initial view is supplied', () => {
+    expect(initialView()).to.equal(undefined);
+  });
+
+  it('uses the context view when no URL view is supplied', () => {
     expect(initialView({}, {view: 'resource', resource: iri})).to.deep.equal({view: 'resource', resource: iri});
+  });
+
+  it('emits one initial view and prefers the URL view over the context view', () => {
+    expect(initialView({view: 'resource', resource: iri, resourceConfig: resourceConfiguration},
+      {view: 'resource-editor', resource: 'https://example.org/entity/two'})).to.deep.equal({
+      view: 'resource', resource: iri,
+      data: {resourceConfig: resourceConfiguration, resourceVisualisationTemplate: ''},
+    });
   });
 
   [undefined, customTemplate].forEach(template => {

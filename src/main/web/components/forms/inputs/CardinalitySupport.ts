@@ -183,19 +183,10 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
           ? createElement(
               Button,
               {
-                type: 'button',
                 className: COMPONENT_NAME + '__remove-value',
-                title: childIsInputGroup ? 'Remove this group' : 'Remove this value',
-                'aria-label': childIsInputGroup
-                  ? 'Remove this group'
-                  : 'Remove this value',
                 onClick: () => this.removeValue(index),
               },
-              createElement(Icon, {
-                iconType: 'rounded',
-                iconName: childIsInputGroup ? 'close' : 'delete',
-                symbol: true,
-              })
+              createElement(Icon, {iconType:'rounded', iconName: 'delete', symbol: true})
             )
           : undefined
       )

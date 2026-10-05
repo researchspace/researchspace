@@ -53,7 +53,7 @@
       {{else if resourceConfigurationError}}
         <div class="page__grid-container">
           <div class="page__content-container resource-editView-form-container">
-            <div class='resource-record-header'>
+            <div class='resource-record-header resource-record-header--editor'>
               <div class="resource-record-header-title-container">
                 <h2 class="resource-record-header-title">
                   <div class="link-draggable">
@@ -66,6 +66,7 @@
                 </h2>
               </div>
               <div class="btn-inline-container">
+                {{#if iri}}[[> rsp:ResourceViewButton]]{{/if}}
                 <mp-event-trigger id='{{viewId}}-resourceConfigurationErrorArea-refresh-trigger' 
                                   type='Component.TemplateUpdate' 
                                   targets='["{{viewId}}-resource-editor-frame"]'
@@ -450,7 +451,7 @@
             <div class="page__content-container resource-editView-form-container">
               <mp-event-target-template-render id='{{viewId}}-term-forms' template='{{> template}}'>
                 <template id='template'>
-                  <div class='resource-record-header'>
+                  <div class='resource-record-header resource-record-header--editor'>
                     <div class="{{#if (eq mode 'deleted')}}{{else}}resource-record-header-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
                       {{#switch mode}}
                         {{#case "new" break=true}}
@@ -502,6 +503,7 @@
                         {{/case}}
 
                         {{#case "edit" break=true}}
+                          {{#unless editable}}<span class="resource-record-header__mode">Read only</span>{{/unless}}
                           <h2 class="resource-record-header-title">
                             <div class="link-draggable">
                             [[!--  <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true"></rs-icon> --]]
@@ -667,6 +669,7 @@
                         {{/if}} 
 
                         {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
+                          {{> rsp:ResourceViewButton}}
                           {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                             <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                                       urlqueryparam-view='authority-list' 
@@ -758,6 +761,7 @@
                                                             iri=iri
                                                             resourceConfig=resourceConfiguration
                                                             resourceLabel=resourceName
+                                                            resourceVisualisationTemplateIRI=resourceVisualisationTemplateIRI
                                                             resourceEditorButton=true
                                                             hidePreview=true
                                                             headerButton=true

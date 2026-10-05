@@ -2010,41 +2010,55 @@ fieldset[disabled] .form-control {
   }
 } */
 
+// Size against the form itself, including nested editors and split panes.
+// Wrapping does not depend on a particular Bootstrap tab ancestor.
 .form-details-container {
-
-  display: grid; 
-  grid-template-columns: 2fr minmax(385px, 1fr);
-  gap: 20px;
-
-  height: inherit;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: 20px;
   width: 100%;
-
+  min-width: 0;
 }
 
-.tab-content:has(.form-details-container) {
-  container-name: form-details-container;
-  container-type: inline-size;
-}
-
-@container form-details-container (width <= 1000px) {
-
-  .form-details-container {
-    grid-template-columns: 100%;
-    gap: 0;
-  }
+.form-details-inputs-container {
+  flex: 2 1 520px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .form-details-assets-container {
-
+  flex: 1 1 320px;
+  min-width: 0;
+  max-width: 100%;
   padding-top: 20px;
-
   display: flex;
   flex-direction: column;
 }
 
-.form-details-inputs-container {
+// Intrinsic input widths must not push their action buttons into the next column.
+.semantic-form {
+  .semantic-form-input-decorator,
+  .semantic-form-input-decorator__container,
+  .semantic-form-input-decorator__input,
+  .cardinality-support,
+  .cardinality-support__single-instance,
+  .plain-text-field,
+  .plain-text-field__inputs,
+  .plain-text-field__inputs > .form-group,
+  .select-text-field,
+  .autocomplete-text-field,
+  .autocomplete-text-field__main-row,
+  .autocomplete-text-field__select,
+  .date-picker-field {
+    min-width: 0;
+    max-width: 100%;
+  }
 
- // overflow-x: auto;
+  .btn-form-actions {
+    flex-wrap: wrap;
+    > .btn { flex: 0 0 auto; }
+  }
 }
 
 @import "form-assets";

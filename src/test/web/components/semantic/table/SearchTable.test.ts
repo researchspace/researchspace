@@ -7,6 +7,7 @@ import * as Maybe from 'data.maybe';
 import * as Either from 'data.either';
 import { Table, CellRendererProps } from 'platform/components/semantic/table/Table';
 import { SparqlClient } from 'platform/api/sparql';
+import AnchoredDropdown from 'platform/components/ui/dropdown/AnchoredDropdown';
 import { ResourceDropdown } from 'platform/components/ui/resource-dropdown';
 import { Pagination } from 'platform/components/semantic/table/Pagination';
 import Icon from 'platform/components/ui/icon/Icon';
@@ -81,9 +82,11 @@ describe('Responsive search tables', () => {
           h(TemplateItem, { template: { source: viewDropdown, options: { bindings: views } } }),
           h('button', { className: 'btn btn-default btn-textAndIcon search-refresh-button', 'aria-label': 'Refresh results' },
             h(Icon, { iconName: 'refresh', iconType: 'rounded', symbol: true })),
-          h(Dropdown, { id: 'search-actions', pullRight: true, className: 'dropdown-no-caret search-actions-dropdown' },
+          h(AnchoredDropdown, { id: 'search-actions', pullRight: true, className: 'dropdown-no-caret search-actions-dropdown' },
             h(Dropdown.Toggle, { 'aria-label': 'Search actions' }, h(Icon, { iconName: 'more_vert', iconType: 'rounded', symbol: true })),
-            h(Dropdown.Menu, {}, h(MenuItem, {}, 'Export selected Authority documents as CSV'))))));
+            h(Dropdown.Menu, {}, h(MenuItem, {},
+              h(Icon, { iconName: 'create_new_folder', iconType: 'rounded', className: 'icon-left', symbol: true }),
+              h('span', {}, 'New set with selection')))))));
   }
 
   function draw(width = 340, columns = 2, count = 420, toolbar = false, compactFrame = false,
@@ -137,8 +140,12 @@ describe('Responsive search tables', () => {
   }
 
   for (const width of [160, 220, 340, 640, 720, 820, 900]) {
-    it(`wraps the toolbar and contains open dropdowns in a ${width}px pane`, async () => {
+    it(`wraps the toolbar and keeps open dropdowns readable in a ${width}px pane`, async () => {
       draw(width, 2, 420, true);
+      // Keep wide CSS panes visible in Karma's smaller viewport; off-screen
+      // triggers correctly dismiss their overlays rather than opening a menu.
+      host.style.transformOrigin = 'top left';
+      host.style.transform = `scale(${Math.min(1, (document.documentElement.clientWidth - 20) / width)})`;
       await waitForToolbar();
       const header = box('.rs-search-toolbar');
       const content = find('.semantic-search-content');
@@ -157,8 +164,9 @@ describe('Responsive search tables', () => {
 
       find('.search-view-dropdown .dropdown-toggle').click(); await tick();
       const menu = box('.search-view-dropdown .dropdown-menu');
-      expect(menu.left).to.be.at.least(header.left);
-      expect(menu.right).to.be.at.most(header.right + 1);
+      expect(menu.left).to.be.at.least(8);
+      expect(menu.right).to.be.at.most(document.documentElement.clientWidth - 8);
+      expect(menu.width).to.be.at.least(Math.min(280, document.documentElement.clientWidth - 16));
       expect(find('.search-view-dropdown .dropdown-menu').scrollWidth).to.be.at.most(menu.width + 1);
       // Use the real event-target template from ResourceSearchTemplate.html.
       const items = host.querySelectorAll<HTMLElement>('.search-view-dropdown [role="menuitem"]');
@@ -169,8 +177,12 @@ describe('Responsive search tables', () => {
 
       find('.search-actions-dropdown .dropdown-toggle').click(); await tick();
       const actions = box('.search-actions-dropdown .dropdown-menu');
-      expect(actions.left).to.be.at.least(header.left - 1);
-      expect(actions.right).to.be.at.most(header.right + 1);
+      expect(actions.left).to.be.at.least(8);
+      expect(actions.right).to.be.at.most(document.documentElement.clientWidth - 8);
+      expect(actions.width).to.be.at.least(Math.min(280, document.documentElement.clientWidth - 16));
+      const actionLabel = box('.search-actions-dropdown [role="menuitem"] span');
+      expect(actionLabel.width).to.be.at.least(100);
+      expect(actionLabel.height).to.be.at.most(44);
       expect(find('.search-actions-dropdown .dropdown-menu').scrollWidth).to.be.at.most(actions.width + 1);
     });
   }

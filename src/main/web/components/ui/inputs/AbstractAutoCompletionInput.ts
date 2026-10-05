@@ -24,6 +24,8 @@ import * as lambda from 'core.lambda';
 import * as assign from 'object-assign';
 import * as classNames from 'classnames';
 import ReactSelect, { Async, Options } from 'react-select';
+import { openSelectMenu } from './SelectMenuOverlay';
+import { InputMenuOverlay } from '../dropdown/InputMenuOverlay';
 import * as _ from 'lodash';
 
 import { SparqlClient } from 'platform/api/sparql';
@@ -98,6 +100,7 @@ export class AbstractAutoCompletionInput extends Component<AbstractAutoCompletio
   };
 
   private cancellation = new Cancellation();
+  private menuOverlay: InputMenuOverlay;
 
   private keyPressStream = Kefir.pool<string>();
   private initStream = Kefir.pool<string>();
@@ -117,8 +120,19 @@ export class AbstractAutoCompletionInput extends Component<AbstractAutoCompletio
   }
 
   componentWillUnmount() {
+    this.closeMenuOverlay();
     this.cancellation.cancelAll();
   }
+
+  private closeMenuOverlay = () => {
+    if (this.menuOverlay) this.menuOverlay.dispose();
+    this.menuOverlay = undefined;
+  };
+
+  private openMenuOverlay = () => {
+    this.closeMenuOverlay();
+    this.menuOverlay = openSelectMenu(this.refs.input);
+  };
 
   componentDidMount() {
     // Handles load if defaultQuery is provided
@@ -179,6 +193,9 @@ export class AbstractAutoCompletionInput extends Component<AbstractAutoCompletio
       className: classNames(this.state.className),
       style: this.props.style,
       ref: 'input',
+      onOpen: this.openMenuOverlay,
+      onClose: this.closeMenuOverlay,
+      scrollMenuIntoView: false,
       name: this.state.name,
       placeholder: this.state.placeholder,
       value: this.state.value,

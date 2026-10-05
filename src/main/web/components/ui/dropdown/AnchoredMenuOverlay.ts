@@ -2,22 +2,34 @@
  * Copyright (c) 2026 ResearchSpace contributors.
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Places an existing Bootstrap menu without moving its DOM or React context. */
-export class FormMenuOverlay {
+export interface AnchoredMenuOptions {
+  /** Preferred width in CSS pixels; omit to keep the menu's themed width. */
+  width?: number;
+  matchTriggerWidth?: boolean;
+  align?: 'start' | 'end';
+  viewportMargin?: number;
+  gap?: number;
+  maxHeight?: number;
+  /** Pickers scroll their inner list while keeping search and action controls visible. */
+  overflow?: 'auto' | 'hidden';
+}
+
+/** Places an existing menu without moving its DOM or React/template context. */
+export class AnchoredMenuOverlay {
   private readonly originalStyle: string | null;
   private readonly originalPopover: string | null;
   private readonly maximumHeight: number;
   private readonly nativePopover: boolean;
 
-  constructor(private readonly menu: HTMLElement) {
+  constructor(private readonly menu: HTMLElement, private readonly options: AnchoredMenuOptions = {}) {
     this.originalStyle = menu.getAttribute('style');
     this.originalPopover = menu.getAttribute('popover');
-    this.maximumHeight = parseFloat(getComputedStyle(menu).maxHeight) || 400;
+    this.maximumHeight = options.maxHeight || parseFloat(getComputedStyle(menu).maxHeight) || 400;
     this.nativePopover = typeof menu.showPopover === 'function';
     menu.style.margin = '0';
     menu.style.right = 'auto';
     menu.style.bottom = 'auto';
-    menu.style.overflow = 'auto';
+    menu.style.overflow = options.overflow || 'auto';
     menu.style.overscrollBehavior = 'contain';
     if (this.nativePopover) {
       menu.style.position = 'fixed';
@@ -33,10 +45,12 @@ export class FormMenuOverlay {
     if (!trigger.isConnected || !trigger.getClientRects().length) return false;
 
     const viewport = window.visualViewport;
-    const left = (viewport ? viewport.offsetLeft : 0) + 8;
-    const top = (viewport ? viewport.offsetTop : 0) + 8;
-    const right = left + (viewport ? viewport.width : document.documentElement.clientWidth) - 16;
-    const bottom = top + (viewport ? viewport.height : document.documentElement.clientHeight) - 16;
+    const margin = this.options.viewportMargin === undefined ? 8 : this.options.viewportMargin;
+    const gap = this.options.gap === undefined ? 4 : this.options.gap;
+    const left = (viewport ? viewport.offsetLeft : 0) + margin;
+    const top = (viewport ? viewport.offsetTop : 0) + margin;
+    const right = left + (viewport ? viewport.width : document.documentElement.clientWidth) - 2 * margin;
+    const bottom = top + (viewport ? viewport.height : document.documentElement.clientHeight) - 2 * margin;
     const visible = { left, top, right, bottom };
     for (let node = trigger.parentElement; node; node = node.parentElement) {
       const style = getComputedStyle(node);
@@ -71,17 +85,25 @@ export class FormMenuOverlay {
       if (!scaleX || !scaleY) return false;
     }
 
-    menu.style.maxWidth = `${Math.max(0, bounds.right - bounds.left) / scaleX}px`;
-    const below = Math.max(0, bounds.bottom - anchor.bottom - 4);
-    const above = Math.max(0, anchor.top - bounds.top - 4);
+    const availableWidth = Math.max(0, bounds.right - bounds.left) / scaleX;
+    menu.style.maxWidth = `${availableWidth}px`;
+    if (this.options.width !== undefined || this.options.matchTriggerWidth) {
+      const preferredWidth = Math.max(this.options.width || 0,
+        this.options.matchTriggerWidth ? anchor.width / scaleX : 0);
+      menu.style.minWidth = '0';
+      menu.style.width = `${Math.min(preferredWidth, availableWidth)}px`;
+    }
+    const below = Math.max(0, bounds.bottom - anchor.bottom - gap);
+    const above = Math.max(0, anchor.top - bounds.top - gap);
     const borders = menu.offsetHeight - menu.clientHeight;
     const wanted = Math.min(this.maximumHeight, menu.scrollHeight + borders) * scaleY;
     const upwards = below < wanted && above > below;
     const space = upwards ? above : below;
     menu.style.maxHeight = `${Math.min(this.maximumHeight, space / scaleY)}px`;
     const size = menu.getBoundingClientRect();
-    const x = Math.max(bounds.left, Math.min(anchor.right - size.width, bounds.right - size.width));
-    const y = upwards ? anchor.top - 4 - size.height : anchor.bottom + 4;
+    const preferredLeft = this.options.align === 'start' ? anchor.left : anchor.right - size.width;
+    const x = Math.max(bounds.left, Math.min(preferredLeft, bounds.right - size.width));
+    const y = upwards ? anchor.top - gap - size.height : anchor.bottom + gap;
     menu.style.left = `${this.nativePopover ? x : (x - parentRect.left) / scaleX - parent.clientLeft + parent.scrollLeft}px`;
     menu.style.top = `${this.nativePopover ? y : (y - parentRect.top) / scaleY - parent.clientTop + parent.scrollTop}px`;
     return true;

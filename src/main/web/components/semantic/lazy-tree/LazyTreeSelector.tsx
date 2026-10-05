@@ -20,7 +20,7 @@ import * as React from 'react';
 import { Component, ComponentClass, CSSProperties, ReactElement, SyntheticEvent } from 'react';
 import * as Immutable from 'immutable';
 import * as classnames from 'classnames';
-import { AutoSizer, ColumnSizer, ColumnSizerProps, List, ListProps, ListRowProps } from 'react-virtualized';
+import { AutoSizer, CellMeasurer, CellMeasurerCache, ColumnSizer, ColumnSizerProps, List, ListProps, ListRowProps } from 'react-virtualized';
 
 import { Spinner } from '../../ui/spinner/Spinner';
 
@@ -46,6 +46,8 @@ export interface LazyTreeSelectorProps<T extends Traversable<T> = Traversable<an
   renderItem: (item: T) => React.ReactElement<any>;
   renderEmpty?: () => React.ReactElement<any>;
   itemHeight?: number;
+  /** Measure wrapped labels instead of using fixed-height, single-line rows. */
+  wrapItems?: boolean;
 
   hideCheckboxes?: boolean;
   selectionMode: SelectionMode<T>;
@@ -110,6 +112,8 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
   };
 
   private list: List;
+  private measuredWidth: number;
+  private rowHeights = new CellMeasurerCache({ fixedWidth: true, defaultHeight: MIN_ITEM_HEIGHT, minHeight: MIN_ITEM_HEIGHT });
   private overscanStartIndex: number | undefined;
   private overscanStopIndex: number | undefined;
 
@@ -121,7 +125,9 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
 
   componentWillReceiveProps(nextProps: LazyTreeSelectorProps) {
     const { entries, indices } = computeEntries(nextProps);
+    if (nextProps.wrapItems) this.rowHeights.clearAll();
     this.setState({ entries, indices }, () => {
+      if (nextProps.wrapItems) this.list.recomputeRowHeights();
       this.list.forceUpdateGrid();
       this.requestItemsWithVisibleAnchors();
     });
@@ -138,12 +144,18 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
   }
 
   render() {
-    const { className, style, itemHeight, renderEmpty } = this.props;
+    const { className, style, itemHeight, renderEmpty, wrapItems } = this.props;
     const { entries } = this.state;
 
     return (
-      <div className={classnames(styles.component, className)} style={style}>
-        <AutoSizer>
+      <div className={classnames(styles.component, className, { [styles.wrapped]: wrapItems })} style={style}>
+        <AutoSizer onResize={({ width }) => {
+          if (wrapItems && width !== this.measuredWidth) {
+            this.measuredWidth = width;
+            this.rowHeights.clearAll();
+            if (this.list) this.list.recomputeRowHeights();
+          }
+        }}>
           {({ width, height }) => (
             <VirtualizedList
               ref={(list) => (this.list = list as any)}
@@ -152,13 +164,14 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
               height={height}
               rowCount={entries.length}
               overscanRowCount={OVERSCAN_ITEM_COUNT}
-              rowHeight={Math.max(itemHeight, MIN_ITEM_HEIGHT)}
+              rowHeight={wrapItems ? this.rowHeights.rowHeight : Math.max(itemHeight, MIN_ITEM_HEIGHT)}
+              deferredMeasurementCache={wrapItems ? this.rowHeights : undefined}
               noRowsRenderer={renderEmpty}
               rowRenderer={this.renderRow}
               onRowsRendered={this.onRowsRendered}
               // support horizontal scrolling in outer List component by setting overflow
               // style for it and removing width restrictions from inner container
-              style={{ overflowX: 'auto', overflowY: 'scroll' }}
+              style={{ overflowX: wrapItems ? 'hidden' : 'auto', overflowY: 'auto' }}
               containerStyle={{
                 width: undefined,
                 maxWidth: undefined,
@@ -179,8 +192,13 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
     const renderedEntry = this.renderEntry(entry, index);
     const rowStyle: CSSProperties = {
       ...style,
-      paddingLeft: entry.depth * PADDING_PER_DEPTH_LEVEL,
+      paddingLeft: this.props.wrapItems ? `min(${entry.depth * PADDING_PER_DEPTH_LEVEL}px, 40%)` : entry.depth * PADDING_PER_DEPTH_LEVEL,
     };
+    if (this.props.wrapItems) {
+      return <CellMeasurer key={key} cache={this.rowHeights} columnIndex={0} rowIndex={index} parent={rowProps.parent as any}>
+        <div style={rowStyle}>{renderedEntry}</div>
+      </CellMeasurer>;
+    }
     return (
       <div key={key} style={rowStyle}>
         {renderedEntry}
@@ -272,7 +290,7 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
         )}
         <div className={styles.itemContent} onClick={() => {
           this.toggleExpanded(item, expanded)
-          this.props.onItemClick(item)
+          if (this.props.onItemClick) this.props.onItemClick(item)
         }}>
           {this.props.renderItem(item)}
         </div>

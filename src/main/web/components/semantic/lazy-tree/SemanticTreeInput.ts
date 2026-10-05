@@ -18,12 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {ReactElement, createElement, ReactNode, Children, Props as ReactProps } from 'react';
+import {ReactElement, createElement, ReactNode, Props as ReactProps } from 'react';
 import * as D from 'react-dom-factories';
-import { findDOMNode } from 'react-dom';
 import * as Kefir from 'kefir';
 import * as _ from 'lodash';
-import { Overlay, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { InputMenuOverlay } from 'platform/components/ui/dropdown/InputMenuOverlay';
 import * as SparqlJs from 'sparqljs';
 import * as classnames from 'classnames';
 
@@ -398,8 +398,22 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   };
 
   componentWillUnmount() {
+    if (this.menuOverlay) this.menuOverlay.dispose();
     this.cancellation.cancelAll();
     document.removeEventListener('click', this.handleClickOutside, true);
+  }
+
+  private menuOverlay: InputMenuOverlay;
+
+  componentDidUpdate() {
+    if (this.state.mode.type === 'collapsed') {
+      if (this.menuOverlay) this.menuOverlay.dispose();
+      this.menuOverlay = undefined;
+    } else if (!this.menuOverlay && this.overlayHolder) {
+      this.menuOverlay = new InputMenuOverlay(this.overlayHolder, `.${styles.inputAndButtons}`,
+        `.${styles.dropdown}`, () => this.closeDropdown({ saveSelection: false }));
+      this.menuOverlay.position();
+    }
   }
 
   private handleClickOutside = (event: Event) => {
@@ -716,24 +730,15 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   private renderOverlay() {
     const mode = this.state.mode;
-    return createElement(
-      Overlay,
-      {
-        show: mode.type !== 'collapsed',
-        placement: 'bottom',
-        container: this.overlayHolder,
-        target: () => findDOMNode(this.textInput),
-      },
-      // use proxy component for overlay content to avoid warnings
-      // about unknown props provided by React.Bootstrap
-      createElement(
-        OverlayProxy,
-        {},
-        mode.type === 'collapsed'
-          ? D.div({})
-          : D.div({ className: styles.dropdown }, this.renderSearchInput(), this.renderDropdownContent(mode), this.renderDropdownFooter(mode))
-      )
-    );
+    if (mode.type === 'collapsed') return null;
+    return D.div({ className: styles.dropdown, onKeyDown: event => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.overlayHolder.querySelector<HTMLButtonElement>(`.${styles.browseButton}`).focus({ preventScroll: true });
+        this.closeDropdown({ saveSelection: false });
+      }
+    } }, this.renderSearchInput(), this.renderDropdownContent(mode), this.renderDropdownFooter(mode));
   }
 
   private updateForest(
@@ -868,6 +873,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     const searchTerm = inSearchMode && this.state.searchText ? this.state.searchText.toLowerCase() : undefined;
 
     const config: LazyTreeSelectorProps<Node> = {
+      wrapItems: true,
       forest: renderedForest,
       isLeaf: (item) =>
         item.children ? item.children.length === 0 && !this.state.model.hasMoreChildren(item) : undefined,
@@ -976,12 +982,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     return this.state.model
       .loadFromLeafs(leafs, { transitiveReduction: true })
       .map((treeRoot) => KeyedForest.create(Node.keyOf, sealLazyExpanding(treeRoot)));
-  }
-}
-
-class OverlayProxy extends Component<{}, {}> {
-  render() {
-    return Children.only(this.props.children);
   }
 }
 

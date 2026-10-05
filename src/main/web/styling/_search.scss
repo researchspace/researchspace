@@ -552,6 +552,44 @@
   }
 }
 
+// The authority entries tab is a column: only results consume spare height.
+// The shared search-page toolbar's flex growth otherwise creates large gaps.
+.authority-entries {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+
+  > .customFormHeader,
+  > .select-text-field { flex: none; }
+
+  > .semantic-search-table-container {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+    min-width: 0;
+
+    .search-container { min-height: 0; }
+
+    .semantic-search-header-actions {
+      flex: 0 0 auto;
+      min-width: 0;
+      margin-bottom: 12px;
+
+      .keyword-search-container { flex: 1 1 180px; min-width: 0; }
+      .keyword-search-container .form-group { min-width: 0; margin: 0; }
+    }
+
+    .search-results-area {
+      flex: 1 1 0;
+      height: auto;
+      min-height: 0;
+    }
+  }
+}
+
 .search-all-tree-input-container {
 
   /* position: absolute; it ends up on top of new button*/
@@ -975,24 +1013,6 @@
 
           .caret { flex: none; }
         }
-
-        .dropdown-menu {
-          left: 0;
-          right: auto;
-          width: 100%;
-          min-width: 100%;
-        }
-      }
-
-      .dropdown-menu {
-        max-width: min(320px, 100cqw);
-
-        [role="menuitem"] {
-          white-space: normal;
-          overflow-wrap: anywhere;
-        }
-
-        .icon-left { flex: none; }
       }
     }
   }

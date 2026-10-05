@@ -2,7 +2,7 @@ import * as React from 'react';
 import { findDOMNode } from 'react-dom';
 import { Dropdown } from 'react-bootstrap';
 import Icon from '../../ui/icon/Icon';
-import { FormMenuOverlay } from './FormMenuOverlay';
+import { DropdownOverlay, preserveOpeningScroll } from '../dropdown/DropdownOverlay';
 
 interface State {
   customDropdownOpen: boolean;
@@ -21,9 +21,8 @@ export class ResourceDropdown extends React.Component<Props, State> {
   private positionFrame: number | undefined;
   private resizeObserver: ResizeObserver | undefined;
   private contentObserver: MutationObserver | undefined;
-  private formMenu: HTMLElement | undefined;
-  private formOverlay: FormMenuOverlay | undefined;
-  private openingScroll: Array<{ element: HTMLElement; left: number; top: number }> = [];
+  private overlay: DropdownOverlay | undefined;
+  private restoreOpeningScroll: (() => void) | undefined;
 
   constructor(props: Props, context: any) {
     super(props, context);
@@ -34,13 +33,8 @@ export class ResourceDropdown extends React.Component<Props, State> {
   onToggle(open: boolean) {
     this.menuOpen = open;
     this.stopPositioning();
-    this.openingScroll = [];
     const root = findDOMNode(this) as HTMLElement;
-    if (open && root && this.needsMenuOverlay(root)) {
-      for (let element = root; element; element = element.parentElement) {
-        this.openingScroll.push({ element, left: element.scrollLeft, top: element.scrollTop });
-      }
-    }
+    this.restoreOpeningScroll = open && root && this.needsMenuOverlay(root) ? preserveOpeningScroll(root) : undefined;
     // Keep lazy menu contents mounted, but close when their trigger scrolls away.
     this.setState({ customDropdownOpen: this.state.customDropdownOpen || open, dropdownOpen: open },
       () => { if (open) this.startPositioning(); });
@@ -57,17 +51,16 @@ export class ResourceDropdown extends React.Component<Props, State> {
 
   private startPositioning = () => {
     if (!this.menuOpen) return;
-    // Bootstrap 0.33 focuses the first item in its child commit, before our
-    // opening callback can promote the menu. Undo only that opening scroll,
-    // synchronously before paint; retain focus on the now-floating menu item.
-    this.openingScroll.forEach(({ element, left, top }) => {
-      element.scrollLeft = left;
-      element.scrollTop = top;
-    });
-    this.openingScroll = [];
+    if (this.restoreOpeningScroll) this.restoreOpeningScroll();
+    this.restoreOpeningScroll = undefined;
     const root = findDOMNode(this) as HTMLElement;
     const menu = root && root.querySelector<HTMLElement>('.resource-actions__dropdown-menu');
     if (!root || (menu && menu.classList.contains('resource-card__dropdown-km'))) return;
+    if (this.needsMenuOverlay(root)) {
+      this.overlay = new DropdownOverlay(root, () => this.onToggle(false), {}, '.resource-actions__dropdown-menu');
+      this.overlay.position();
+      return;
+    }
     window.addEventListener('resize', this.schedulePosition);
     window.addEventListener('scroll', this.schedulePosition, true);
     if (window.visualViewport) {
@@ -100,59 +93,8 @@ export class ResourceDropdown extends React.Component<Props, State> {
     if (this.contentObserver) this.contentObserver.disconnect();
     this.resizeObserver = undefined;
     this.contentObserver = undefined;
-    this.releaseFormMenu();
-  };
-
-  private releaseFormMenu() {
-    if (this.formMenu) {
-      this.formMenu.removeEventListener('click', this.onFormMenuClick);
-      this.formMenu.removeEventListener('keydown', this.onFormMenuKeyDown, true);
-    }
-    if (this.formOverlay) this.formOverlay.dispose();
-    this.formOverlay = undefined;
-    this.formMenu = undefined;
-  }
-
-  private closeFormMenuAfterEvent(menu: HTMLElement) {
-    // Wrapper actions (for example mp-overlay-dialog) do not forward Bootstrap's
-    // onSelect. Let their own React handler run before dismissing the overlay.
-    Promise.resolve().then(() => {
-      if (this.menuOpen && this.formMenu === menu) this.onToggle(false);
-    });
-  }
-
-  private onFormMenuClick = (event: MouseEvent) => {
-    const target = event.target as Element;
-    const item = target.closest('[role="menuitem"]');
-    if (item && !item.closest('.disabled, [aria-disabled="true"]')) {
-      this.closeFormMenuAfterEvent(this.formMenu);
-    }
-  };
-
-  private onFormMenuKeyDown = (event: KeyboardEvent) => {
-    const menu = this.formMenu;
-    if (event.key === 'Tab') {
-      this.closeFormMenuAfterEvent(menu);
-      return;
-    }
-    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-    if ((event.target as Element).closest('input, textarea, select, [contenteditable="true"]')) return;
-    const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'))
-      .filter(item => !item.closest('.disabled, [aria-disabled="true"]') && item.getClientRects().length);
-    if (!items.length) return;
-    // Capture once for both direct MenuItems and items inside action wrappers;
-    // those wrappers do not forward Bootstrap's injected onKeyDown either.
-    event.preventDefault();
-    event.stopPropagation();
-    const index = items.indexOf(document.activeElement as HTMLElement);
-    const next = event.key === 'ArrowDown' ? (index + 1) % items.length
-      : (index <= 0 ? items.length - 1 : index - 1);
-    const item = items[next];
-    item.focus({ preventScroll: true });
-    const bounds = menu.getBoundingClientRect();
-    const rect = item.getBoundingClientRect();
-    if (rect.top < bounds.top) menu.scrollTop -= bounds.top - rect.top;
-    else if (rect.bottom > bounds.bottom) menu.scrollTop += rect.bottom - bounds.bottom;
+    if (this.overlay) this.overlay.dispose();
+    this.overlay = undefined;
   };
 
   private schedulePosition = () => {
@@ -169,22 +111,8 @@ export class ResourceDropdown extends React.Component<Props, State> {
     const menu = root && root.querySelector<HTMLElement>('.resource-actions__dropdown-menu');
     // Knowledge-map flyouts use their own placement and transformed canvas.
     if (!root || !menu || menu.classList.contains('resource-card__dropdown-km')) return;
-    if (this.needsMenuOverlay(root)) {
-      if (this.formMenu !== menu) {
-        this.releaseFormMenu();
-        this.formMenu = menu;
-        this.formOverlay = new FormMenuOverlay(menu);
-        menu.addEventListener('click', this.onFormMenuClick);
-        menu.addEventListener('keydown', this.onFormMenuKeyDown, true);
-        if (this.resizeObserver) this.resizeObserver.observe(menu);
-      }
-      const trigger = root.querySelector<HTMLElement>('.dropdown-toggle');
-      if (trigger && !this.formOverlay.position(trigger)) {
-        // Do not let Bootstrap focus an off-screen trigger and scroll back to it.
-        const focused = document.activeElement as HTMLElement;
-        if (focused && menu.contains(focused)) focused.blur();
-        this.onToggle(false);
-      }
+    if (this.overlay) {
+      this.overlay.position();
       return;
     }
     if (!menu.offsetParent) return;

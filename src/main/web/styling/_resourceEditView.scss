@@ -157,6 +157,7 @@
     .resource-editView-form-container {
 
         height: 100%;
+        min-height: 0;
         overflow: hidden;
         display: flex;
         flex-direction: column;
@@ -225,10 +226,88 @@
             .select-text-field .Select,
             .SemanticTreeInput--inputAndButtons,
             .autocomplete-text-field__select {
-                min-width: 230px;
+                min-width: 0;
+                max-width: 100%;
             }
         } 
     }
+}
+
+.resource-editView-container--authority {
+    container: authority-browser-layout / inline-size;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.authority-browser {
+    > .Pane { min-width: 0; min-height: 0; }
+    > .Pane1 { max-width: 40%; }
+
+    .authority-browser__tree,
+    .split-pane__sidebar-open,
+    .collection-terms-area,
+    .LazyTree--component {
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .authority-browser__tree { overflow: hidden; }
+    .collection-terms-area > .btn { white-space: normal; }
+    .split-pane__sidebar-header h4 { min-width: 0; overflow-wrap: break-word; }
+    .split-pane__sidebar-header i { flex: none; }
+
+    .split-pane__sidebar .btn-toggle-on {
+        width: 100%;
+        padding: 20px 10px;
+        h4 { display: none; }
+    }
+}
+
+// Preserve both pane subtrees and form values when the authority frame narrows.
+@container authority-browser-layout (max-width: 800px) {
+    .authority-browser {
+        flex-direction: column !important;
+
+        > .Pane1 {
+            width: 100% !important;
+            max-width: none;
+            flex: 0 0 48px !important;
+
+            &:has(.split-pane__sidebar-header) {
+                flex-basis: 240px !important;
+                max-height: 35%;
+            }
+        }
+
+        > .Pane2 { overflow: hidden; }
+        > .Resizer { display: none; }
+        .split-pane__leftsidebar { border-right: 0; border-bottom: 1px solid $color-border; }
+
+        .split-pane__sidebar-header .btn-toggle-off,
+        .split-pane__sidebar .btn-toggle-on { padding: 10px 16px; }
+        .split-pane__sidebar .btn-toggle-on h4 {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .split-pane__sidebar-header i,
+        .btn-toggle-on-content i { transform: rotate(90deg); }
+        .split-pane__sidebar-open { padding: 0 16px 12px; }
+        .collection-terms-area .LazyTree--alignmentTreeContainer { margin-top: 10px; }
+    }
+}
+
+.authority-browser-empty-state {
+    max-width: 560px;
+    padding: 20px 0;
+
+    h2 { margin: 0 0 12px; font-size: 22px; }
+    p { margin: 0 0 16px; }
+    .btn { max-width: 100%; white-space: normal; }
+    .btn i { flex: none; }
+    .authority-browser-empty-state__hint { margin: 12px 0 0; }
 }
 
 .navigationMenu_ItemConfigContainer {

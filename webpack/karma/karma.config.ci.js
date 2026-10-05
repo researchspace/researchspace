@@ -34,7 +34,8 @@ module.exports = function (config) {
     singleRun: true,
     reporters: ['mocha', 'junit'],
     files: [
-        defaults.TEST + '/**/*.test.ts'
+        defaults.TEST + '/**/*.test.ts',
+        ...karmaConfig.files
     ],
   }));
 };

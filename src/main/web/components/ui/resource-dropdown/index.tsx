@@ -36,7 +36,7 @@ export class ResourceDropdown extends React.Component<Props, State> {
     this.stopPositioning();
     this.openingScroll = [];
     const root = findDOMNode(this) as HTMLElement;
-    if (open && root && root.closest('.DragAndDropInput--holder')) {
+    if (open && root && this.needsMenuOverlay(root)) {
       for (let element = root; element; element = element.parentElement) {
         this.openingScroll.push({ element, left: element.scrollLeft, top: element.scrollTop });
       }
@@ -169,7 +169,7 @@ export class ResourceDropdown extends React.Component<Props, State> {
     const menu = root && root.querySelector<HTMLElement>('.resource-actions__dropdown-menu');
     // Knowledge-map flyouts use their own placement and transformed canvas.
     if (!root || !menu || menu.classList.contains('resource-card__dropdown-km')) return;
-    if (root.closest('.DragAndDropInput--holder')) {
+    if (this.needsMenuOverlay(root)) {
       if (this.formMenu !== menu) {
         this.releaseFormMenu();
         this.formMenu = menu;
@@ -214,6 +214,10 @@ export class ResourceDropdown extends React.Component<Props, State> {
     const targetLeft = Math.max(left, Math.min(preferredLeft, right - width));
     menu.style.right = 'auto';
     menu.style.left = `${(targetLeft - parentRect.left) / scale - parent.clientLeft + parent.scrollLeft}px`;
+  }
+
+  private needsMenuOverlay(root: HTMLElement): boolean {
+    return Boolean(root.closest('.DragAndDropInput--holder, .search-results-area .search-table-container'));
   }
 
   shouldComponentUpdate(nextProps: React.PropsWithChildren<Props>, nextState: State) {

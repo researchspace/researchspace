@@ -1,0 +1,190 @@
+// Keep the count in normal flow above every results view, outside its scrollport.
+.search-page-container .search-results-area {
+  min-height: 0;
+
+  .search-results-summary {
+    display: flex;
+    justify-content: flex-end;
+    flex: none;
+    min-width: 0;
+    padding-bottom: 10px;
+
+    .semantic-search-num-results {
+      position: static;
+      min-width: 0;
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      text-align: right;
+
+      .num-results {
+        justify-content: flex-end;
+        min-width: 0;
+        white-space: nowrap;
+
+        .num-results-color {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .rs-search-count-prefix,
+        .rs-search-count-suffix { flex: none; }
+      }
+    }
+  }
+
+  // Use the results area's available width, after the filter rail and padding.
+  // Always retain the exact count in the tooltip and screen-reader text.
+  @container rs-search-results (max-width: 240px) {
+    .search-results-summary .rs-search-count-prefix { display: none; }
+  }
+
+  @container rs-search-results (max-width: 120px) {
+    .search-results-summary .rs-search-count-suffix { display: none; }
+  }
+
+  .search-results-views {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+}
+
+// Search panes resize independently of the browser window. Keep both of
+// Griddle's fixed-header tables in one scrollport so their columns stay aligned.
+.search-page-container .search-results-area .search-table-container {
+  --rs-search-name-width: 280px;
+  --rs-search-detail-width: 184px;
+  --rs-search-actions-width: 96px;
+  --rs-search-extra-columns: 1;
+  --rs-search-min-width: calc(var(--rs-search-name-width) + var(--rs-search-extra-columns) * var(--rs-search-detail-width) + var(--rs-search-actions-width));
+
+  min-width: 0;
+
+  // Custom list views have a name, zero to three detail columns, and actions.
+  &:not(:has(thead > tr > :nth-child(3))) { --rs-search-extra-columns: 0; }
+  &:has(thead > tr > :nth-child(4)) { --rs-search-extra-columns: 2; }
+  &:has(thead > tr > :nth-child(5)) { --rs-search-extra-columns: 3; }
+
+  .separate-pagination {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    > .griddle {
+      flex: 1;
+      min-height: 0;
+    }
+  }
+
+  .researchspace-table-widget-holder .griddle .griddle-container .griddle-body {
+    overflow: auto;
+    min-width: 0;
+    min-height: 0;
+    flex: 1;
+    width: 100%;
+
+    > div {
+      min-width: var(--rs-search-min-width);
+      height: auto;
+      overflow: visible;
+
+      > table {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: $pageSection-bg;
+      }
+
+      > div {
+        overflow: visible;
+        flex: none;
+      }
+    }
+  }
+
+  .table > thead > tr > :first-child,
+  .table > tbody > tr.standard-row > td:first-child {
+    width: var(--rs-search-name-width);
+    width: max(var(--rs-search-name-width), calc((100cqw - var(--rs-search-actions-width)) / (var(--rs-search-extra-columns) + 1)));
+  }
+
+  .table > thead > tr > :last-child,
+  .table > tbody > tr.standard-row > td:last-child {
+    width: var(--rs-search-actions-width);
+    padding-right: 6px;
+  }
+
+  // The pager is portalled to a sibling of Griddle, outside both scroll axes.
+  .separate-pagination .table > tbody:has(> tr > .footer-container) { display: none; }
+
+  .table-pagination {
+    flex: none;
+    min-width: 0;
+    background: $pageSection-bg;
+
+    .pagination {
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 8px 0;
+      margin: 0;
+    }
+  }
+
+  .rs-search-identity,
+  .rs-search-identity-body {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .rs-search-identity { gap: 5px; }
+  .rs-search-identity-body { gap: 15px; }
+
+  .rs-search-identity-body,
+  .rs-search-title {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .rs-search-selection,
+  .resource-thumbnail-small-container,
+  .rs-search-actions > * { flex: 0 0 auto; }
+
+  .rs-search-actions {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: 1px;
+  }
+}
+
+@container rs-search-results (max-width: 640px) {
+  .search-page-container .search-results-area .search-table-container {
+    --rs-search-name-width: 260px;
+    --rs-search-detail-width: 172px;
+    --rs-search-actions-width: 48px;
+
+    .rs-search-drag { display: none; }
+
+    // Keep the current page and its neighbours, plus previous/next controls.
+    .table-pagination .pagination > li {
+      display: none;
+      &:first-child, &:last-child, &.active, &:has(+ .active), &.active + li { display: block; }
+    }
+  }
+}
+
+@container rs-search-results (max-width: 360px) {
+  .search-page-container .search-results-area .search-table-container {
+    .table-pagination .pagination > li {
+      &:has(+ .active), &.active + li { display: none; }
+      &:first-child, &:last-child, &.active { display: block; }
+    }
+  }
+}

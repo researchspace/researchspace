@@ -55,7 +55,7 @@ export class FormMenuOverlay {
     if (anchor.right <= visible.left || anchor.left >= visible.right ||
         anchor.bottom <= visible.top || anchor.top >= visible.bottom) return false;
 
-    // Native top-layer menus can cross the form boundary. Older browsers keep
+    // Native top-layer menus can cross the form or table boundary. Older browsers keep
     // a bounded in-place menu, fitted inside all clipping ancestors instead.
     const bounds = this.nativePopover ? { left, top, right, bottom } : visible;
     let scaleX = 1;

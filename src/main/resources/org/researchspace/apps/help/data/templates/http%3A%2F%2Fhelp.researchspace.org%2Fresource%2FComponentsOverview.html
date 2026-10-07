@@ -328,19 +328,16 @@
   <div data-flex-layout="row center-stretch">
     <div class="grid-demo"><b>app-state</b> <br/>platform/components/semantic/app-state/AppState.tsx<br/></div>
     <div class="grid-demo">
-      Application State Management component that enables components to share their state through URL parameters or backend storage. Allows users to save and share specific application states for collaborative workflows and reproducible views.
+      Keeps the state of the components inside it (map view, table page, open frames) in the URL or in the backend, so that a page can be shared and restored.
     </div>
     <div class="grid-demo"><semantic-link iri='[[resolvePrefix "Help:AppState"]]'>Help AppState</semantic-link></div>
     <div class="grid-demo"> 
       <mp-code-example>
         <![CDATA[
-          <app-state id="my-app-state" storage-mode="backend">
-            <semantic-map 
-              id="map-1"
-              shared-state-vars="currentExtent,currentZoom"
-              app-state-id="my-app-state"
-              query="SELECT ?lat ?lng WHERE { ... }"
-            />
+          <app-state id="my-app-state" auto-sync="true">
+            <semantic-map id="map-1" shared-state-vars="currentExtent,currentZoom"
+                          query="SELECT ?wkt WHERE { ... }">
+            </semantic-map>
           </app-state>
         ]]>
       </mp-code-example>

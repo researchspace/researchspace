@@ -69,6 +69,18 @@ export class Pagination extends Component<PaginationProps, {}> {
     this.setPage(parseInt(event.target.getAttribute('data-value')));
   };
 
+  private previous = () => {
+    if (this.props.currentPage > 0) {
+      this.setPage(this.props.currentPage - 1);
+    }
+  };
+
+  private next = () => {
+    if (this.props.currentPage < this.props.maxPage - 1) {
+      this.setPage(this.props.currentPage + 1);
+    }
+  };
+
   private setPage(newPage: number) {
     this.props.setPage(newPage);
     if (this.props.onPageChange) {
@@ -84,7 +96,7 @@ export class Pagination extends Component<PaginationProps, {}> {
         },
         D.a(
           {
-            onClick: this.props.previous,
+            onClick: this.previous,
           },
           D.span({}, '\xAB')
         )
@@ -96,7 +108,7 @@ export class Pagination extends Component<PaginationProps, {}> {
         },
         D.a(
           {
-            onClick: this.props.next,
+            onClick: this.next,
           },
           D.span({}, '\xBB')
         )

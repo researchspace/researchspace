@@ -29,8 +29,16 @@ import {
   SemanticMapControlsHandleGeneralizedData,
   SemanticMapControlsHighlightFeatures,
   SemanticMapSendVisibleGroups,
+  SemanticMapDataReady,
+  SemanticMapSend3dEnabled,
   GeneralizedEventData,
 } from './SemanticMapControlsEvents';
+import {
+  SharedStateComponent,
+  SharedStateProps,
+  SharedStateSyncOptions,
+} from 'platform/components/semantic/app-state/SharedStateComponent';
+import { ComponentState } from 'platform/components/semantic/app-state/AppStateEvents';
 import { SemanticMapRequestControlsRegistration, SemanticMapSendSelectedFeature, SemanticMapClearSelectedFeature } from './SemanticMapEvents';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -106,7 +114,24 @@ interface State {
   viewportExtent: number[] | null; // Current map viewport [minX,minY,maxX,maxY] in EPSG:3857
 }
 
-interface Props {
+/**
+ * State variables of the controls that can be shared through `<app-state>`:
+ * - `year`: timeline year;
+ * - `syncWithTime`: whether the year drives the historical maps;
+ * - `layers`: `{visible: [identifiers, top first], opacity: {identifier: value}}` of overlays and
+ *   feature layers (basemaps are shared by the map);
+ * - `styling`: `{enabled, colorBy, labelBy, labelBackground}`;
+ * - `hiddenGroups`: legend categories that are switched off;
+ * - `panel`: open sidebar panel, or null.
+ */
+const SHARED_STATE_VARS = ['year', 'syncWithTime', 'layers', 'styling', 'hiddenGroups', 'panel'];
+
+interface SharedLayers {
+  visible: string[];
+  opacity?: { [identifier: string]: number };
+}
+
+interface Props extends SharedStateProps {
   targetMapId: string;
   id: string;
   featuresTaxonomies: string;
@@ -247,8 +272,16 @@ const MARKER_THUMB_WIDTH = 20;
 /** Smallest gap in px between two year dots before they stop being separately clickable. */
 const MARKER_MIN_SEPARATION = 12;
 
-export class SemanticMapControls extends Component<Props, State> {
+export class SemanticMapControls extends SharedStateComponent<Props, State> {
   private cancelation = new Cancellation();
+  /** The map has loaded its data (SemanticMap.DataReady). */
+  private mapDataReady = false;
+  /** State received from app-state that has not been applied yet. */
+  private pendingShared: ComponentState | null = null;
+  /** True while a received state is being applied, so that it is not sent back. */
+  private restoringShared = false;
+  /** Layers as they were when the data loaded, used to reset them. */
+  private initialLayers: SharedLayers | null = null;
   /**
    * Viewport-driven re-sync. `moveend` is not debounced on the map side, so panning would
    * otherwise flip overlay visibility (and start tile fetches) on every step of the pan.
@@ -396,11 +429,20 @@ export class SemanticMapControls extends Component<Props, State> {
       )
       .onValue(this.handleVisibleGroupsUpdate);
 
+    this.cancelation
+      .map(listen({ eventType: SemanticMapDataReady, target: this.props.id }))
+      .onValue(this.onMapDataReady);
+
+    this.cancelation
+      .map(listen({ eventType: SemanticMapSend3dEnabled, target: this.props.id }))
+      .onValue((event) => this.setState({ is3dEnabled: Boolean(event.data) }));
+
     this.onDragEnd = this.onDragEnd.bind(this);
   }
 
   /** REACT COMPONENT LOGIC */
   public componentDidMount() {
+    super.componentDidMount();
     //this.triggerRegisterToMap();
     //this.triggerSyncFromMap();
     //TODO: the map will send the first levels autonomously after the registration
@@ -416,7 +458,10 @@ export class SemanticMapControls extends Component<Props, State> {
     if (this.props.timeline && this.props.timeline.tour) {
       // Use setTimeout to ensure the component is fully mounted
       setTimeout(() => {
-        this.handleTimelinePlay();
+        // a restored state has its own year, the tour would move it
+        if (!this.pendingShared && !this.state.isPlaying) {
+          this.handleTimelinePlay();
+        }
       }, 1000);
     }
   }
@@ -505,6 +550,11 @@ export class SemanticMapControls extends Component<Props, State> {
 
     // Remove event listener when component unmounts
     document.removeEventListener('feature-close-clicked', this.clearSelectedFeature);
+    if (this.state.animationInterval) {
+      window.clearInterval(this.state.animationInterval);
+    }
+    this.cancelation.cancelAll();
+    super.componentWillUnmount();
   }
 
   public componentDidUpdate(prevProps, prevState) {
@@ -515,6 +565,228 @@ export class SemanticMapControls extends Component<Props, State> {
     } else {
       // console.log("Groupcolors NOT changed.")
     }
+    // every user change (year, layers, styling, legend, panel) goes through a render
+    this.captureSharedState();
+  }
+
+  /** APP STATE */
+
+  protected getSupportedSharedStateVars() {
+    return SHARED_STATE_VARS;
+  }
+
+  protected isAutoSyncEnabled() {
+    // the shared state is derived from several state fields and from the layers
+    return false;
+  }
+
+  protected getInitialSharedState(): ComponentState {
+    // the layers are known only when the map has loaded its data
+    return {};
+  }
+
+  protected handleSharedStateSync(state: ComponentState, options: SharedStateSyncOptions) {
+    const received: ComponentState = {};
+    this.getSharedStateVars().forEach((name) => {
+      if (state[name] !== undefined) {
+        received[name] = state[name];
+      } else if (options.mode === 'replace') {
+        received[name] = this.getSharedDefault(name);
+      }
+    });
+    if (this.mapDataReady) {
+      this.applySharedState(received);
+    } else {
+      this.pendingShared = { ...(this.pendingShared || {}), ...received };
+    }
+  }
+
+  private onMapDataReady = () => {
+    if (this.mapDataReady) {
+      return;
+    }
+    this.mapDataReady = true;
+    this.initialLayers = this.getLayersSnapshot();
+    const pending = this.pendingShared;
+    this.pendingShared = null;
+    if (pending) {
+      this.applySharedState(pending);
+    } else {
+      this.setSharedStateBaseline(this.getSharedSnapshot());
+    }
+  };
+
+  /** Value a variable goes back to when a state in `replace` mode does not include it. */
+  private getSharedDefault(name: string): any {
+    switch (name) {
+      case 'year':
+        return this.props.timeline ? this.getTimelineDefault() : this.state.year;
+      case 'syncWithTime':
+        return this.props.syncFilterDefault ?? false;
+      case 'layers':
+        return this.initialLayers;
+      case 'styling':
+        return {
+          enabled: this.props.stylingEnabled ?? false,
+          colorBy: this.props.defaultColorTaxonomy || '',
+          labelBy: '',
+          labelBackground: false,
+        };
+      case 'hiddenGroups':
+        return [];
+      case 'panel':
+        return null;
+      default:
+        return undefined;
+    }
+  }
+
+  /**
+   * Applies a received state and pushes the result to the map. Stops the timeline playback.
+   */
+  private applySharedState(state: ComponentState) {
+    this.restoringShared = true;
+    if (this.state.isPlaying && this.state.animationInterval) {
+      window.clearInterval(this.state.animationInterval);
+    }
+    const update: Partial<State> = { isPlaying: false, animationInterval: undefined };
+    if (typeof state.year === 'number') {
+      update.year = state.year;
+    }
+    if (typeof state.syncWithTime === 'boolean') {
+      update.syncWithTime = state.syncWithTime;
+    }
+    if (state.styling) {
+      update.stylingEnabled = Boolean(state.styling.enabled);
+      update.featuresColorTaxonomy = state.styling.colorBy || '';
+      update.selectedFeaturesLabel = state.styling.labelBy || '';
+      update.labelBackgroundEnabled = Boolean(state.styling.labelBackground);
+    }
+    if (Array.isArray(state.hiddenGroups)) {
+      const hidden = state.hiddenGroups;
+      const groupDisabled: { [group: string]: boolean } = {};
+      Object.keys(this.state.groupDisabled).forEach((group) => {
+        groupDisabled[group] = hidden.indexOf(group) >= 0;
+      });
+      hidden.forEach((group) => {
+        groupDisabled[group] = true;
+      });
+      update.groupDisabled = groupDisabled;
+    }
+    this.setState(update as State, () => {
+      if (state.layers) {
+        this.applyLayersState(state.layers);
+      }
+      if (typeof state.syncWithTime === 'boolean' || state.layers) {
+        if (this.state.syncWithTime) {
+          // the restored visibility is what switching the sync off goes back to
+          this.setState({ syncPreviousVisibility: this.captureSyncBaseline() }, () => this.applySyncWithTime());
+        } else {
+          this.setState({ syncPreviousVisibility: null });
+        }
+      } else {
+        this.applySyncWithTime();
+      }
+      this.triggerSendYear();
+      this.triggerSendFeaturesLabelToMap();
+      trigger({
+        eventType: SemanticMapControlsSendLabelBackgroundToMap,
+        source: this.props.id,
+        targets: [this.props.targetMapId],
+        data: this.state.labelBackgroundEnabled,
+      });
+      this.setFeaturesColorTaxonomy();
+      this.triggerSendFeaturesColorsAssociationsToMap();
+      this.triggerSendLayers();
+      if (state.panel !== undefined && (state.panel || null) !== this.state.activePanel) {
+        this.togglePanel(state.panel || this.state.activePanel);
+      }
+      this.restoringShared = false;
+      this.setSharedStateBaseline(this.getSharedSnapshot());
+    });
+  }
+
+  /**
+   * Applies visibility and opacity to the overlays and feature layers, and puts the visible ones
+   * in the given order.
+   */
+  private applyLayersState(layersState: SharedLayers) {
+    const visible = Array.isArray(layersState.visible) ? layersState.visible : [];
+    const opacity = layersState.opacity || {};
+    const sharedLayers = this.getSharedLayers();
+    sharedLayers.forEach((layer) => {
+      const identifier = layer.get('identifier');
+      layer.setVisible(visible.indexOf(identifier) >= 0);
+      layer.setOpacity(typeof opacity[identifier] === 'number' ? opacity[identifier] : 1);
+    });
+    // reorder the visible layers within the positions they already occupy
+    const ordered = visible
+      .map((identifier) => sharedLayers.find((layer) => layer.get('identifier') === identifier))
+      .filter((layer) => layer);
+    const slots = this.state.mapLayers
+      .map((layer, index) => (ordered.indexOf(layer) >= 0 ? index : -1))
+      .filter((index) => index >= 0);
+    const mapLayers = [...this.state.mapLayers];
+    slots.forEach((slot, i) => {
+      mapLayers[slot] = ordered[i];
+    });
+    this.setState({ mapLayers, overlayVisualization: 'normal' });
+  }
+
+  /** Overlays and feature layers that have an identifier; basemaps are shared by the map. */
+  private getSharedLayers(): any[] {
+    return this.state.mapLayers.filter(
+      (layer) => layer.get('identifier') && (layer.get('level') === 'overlay' || isFeatureLayer(layer))
+    );
+  }
+
+  private getLayersSnapshot(): SharedLayers {
+    const baseline = this.state.syncWithTime ? this.state.syncPreviousVisibility : null;
+    const visible: string[] = [];
+    const opacity: { [identifier: string]: number } = {};
+    this.getSharedLayers().forEach((layer) => {
+      const identifier = layer.get('identifier');
+      // while the sync drives the dated overlays, share the visibility it will go back to
+      const isVisible =
+        baseline && identifier in baseline ? baseline[identifier] : layer.getVisible();
+      if (isVisible) {
+        visible.push(identifier);
+      }
+      const value = Math.round(layer.getOpacity() * 100) / 100;
+      if (value !== 1) {
+        opacity[identifier] = value;
+      }
+    });
+    return _.isEmpty(opacity) ? { visible } : { visible, opacity };
+  }
+
+  private getSharedSnapshot(): ComponentState {
+    return {
+      year: this.state.year,
+      syncWithTime: this.state.syncWithTime,
+      layers: this.getLayersSnapshot(),
+      styling: {
+        enabled: this.state.stylingEnabled,
+        colorBy: this.state.featuresColorTaxonomy,
+        labelBy: this.state.selectedFeaturesLabel,
+        labelBackground: this.state.labelBackgroundEnabled,
+      },
+      hiddenGroups: Object.keys(this.state.groupDisabled)
+        .filter((group) => this.state.groupDisabled[group])
+        .sort(),
+      panel: this.state.activePanel,
+    };
+  }
+
+  /**
+   * Sends the shared variables that changed. Ignored while the map loads, while a received
+   * state is applied and while the timeline plays.
+   */
+  private captureSharedState() {
+    if (!this.sharedStateManager || !this.mapDataReady || this.restoringShared || this.state.isPlaying) {
+      return;
+    }
+    this.updateSharedState(this.getSharedSnapshot());
   }
 
   /** EVENTS */
@@ -910,7 +1182,7 @@ export class SemanticMapControls extends Component<Props, State> {
           eventType: SemanticMapControlsSendToggle3d,
           source: this.props.id,
           targets: [this.props.targetMapId],
-          data: 'toggle',
+          data: this.state.is3dEnabled,
         });
 
         // Re-send current sun controls after enabling 3D so Cesium receives the latest values.

@@ -22,7 +22,8 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.SendFeaturesColorTaxonomyToMap': string;
   'SemanticMapControls.SendFeaturesGroupsToControls': string[];
   'SemanticMapControls.SendGroupColorsAssociationsToMap': {};
-  'SemanticMapControls.SendToggle3d': string;
+  /** `'toggle'` switches the 3D view, a boolean sets it. */
+  'SemanticMapControls.SendToggle3d': string | boolean;
   'SemanticMapControls.SendSunHeight': number;
   'SemanticMapControls.SendSunDirection': number;
   'SemanticMapControls.SendYear': string;
@@ -35,6 +36,10 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.ZoomToFeature': string;
   'SemanticMap.SendVisibleGroups': string[];
   'SemanticMap.SendViewportExtent': number[];
+  /** The map has loaded its data; controls apply the state restored from app-state. */
+  'SemanticMap.DataReady': string;
+  /** The 3D view of the map has been switched on or off. */
+  'SemanticMap.Send3dEnabled': boolean;
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;
@@ -65,3 +70,5 @@ export const SemanticMapControlsHighlightFeatures = event('SemanticMapControls.H
 export const SemanticMapControlsZoomToFeature = event('SemanticMapControls.ZoomToFeature');
 export const SemanticMapSendVisibleGroups = event('SemanticMap.SendVisibleGroups');
 export const SemanticMapSendViewportExtent = event('SemanticMap.SendViewportExtent');
+export const SemanticMapDataReady = event('SemanticMap.DataReady');
+export const SemanticMapSend3dEnabled = event('SemanticMap.Send3dEnabled');

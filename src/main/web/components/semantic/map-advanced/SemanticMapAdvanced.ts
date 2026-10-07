@@ -127,7 +127,15 @@ import {
   SemanticMapControlsHandleGeneralizedData,
   SemanticMapSendVisibleGroups,
   SemanticMapSendViewportExtent,
+  SemanticMapDataReady,
+  SemanticMapSend3dEnabled,
 } from './SemanticMapControlsEvents';
+import {
+  SharedStateComponent,
+  SharedStateProps,
+  SharedStateSyncOptions,
+} from 'platform/components/semantic/app-state/SharedStateComponent';
+import { ComponentState, StateTransition } from 'platform/components/semantic/app-state/AppStateEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
 import CircleStyle from 'ol/style/Circle';
@@ -423,7 +431,24 @@ export interface SemanticMapAdvancedConfig {
   cesiumAssetUrls?: string;
 }
 
-export type SemanticMapAdvancedProps = SemanticMapAdvancedConfig & Props<any>;
+export type SemanticMapAdvancedProps = SemanticMapAdvancedConfig & SharedStateProps & Props<any>;
+
+/**
+ * Map view shared through app-state: center in the view projection (EPSG:3857),
+ * zoom and rotation in radians.
+ */
+interface SharedView {
+  center: number[];
+  zoom: number;
+  rotation?: number;
+}
+
+/**
+ * State variables of the map that can be shared through `<app-state>`. The timeline year,
+ * overlays and styling are shared by `semantic-map-controls`.
+ */
+const SHARED_STATE_VARS = ['view', 'basemap', 'selected', 'mode3d'];
+const DEFAULT_TRANSITION_DURATION = 1500;
 
 interface MapState {
   tupleTemplate?: Data.Maybe<HandlebarsTemplateDelegate>;
@@ -475,7 +500,7 @@ interface FeatureLayerBundle {
   syncHelpers: () => void;
 }
 
-export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, MapState> {
+export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvancedProps, MapState> {
   /**
    * Deterministic layer bands (lower value = below):
    * basemaps < overlays/historical maps < vectors/features
@@ -534,6 +559,26 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   private detachPerfMonitor: (() => void) | null = null;
   private hoverPixel: number[] | null = null;
   private hoverCheckPending = false;
+
+  // Shared state (see the APP STATE section)
+  /** The map exists (it is created after a delay, see renderMap). */
+  private mapReady = false;
+  /** The features have been loaded and the initial view fitted. */
+  private dataReady = false;
+  private dataLoadedBeforeMap = false;
+  /** State received from app-state that has not been applied yet. */
+  private pendingShared: ComponentState | null = null;
+  private pendingTransition: StateTransition | undefined;
+  private applySharedTimer: number | undefined;
+  /** True while a received state is being applied, so that it is not sent back. */
+  private restoringShared = false;
+  /** Extent the map fits to when no view is stored, used to reset the view. */
+  private defaultExtent: number[] | null = null;
+  private onWindowResize = () => {
+    if (this.map) {
+      this.map.updateSize();
+    }
+  };
 
   constructor(props: SemanticMapAdvancedProps, context: ComponentContext) {
     super(props, context);
@@ -830,6 +875,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
       // Send updated layers to controls
       this.sendLayersToControls();
+      this.captureSharedState();
     });
   };
   
@@ -1375,6 +1421,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   /** REACT COMPONENT FUNCTIONS **/
 
   public componentDidMount() {
+    super.componentDidMount();
     // If tilesLayersQuery is provided, load tiles from query
     if (this.props.tilesLayersQuery) {
       this.loadTilesLayersFromQuery().then((dynamicTiles) => {
@@ -1431,6 +1478,10 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
     });
     this.featureBundles = [];
+    window.clearTimeout(this.applySharedTimer);
+    window.removeEventListener('resize', this.onWindowResize);
+    this.cancelation.cancelAll();
+    super.componentWillUnmount();
   }
 
   public componentWillReceiveProps(props: SemanticMapAdvancedProps, context: ComponentContext) {
@@ -1447,6 +1498,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     if (this.state.selectedFeature !== prevState.selectedFeature) {
       console.log('Selected feature CHANGED. sending new');
       this.triggerSendSelectedFeature();
+      this.captureSharedState();
     } else {
       //console.log("Groupcolors NOT changed.")
     }
@@ -1595,6 +1647,59 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     );
   }
 
+  /**
+   * Selects a feature: highlights it, sends it to the controls and, unless `zoom` is false,
+   * zooms to it.
+   */
+  private selectFeature(feature: Feature, options: { zoom: boolean } = { zoom: true }) {
+    this.setState({ selectedFeature: feature }, () => {
+      const subjectIri = feature.get('subject') && feature.get('subject').value;
+      if (subjectIri) {
+        this.highlightFeaturesByIris([subjectIri], options.zoom);
+      }
+      if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
+        trigger({
+          eventType: SemanticMapControlsHandleGeneralizedData,
+          data: {
+            kind: 'selectedFeature',
+            data: feature,
+            highlightPattern: null,
+          },
+          source: this.props.id,
+          targets: this.props.featureSelectionTargets,
+        });
+      }
+      this.triggerSendSelectedFeature();
+      if (options.zoom) {
+        this.zoomToFeature(feature);
+      }
+    });
+  }
+
+  /** Clears the selected feature, if any, and removes its highlight. */
+  private clearSelection() {
+    if (this.state.selectedFeature === null) {
+      return;
+    }
+    this.setState({ selectedFeature: null }, () => {
+      if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
+        trigger({
+          eventType: SemanticMapControlsHandleGeneralizedData,
+          data: {
+            kind: 'selectedFeature',
+            data: null,
+            highlightPattern: null,
+          },
+          source: this.props.id,
+          targets: this.props.featureSelectionTargets,
+        });
+      }
+      this.triggerSendSelectedFeature();
+      // Apply normal styles to all features (remove any highlight)
+      this.applyFeaturesFilteringFromControls();
+    });
+  }
+
   private initializeMarkerPopup(map) {
     // this.markerPopup is already initialized in the constructor
     map.addOverlay(this.markerPopup);
@@ -1629,51 +1734,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         // or if no feature is currently selected
         if (!isSameFeature) {
           console.log('Selecting new feature');
-          
-          // Store the entire feature object
-          this.setState({ selectedFeature: feature }, () => {
-            console.log('Selected feature state updated:', this.state.selectedFeature);
-            
-            // Extract the subject IRI from the feature
-            let subjectIri = null;
-            if (feature.get('subject') && feature.get('subject').value) {
-              subjectIri = feature.get('subject').value;
-            }
-            
-            // Create a highlight pattern for this feature
-            let highlightPattern = null;
-            if (subjectIri) {
-              // Skip creating a SPARQL pattern as it's causing issues
-              // Just directly highlight the feature by IRI
-              this.highlightFeaturesByIris([subjectIri]);
-            }
-            
-            // Send the feature to the controls using the generalized data event
-            if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
-              console.log('Sending feature to targets:', this.props.featureSelectionTargets);
-              
-              // Send the generalized data event
-              trigger({
-                eventType: SemanticMapControlsHandleGeneralizedData,
-                data: {
-                  kind: 'selectedFeature',
-                  data: feature,
-                  highlightPattern: highlightPattern
-                },
-                source: this.props.id,
-                targets: this.props.featureSelectionTargets,
-              });
-              
-              // Also send the legacy event for backward compatibility
-              this.triggerSendSelectedFeature();
-            } else {
-              // If no targets are specified, just use the legacy event
-              this.triggerSendSelectedFeature();
-            }
-
-            // Zoom to the selected feature
-            this.zoomToFeature(feature);
-          });
+          this.selectFeature(feature);
         } else {
           console.log('Clicked on already selected feature - no state change needed');
         }
@@ -1695,31 +1756,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         }
       } else {
         // No feature was clicked, reset selectedFeature to null
-        if (this.state.selectedFeature !== null) {
-          console.log('No feature selected, clearing previous selection');
-          
-          this.setState({ selectedFeature: null }, () => {
-            // Send null to the controls using the generalized data event
-            if (this.props.featureSelectionTargets && this.props.featureSelectionTargets.length > 0) {
-              trigger({
-                eventType: SemanticMapControlsHandleGeneralizedData,
-                data: {
-                  kind: 'selectedFeature',
-                  data: null,
-                  highlightPattern: null
-                },
-                source: this.props.id,
-                targets: this.props.featureSelectionTargets,
-              });
-            }
-            
-            // Also send the legacy event for backward compatibility
-            this.triggerSendSelectedFeature();
-
-            // Apply normal styles to all features (remove any highlight)
-            this.applyFeaturesFilteringFromControls();
-          });
-        }
+        this.clearSelection();
       }
     });
 
@@ -1881,6 +1918,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       this.sendLayersToControls();
       // Send the current viewport so the controls can apply their "filter by zoom" list filter.
       this.sendViewportExtentToControls();
+      if (this.dataReady) {
+        this.sendDataReady([event.source]);
+      }
     });
     console.log('MapControls ' + event.source + ' Mounted and registered to', this.props.id);
   };
@@ -2931,7 +2971,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     // If all queries are complete, set loading to false
     if (this.pendingFeaturesLayerQueries.size === 0) {
       console.log(`%c[FEATURES-LAYER] All features layer queries complete!`, 'color: green; font-weight: bold');
-      this.setState({ isLoading: false });
+      this.setState({ isLoading: false }, () => this.markDataReady());
     }
   }
 
@@ -3180,6 +3220,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             }
             // Broadcast the new viewport so the controls can update the "filter by zoom" list.
             this.sendViewportExtentToControls();
+            this.captureSharedState();
           });
 
           // Initial update of visible features
@@ -3280,14 +3321,15 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             console.log('[DEBUG] No features-layer children found, using legacy query prop');
             // asynch execute query and add markers (legacy behavior)
             this.addMarkersFromQuery(this.props, this.context);
+            if (!this.props.query) {
+              this.markDataReady();
+            }
           }
 
           this.initializeMarkerPopup(map);
           //map.getView().fit(props.mapOptions.extent);
 
-          window.addEventListener('resize', () => {
-            map.updateSize();
-          });
+          window.addEventListener('resize', this.onWindowResize);
 
           /*
           this.map.on('moveend', () => {
@@ -3320,6 +3362,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
           // this.map.addInteraction(this.modify);
           this.map.updateSize();
+          this.onMapReady();
         }
       );
     }, 1000);
@@ -3364,6 +3407,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
           errorMessage: maybe.Nothing<string>(),
           isLoading: false,
         });
+        this.markDataReady();
       } else {
         console.log(`[DEBUG] Processing ${result.length} features`);
         this.setState({
@@ -3381,6 +3425,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
           // Update visible features after adding new data
           this.updateVisibleFeatures();
+          this.markDataReady();
         };
 
         processFeaturesInBatches(result);
@@ -3397,6 +3442,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         errorMessage: maybe.Just(error),
         isLoading: false,
       });
+      this.markDataReady();
     });
 
     if (this.props.id) {
@@ -3476,8 +3522,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
             //      console.warn('SemanticMapAdvanced: Fallback fit to current view extent also failed.', e);
             //    }
             // }
+          } else if (this.pendingShared && this.pendingShared.view && !this.dataReady) {
+            // a stored view is applied when the data is ready, do not fit first
+            this.defaultExtent = combinedExtents;
           } else {
             console.log('SemanticMapAdvanced: Fitting map to valid extent:', combinedExtents);
+            this.defaultExtent = combinedExtents;
             try {
               this.map.getView().fit(combinedExtents, { padding: [100, 100, 100, 100] });
             } catch (e) {
@@ -3788,6 +3838,215 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       data: groups,
       targets: this.state.registeredControls,
     });
+  }
+
+  /*** APP STATE */
+
+  protected getSupportedSharedStateVars() {
+    return SHARED_STATE_VARS;
+  }
+
+  protected isAutoSyncEnabled() {
+    // the shared state is pushed explicitly, after user actions (captureSharedState)
+    return false;
+  }
+
+  protected getInitialSharedState(): ComponentState {
+    // the view is known only after the data has been fitted
+    return {};
+  }
+
+  protected handleSharedStateSync(state: ComponentState, options: SharedStateSyncOptions) {
+    const received: ComponentState = {};
+    this.getSharedStateVars().forEach((name) => {
+      if (state[name] !== undefined) {
+        received[name] = state[name];
+      } else if (options.mode === 'replace') {
+        // back to the default: null is the "default" marker for every variable
+        received[name] = null;
+      }
+    });
+    this.pendingShared = { ...(this.pendingShared || {}), ...received };
+    this.pendingTransition = options.transition;
+    if (this.dataReady) {
+      this.scheduleApplySharedState();
+    }
+  }
+
+  /** Called when the map has been created. */
+  private onMapReady() {
+    this.mapReady = true;
+    const pending = this.pendingShared;
+    if (pending && pending.basemap) {
+      this.applyBasemapState(pending.basemap);
+    }
+    if (this.dataLoadedBeforeMap) {
+      this.markDataReady();
+    }
+  }
+
+  /**
+   * Called once the data has been loaded and fitted: applies the stored state, if any, and
+   * tells the controls, which then apply their own stored state.
+   */
+  private markDataReady() {
+    if (this.dataReady) {
+      return;
+    }
+    if (!this.mapReady) {
+      this.dataLoadedBeforeMap = true;
+      return;
+    }
+    this.dataReady = true;
+    this.sendDataReady(this.state.registeredControls);
+    if (this.pendingShared) {
+      this.scheduleApplySharedState();
+    } else {
+      this.setSharedStateBaseline(this.getSharedSnapshot());
+    }
+  }
+
+  private sendDataReady(targets: string[]) {
+    if (targets && targets.length > 0) {
+      trigger({ eventType: SemanticMapDataReady, source: this.props.id, targets, data: this.props.id });
+    }
+  }
+
+  /**
+   * Applies the pending state after the current event: the controls apply their part of a
+   * state synchronously, and their updates (year, styling) must reach the map first.
+   */
+  private scheduleApplySharedState() {
+    window.clearTimeout(this.applySharedTimer);
+    this.applySharedTimer = window.setTimeout(() => this.applyPendingSharedState(), 0);
+  }
+
+  private applyPendingSharedState() {
+    const state = this.pendingShared;
+    const transition = this.pendingTransition;
+    this.pendingShared = null;
+    this.pendingTransition = undefined;
+    if (!state || !this.map) {
+      return;
+    }
+    this.restoringShared = true;
+    if (state.basemap !== undefined) {
+      this.applyBasemapState(state.basemap);
+    }
+    if (state.mode3d !== undefined) {
+      this.setEnabled3d(Boolean(state.mode3d && state.mode3d.enabled));
+    }
+    const finish = () => {
+      if (state.selected !== undefined) {
+        this.applySelectionState(state.selected);
+      }
+      this.restoringShared = false;
+      this.setSharedStateBaseline(this.getSharedSnapshot());
+    };
+    if (state.view !== undefined) {
+      this.applyViewState(state.view, transition, finish);
+    } else {
+      finish();
+    }
+  }
+
+  private applyBasemapState(identifier: string | null) {
+    const basemaps = this.getBasemapLayers();
+    const target = identifier
+      ? basemaps.find((layer) => layer.get('identifier') === identifier)
+      : basemaps[0];
+    const current = this.getCurrentBasemap();
+    if (target && target !== current) {
+      this.selectBasemap(target.get('identifier'));
+    }
+  }
+
+  /**
+   * Moves the view, animated when a transition is requested. `null` goes back to the extent of
+   * the data.
+   */
+  private applyViewState(sharedView: SharedView | null, transition: StateTransition | undefined, done: () => void) {
+    const view = this.map.getView();
+    const duration = transition && transition.animate ? transition.duration || DEFAULT_TRANSITION_DURATION : 0;
+    view.cancelAnimations();
+    if (!sharedView) {
+      if (this.defaultExtent) {
+        view.fit(this.defaultExtent, { padding: [100, 100, 100, 100], duration, callback: () => done() });
+        if (!duration) {
+          done();
+        }
+      } else {
+        done();
+      }
+      return;
+    }
+    if (!isValidSharedView(sharedView)) {
+      console.warn(`semantic-map-advanced "${this.props.id}": ignoring an invalid shared view`, sharedView);
+      done();
+      return;
+    }
+    const target = {
+      center: sharedView.center,
+      zoom: sharedView.zoom,
+      rotation: sharedView.rotation || 0,
+    };
+    if (duration) {
+      view.animate({ ...target, duration }, () => done());
+    } else {
+      view.setCenter(target.center);
+      view.setZoom(target.zoom);
+      view.setRotation(target.rotation);
+      done();
+    }
+  }
+
+  /**
+   * Selects the feature of a subject IRI without zooming; prefers a geometry shown in the
+   * current year, since a subject can have one geometry per epoch.
+   */
+  private applySelectionState(subjectIri: string | null) {
+    if (!subjectIri) {
+      this.clearSelection();
+      return;
+    }
+    const current = this.state.selectedFeature;
+    if (current && current.get('subject') && current.get('subject').value === subjectIri) {
+      return;
+    }
+    const features = this.getFeaturesOfSubject(subjectIri);
+    const feature = features.find((f) => this.isFeatureShown(f as Feature<Geometry>)) || features[0];
+    if (feature) {
+      this.selectFeature(feature, { zoom: false });
+    }
+  }
+
+  /** Current value of the shared state variables. */
+  private getSharedSnapshot(): ComponentState {
+    const view = this.map.getView();
+    const center = view.getCenter() || [0, 0];
+    const basemap = this.getCurrentBasemap();
+    const selected = this.state.selectedFeature;
+    return {
+      view: {
+        center: [Math.round(center[0] * 10) / 10, Math.round(center[1] * 10) / 10],
+        zoom: Math.round(view.getZoom() * 100) / 100,
+        rotation: Math.round(view.getRotation() * 1000) / 1000,
+      },
+      basemap: basemap ? basemap.get('identifier') : null,
+      selected: selected && selected.get('subject') ? selected.get('subject').value : null,
+      mode3d: { enabled: this.is3dEnabled },
+    };
+  }
+
+  /**
+   * Sends the shared state variables that changed. Called after user actions; ignored while the
+   * data loads and while a received state is applied.
+   */
+  private captureSharedState() {
+    if (!this.sharedStateManager || !this.dataReady || this.restoringShared || !this.map) {
+      return;
+    }
+    this.updateSharedState(this.getSharedSnapshot());
   }
 
   /*** VISUALIZATIONS  */
@@ -4174,22 +4433,37 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   /**
    * Toggle 3D view using OLCesium
    */
+  /** Handles `SemanticMapControls.SendToggle3d`: `'toggle'` switches the 3D view, a boolean sets it. */
   private toggle3d = (event: Event<any>) => {
+    const enabled = typeof event.data === 'boolean' ? event.data : !this.is3dEnabled;
+    this.setEnabled3d(enabled);
+  };
+
+  /**
+   * Switches the 3D view (OLCesium) on or off. OLCesium is created on the first switch to 3D.
+   */
+  private setEnabled3d(enabled: boolean) {
+    if (enabled === this.is3dEnabled) {
+      return;
+    }
     if (!this.ol3d) {
+      if (!enabled) {
+        return;
+      }
       if (!this.map) {
         console.warn('Map not initialized yet');
         return;
       }
       this.ensureOlCesium().then(() => {
-        if (this.ol3d && !this.ol3d.getEnabled()) {
-          this.toggle3d(event);
-        } else if (!this.ol3d) {
+        if (this.ol3d) {
+          this.setEnabled3d(enabled);
+        } else {
           console.warn('OLCesium could not be initialized');
         }
       });
       return;
     }
-    this.ol3d.setEnabled(!this.ol3d.getEnabled());
+    this.ol3d.setEnabled(enabled);
     this.is3dEnabled = this.ol3d.getEnabled();
 
     if (this.is3dEnabled) {
@@ -4199,9 +4473,16 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       }
       this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
     }
+    trigger({
+      eventType: SemanticMapSend3dEnabled,
+      source: this.props.id,
+      targets: this.state.registeredControls,
+      data: this.is3dEnabled,
+    });
     // Force re-render so the sun control panel appears/disappears
     this.forceUpdate();
-  };
+    this.captureSharedState();
+  }
 
   private setSunHeightFromEvent = (event: Event<any>) => {
     const value = Number(event.data);
@@ -4762,7 +5043,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   /**
    * Highlights features by their subject IRIs
    */
-  private highlightFeaturesByIris(subjectIris: string[]) {
+  private highlightFeaturesByIris(subjectIris: string[], zoom: boolean = true) {
     if (!this.map || subjectIris.length === 0) return;
 
     const iris = new Set(subjectIris);
@@ -4785,6 +5066,9 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     this.highlightActive = true;
     this.refreshFeatureRendering();
 
+    if (!zoom) {
+      return;
+    }
     highlightedFeatures.forEach((feature) => {
       const geometry = feature.getGeometry();
       // Only the geometries visible in the current year (a subject may have one per epoch)
@@ -5313,3 +5597,14 @@ function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {
 }
 
 export default SemanticMapAdvanced;
+
+function isValidSharedView(view: any): view is SharedView {
+  return (
+    view &&
+    Array.isArray(view.center) &&
+    view.center.length === 2 &&
+    view.center.every((c) => typeof c === 'number' && isFinite(c)) &&
+    typeof view.zoom === 'number' &&
+    isFinite(view.zoom)
+  );
+}

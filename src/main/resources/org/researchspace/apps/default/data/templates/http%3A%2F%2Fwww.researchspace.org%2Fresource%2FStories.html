@@ -1,0 +1,82 @@
+<ol class="page-breadcrumb">
+  <li><mp-link title="Home" url="/">Home</mp-link></li>
+  [[#if (hasPermission "pages:view:<http://www.researchspace.org/resource/admin/>")]]
+    <li><semantic-link iri="[[resolvePrefix 'Default:admin']]">Administration</semantic-link></li>
+  [[/if]]
+  [[#if (urlParam "story")]]
+    <li><semantic-link iri="http://www.researchspace.org/resource/Stories">Stories</semantic-link></li>
+    <li class="active">Edit story</li>
+  [[else]]
+    [[#if (urlParam "new")]]
+      <li><semantic-link iri="http://www.researchspace.org/resource/Stories">Stories</semantic-link></li>
+      <li class="active">New story</li>
+    [[else]]
+      <li class="active">Stories</li>
+    [[/if]]
+  [[/if]]
+</ol>
+
+<div class="page">
+  [[> rsp:adminPageHeader title="Stories" materialIcon="auto_stories"]]
+
+  <div class="container-fluid">
+    <bs-row class="row-center">
+      <bs-col xs="12" sm="11" md="10" lg="9" class="rs-col-xl-8" style="margin-bottom: 40px;">
+        [[#if (urlParam "story")]]
+          <rs-story-editor id="story-editor" story='[[urlParam "story"]]'></rs-story-editor>
+        [[else]]
+          [[#if (urlParam "new")]]
+            <rs-story-editor id="story-editor"></rs-story-editor>
+          [[else]]
+            <p>
+              A story is a guided tour of slides: each slide has a text and shows a state of a page
+              (for example a map with a given view, year and historical maps).
+              See <semantic-link iri="http://help.researchspace.org/resource/Story">the documentation</semantic-link>.
+            </p>
+            [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/storyContainer>:create:any")]]
+              <p>
+                <semantic-link class="btn btn-primary" iri="http://www.researchspace.org/resource/Stories"
+                  urlqueryparam-new="true">New story</semantic-link>
+              </p>
+            [[/if]]
+            <semantic-table repository="default" number-of-displayed-rows="20"
+              query='
+                PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                PREFIX rso: <http://www.researchspace.org/ontology/>
+                SELECT ?story ?title ?created (COUNT(DISTINCT ?slide) AS ?slides) (SAMPLE(?playUrl) AS ?play) WHERE {
+                  ?story crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/story> .
+                  OPTIONAL {
+                    ?story crm:P1_is_identified_by ?appellation .
+                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+                      crm:P190_has_symbolic_content ?title .
+                  }
+                  OPTIONAL { ?story crm:P94i_was_created_by/crm:P4_has_time-span/crm:P82_at_some_time_within ?created }
+                  OPTIONAL { ?story crm:P106_is_composed_of ?slide }
+                  OPTIONAL {
+                    ?story crm:P106_is_composed_of ?first .
+                    ?first rso:PX_has_sequence_position 1 ;
+                      crm:P67_refers_to/crm:P1_is_identified_by/crm:P190_has_symbolic_content ?firstUrl .
+                    BIND(CONCAT(?firstUrl, IF(CONTAINS(?firstUrl, "?"), "&", "?"), "story=", ENCODE_FOR_URI(STR(?story))) AS ?playUrl)
+                  }
+                }
+                GROUP BY ?story ?title ?created
+                ORDER BY DESC(?created)'
+              column-configuration='[
+                {"displayName": "Title", "variableName": "title"},
+                {"displayName": "Slides", "variableName": "slides"},
+                {"displayName": "Created", "variableName": "created"},
+                {"displayName": "", "cellTemplate": "{{> actions}}"}
+              ]'
+              no-result-template='<p>There are no stories yet.</p>'>
+              <template id="actions">
+                {{#if play.value}}<a class="btn btn-default btn-sm" href="{{play.value}}" target="_blank" rel="noopener noreferrer">Play</a>{{/if}}
+                <semantic-link class="btn btn-default btn-sm" iri="http://www.researchspace.org/resource/Stories"
+                  urlqueryparam-story="{{story.value}}">Edit</semantic-link>
+              </template>
+            </semantic-table>
+          [[/if]]
+        [[/if]]
+      </bs-col>
+    </bs-row>
+  </div>
+</div>

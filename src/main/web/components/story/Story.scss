@@ -1,0 +1,226 @@
+/**
+ * Copyright (c) 2026 ResearchSpace contributors.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/* Player */
+
+.story {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  background: #fff;
+  color: #222;
+  border-radius: 6px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  font-size: 14px;
+}
+
+.floating {
+  position: fixed;
+  /* above the map controls timeline (z-index 99999) */
+  z-index: 100001;
+  max-width: calc(100vw - 32px);
+}
+
+.inline {
+  position: relative;
+  width: 100%;
+}
+
+.topLeft { top: 80px; left: 80px; }
+.topRight { top: 80px; right: 24px; }
+.middleLeft { top: 50%; left: 80px; transform: translateY(-50%); }
+.middleRight { top: 50%; right: 24px; transform: translateY(-50%); }
+.bottomLeft { bottom: 90px; left: 80px; }
+.bottomRight { bottom: 90px; right: 24px; }
+
+.collapsed {
+  background: transparent;
+  box-shadow: none;
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 0;
+}
+
+.storyTitle {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 4px;
+  border: none;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: #000;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+.body {
+  padding: 6px 14px 10px;
+  overflow-y: auto;
+}
+
+.slideTitle {
+  margin: 4px 0 8px;
+  font-size: 18px;
+}
+
+.slideText {
+  line-height: 1.5;
+
+  img {
+    max-width: 100%;
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid #eee;
+
+  :global(.btn) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.progressLabel {
+  font-size: 12px;
+  color: #666;
+}
+
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #ccc;
+  cursor: pointer;
+}
+
+.activeDot {
+  background: #333;
+}
+
+.error {
+  padding: 12px 14px;
+  color: #a94442;
+}
+
+/* Editor */
+
+.editor {
+  max-width: 900px;
+}
+
+.slidesHeading {
+  margin-top: 24px;
+}
+
+.slideCard {
+  margin-bottom: 12px;
+}
+
+.slideCardHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.problems {
+  margin-top: 16px;
+  color: #a94442;
+}
+
+.editorActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+
+  :global(.btn) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.storyIri {
+  color: #888;
+  word-break: break-all;
+}
+
+.richText {
+  border-radius: 4px;
+}
+
+.richTextToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: 4px;
+
+  :global(.btn) {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+.richTextArea {
+  min-height: 100px;
+  height: auto;
+  overflow-y: auto;
+
+  &:empty::before {
+    content: attr(data-placeholder);
+    color: #999;
+  }
+}

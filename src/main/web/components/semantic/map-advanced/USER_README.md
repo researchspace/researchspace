@@ -456,3 +456,31 @@ semantic-map-advanced {
 9. **Custom Templates**: Use custom templates for feature details to provide rich, interactive information.
 
 10. **Event Handling**: Listen for component events to integrate the map with other components on your page.
+
+## Sharing the map state (app-state and stories)
+
+Inside an `<app-state>`, the map and its controls can keep their state in the URL, so that a view can be shared and replayed by a story (`rs-story`):
+
+```html
+<app-state id="map-state" auto-sync="true">
+  <semantic-map-controls id="map-controls" target-map-id="map"
+    shared-state-vars="year,syncWithTime,layers,styling,hiddenGroups,panel" ...></semantic-map-controls>
+  <semantic-map-advanced id="map" target-controls='["map-controls"]'
+    shared-state-vars="view,basemap,selected,mode3d" ...></semantic-map-advanced>
+</app-state>
+```
+
+| Component | Variable | Value |
+|---|---|---|
+| map | `view` | `{center: [x, y], zoom, rotation}` in EPSG:3857 |
+| map | `basemap` | identifier of the visible basemap |
+| map | `selected` | IRI of the selected subject |
+| map | `mode3d` | `{enabled: boolean}` |
+| controls | `year` | timeline year |
+| controls | `syncWithTime` | whether the year drives the historical maps |
+| controls | `layers` | `{visible: [identifiers, top first], opacity: {identifier: value}}` |
+| controls | `styling` | `{enabled, colorBy, labelBy, labelBackground}` |
+| controls | `hiddenGroups` | legend categories switched off |
+| controls | `panel` | open sidebar panel |
+
+The state is recorded after user actions only. A stored state is applied once the map has loaded its data; a stored view replaces the initial fit. While "Sync with time" is on, the dated historical maps follow the year, and `layers` records the visibility they return to when the sync is switched off. Custom group colours, the swipe/spyglass tools and the sun position are not shared yet.

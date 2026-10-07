@@ -71,11 +71,14 @@ module.exports = function() {
             "components/timeline",
             "components/dashboard",
             "components/text-editor",
+            "components/story",
             "components/forms/inputs/drop",
             "components/semantic/map-advanced"
         ],
         jsonSchemTypes: [
             "AppStateConfig",
+            "StoryConfig",
+            "StoryEditorConfig",
             "SparqlDownloadProps",
             "ConfigDocProps",
             "CodeBlockProps", 

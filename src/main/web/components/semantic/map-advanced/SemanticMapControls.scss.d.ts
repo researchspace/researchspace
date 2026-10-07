@@ -71,6 +71,9 @@ declare namespace SemanticMapControlsScssNamespace {
     timelineTrack: string;
     timelineMarkers: string;
     timelineMarker: string;
+    timelineStopLabels: string;
+    timelineStopLabel: string;
+    timelineStopLabelActive: string;
     timelineMarkerActive: string;
     timelineMarkerPreview: string;
     timelineMarkerPreviewItem: string;

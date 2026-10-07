@@ -20,6 +20,11 @@ import { Model } from 'flexlayout-react';
 import { Item } from './DashboardComponent';
 
 /**
+ * State variables of rs-dashboard that can be shared through `<app-state>`.
+ */
+export const SHARED_STATE_VARS = ['layoutModel', 'openFrames', 'activeFrameId'];
+
+/**
  * Interface for frame configuration in shared state
  */
 export interface FrameConfig {
@@ -60,7 +65,7 @@ export class DashboardStateAdapters {
       const jsonModel = model.toJson();
       return JSON.stringify(jsonModel);
     } catch (error) {
-      console.error('Error serializing FlexLayout model:', error);
+      console.warn('rs-dashboard: cannot serialize the layout', error);
       return '{}';
     }
   }
@@ -78,7 +83,7 @@ export class DashboardStateAdapters {
       const jsonModel = JSON.parse(data);
       return Model.fromJson(jsonModel);
     } catch (error) {
-      console.error('Error deserializing FlexLayout model:', error);
+      console.warn('rs-dashboard: cannot restore the layout', error);
       return null;
     }
   }
@@ -160,9 +165,8 @@ export class DashboardStateAdapters {
         return null;
       }
 
-      // Check version compatibility
       if (state.version && state.version > this.STATE_VERSION) {
-        console.warn(`Dashboard state version ${state.version} is newer than supported version ${this.STATE_VERSION}`);
+        console.warn(`rs-dashboard: state version ${state.version} is newer than the supported ${this.STATE_VERSION}`);
       }
 
       const model = this.deserializeFlexLayout(state.layoutModel);
@@ -174,98 +178,7 @@ export class DashboardStateAdapters {
         activeFrameId: state.activeFrameId
       };
     } catch (error) {
-      console.error('Error extracting dashboard state:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Validate dashboard shared state structure
-   * @param state - State object to validate
-   * @returns true if state is valid, false otherwise
-   */
-  static validateDashboardState(state: any): state is DashboardSharedState {
-    if (!state || typeof state !== 'object') {
-      return false;
-    }
-
-    // Check required properties
-    if (typeof state.layoutModel !== 'string') {
-      return false;
-    }
-
-    if (!Array.isArray(state.openFrames)) {
-      return false;
-    }
-
-    // Validate frame configurations
-    for (const frame of state.openFrames) {
-      if (!frame || typeof frame !== 'object' || typeof frame.id !== 'string') {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Create a minimal default dashboard state
-   * @returns Default dashboard shared state
-   */
-  static createDefaultState(): DashboardSharedState {
-    return {
-      layoutModel: JSON.stringify({
-        global: {
-          borderBarSize: 36,
-          tabSetTabStripHeight: 36,
-          splitterSize: 6
-        },
-        borders: [
-          { type: "border", location: "left", children: [] },
-          { type: "border", location: "right", children: [] },
-          { type: "border", location: "bottom", children: [] }
-        ],
-        layout: {
-          type: "row",
-          weight: 100,
-          children: [
-            {
-              type: "tabset",
-              id: "main",
-              weight: 100,
-              selected: 0,
-              children: []
-            }
-          ]
-        }
-      }),
-      openFrames: [],
-      version: this.STATE_VERSION
-    };
-  }
-
-  /**
-   * Compress large state objects for storage efficiency
-   * @param state - Dashboard shared state
-   * @returns Compressed state (currently just returns the original state, can be enhanced with actual compression)
-   */
-  static compressState(state: DashboardSharedState): string {
-    // For now, just stringify. In the future, we could add gzip compression here
-    return JSON.stringify(state);
-  }
-
-  /**
-   * Decompress state objects
-   * @param compressedState - Compressed state string
-   * @returns Decompressed dashboard shared state or null if decompression fails
-   */
-  static decompressState(compressedState: string): DashboardSharedState | null {
-    try {
-      // For now, just parse JSON. In the future, we could add gzip decompression here
-      const state = JSON.parse(compressedState);
-      return this.validateDashboardState(state) ? state : null;
-    } catch (error) {
-      console.error('Error decompressing dashboard state:', error);
+      console.warn('rs-dashboard: invalid shared state', error);
       return null;
     }
   }

@@ -1,818 +1,507 @@
 /**
- * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
- * Copyright (C) 2015-2019, metaphacts GmbH
+ * Copyright (c) 2026 ResearchSpace contributors.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import * as React from 'react';
-import { Component, ComponentContext } from 'platform/api/components';
-import { trigger, listen } from 'platform/api/events';
-import { Cancellation } from 'platform/api/async';
-import { addNotification } from 'platform/components/ui/notification';
+import * as classnames from 'classnames';
 import * as _ from 'lodash';
 
-// Event types for AppState communication
-export const APP_STATE_REGISTER_COMPONENT = 'AppState.RegisterComponent';
-export const APP_STATE_UNREGISTER_COMPONENT = 'AppState.UnregisterComponent';
-export const APP_STATE_UPDATE_SHARED_STATE = 'AppState.UpdateSharedState';
-export const APP_STATE_SYNC_STATE_TO_COMPONENT = 'AppState.SyncStateToComponent';
-export const APP_STATE_REQUEST_CURRENT_STATE = 'AppState.RequestCurrentState';
+import { Component, ComponentContext } from 'platform/api/components';
+import { trigger, listen, Event } from 'platform/api/events';
+import { navigationConfirmation } from 'platform/api/navigation';
+import { makeShortURL } from 'platform/api/services/url-minifier';
+import { addNotification } from 'platform/components/ui/notification';
+import Icon from 'platform/components/ui/icon/Icon';
 
-export interface SharedStateVariable {
-  name: string;
-  value: any;
-}
+import {
+  ApplyMode,
+  ApplyStateData,
+  ComponentState,
+  ComponentStateRegistration,
+  ComponentStates,
+  StateTransition,
+  SyncOrigin,
+  RegisterComponent,
+  UnregisterComponent,
+  UpdateSharedState,
+  RequestCurrentState,
+  SyncStateToComponent,
+  StateResolved,
+  ApplyState,
+  LoadState,
+  StateChanged,
+} from './AppStateEvents';
+import {
+  STATES_PARAM,
+  STATE_ID_PARAM,
+  parseStatesParam,
+  serializeStates,
+  fetchBackendState,
+  saveBackendState,
+} from './AppStateUrlCodec';
+import { AppStateContext, AppStateContextTypes } from './SharedStateComponent';
 
-export interface ComponentStateRegistration {
-  componentId: string;
-  sharedStateVars: string[];
-  currentState: { [varName: string]: any };
-}
+import * as styles from './AppState.scss';
 
-export interface AppStateProps {
+export interface AppStateConfig {
   /**
-   * Position of the "Save States" button
-   */
-  saveButtonPosition?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
-  
-  /**
-   * Whether to automatically sync URL parameters when state changes
-   */
-  autoSync?: boolean;
-  
-  /**
-   * Debounce delay for URL updates (in milliseconds)
-   */
-  urlUpdateDelay?: number;
-  
-  /**
-   * ID for the AppState instance (useful when multiple AppState components exist)
+   * Id of the app-state component. Components inside it find it automatically;
+   * components rendered elsewhere (e.g. in an overlay) refer to it with `app-state-id`.
+   * The id is also the target of the `AppState.ApplyState` and `AppState.LoadState` events.
    */
   id?: string;
-  
+
   /**
-   * Storage mode for state persistence:
-   * - 'url' (default): State is synced directly in URL parameters, limited by URL length
-   * - 'backend': State is stored in backend, only state ID in URL, no size limits
-   * 
-   * When using 'backend' mode:
-   * - autoSync is ignored (no real-time URL updates)
-   * - State is only saved when "Save States" button is clicked
-   * - Users are warned before leaving page with unsaved changes
+   * Where the shared state is kept:
+   * - `url`: in the `states` URL parameter. With `auto-sync` the URL is updated on every
+   *   change; otherwise the save button creates a short link.
+   * - `backend`: saved on the server by the save button; the URL only carries `stateId`.
+   *   Users are warned before leaving the page with unsaved changes.
+   *
+   * @default "url"
    */
   storageMode?: 'url' | 'backend';
-  
+
   /**
-   * Children components that will be wrapped by AppState
+   * In `url` mode, update the URL whenever the shared state changes.
+   * When enabled the save button is hidden.
+   *
+   * @default false
    */
-  children: React.ReactNode;
+  autoSync?: boolean;
+
+  /**
+   * Delay in milliseconds before the URL is updated after a change.
+   *
+   * @default 500
+   */
+  urlUpdateDelay?: number;
+
+  /**
+   * Position of the save button.
+   *
+   * @default "top-right"
+   */
+  saveButtonPosition?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 }
 
-interface AppStateState {
-  /**
-   * Registry of all components and their shared state variables
-   */
-  componentRegistry: { [componentId: string]: ComponentStateRegistration };
-  
-  /**
-   * Global shared state - merged view of all component states
-   */
-  globalSharedState: { [componentId: string]: { [varName: string]: any } };
-  
-  /**
-   * Whether we're currently saving state (for UI feedback)
-   */
+export type AppStateProps = AppStateConfig & { children?: React.ReactNode };
+
+interface State {
   isSaving: boolean;
-  
-  /**
-   * Last saved state URL for display
-   */
-  lastSavedUrl?: string;
-  
-  /**
-   * Track if there are unsaved changes (for backend mode)
-   */
+  hasSharedState: boolean;
   hasUnsavedChanges: boolean;
-  
-  /**
-   * Current state ID when loaded from backend
-   */
-  loadedStateId?: string;
 }
 
-export class AppState extends Component<AppStateProps, AppStateState> {
-  private cancelation = new Cancellation();
-  private urlUpdateTimeout: number | null = null;
-  private saveNotificationTimeout: number | null = null;
+interface PendingSync {
+  state: ComponentState;
+  mode: ApplyMode;
+  origin: SyncOrigin;
+  transition?: StateTransition;
+}
+
+const UNSAVED_CHANGES_MESSAGE = 'You have unsaved changes. Are you sure you want to leave?';
+
+/**
+ * Keeps the shared state of the components inside it in the URL or in the backend, so
+ * that a page can be shared and restored as the user left it.
+ *
+ * Components take part by declaring `shared-state-vars`; see the AppState help page for
+ * the supported components and variables.
+ *
+ * @example
+ * <app-state id="my-state" auto-sync="true">
+ *   <semantic-table id="results" shared-state-vars="currentPage,filterValue" query="..."></semantic-table>
+ * </app-state>
+ */
+export class AppState extends Component<AppStateProps, State> {
+  static childContextTypes: any = { ...Component.childContextTypes, ...AppStateContextTypes };
+
+  static defaultProps: Partial<AppStateProps> = {
+    storageMode: 'url',
+    autoSync: false,
+    urlUpdateDelay: 500,
+    saveButtonPosition: 'top-right',
+  };
+
+  /**
+   * Current shared state of the registered components.
+   */
+  private states: ComponentStates = {};
+  /**
+   * States to send to components when they register (from the URL, the backend or
+   * `AppState.ApplyState` events received before the component mounted).
+   */
+  private pending: { [componentId: string]: PendingSync } = {};
+  private registrations: { [componentId: string]: ComponentStateRegistration } = {};
+  /**
+   * Last saved (or loaded) states, to detect unsaved changes in backend mode.
+   */
+  private savedStates: ComponentStates = {};
+  /**
+   * Whether the initial state from the URL or the backend has been read.
+   */
+  private resolved = false;
+  private urlUpdateTimeout: number | undefined;
+  private removeNavigationConfirmation: (() => void) | undefined;
 
   constructor(props: AppStateProps, context: ComponentContext) {
     super(props, context);
+    this.state = { isSaving: false, hasSharedState: false, hasUnsavedChanges: false };
 
-    this.state = {
-      componentRegistry: {},
-      globalSharedState: {},
-      isSaving: false,
-      hasUnsavedChanges: false,
-      loadedStateId: undefined,
-    };
-
-    // Listen for component registration events
-    this.cancelation
-      .map(
-        listen({
-          eventType: APP_STATE_REGISTER_COMPONENT,
-          target: this.props.id,
-        })
-      )
-      .onValue(this.handleComponentRegistration);
-
-    // Listen for component unregistration events
-    this.cancelation
-      .map(
-        listen({
-          eventType: APP_STATE_UNREGISTER_COMPONENT,
-          target: this.props.id,
-        })
-      )
-      .onValue(this.handleComponentUnregistration);
-
-    // Listen for shared state updates from components
-    this.cancelation
-      .map(
-        listen({
-          eventType: APP_STATE_UPDATE_SHARED_STATE,
-          target: this.props.id,
-        })
-      )
-      .onValue(this.handleSharedStateUpdate);
-
-    // Listen for requests for current state
-    this.cancelation
-      .map(
-        listen({
-          eventType: APP_STATE_REQUEST_CURRENT_STATE,
-          target: this.props.id,
-        })
-      )
-      .onValue(this.handleCurrentStateRequest);
+    const target = props.id;
+    this.cancel.map(listen({ eventType: RegisterComponent, target })).onValue(this.onRegister);
+    this.cancel.map(listen({ eventType: UnregisterComponent, target })).onValue(this.onUnregister);
+    this.cancel.map(listen({ eventType: UpdateSharedState, target })).onValue(this.onUpdate);
+    this.cancel.map(listen({ eventType: RequestCurrentState, target })).onValue(this.onRequest);
+    this.cancel.map(listen({ eventType: ApplyState, target })).onValue(this.onApply);
+    this.cancel.map(listen({ eventType: LoadState, target })).onValue(this.onLoad);
   }
 
-  public componentDidMount() {
-    // Parse URL parameters on mount to restore state
-    this.parseUrlParameters();
-    
-    // Set up beforeunload warning for backend mode
-    if (this.props.storageMode === 'backend') {
-      window.addEventListener('beforeunload', this.handleBeforeUnload);
-    }
+  getChildContext() {
+    const context: AppStateContext = { appState: { id: this.props.id } };
+    return { ...super.getChildContext(), ...context };
   }
 
-  public componentWillUnmount() {
-    // Clear any pending timeouts
-    if (this.urlUpdateTimeout) {
-      clearTimeout(this.urlUpdateTimeout);
-    }
-    if (this.saveNotificationTimeout) {
-      clearTimeout(this.saveNotificationTimeout);
-    }
-    
-    // Remove beforeunload listener
-    if (this.props.storageMode === 'backend') {
-      window.removeEventListener('beforeunload', this.handleBeforeUnload);
-    }
+  componentDidMount() {
+    this.resolveInitialState();
+    window.addEventListener('beforeunload', this.onBeforeUnload);
+  }
+
+  componentWillUnmount() {
+    window.clearTimeout(this.urlUpdateTimeout);
+    window.removeEventListener('beforeunload', this.onBeforeUnload);
+    this.setNavigationConfirmation(false);
+    super.componentWillUnmount();
+  }
+
+  private isBackendMode() {
+    return this.props.storageMode === 'backend';
   }
 
   /**
-   * Handle beforeunload event for backend mode
+   * Reads the initial state from the URL (or from the backend in backend mode) and sends
+   * it to the components that have already registered.
    */
-  private handleBeforeUnload = (e: BeforeUnloadEvent) => {
-    if (this.state.hasUnsavedChanges) {
-      const message = 'You have unsaved changes. Are you sure you want to leave?';
-      e.preventDefault();
-      e.returnValue = message;
-      return message;
+  private resolveInitialState() {
+    const params = new URLSearchParams(window.location.search);
+    const stateId = params.get(STATE_ID_PARAM);
+    if (stateId && this.isBackendMode()) {
+      this.cancel.map(fetchBackendState(stateId)).observe({
+        value: (stored) => this.finishResolution(stored.states, 'backend'),
+        error: (error) => {
+          addNotification(
+            {
+              level: 'error',
+              title: 'Failed to load the saved state',
+              message: 'The link may be invalid or the state may have been deleted.',
+              autoDismiss: 8,
+            },
+            error
+          );
+          this.finishResolution({}, 'backend');
+        },
+      });
+    } else {
+      const statesParam = params.get(STATES_PARAM);
+      this.finishResolution(statesParam ? parseStatesParam(statesParam) : {}, 'url');
     }
-  };
+  }
+
+  private finishResolution(stored: ComponentStates, origin: SyncOrigin) {
+    _.forEach(stored, (state, componentId) => {
+      // a state applied while the backend state was loading takes precedence
+      if (!this.pending[componentId]) {
+        this.pending[componentId] = { state, mode: 'merge', origin };
+      }
+    });
+    this.resolved = true;
+    Object.keys(this.registrations).forEach(this.deliver);
+    this.savedStates = _.cloneDeep(this.states);
+    this.updateFlags();
+  }
 
   /**
-   * Handle component registration
+   * Sends the pending state (if any) to a registered component, then tells it that its
+   * initial state is resolved.
    */
-  private handleComponentRegistration = (event: any) => {
-    const registration: ComponentStateRegistration = event.data;
-    // console.log('AppState: Registering component', registration.componentId, 'with shared vars:', registration.sharedStateVars);
-
-    this.setState(prevState => {
-      const newRegistry = {
-        ...prevState.componentRegistry,
-        [registration.componentId]: registration
-      };
-
-      const newGlobalState = {
-        ...prevState.globalSharedState,
-        [registration.componentId]: registration.currentState || {}
-      };
-
-      return {
-        componentRegistry: newRegistry,
-        globalSharedState: newGlobalState
-      };
-    }, () => {
-      // After registration, sync any existing URL state to the component
-      this.syncUrlStateToComponent(registration.componentId);
+  private deliver = (componentId: string) => {
+    const registration = this.registrations[componentId];
+    const pending = this.pending[componentId];
+    delete this.pending[componentId];
+    if (pending) {
+      this.states[componentId] =
+        pending.mode === 'replace' ? { ...pending.state } : { ...registration.currentState, ...pending.state };
+      this.sendToComponent(componentId, pending);
+    } else {
+      this.states[componentId] = { ...registration.currentState };
+    }
+    trigger({
+      eventType: StateResolved,
+      source: this.props.id,
+      targets: [componentId],
+      data: { hasStoredState: Boolean(pending) },
     });
   };
 
-  /**
-   * Handle component unregistration
-   */
-  private handleComponentUnregistration = (event: any) => {
-    const componentId: string = event.data;
-    // console.log('AppState: Unregistering component', componentId);
-
-    this.setState(prevState => {
-      const newRegistry = { ...prevState.componentRegistry };
-      const newGlobalState = { ...prevState.globalSharedState };
-      
-      delete newRegistry[componentId];
-      delete newGlobalState[componentId];
-
-      return {
-        componentRegistry: newRegistry,
-        globalSharedState: newGlobalState
-      };
+  private sendToComponent(componentId: string, sync: PendingSync) {
+    trigger({
+      eventType: SyncStateToComponent,
+      source: this.props.id,
+      targets: [componentId],
+      data: { state: sync.state, mode: sync.mode, origin: sync.origin, transition: sync.transition },
     });
+  }
+
+  private onRegister = (event: Event<ComponentStateRegistration>) => {
+    const registration = event.data;
+    this.registrations[registration.componentId] = registration;
+    if (this.resolved) {
+      this.deliver(registration.componentId);
+      this.updateFlags();
+    }
   };
 
-  /**
-   * Handle shared state updates from components
-   */
-  private handleSharedStateUpdate = (event: any) => {
+  private onUnregister = (event: Event<string>) => {
+    const componentId = event.data;
+    delete this.registrations[componentId];
+    delete this.states[componentId];
+    if (this.resolved) {
+      this.onStatesChanged(this.props.autoSync);
+    }
+  };
+
+  private onUpdate = (event: Event<{ componentId: string; stateUpdates: ComponentState }>) => {
     const { componentId, stateUpdates } = event.data;
-    // console.log('AppState: Received state update from', componentId, ':', stateUpdates);
-
-    this.setState(prevState => {
-      const newGlobalState = {
-        ...prevState.globalSharedState,
-        [componentId]: {
-          ...prevState.globalSharedState[componentId],
-          ...stateUpdates
-        }
-      };
-
-      return {
-        globalSharedState: newGlobalState,
-        // Mark as having unsaved changes in backend mode
-        hasUnsavedChanges: this.props.storageMode === 'backend' ? true : prevState.hasUnsavedChanges
-      };
-    }, () => {
-      // Update URL if auto-sync is enabled and not in backend mode
-      if (this.props.autoSync && this.props.storageMode !== 'backend') {
-        this.scheduleUrlUpdate();
-      }
-    });
+    const registration = this.registrations[componentId];
+    if (!registration) {
+      return;
+    }
+    if (!this.resolved) {
+      // still reading the initial state: this is part of the component defaults
+      registration.currentState = { ...registration.currentState, ...stateUpdates };
+      return;
+    }
+    this.states[componentId] = { ...this.states[componentId], ...stateUpdates };
+    this.onStatesChanged(this.props.autoSync);
   };
 
-  /**
-   * Handle requests for current state
-   */
-  private handleCurrentStateRequest = (event: any) => {
+  private onRequest = (event: Event<{ componentId: string }>) => {
     const { componentId } = event.data;
-    const componentState = this.state.globalSharedState[componentId] || {};
-    
-    // Send current state back to the requesting component
-    trigger({
-      eventType: APP_STATE_SYNC_STATE_TO_COMPONENT,
-      source: this.props.id,
-      targets: [componentId],
-      data: componentState
+    this.sendToComponent(componentId, { state: this.states[componentId] || {}, mode: 'merge', origin: 'request' });
+  };
+
+  private onApply = (event: Event<ApplyStateData>) => {
+    const { states, mode = 'merge', transition, updateUrl = this.props.autoSync, markDirty = false } = event.data;
+    this.applyStates(states || {}, { mode, origin: 'apply', transition }, updateUrl, markDirty);
+  };
+
+  private onLoad = (event: Event<{ stateId: string; transition?: StateTransition }>) => {
+    const { stateId, transition } = event.data;
+    this.cancel.map(fetchBackendState(stateId)).observe({
+      value: (stored) => {
+        this.applyStates(stored.states, { mode: 'replace', origin: 'backend', transition }, false, false);
+        if (this.isBackendMode()) {
+          const url = new URL(window.location.href);
+          url.searchParams.delete(STATES_PARAM);
+          url.searchParams.set(STATE_ID_PARAM, stateId);
+          this.replaceUrl(url.toString());
+        }
+      },
+      error: (error) =>
+        addNotification({ level: 'error', message: 'Failed to load the saved state.', autoDismiss: 8 }, error),
     });
   };
 
   /**
-   * Schedule URL update with debouncing
+   * Applies states to components. Components that have not registered yet receive the
+   * state when they do.
    */
-  private scheduleUrlUpdate = () => {
-    if (this.urlUpdateTimeout) {
-      clearTimeout(this.urlUpdateTimeout);
-    }
-
-    const delay = this.props.urlUpdateDelay || 500; // Default 500ms debounce
-    this.urlUpdateTimeout = window.setTimeout(() => {
-      this.updateUrlParameters();
-    }, delay);
-  };
-
-  /**
-   * Parse URL parameters and restore component states
-   */
-  private parseUrlParameters = async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const stateId = urlParams.get('stateId');
-    const statesParam = urlParams.get('states');
-    
-    // Check for backend state ID first
-    if (stateId && this.props.storageMode === 'backend') {
-      try {
-        // console.log('AppState: Loading state from backend with ID:', stateId);
-        
-        // Load state from backend
-        const response = await fetch(`/rest/app-state/load/${stateId}`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-          credentials: 'same-origin'
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load state: ${response.status} ${response.statusText}`);
+  private applyStates(
+    states: ComponentStates,
+    sync: Omit<PendingSync, 'state'>,
+    updateUrl: boolean,
+    markDirty: boolean
+  ) {
+    _.forEach(states, (componentState, componentId) => {
+      const state = componentState || {};
+      if (this.resolved && this.registrations[componentId]) {
+        this.states[componentId] = sync.mode === 'replace' ? { ...state } : { ...this.states[componentId], ...state };
+        this.sendToComponent(componentId, { ...sync, state });
+        if (!markDirty) {
+          this.savedStates[componentId] = _.cloneDeep(this.states[componentId]);
         }
-
-        const stateData = await response.json();
-        // console.log('AppState: Raw state data from backend:', stateData);
-        
-        // Parse the states JSON string
-        const parsedStates = typeof stateData.states === 'string' 
-          ? JSON.parse(stateData.states) 
-          : stateData.states;
-        
-        // console.log('AppState: Loaded states from backend:', parsedStates);
-
-        // Update global state
-        this.setState({
-          globalSharedState: parsedStates,
-          loadedStateId: stateId,
-          hasUnsavedChanges: false
-        }, () => {
-          // Sync states to registered components
-          Object.keys(parsedStates).forEach(componentId => {
-            this.syncUrlStateToComponent(componentId);
-          });
-        });
-      } catch (error) {
-        console.error('AppState: Error loading state from backend:', error);
-        addNotification({
-          level: 'error',
-          title: 'Failed to Load State',
-          message: 'Unable to load the saved state. The link may be invalid or expired.',
-          autoDismiss: 5
-        });
-      }
-    } else if (statesParam) {
-      // Fallback to URL-based state loading
-      try {
-        // Decode and parse the states parameter
-        const decodedStates = decodeURIComponent(statesParam);
-        const parsedStates = this.parseStatesString(decodedStates);
-        
-        // console.log('AppState: Parsed states from URL:', parsedStates);
-
-        // Update global state
-        this.setState({
-          globalSharedState: parsedStates
-        }, () => {
-          // Sync states to registered components
-          Object.keys(parsedStates).forEach(componentId => {
-            this.syncUrlStateToComponent(componentId);
-          });
-        });
-      } catch (error) {
-        console.error('AppState: Error parsing URL states:', error);
-      }
-    }
-  };
-
-  /**
-   * Parse states string format: Component1=base64data&Component2=base64data
-   * Also supports legacy format: Component1={var1:value1,var2:value2}&Component2={var3:value3}
-   */
-  private parseStatesString = (statesString: string): { [componentId: string]: { [varName: string]: any } } => {
-    const result: { [componentId: string]: { [varName: string]: any } } = {};
-    
-    // Split by component separators
-    const componentParts = statesString.split('&');
-    
-    for (const part of componentParts) {
-      const equalIndex = part.indexOf('=');
-      if (equalIndex === -1) continue;
-      
-      const componentId = part.substring(0, equalIndex);
-      const stateString = part.substring(equalIndex + 1);
-      
-      try {
-        // First try to decode as base64 (new format)
-        const decodedJson = decodeURIComponent(atob(stateString));
-        const stateObj = JSON.parse(decodedJson);
-        result[componentId] = stateObj;
-        // console.log(`AppState: Decoded base64 state for ${componentId}:`, stateObj);
-      } catch (e) {
-        // Fallback to legacy format parsing
-        // console.log(`AppState: Falling back to legacy format for ${componentId}`);
-        
-        // Remove surrounding braces
-        const cleanStateString = stateString.replace(/^\{|\}$/g, '');
-        
-        // Parse key:value pairs with proper handling of arrays and objects
-        const stateObj: { [varName: string]: any } = {};
-        
-        // Use regex to properly split key:value pairs, respecting arrays and objects
-        const pairRegex = /(\w+):(\[[^\]]*\]|\{[^}]*\}|[^,]+)(?:,|$)/g;
-        let match;
-        
-        while ((match = pairRegex.exec(cleanStateString)) !== null) {
-          const key = match[1].trim();
-          const valueString = match[2].trim();
-          
-          // Try to parse the value as JSON, fallback to string
-          try {
-            stateObj[key] = JSON.parse(valueString);
-          } catch {
-            stateObj[key] = valueString;
-          }
-        }
-        
-        result[componentId] = stateObj;
-      }
-    }
-    
-    return result;
-  };
-
-  /**
-   * Update URL parameters with current state
-   */
-  private updateUrlParameters = () => {
-    const statesString = this.serializeStatesForUrl();
-    
-    if (statesString) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('states', statesString);
-      
-      // Update URL without triggering page reload
-      window.history.replaceState({}, '', url.toString());
-      // console.log('AppState: Updated URL with states:', statesString);
-    }
-  };
-
-  /**
-   * Serialize current states for URL
-   */
-  private serializeStatesForUrl = (): string => {
-    const parts: string[] = [];
-    
-    Object.entries(this.state.globalSharedState).forEach(([componentId, componentState]) => {
-      if (Object.keys(componentState).length === 0) return;
-      
-      // Use base64 encoding for the entire component state to avoid delimiter conflicts
-      const stateJson = JSON.stringify(componentState);
-      const encodedState = btoa(encodeURIComponent(stateJson));
-      
-      parts.push(`${componentId}=${encodedState}`);
-    });
-    
-    return parts.join('&');
-  };
-
-  /**
-   * Sync URL state to a specific component
-   */
-  private syncUrlStateToComponent = (componentId: string) => {
-    const componentState = this.state.globalSharedState[componentId];
-    if (!componentState) return;
-
-    // console.log('AppState: Syncing state to component', componentId, ':', componentState);
-    
-    trigger({
-      eventType: APP_STATE_SYNC_STATE_TO_COMPONENT,
-      source: this.props.id,
-      targets: [componentId],
-      data: componentState
-    });
-  };
-
-  /**
-   * Save current states to backend and generate shareable URL
-   */
-  private handleSaveStates = async () => {
-    this.setState({ isSaving: true });
-
-    try {
-      let shortUrl: string;
-      
-      if (this.props.storageMode === 'backend') {
-        // Backend mode: Save state to backend and create URL with state ID
-        // console.log('AppState: Saving state to backend');
-        
-        const stateData = {
-          pageUrl: window.location.pathname + window.location.search,
-          states: JSON.stringify(this.state.globalSharedState)
-        };
-        
-        const response = await fetch('/rest/app-state/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          credentials: 'same-origin',
-          body: JSON.stringify(stateData)
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to save state: ${response.status} ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        const stateId = result.stateId;
-        
-        // console.log('AppState: State saved with ID:', stateId);
-        
-        // Create URL with state ID
-        const currentUrl = new URL(window.location.href);
-        // Clear existing state params
-        currentUrl.searchParams.delete('states');
-        currentUrl.searchParams.delete('stateId');
-        // Add state ID
-        currentUrl.searchParams.set('stateId', stateId);
-        
-        shortUrl = currentUrl.toString();
-        
-        // Update state to mark as saved
-        this.setState({ 
-          loadedStateId: stateId,
-          hasUnsavedChanges: false 
-        });
-        
       } else {
-        // URL mode: Create URL with states in parameters
-        const currentUrl = new URL(window.location.href);
-        const statesString = this.serializeStatesForUrl();
-        
-        if (statesString) {
-          currentUrl.searchParams.set('states', statesString);
-        }
-        
-        const fullUrl = currentUrl.toString();
-        // console.log('AppState: Full URL to shorten:', fullUrl);
-
-        // Call the URL minifier service to create a short URL
-        const response = await fetch(`/rest/url-minify/getShort?url=${encodeURIComponent(fullUrl)}`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'text/plain',
-          },
-          credentials: 'same-origin'
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to create short URL: ${response.status} ${response.statusText}`);
-        }
-
-        const shortKey = await response.text();
-        shortUrl = `${window.location.origin}/l/${shortKey}`;
+        const previous = this.pending[componentId];
+        const replace = sync.mode === 'replace' || (previous && previous.mode === 'replace');
+        this.pending[componentId] = {
+          ...sync,
+          mode: replace ? 'replace' : 'merge',
+          state: sync.mode === 'replace' || !previous ? { ...state } : { ...previous.state, ...state },
+        };
       }
+    });
+    this.onStatesChanged(updateUrl);
+  }
 
-      // console.log('AppState: Created shareable URL:', shortUrl);
+  private onStatesChanged(updateUrl: boolean) {
+    if (updateUrl && !this.isBackendMode()) {
+      this.scheduleUrlUpdate();
+    }
+    this.updateFlags();
+    trigger({ eventType: StateChanged, source: this.props.id, data: { states: _.cloneDeep(this.states) } });
+  }
 
-      // Store the URL for potential copying
-      this.setState({ lastSavedUrl: shortUrl });
+  private updateFlags() {
+    const hasSharedState = _.some(this.states, (state) => !_.isEmpty(state));
+    const hasUnsavedChanges = this.isBackendMode() && !_.isEqual(nonEmpty(this.states), nonEmpty(this.savedStates));
+    if (hasSharedState !== this.state.hasSharedState || hasUnsavedChanges !== this.state.hasUnsavedChanges) {
+      this.setState({ hasSharedState, hasUnsavedChanges });
+    }
+    this.setNavigationConfirmation(hasUnsavedChanges);
+  }
 
-      // Copy to clipboard automatically
-      try {
-        await navigator.clipboard.writeText(shortUrl);
-        
-        // Show success notification with clipboard confirmation
-        addNotification({
-          level: 'success',
-          title: 'States Saved Successfully!',
-          message: `
-            <div>
-              <p><strong>Shareable URL created and copied to clipboard:</strong></p>
-              <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; margin: 8px 0; font-family: monospace; word-break: break-all;">
-                ${shortUrl}
-              </div>
-              <p><small>Anyone with this link can view the current component states.</small></p>
-            </div>
-          `,
-          autoDismiss: 8,
-          action: {
-            label: 'Copy Again',
-            callback: () => this.handleCopyUrl()
-          }
-        });
-      } catch (clipboardError) {
-        // Fallback if clipboard fails
-        console.warn('Clipboard API failed, showing URL for manual copy:', clipboardError);
-        
-        addNotification({
-          level: 'success',
-          title: 'States Saved Successfully!',
-          message: `
-            <div>
-              <p><strong>Shareable URL created:</strong></p>
-              <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; margin: 8px 0; font-family: monospace; word-break: break-all;">
-                ${shortUrl}
-              </div>
-              <p><small>Please copy this URL manually to share the current component states.</small></p>
-            </div>
-          `,
-          autoDismiss: 10,
-          action: {
-            label: 'Copy to Clipboard',
-            callback: () => this.handleCopyUrl()
-          }
-        });
-      }
+  private setNavigationConfirmation(enabled: boolean) {
+    if (enabled && !this.removeNavigationConfirmation) {
+      this.removeNavigationConfirmation = navigationConfirmation(UNSAVED_CHANGES_MESSAGE);
+    } else if (!enabled && this.removeNavigationConfirmation) {
+      this.removeNavigationConfirmation();
+      this.removeNavigationConfirmation = undefined;
+    }
+  }
 
-    } catch (error) {
-      console.error('AppState: Error saving states:', error);
-      
-      // Show error notification using ResearchSpace notification system
-      addNotification({
+  private onBeforeUnload = (e: BeforeUnloadEvent) => {
+    if (this.state.hasUnsavedChanges) {
+      e.preventDefault();
+      e.returnValue = UNSAVED_CHANGES_MESSAGE;
+      return UNSAVED_CHANGES_MESSAGE;
+    }
+  };
+
+  private scheduleUrlUpdate() {
+    window.clearTimeout(this.urlUpdateTimeout);
+    this.urlUpdateTimeout = window.setTimeout(() => this.replaceUrl(this.buildUrl()), this.props.urlUpdateDelay);
+  }
+
+  /**
+   * Current URL with the states of this app-state in the `states` parameter. States of
+   * components that belong to other app-state components on the page are kept.
+   */
+  private buildUrl(): string {
+    const url = new URL(window.location.href);
+    const inUrl = parseStatesParam(url.searchParams.get(STATES_PARAM));
+    const others = _.omitBy(inUrl, (state, componentId) => this.isOwnComponent(componentId));
+    const serialized = serializeStates({ ...others, ...this.states });
+    if (serialized) {
+      url.searchParams.set(STATES_PARAM, serialized);
+    } else {
+      url.searchParams.delete(STATES_PARAM);
+    }
+    return url.toString();
+  }
+
+  private isOwnComponent(componentId: string) {
+    return componentId in this.registrations || componentId in this.states;
+  }
+
+  private replaceUrl(url: string) {
+    if (url !== window.location.href) {
+      // keep the history state, the platform router stores its location key there
+      window.history.replaceState(window.history.state, '', url);
+    }
+  }
+
+  private onSave = () => {
+    this.setState({ isSaving: true });
+    if (this.isBackendMode()) {
+      const page = new URL(window.location.href);
+      page.searchParams.delete(STATES_PARAM);
+      page.searchParams.delete(STATE_ID_PARAM);
+      this.cancel.map(saveBackendState(page.pathname + page.search, this.states)).observe({
+        value: (stateId) => {
+          page.searchParams.set(STATE_ID_PARAM, stateId);
+          this.replaceUrl(page.toString());
+          this.savedStates = _.cloneDeep(this.states);
+          this.setState({ isSaving: false });
+          this.updateFlags();
+          this.shareUrl(page.toString());
+        },
+        error: this.onSaveError,
+      });
+    } else {
+      this.cancel.map(makeShortURL(this.buildUrl())).observe({
+        value: (shortUrl) => {
+          this.setState({ isSaving: false });
+          this.shareUrl(shortUrl);
+        },
+        error: this.onSaveError,
+      });
+    }
+  };
+
+  private onSaveError = (error: any) => {
+    this.setState({ isSaving: false });
+    addNotification(
+      {
         level: 'error',
-        title: 'Failed to Save States',
-        message: `
-          <div>
-            <p>Unable to create shareable URL:</p>
-            <p><strong>${error.message}</strong></p>
-            <p><small>Please try again or contact your system administrator if the problem persists.</small></p>
-          </div>
-        `,
-        autoDismiss: 8
-      });
-    } finally {
-      this.setState({ isSaving: false });
-    }
-  };
-
-  /**
-   * Copy saved URL to clipboard
-   */
-  private handleCopyUrl = async () => {
-    if (!this.state.lastSavedUrl) return;
-
-    try {
-      await navigator.clipboard.writeText(this.state.lastSavedUrl);
-      // console.log('AppState: URL copied to clipboard');
-      
-      // Show copy confirmation
-      addNotification({
-        level: 'info',
-        title: 'URL Copied!',
-        message: 'The shareable URL has been copied to your clipboard.',
-        autoDismiss: 3
-      });
-    } catch (error) {
-      console.error('AppState: Error copying URL:', error);
-      
-      // Fallback for older browsers
-      try {
-        const textArea = document.createElement('textarea');
-        textArea.value = this.state.lastSavedUrl;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        if (successful) {
-          addNotification({
-            level: 'info',
-            title: 'URL Copied!',
-            message: 'The shareable URL has been copied to your clipboard.',
-            autoDismiss: 3
-          });
-        } else {
-          throw new Error('Copy command failed');
-        }
-      } catch (fallbackError) {
-        // Show manual copy notification
-        addNotification({
-          level: 'warning',
-          title: 'Copy Failed',
-          message: `
-            <div>
-              <p>Unable to copy automatically. Please copy this URL manually:</p>
-              <div style="background: rgba(0,0,0,0.1); padding: 8px; border-radius: 4px; margin: 8px 0; font-family: monospace; word-break: break-all; user-select: all;">
-                ${this.state.lastSavedUrl}
-              </div>
-            </div>
-          `,
-          autoDismiss: 10
-        });
-      }
-    }
-  };
-
-  /**
-   * Get CSS classes for save button position
-   */
-  private getSaveButtonClasses = (): string => {
-    const position = this.props.saveButtonPosition || 'top-right';
-    const baseClasses = 'app-state-save-button';
-    
-    switch (position) {
-      case 'top-left':
-        return `${baseClasses} app-state-save-button-top-left`;
-      case 'bottom-left':
-        return `${baseClasses} app-state-save-button-bottom-left`;
-      case 'bottom-right':
-        return `${baseClasses} app-state-save-button-bottom-right`;
-      default:
-        return `${baseClasses} app-state-save-button-top-right`;
-    }
-  };
-
-  public render() {
-    const hasSharedState = Object.keys(this.state.globalSharedState).some(
-      componentId => Object.keys(this.state.globalSharedState[componentId]).length > 0
+        title: 'Failed to save the state',
+        message: 'The shareable link could not be created. Please try again.',
+        autoDismiss: 8,
+      },
+      error
     );
+  };
 
-    // // Debug logging
-    // console.log('AppState render - globalSharedState:', this.state.globalSharedState);
-    // console.log('AppState render - hasSharedState:', hasSharedState);
-    // console.log('AppState render - componentRegistry:', this.state.componentRegistry);
+  private shareUrl(url: string) {
+    const showUrl = (title: string) =>
+      addNotification({
+        level: 'success',
+        title,
+        message: `<div class="${styles.savedUrl}">${_.escape(url)}</div>`,
+        autoDismiss: 10,
+      });
+    const clipboard = navigator.clipboard;
+    if (clipboard) {
+      clipboard.writeText(url).then(
+        () => showUrl('State saved, link copied to the clipboard'),
+        () => showUrl('State saved, copy the link to share it')
+      );
+    } else {
+      showUrl('State saved, copy the link to share it');
+    }
+  }
 
-    // Only show save button in backend mode or URL mode without auto-sync
-    const showSaveButton = this.props.storageMode === 'backend' || !this.props.autoSync;
-
+  render() {
+    const { storageMode, autoSync, saveButtonPosition, children } = this.props;
+    const { isSaving, hasSharedState } = this.state;
+    const showSaveButton = storageMode === 'backend' || !autoSync;
     return (
-      <div 
-        className="app-state-container" 
-        data-app-state-id={this.props.id || 'default-app-state'}
-        style={{ position: 'relative', height: '100%', width: '100%' }}
-      >
-        {/* Save States Button - only show when needed */}
-        {showSaveButton && (
+      <div className={classnames('app-state-container', styles.container)}>
+        {showSaveButton ? (
           <button
-          className={this.getSaveButtonClasses()}
-          onClick={this.handleSaveStates}
-          disabled={this.state.isSaving || !hasSharedState}
-          title="Save current component states and generate shareable URL"
-          style={{
-            position: 'fixed',
-            zIndex: 10000,
-            padding: '10px 14px',
-            backgroundColor: 'white',
-            color: 'black',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            cursor: this.state.isSaving || !hasSharedState ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
-            fontWeight: 'normal',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            opacity: hasSharedState ? 1 : 0.5,
-            transition: 'all 0.2s ease',
-            ...(this.props.saveButtonPosition === 'top-left' && { top: '20px', left: '20px' }),
-            ...(this.props.saveButtonPosition === 'bottom-left' && { bottom: '20px', left: '20px' }),
-            ...(this.props.saveButtonPosition === 'bottom-right' && { bottom: '20px', right: '20px' }),
-            ...(!this.props.saveButtonPosition || this.props.saveButtonPosition === 'top-right') && { top: '20px', right: '20px' },
-          }}
-          onMouseEnter={(e) => {
-            if (!this.state.isSaving && hasSharedState) {
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-              e.currentTarget.style.transform = 'translateY(-1px)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
-          {this.state.isSaving ? (
-            <>
-              <i className="fa fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
-              Saving...
-            </>
-          ) : (
-            <>
-              <i className="fa fa-save" style={{ fontSize: '18px' }}></i>
-            </>
-          )}
-        </button>
-        )}
-
-        {/* Wrapped Children */}
-        {this.props.children}
+            type="button"
+            className={classnames('app-state-save-button', styles.saveButton, styles[positionClass(saveButtonPosition)])}
+            onClick={this.onSave}
+            disabled={isSaving || !hasSharedState}
+            title="Save the current state and copy a shareable link"
+          >
+            <Icon iconType="rounded" iconName={isSaving ? 'hourglass_empty' : 'save'} symbol />
+          </button>
+        ) : null}
+        {children}
       </div>
     );
   }
+}
+
+function positionClass(position: AppStateConfig['saveButtonPosition']): string {
+  return _.camelCase(position || 'top-right');
+}
+
+function nonEmpty(states: ComponentStates): ComponentStates {
+  return _.omitBy(states, (state) => _.isEmpty(state));
 }
 
 export default AppState;

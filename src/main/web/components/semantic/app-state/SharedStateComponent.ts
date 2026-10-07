@@ -1,145 +1,111 @@
 /**
- * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
- * Copyright (C) 2015-2019, metaphacts GmbH
+ * Copyright (c) 2026 ResearchSpace contributors.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, ComponentContext } from 'platform/api/components';
-import { SharedStateManager, createSharedStateManager } from './SharedStateUtils';
-import * as ReactDOM from 'react-dom';
+import * as PropTypes from 'prop-types';
 
-/**
- * Interface for props that support shared state functionality
- */
+import { Component, ComponentContext, ContextTypes } from 'platform/api/components';
+
+import { ApplyMode, ComponentState, StateTransition, SyncOrigin, SyncStateData } from './AppStateEvents';
+import { SharedStateManager, parseSharedStateVars } from './SharedStateUtils';
+
 export interface SharedStateProps {
   /**
-   * Component ID - required for shared state functionality
+   * Component id. Required to share state.
    */
   id?: string;
 
   /**
-   * Array of state variable names that should be shared with AppState.
-   * Can be a string (comma-separated) or array of strings.
-   * Example: ['selectedFeature', 'overlayVisualization'] or "selectedFeature,overlayVisualization"
-   * 
-   * Note: HTML attribute "shared-state-vars" is converted to "sharedStateVars" prop
+   * Names of the state variables that are shared with the enclosing `<app-state>`,
+   * as a comma separated string or an array.
+   *
+   * @example shared-state-vars="currentPage,filterValue"
    */
   sharedStateVars?: string | string[];
 
   /**
-   * ID of the AppState component to sync with (optional, if not provided will sync with any AppState)
-   * 
-   * Note: HTML attribute "app-state-id" is converted to "appStateId" prop
+   * Id of the `<app-state>` component to sync with. Needed only when the component is
+   * not rendered inside it (e.g. in an overlay); otherwise the enclosing one is used.
    */
   appStateId?: string;
 }
 
 /**
- * Base component class that provides shared state functionality.
- * 
- * Components extending this class automatically get:
- * - Shared state management with AppState
- * - Automatic state synchronization
- * - Lifecycle management (registration/unregistration)
- * - Smart default behavior for state syncing
- * 
- * Usage:
- * ```typescript
- * export class MyComponent extends SharedStateComponent<MyProps, MyState> {
- *   // Component works automatically if state keys match shared-state-vars
- *   
- *   // Optional: Override for custom sync behavior
- *   protected handleSharedStateSync(syncedState: any): void {
- *     // Custom logic here
- *   }
- * }
- * ```
+ * Context provided by the `<app-state>` component to its descendants.
+ */
+export interface AppStateContext {
+  appState?: { id?: string };
+}
+
+export const AppStateContextTypes = {
+  appState: PropTypes.object,
+};
+
+export interface SharedStateSyncOptions {
+  mode: ApplyMode;
+  origin: SyncOrigin;
+  transition?: StateTransition;
+}
+
+/**
+ * Base class for components whose state can be shared through `<app-state>`.
+ *
+ * A subclass gets, for the variables listed in `shared-state-vars`:
+ * - registration with the enclosing `<app-state>` on mount and unregistration on unmount;
+ * - automatic sync of changed variables after every `setState`
+ *   (see {@link isAutoSyncEnabled});
+ * - application of states received from `<app-state>` (see {@link handleSharedStateSync}).
+ *
+ * Subclasses that override `componentDidMount` or `componentWillUnmount` must call
+ * the `super` implementation.
  */
 export abstract class SharedStateComponent<P extends SharedStateProps, S> extends Component<P, S> {
-  protected sharedStateManager: SharedStateManager | null = null;
-  private domElement: HTMLElement | null = null;
+  static readonly contextTypes: any = { ...ContextTypes, ...AppStateContextTypes };
+  readonly context: ComponentContext & AppStateContext;
 
-  constructor(props: P, context: ComponentContext) {
+  protected sharedStateManager: SharedStateManager | null = null;
+
+  /**
+   * Whether `<app-state>` has resolved the initial state of this component.
+   * Always true when the component does not share state.
+   */
+  protected sharedStateResolved = false;
+
+  constructor(props: P, context: ComponentContext & AppStateContext) {
     super(props, context);
-    
-    // Don't create the manager in constructor - wait for componentDidMount
-    // when we have access to the DOM element
   }
 
   public componentDidMount() {
-    // Call parent componentDidMount if it exists
-    if (super.componentDidMount) {
-      super.componentDidMount();
-    }
-    
-    // Get DOM element reference
-    try {
-      this.domElement = ReactDOM.findDOMNode(this) as HTMLElement;
-    } catch (e) {
-      console.warn(`SharedStateComponent: ${this.props.id} - Could not get DOM element reference:`, e);
-    }
-    
-    // Now create the shared state manager with DOM element reference
-    this.sharedStateManager = createSharedStateManager(
-      this.props.id,
-      this.props.sharedStateVars,
-      this.props.appStateId,
-      this.handleSharedStateSync.bind(this),
-      this.domElement
-    );
-    
-    // Auto-register with AppState if shared state manager exists
+    this.sharedStateManager = this.createSharedStateManager();
     if (this.sharedStateManager) {
-      // console.log(`SharedStateComponent: ${this.props.id} registering with AppState. Current state:`, this.state);
-      // console.log(`SharedStateComponent: ${this.props.id} shared vars:`, this.sharedStateManager.getSharedStateVars());
-      this.sharedStateManager.register(this.state);
-      // console.log(`SharedStateComponent: ${this.props.id} registered with AppState`);
-    } else if (this.props.sharedStateVars) {
-      // Only log warning if sharedStateVars were explicitly provided but manager creation failed
-      // console.log(`SharedStateComponent: ${this.props.id} has no shared state manager - sharedStateVars:`, this.props.sharedStateVars);
+      this.sharedStateManager.register(this.getInitialSharedState());
+    } else {
+      this.resolveSharedState(false);
     }
-    // If no sharedStateVars provided, component just extends SharedStateComponent for compatibility but doesn't use shared state
   }
 
   public componentWillUnmount() {
-    // Auto-unregister from AppState if shared state manager exists
     if (this.sharedStateManager) {
       this.sharedStateManager.unregister();
-      // console.log(`SharedStateComponent: ${this.props.id} unregistered from AppState`);
+      this.sharedStateManager = null;
     }
-    
-    // Call parent componentWillUnmount if it exists
-    if (super.componentWillUnmount) {
-      super.componentWillUnmount();
-    }
+    super.componentWillUnmount();
   }
 
   /**
-   * Override React's setState to automatically sync shared state variables.
-   * This ensures that any state changes are automatically propagated to AppState.
+   * Calls `React.Component.setState` and then syncs the changed shared variables,
+   * if auto sync is enabled.
    */
   public setState<K extends keyof S>(
-    state: ((prevState: Readonly<S>, props: Readonly<P>) => (Pick<S, K> | S | null)) | (Pick<S, K> | S | null),
+    state: ((prevState: Readonly<S>, props: Readonly<P>) => Pick<S, K> | S | null) | (Pick<S, K> | S | null),
     callback?: () => void
   ): void {
     super.setState(state, () => {
-      // Auto-sync shared state variables after any setState
-      this.autoSyncSharedState();
-      
-      // Call the original callback if provided
+      if (this.sharedStateManager && this.isAutoSyncEnabled()) {
+        this.sharedStateManager.updateSharedState(this.state as any);
+      }
       if (callback) {
         callback();
       }
@@ -147,106 +113,140 @@ export abstract class SharedStateComponent<P extends SharedStateProps, S> extend
   }
 
   /**
-   * Handle shared state synchronization from AppState.
-   * 
-   * Default implementation: Automatically applies any synced state that matches 
-   * component state keys and is listed in shared-state-vars.
-   * 
-   * Override this method for custom synchronization logic.
-   * 
-   * @param syncedState - State object received from AppState
+   * Applies a state received from `<app-state>`.
+   *
+   * The default implementation copies the shared variables into the component state,
+   * without syncing them back. Override it when applying the state needs side effects.
+   *
+   * @param state shared variables to apply
+   * @param options with mode `replace`, variables missing from `state` should go back
+   *   to their defaults; the default implementation ignores them.
    */
-  protected handleSharedStateSync(syncedState: any): void {
-    if (!syncedState || !this.sharedStateManager) {
-      return;
-    }
-
-    // console.log(`SharedStateComponent: ${this.props.id} received shared state sync:`, syncedState);
-    
-    // Smart default: automatically apply any synced state that matches component state keys
-    const sharedVars = this.sharedStateManager.getSharedStateVars();
-    const stateUpdates: any = {};
-    
-    sharedVars.forEach(varName => {
-      if (varName in syncedState && varName in this.state) {
-        // Only update if the value is actually different to avoid unnecessary re-renders
-        if (this.state[varName] !== syncedState[varName]) {
-          stateUpdates[varName] = syncedState[varName];
-        }
-      }
-    });
-    
-    if (Object.keys(stateUpdates).length > 0) {
-      // console.log(`SharedStateComponent: ${this.props.id} applying state updates:`, stateUpdates);
-      
-      // Use the original setState to avoid triggering autoSyncSharedState
-      super.setState(stateUpdates);
+  protected handleSharedStateSync(state: ComponentState, options: SharedStateSyncOptions): void {
+    const updates = this.sharedStateManager ? this.sharedStateManager.extractSharedState(state) : {};
+    if (Object.keys(updates).length > 0) {
+      super.setState(updates as any);
     }
   }
 
   /**
-   * Manually update shared state variables.
-   * This is useful when you need to sync state without calling setState.
-   * 
-   * @param stateChanges - Object containing the state changes to sync
+   * Called once, when `<app-state>` has resolved the initial state of this component
+   * (after {@link handleSharedStateSync} if there is a stored state), or right after
+   * mount when the component does not share state.
    */
-  protected updateSharedState(stateChanges: { [key: string]: any }): void {
+  protected onSharedStateResolved(hasStoredState: boolean): void {}
+
+  /**
+   * Initial shared state sent with the registration. Defaults to the shared variables
+   * found in the component state.
+   */
+  protected getInitialSharedState(): ComponentState {
+    return this.state as any;
+  }
+
+  /**
+   * Whether shared variables are synced after every `setState`. Components that push
+   * their shared state explicitly with {@link updateSharedState} return false.
+   */
+  protected isAutoSyncEnabled(): boolean {
+    return true;
+  }
+
+  /**
+   * Names of the shared variables this component supports, or `undefined` if any
+   * state variable can be shared. Unsupported names in `shared-state-vars` are ignored.
+   */
+  protected getSupportedSharedStateVars(): string[] | undefined {
+    return undefined;
+  }
+
+  /**
+   * Sends the changed shared variables of `state` to `<app-state>`. The values do not
+   * need to be in the component state.
+   *
+   * @param sendAllIfChanged when any variable has changed, send all of them.
+   */
+  protected updateSharedState(state: ComponentState, sendAllIfChanged = false): void {
     if (this.sharedStateManager) {
-      this.sharedStateManager.updateSharedState(stateChanges);
+      this.sharedStateManager.updateSharedState(state, sendAllIfChanged);
     }
   }
 
   /**
-   * Automatically sync shared state variables based on current component state.
-   * Called automatically after setState, but can be called manually if needed.
+   * Records `state` as the current shared state without sending it, e.g. a default
+   * computed after loading data, so that it does not count as a user change.
    */
-  private autoSyncSharedState(): void {
-    if (!this.sharedStateManager) {
-      return;
-    }
-    
-    const sharedVars = this.sharedStateManager.getSharedStateVars();
-    const stateToSync: any = {};
-    
-    sharedVars.forEach(varName => {
-      if (varName in this.state) {
-        stateToSync[varName] = this.state[varName];
-      }
-    });
-    
-    if (Object.keys(stateToSync).length > 0) {
-      // console.log(`SharedStateComponent: ${this.props.id} auto-syncing state:`, stateToSync);
-      this.sharedStateManager.updateSharedState(stateToSync);
+  protected setSharedStateBaseline(state: ComponentState): void {
+    if (this.sharedStateManager) {
+      this.sharedStateManager.setBaseline(state);
     }
   }
 
-  /**
-   * Check if a state variable is configured for sharing
-   * 
-   * @param varName - Name of the state variable to check
-   * @returns true if the variable is shared, false otherwise
-   */
   protected isSharedVariable(varName: string): boolean {
-    return this.sharedStateManager ? this.sharedStateManager.isSharedVariable(varName) : false;
+    return this.getSharedStateVars().indexOf(varName) >= 0;
   }
 
   /**
-   * Get the list of shared state variables for this component
-   * 
-   * @returns Array of shared state variable names
+   * Shared variables declared in `shared-state-vars` and supported by the component.
+   * Available before mount, unlike {@link sharedStateManager}.
    */
   protected getSharedStateVars(): string[] {
-    return this.sharedStateManager ? this.sharedStateManager.getSharedStateVars() : [];
+    const declared = parseSharedStateVars(this.props.sharedStateVars);
+    const supported = this.getSupportedSharedStateVars();
+    return supported ? declared.filter((name) => supported.indexOf(name) >= 0) : declared;
   }
 
   /**
-   * Request current state from AppState.
-   * Useful for components that need to sync with existing state on mount.
+   * Asks `<app-state>` to send the current state of this component again.
    */
   protected requestCurrentState(): void {
     if (this.sharedStateManager) {
       this.sharedStateManager.requestCurrentState();
     }
+  }
+
+  private createSharedStateManager(): SharedStateManager | null {
+    const declared = parseSharedStateVars(this.props.sharedStateVars);
+    if (declared.length === 0) {
+      return null;
+    }
+    const sharedStateVars = this.getSharedStateVars();
+    const unsupported = declared.filter((name) => sharedStateVars.indexOf(name) < 0);
+    if (unsupported.length > 0) {
+      console.warn(`app-state: component "${this.props.id}" does not support shared variables: ${unsupported}`);
+    }
+    if (!this.props.id) {
+      console.warn('app-state: a component with shared-state-vars needs an id, its state will not be shared');
+      return null;
+    }
+    const contextAppState = this.context.appState;
+    if (!this.props.appStateId && !contextAppState) {
+      // not inside an <app-state> component
+      return null;
+    }
+    if (sharedStateVars.length === 0) {
+      return null;
+    }
+    return new SharedStateManager({
+      componentId: this.props.id,
+      sharedStateVars,
+      appStateId: this.props.appStateId || contextAppState.id,
+      onStateSync: (data) =>
+        this.handleSharedStateSync(data.state, {
+          mode: data.mode,
+          origin: data.origin,
+          transition: data.transition,
+        }),
+      onStateResolved: (hasStoredState) => this.resolveSharedState(hasStoredState),
+    });
+  }
+
+  private resolveSharedState(hasStoredState: boolean) {
+    if (this.sharedStateResolved) {
+      return;
+    }
+    this.sharedStateResolved = true;
+    this.onSharedStateResolved(hasStoredState);
   }
 }
 

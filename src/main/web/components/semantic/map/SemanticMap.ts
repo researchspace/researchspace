@@ -54,7 +54,12 @@ import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { Component, ComponentContext } from 'platform/api/components';
 import { LayoutChanged } from 'platform/components/dashboard/DashboardEvents';
-import { SharedStateComponent, SharedStateProps } from '../app-state/SharedStateComponent';
+import {
+  SharedStateComponent,
+  SharedStateProps,
+  SharedStateSyncOptions,
+} from 'platform/components/semantic/app-state/SharedStateComponent';
+import { ComponentState, StateTransition } from 'platform/components/semantic/app-state/AppStateEvents';
 
 import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
@@ -114,9 +119,18 @@ interface MapState {
   errorMessage: Data.Maybe<string>;
   noResults?: boolean;
   isLoading?: boolean;
+}
+
+/**
+ * Shared state of the map view: extent and zoom in the view projection (EPSG:3857).
+ */
+interface MapViewState {
   currentExtent?: number[];
   currentZoom?: number;
 }
+
+const SHARED_STATE_VARS = ['currentExtent', 'currentZoom'];
+const DEFAULT_TRANSITION_DURATION = 1000;
 
 const MAP_REF = 'researchspace-map-widget';
 
@@ -125,6 +139,11 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
   // A single master source holds all features (Points, Polygons, etc.)
   private masterSource: VectorSource;
   private map: Map;
+  /**
+   * View received from app-state that has not been applied yet.
+   */
+  private pendingView: { view: MapViewState; transition?: StateTransition } | undefined;
+  private isTrackingView = false;
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -133,8 +152,6 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
       noResults: false,
       isLoading: true,
       errorMessage: maybe.Nothing<string>(),
-      currentExtent: undefined,
-      currentZoom: undefined,
     };
   }
 
@@ -152,18 +169,8 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
   }
 
   public componentDidMount() {
-    // Call parent to register with AppState
     super.componentDidMount();
-    
-    // Create the map
     this.createMap();
-    
-    // Request current state from AppState after map is created
-    // This ensures we get any URL state that was already parsed
-    setTimeout(() => {
-      // console.log('SemanticMap: Requesting current state from AppState');
-      this.requestCurrentState();
-    }, 100);
   }
 
   public componentWillReceiveProps(props: SemanticMapProps, context: ComponentContext) {
@@ -382,21 +389,21 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
 
           const allFeatures = this.createFeatures(m);
           this.updateFeatures(allFeatures);
-          // Set up extent/zoom tracking for shared state
-          this.setupExtentZoomTracking();
 
-          // Auto-fit to markers if no stored state
-          const hasStoredState = this.state.currentExtent || this.state.currentZoom;
-          if (!hasStoredState) {
+          if (this.pendingView) {
+            this.applyPendingView();
+          } else {
             const view = this.map.getView();
             const extent = this.calculateExtent();
-            view.fit(extent, { maxZoom: 10 });
-
+            if (extent && extent[0] !== Infinity) {
+              view.fit(extent, { maxZoom: 10, padding: [50, 50, 50, 50] });
+            }
             if (fixZoomLevel) {
               view.setZoom(fixZoomLevel);
             }
           }
         }
+        this.trackView();
       });
 
       stream.onError((error) =>
@@ -496,160 +503,70 @@ export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState
     }
   }
 
-  /**
-   * Set up extent and zoom tracking for shared state synchronization
-   */
-  private setupExtentZoomTracking = () => {
-    if (!this.map) return;
+  protected getSupportedSharedStateVars() {
+    return SHARED_STATE_VARS;
+  }
 
-    const view = this.map.getView();
-    
-    // Check if we have stored state from URL that needs to be applied
-    if (this.state.currentExtent || this.state.currentZoom) {
-      // console.log('SemanticMap: Applying stored state from URL:', {
-      //   extent: this.state.currentExtent,
-      //   zoom: this.state.currentZoom
-      // });
-      this.applyMapState({
-        currentExtent: this.state.currentExtent,
-        currentZoom: this.state.currentZoom
-      });
-    } else {
-      // Initialize current state if no stored state from URL
-      
-      // First, fit the view to show all markers
-      const markerExtent = this.calculateExtent();
-      if (markerExtent && markerExtent[0] !== Infinity) {
-        view.fit(markerExtent, { maxZoom: 10, padding: [50, 50, 50, 50] });
-      }
-      
-      // Now capture the extent/zoom AFTER the fit operation
-      const currentExtent = view.calculateExtent(this.map.getSize());
-      const currentZoom = view.getZoom();
-      
-      this.setState({
-        currentExtent: currentExtent.map(coord => Math.round(coord * 1000000) / 1000000),
-        currentZoom: Math.round(currentZoom * 100) / 100
-      });
-    }
-    
-    // Listen to view changes (pan/zoom) for future updates
-    view.on('change', () => {
-      const extent = view.calculateExtent(this.map.getSize());
-      const zoom = view.getZoom();
-      
-      // Round coordinates to reasonable precision (6 decimal places)
-      const roundedExtent = extent.map(coord => Math.round(coord * 1000000) / 1000000);
-      const roundedZoom = Math.round(zoom * 100) / 100;
-      
-      this.setState({
-        currentExtent: roundedExtent,
-        currentZoom: roundedZoom
-      });
-      
-      // console.log('SemanticMap: Updated extent/zoom:', { extent: roundedExtent, zoom: roundedZoom });
-    });
-  };
+  protected isAutoSyncEnabled() {
+    // the view is pushed on 'moveend', it is not part of the React state
+    return false;
+  }
 
-  /**
-   * Handle shared state synchronization from AppState
-   * Restore map extent and zoom from shared state
-   */
-  protected handleSharedStateSync(syncedState: any): void {
-    if (!syncedState) {
-      return;
-    }
+  protected getInitialSharedState(): ComponentState {
+    // the view is known only after the query results have been fitted
+    return {};
+  }
 
-    // console.log('SemanticMap: Received shared state sync:', syncedState);
-    // console.log('SemanticMap: Current map state:', { 
-    //   mapExists: !!this.map, 
-    //   currentState: this.state
-    // });
-    
-    // Parse extent if it's a string (from URL parameters)
-    let parsedExtent = syncedState.currentExtent;
-    if (typeof parsedExtent === 'string') {
-      try {
-        parsedExtent = JSON.parse(parsedExtent);
-        // console.log('SemanticMap: Parsed extent from string:', parsedExtent);
-      } catch (e) {
-        console.error('SemanticMap: Failed to parse extent string:', parsedExtent, e);
-        parsedExtent = undefined;
-      }
-    }
-    
-    // Store the state regardless of map readiness
-    if (parsedExtent || syncedState.currentZoom) {
-      this.setState({
-        currentExtent: parsedExtent,
-        currentZoom: syncedState.currentZoom
-      }, () => {
-        // console.log('SemanticMap: State updated:', this.state);
-        
-        // If map is ready, apply immediately
-        if (this.map) {
-          this.applyMapState({
-            currentExtent: parsedExtent,
-            currentZoom: syncedState.currentZoom
-          });
-        } else {
-          // console.log('SemanticMap: Map not ready yet, state will be applied when ready');
-        }
-      });
+  protected handleSharedStateSync(state: MapViewState, options: SharedStateSyncOptions) {
+    const view = { ...(this.pendingView ? this.pendingView.view : {}), ...parseViewState(state) };
+    this.pendingView = { view, transition: options.transition };
+    if (this.isTrackingView) {
+      this.applyPendingView();
     }
   }
 
   /**
-   * Apply map state (extent/zoom) to the map view
+   * Starts sending the view to app-state when it changes. The current view is the
+   * baseline, so the initial fit is not reported as a change.
    */
-  private applyMapState = (state: any) => {
-    
-    if (!this.map) {
-      // console.log('SemanticMap: applyMapState - map not available');
+  private trackView() {
+    if (this.isTrackingView || !this.map || this.getSharedStateVars().length === 0) {
       return;
     }
-    
-    if (!state) {
-      // console.log('SemanticMap: applyMapState - no state provided');
-      return;
+    this.isTrackingView = true;
+    this.setSharedStateBaseline(this.getViewState());
+    this.map.on('moveend', () => this.updateSharedState(this.getViewState()));
+    if (this.pendingView) {
+      this.applyPendingView();
     }
+  }
 
+  private getViewState(): MapViewState {
     const view = this.map.getView();
-    const currentCenter = view.getCenter();
-    const currentZoom = view.getZoom();
-    
-    
-    // Apply extent and zoom together for proper restoration
-    if (state.currentExtent && Array.isArray(state.currentExtent) && state.currentExtent.length === 4) {
-      
-      // Calculate center from extent for more reliable restoration
-      const [minX, minY, maxX, maxY] = state.currentExtent;
-      const centerX = (minX + maxX) / 2;
-      const centerY = (minY + maxY) / 2;
-      
-      
-      // Set center and zoom directly
-      view.setCenter([centerX, centerY]);
-      
-      if (typeof state.currentZoom === 'number') {
+    const extent = view.calculateExtent(this.map.getSize());
+    return {
+      currentExtent: extent.map((coordinate) => Math.round(coordinate * 100) / 100),
+      currentZoom: Math.round(view.getZoom() * 100) / 100,
+    };
+  }
+
+  private applyPendingView() {
+    if (!this.map || !this.pendingView) {
+      return;
+    }
+    const { view: state, transition } = this.pendingView;
+    this.pendingView = undefined;
+    const view = this.map.getView();
+    const duration = transition && transition.animate ? transition.duration || DEFAULT_TRANSITION_DURATION : 0;
+    if (state.currentExtent) {
+      view.fit(state.currentExtent as [number, number, number, number], duration ? { duration } : {});
+    } else if (typeof state.currentZoom === 'number') {
+      if (duration) {
+        view.animate({ zoom: state.currentZoom, duration });
+      } else {
         view.setZoom(state.currentZoom);
       }
-      
-      // Verify the change
-      setTimeout(() => {
-        const newCenter = view.getCenter();
-        const newZoom = view.getZoom();
-      }, 50);
-    } else if (typeof state.currentZoom === 'number') {
-      // Apply zoom only if no extent provided
-      view.setZoom(state.currentZoom);
     }
-
-    // Update local state to match applied state
-    this.setState({
-      currentExtent: state.currentExtent,
-      currentZoom: state.currentZoom
-    });
   }
 }
 
@@ -778,3 +695,24 @@ function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {
 }
 
 export default SemanticMap;
+
+/**
+ * Validates a view state received from app-state. Earlier versions could store the
+ * extent as a JSON string.
+ */
+function parseViewState(state: ComponentState): MapViewState {
+  let extent = state.currentExtent;
+  if (typeof extent === 'string') {
+    try {
+      extent = JSON.parse(extent);
+    } catch (e) {
+      extent = undefined;
+    }
+  }
+  const isValidExtent =
+    Array.isArray(extent) && extent.length === 4 && extent.every((c) => typeof c === 'number' && isFinite(c));
+  return {
+    currentExtent: isValidExtent ? extent : undefined,
+    currentZoom: typeof state.currentZoom === 'number' ? state.currentZoom : undefined,
+  };
+}

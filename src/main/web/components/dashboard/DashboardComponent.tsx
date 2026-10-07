@@ -25,7 +25,11 @@ import FlexLayout, { Model, Node, Action, Actions,
 import { IJsonRowNode, IJsonTabNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
 
 import { setFrameNavigation } from 'platform/api/navigation';
-import { SharedStateComponent, SharedStateProps } from '../semantic/app-state/SharedStateComponent';
+import {
+  SharedStateComponent,
+  SharedStateProps,
+} from 'platform/components/semantic/app-state/SharedStateComponent';
+import { ComponentState } from 'platform/components/semantic/app-state/AppStateEvents';
 import { TemplateItem } from 'platform/components/ui/template';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
@@ -45,7 +49,7 @@ import Icon from '../ui/icon/Icon';
 
 import { BuiltInEvents,  registerEventSource, unregisterEventSource } from 'platform/api/events';
 import { ConfigHolder } from 'platform/api/services/config-holder';
-import { DashboardStateAdapters, DashboardSharedState } from './DashboardStateAdapters';
+import { DashboardStateAdapters, DashboardSharedState, SHARED_STATE_VARS } from './DashboardStateAdapters';
 
 export interface Item {
   readonly id: string;
@@ -201,9 +205,6 @@ export interface State {
   layout?: Model;
   items?: ReadonlyArray<Item>;
   focus?: string;
-  // Shared state variables
-  layoutModel?: string;
-  openFrames?: ReadonlyArray<Item>;
   activeFrameId?: string;
 }
 
@@ -218,6 +219,15 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
   private layoutRef = React.createRef<Layout>();
   private subscription: Kefir.Subscription;
   private itemLabelCount = 0;
+  /**
+   * Whether the layout has been restored from a shared state.
+   */
+  private isRestored = false;
+  /**
+   * Whether layout changes are sent to app-state. Starts after the initial frames have
+   * been added, so that the default layout does not count as a change.
+   */
+  private isTrackingState = false;
 
   private frameLabel = (label?: string) => {
     this.itemLabelCount = this.itemLabelCount + 1;
@@ -226,8 +236,7 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
     const displayCustomLabel = this.props.initialView?.data?.["customLabel"] && (this.state.items.length == 0) ?this.props.initialView.data["customLabel"]:displayLabel;
 
     return { 
-      // id: uniqueId(displayLabel.replace(/\s/g, '')),
-      id: uniqueId('frame'),
+      id: this.newFrameId(),
       index: this.itemLabelCount, 
       label: displayCustomLabel
     }
@@ -298,9 +307,6 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
   }
 
   componentDidMount() {
-    // Call parent componentDidMount to handle shared state registration
-    super.componentDidMount();
-
     this.cancellation
         .map(
           listen({
@@ -334,51 +340,6 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
           },
         });
 
-    // Delay initial setup to allow state restoration to happen first
-    setTimeout(() => {
-      // Only add initial items if we don't have restored state
-      if (!this.state.layoutModel || this.state.items.length === 0) {
-        if (this.props.initialView) { 
-          const item = {
-            ...this.frameLabel(),
-            resourceIri: this.props.initialView.resource,
-            viewId: this.props.initialView.view,
-            data: this.props.initialView.data,
-          }; 
-          this.onAddNewItem(item);
-        } else {
-          this.onAddNewItem();
-        }
-      }
-
-      if (this.props.leftPanels) {
-        this.props.leftPanels.forEach((panelConfig, i) =>
-          this.layoutRef.current.addTabToTabSet(
-            this.state.layout
-                .getBorderSet()
-                .getBorders()
-                .find(b => b.getLocation() === DockLocation.LEFT)
-                .getId(),
-            {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': { 'panelIndex': i }, 'enableClose': false, 'className': panelConfig.class }
-          )
-        );
-      }
-
-      if (this.props.rightPanels) {
-        this.props.rightPanels.forEach((panelConfig, i) =>
-          this.layoutRef.current.addTabToTabSet(
-            this.state.layout
-                .getBorderSet()
-                .getBorders()
-                .find(b => b.getLocation() === DockLocation.RIGHT)
-                .getId(),
-            {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': { 'panelIndex': i }, 'enableClose': false, 'className': panelConfig.class }
-          )
-        );
-      }
-    }, 200);
-
-    
     // That is ugly hack for in frame navigation until we find a better way to do this
     setFrameNavigation(true, (iri: Rdf.Iri, props?: {}): boolean => {
       if (iri.value.startsWith('http://www.researchspace.org/instances/narratives')) {
@@ -445,6 +406,15 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
         return false;
       }
     });
+
+    // registers with app-state; the initial frames are added in onSharedStateResolved
+    super.componentDidMount();
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    if (prevState.items !== this.state.items || prevState.activeFrameId !== this.state.activeFrameId) {
+      this.syncDashboardState();
+    }
   }
 
   componentWillUnmount() {
@@ -453,146 +423,152 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-    
-    // Call parent componentWillUnmount to handle shared state unregistration
     super.componentWillUnmount();
   }
 
-  /**
-   * Handle shared state synchronization from AppState.
-   * Override the default implementation to handle dashboard-specific state restoration.
-   */
-  protected handleSharedStateSync(syncedState: any): void {
-    if (!syncedState || !this.sharedStateManager) {
+  protected getSupportedSharedStateVars() {
+    return SHARED_STATE_VARS;
+  }
+
+  protected isAutoSyncEnabled() {
+    // the layout is serialized and sent by syncDashboardState
+    return false;
+  }
+
+  protected getInitialSharedState(): ComponentState {
+    // the initial layout is a default, it is not part of the shared state
+    return {};
+  }
+
+  protected handleSharedStateSync(state: ComponentState) {
+    if (state.layoutModel && state.openFrames) {
+      this.restoreDashboardState({
+        layoutModel: state.layoutModel,
+        openFrames: state.openFrames,
+        activeFrameId: state.activeFrameId,
+        version: state.version || 1,
+      });
+    }
+  }
+
+  protected onSharedStateResolved() {
+    if (this.isRestored) {
+      this.addSidePanels();
+      this.startStateTracking();
       return;
     }
+    const initialItem = this.props.initialView
+      ? {
+          ...this.frameLabel(),
+          resourceIri: this.props.initialView.resource,
+          viewId: this.props.initialView.view,
+          data: this.props.initialView.data,
+        }
+      : this.frameLabel();
+    this.onAddNewItem(initialItem, () => {
+      this.addSidePanels();
+      // wait for the updates queued while adding the frame
+      this.setState({}, () => this.startStateTracking());
+    });
+  }
 
-    console.log(`DashboardComponent: ${this.props.id} received shared state sync:`, syncedState);
+  private addSidePanels() {
+    this.addBorderPanels(this.props.leftPanels, DockLocation.LEFT, 'leftItem');
+    this.addBorderPanels(this.props.rightPanels, DockLocation.RIGHT, 'rightItem');
+  }
 
-    try {
-      // Check if we have dashboard state to restore
-      if (syncedState.layoutModel && syncedState.openFrames) {
-        this.restoreDashboardState({
-          layoutModel: syncedState.layoutModel,
-          openFrames: syncedState.openFrames,
-          activeFrameId: syncedState.activeFrameId,
-          version: syncedState.version || 1
+  /**
+   * Adds the configured panels to a border, skipping those already in the layout
+   * (a restored layout contains them).
+   */
+  private addBorderPanels(panels: Props['leftPanels'], location: DockLocation, component: string) {
+    if (!panels) {
+      return;
+    }
+    const border = this.state.layout
+      .getBorderSet()
+      .getBorders()
+      .find((b) => b.getLocation() === location);
+    const existing = border
+      .getChildren()
+      .filter((node) => node instanceof TabNode && node.getComponent() === component)
+      .map((node: TabNode) => node.getConfig()?.panelIndex);
+    panels.forEach((panelConfig, i) => {
+      if (existing.indexOf(i) < 0) {
+        this.layoutRef.current.addTabToTabSet(border.getId(), {
+          type: 'tab',
+          name: panelConfig.label,
+          component,
+          config: { panelIndex: i },
+          enableClose: false,
+          className: panelConfig.class,
         });
-      } else {
-        // Fall back to default behavior for individual state variables
-        super.handleSharedStateSync(syncedState);
       }
-    } catch (error) {
-      console.error(`DashboardComponent: ${this.props.id} error during state sync:`, error);
-      // Fall back to default behavior on error
-      super.handleSharedStateSync(syncedState);
+    });
+  }
+
+  private getDashboardSharedState(): DashboardSharedState {
+    return DashboardStateAdapters.createDashboardState(this.state.layout, this.state.items, this.state.activeFrameId);
+  }
+
+  private startStateTracking() {
+    this.isTrackingState = true;
+    if (this.sharedStateManager) {
+      this.setSharedStateBaseline({ ...this.getDashboardSharedState() });
     }
   }
 
   /**
-   * Override setState to automatically sync dashboard state to shared state
+   * Sends the layout and the open frames to app-state when they have changed.
    */
-  public setState<K extends keyof State>(
-    state: ((prevState: Readonly<State>, props: Readonly<Props>) => (Pick<State, K> | State | null)) | (Pick<State, K> | State | null),
-    callback?: () => void
-  ): void {
-    super.setState(state, () => {
-      // Sync dashboard state after any setState
-      this.syncDashboardState();
-      
-      // Call the original callback if provided
-      if (callback) {
-        callback();
+  private syncDashboardState = () => {
+    if (!this.isTrackingState || !this.sharedStateManager || !this.state.layout || !this.state.items) {
+      return;
+    }
+    // the layout and the frames are only meaningful together
+    this.updateSharedState({ ...this.getDashboardSharedState() }, true);
+  };
+
+  private restoreDashboardState(dashboardState: DashboardSharedState) {
+    const extracted = DashboardStateAdapters.extractDashboardState(dashboardState);
+    if (!extracted || !extracted.model) {
+      console.warn(`rs-dashboard: ignoring an invalid shared state for "${this.props.id}"`);
+      return;
+    }
+    const { model, items, activeFrameId } = extracted;
+    this.isRestored = true;
+    this.itemLabelCount = items.reduce((max, item) => Math.max(max, item.index || 0), 0);
+    // the restored layout is not a change to send back
+    const wasTracking = this.isTrackingState;
+    this.isTrackingState = false;
+    this.setState({ layout: model, items, activeFrameId }, () => {
+      if (activeFrameId && model.getNodeById(activeFrameId)) {
+        model.doAction(FlexLayout.Actions.selectTab(activeFrameId));
+      }
+      if (wasTracking) {
+        this.startStateTracking();
       }
     });
   }
 
   /**
-   * Sync current dashboard state to shared state
+   * Returns a frame id that is not used by the open frames, including restored ones.
    */
-  private syncDashboardState(): void {
-    if (!this.sharedStateManager || !this.state.layout || !this.state.items) {
-      return;
-    }
-
-    try {
-      const dashboardState = DashboardStateAdapters.createDashboardState(
-        this.state.layout,
-        this.state.items,
-        this.state.activeFrameId
-      );
-
-      // Update shared state with dashboard state
-      this.updateSharedState({
-        layoutModel: dashboardState.layoutModel,
-        openFrames: dashboardState.openFrames,
-        activeFrameId: dashboardState.activeFrameId
-      });
-
-      console.log(`DashboardComponent: ${this.props.id} synced dashboard state`);
-    } catch (error) {
-      console.error(`DashboardComponent: ${this.props.id} error syncing dashboard state:`, error);
-    }
+  private newFrameId(): string {
+    const usedIds = new Set(this.state.items.map((item) => item.id));
+    let id: string;
+    do {
+      id = uniqueId('frame');
+    } while (usedIds.has(id));
+    return id;
   }
 
-  /**
-   * Restore dashboard state from shared state
-   */
-  private restoreDashboardState(dashboardState: DashboardSharedState): void {
-    try {
-      const extracted = DashboardStateAdapters.extractDashboardState(dashboardState);
-      
-      if (!extracted) {
-        console.warn(`DashboardComponent: ${this.props.id} invalid dashboard state, skipping restoration`);
-        return;
-      }
-
-      const { model, items, activeFrameId } = extracted;
-
-      // Only restore if we have valid data
-      if (model) {
-        console.log(`DashboardComponent: ${this.props.id} restoring dashboard state with ${items.length} items`);
-        
-        // Update item label count to continue from the highest index
-        if (items.length > 0) {
-          const maxIndex = Math.max(...items.map(item => item.index || 0));
-          this.itemLabelCount = maxIndex;
-        }
-        
-        // Use the original setState to avoid triggering syncDashboardState
-        super.setState({
-          layout: model,
-          items: items,
-          activeFrameId: activeFrameId,
-          // Update shared state variables for consistency
-          layoutModel: dashboardState.layoutModel,
-          openFrames: items,
-        }, () => {
-          // Force update to ensure FlexLayout picks up the new model
-          this.forceUpdate();
-          
-          // If there's an active frame, select it after a delay
-          if (activeFrameId) {
-            setTimeout(() => {
-              if (this.state.layout) {
-                this.state.layout.doAction(FlexLayout.Actions.selectTab(activeFrameId));
-              }
-            }, 100);
-          }
-        });
-      } else {
-        console.log(`DashboardComponent: ${this.props.id} no valid state to restore`);
-      }
-    } catch (error) {
-      console.error(`DashboardComponent: ${this.props.id} error restoring dashboard state:`, error);
-    }
-  }
-
-
-  private onAddNewItem = (item: Item = this.frameLabel()) => {
+  private onAddNewItem = (item: Item = this.frameLabel(), onAdded?: () => void) => {
     // check if item.resourceIri exists and is an actual iri to prevent errors
-    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")) && !(item?.resourceIri.startsWith("https://"))) 
+    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")) && !(item?.resourceIri.startsWith("https://"))) {
+      onAdded?.();
       return;
+    }
   
     // check if an item with the same resourceIri is already in the tabset
     const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
@@ -604,6 +580,7 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
         viewId: item.viewId,
         resourceIri: item.resourceIri,
       });
+      onAdded?.();
       return
     }
     const itemViewConfig = this.props.views.find(({id}) => id === item.viewId);
@@ -612,6 +589,7 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
     const viewConfig = !itemViewConfig?itemLinkedViewConfig:itemViewConfig;
 
     if (viewConfig?.unique && this.state.items.find(i => i.viewId === item.viewId)) {
+      onAdded?.();
       return;
     } else {
       this.setState(
@@ -645,6 +623,7 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
             viewId: item.viewId,
             resourceIri: item.resourceIri,
           });
+          onAdded?.();
         }
       );
     }
@@ -1033,10 +1012,6 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
         targets: mapsDashboardItems,
       });
 
-      // Sync dashboard state after layout changes to capture spatial configuration
-      setTimeout(() => {
-        this.syncDashboardState();
-      }, 100);
     }
 
     if (action.type === Actions.DELETE_TAB) {
@@ -1056,19 +1031,9 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
         const itemId = tabNode.getConfig().itemId;
         const newName = action.data.text;
         
-        // Update the item label in state
-        this.setState(prevState => {
-          const newItems = prevState.items.map(item => {
-            if (item.id === itemId) {
-              return { ...item, label: newName };
-            }
-            return item;
-          });
-          return { items: newItems };
-        }, () => {
-          // Sync state after rename
-          this.syncDashboardState();
-        });
+        this.setState(prevState => ({
+          items: prevState.items.map(item => (item.id === itemId ? { ...item, label: newName } : item)),
+        }));
       }
       return action;
     } else {
@@ -1085,6 +1050,7 @@ export class DashboardComponent extends SharedStateComponent<Props, State> {
       //  titleFactory={this.titleFactory}
         onRenderTabSet={this.onRenderTabSet}
         onAction={this.onLayoutAction}
+        onModelChange={this.syncDashboardState}
         icons={this.tabIcons()}
       />
     );

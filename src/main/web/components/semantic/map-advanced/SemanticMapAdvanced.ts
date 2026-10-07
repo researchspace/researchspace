@@ -2777,6 +2777,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         tileslayer.set('author', child.props.author);
         tileslayer.set('identifier', child.props.identifier);
         tileslayer.set('thumbnail', child.props.thumbnail);
+        // Same timeline metadata as the layers of tilesLayersQuery: the numeric year drives the
+        // timeline markers / "filter by time" / "sync with time"; `group` (falling back to
+        // location, then identifier) groups the maps of the same place for the snapshot mode.
+        const parsedYear = child.props.year ? parseInt(String(child.props.year).split('-')[0], 10) : NaN;
+        tileslayer.set('filterYear', Number.isFinite(parsedYear) ? parsedYear : null);
+        tileslayer.set('filterGroup', child.props.group || child.props.location || child.props.identifier);
         tilesLayers.push(tileslayer);
       }
     });

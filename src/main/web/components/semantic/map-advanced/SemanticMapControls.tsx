@@ -54,6 +54,16 @@ interface Timeline {
   default?: number;
   locked?: boolean;
   tour?: boolean;
+  /**
+   * Extra years the slider snaps to, besides the years of the historical maps (e.g. the epochs of
+   * the features). They are drawn as markers on the timeline, without a map preview.
+   */
+  snapYears?: number[];
+  /**
+   * When true the slider can only rest on the snap points (map years and `snapYears`): snapping
+   * is always on, whatever the distance, and the play button steps from one point to the next.
+   */
+  snapOnly?: boolean;
 }
 
 interface State {
@@ -696,16 +706,35 @@ export class SemanticMapControls extends Component<Props, State> {
    * matters because buildings are filtered by bob/eoe independently of the maps.
    */
   private snapYearToMarkers(year: number): number {
-    if (!this.state.snapToMapYears) {
+    const snapOnly = this.isSnapOnly();
+    if (!snapOnly && !this.state.snapToMapYears) {
       return year;
     }
-    const markerYears = this.getYearMarkers().map((marker) => marker.year);
+    const markerYears = this.getTimelineMarkers().map((marker) => marker.year);
     if (!markerYears.length) {
       return year;
     }
-    const tolerance = this.props.snapToleranceYears ?? 3;
     const closest = this.findClosestMark(year, markerYears);
+    if (snapOnly) {
+      return closest;
+    }
+    const tolerance = this.props.snapToleranceYears ?? 3;
     return Math.abs(closest - year) <= tolerance ? closest : year;
+  }
+
+  /** `timeline.snapOnly`: the slider may only rest on the snap points. */
+  private isSnapOnly(): boolean {
+    return Boolean(this.props.timeline && this.props.timeline.snapOnly);
+  }
+
+  /** `timeline.snapYears` inside the timeline range, as numbers. */
+  private getExtraSnapYears(): number[] {
+    const years = (this.props.timeline && this.props.timeline.snapYears) || [];
+    const min = this.props.timeline ? this.props.timeline.min : -Infinity;
+    const max = this.getTimelineMax();
+    return years
+      .map((year) => Number(year))
+      .filter((year) => Number.isFinite(year) && year >= min && year <= max);
   }
 
   /**
@@ -2130,7 +2159,7 @@ export class SemanticMapControls extends Component<Props, State> {
               <React.Fragment>
                 {/* Snap toggle lives on the timeline because that is what it governs, and shows
                     only alongside the markers, when there is something to snap to. */}
-                {this.areYearMarkersVisible() && (
+                {this.areYearMarkersVisible() && !this.isSnapOnly() && (
                   <div className={styles.timelineToolbar}>
                     <label
                       className={styles.timelineSnapToggle}
@@ -2693,6 +2722,19 @@ export class SemanticMapControls extends Component<Props, State> {
    * that year (1982 covers six islands in the current data). Years outside the timeline range, and
    * undated layers, are dropped — they have nowhere to sit on the bar.
    */
+  /** Timeline markers: the historical-map years plus the extra `timeline.snapYears` (no maps). */
+  private getTimelineMarkers(): Array<{ year: number; layers: any[] }> {
+    const markers = this.getYearMarkers();
+    const known = new Set(markers.map((marker) => marker.year));
+    this.getExtraSnapYears().forEach((year) => {
+      if (!known.has(year)) {
+        known.add(year);
+        markers.push({ year, layers: [] });
+      }
+    });
+    return markers.sort((a, b) => a.year - b.year);
+  }
+
   private getYearMarkers(): Array<{ year: number; layers: any[] }> {
     const min = this.props.timeline ? this.props.timeline.min : null;
     const max = this.getTimelineMax();
@@ -2731,7 +2773,7 @@ export class SemanticMapControls extends Component<Props, State> {
    * offsets fall back to the exact CSS calc.
    */
   private getMarkerLayout(): Array<{ year: number; layers: any[]; left: string }> {
-    const markers = this.getYearMarkers();
+    const markers = this.getTimelineMarkers();
     const usable = this.state.trackWidth - MARKER_THUMB_WIDTH;
     if (!markers.length || usable <= 0) {
       return markers.map(({ year, layers }) => ({ year, layers, left: this.getMarkerOffset(year) }));
@@ -2796,7 +2838,13 @@ export class SemanticMapControls extends Component<Props, State> {
    * (sync) or the sidebar list (temporal filter).
    */
   private areYearMarkersVisible(): boolean {
-    return Boolean(this.props.timeline) && (this.state.syncWithTime || this.state.filterByTime);
+    return (
+      Boolean(this.props.timeline) &&
+      (this.state.syncWithTime ||
+        this.state.filterByTime ||
+        this.isSnapOnly() ||
+        this.getExtraSnapYears().length > 0)
+    );
   }
 
   /**
@@ -2941,14 +2989,14 @@ export class SemanticMapControls extends Component<Props, State> {
             key={year}
             className={`${styles.timelineMarker} ${year === this.state.year ? styles.timelineMarkerActive : ''}`}
             style={{ left }}
-            title={`${year} — ${layers.length} ${layers.length === 1 ? 'map' : 'maps'}`}
+            title={layers.length ? `${year} — ${layers.length} ${layers.length === 1 ? 'map' : 'maps'}` : String(year)}
             onMouseEnter={() => this.openMarkerPreview(year)}
             onMouseLeave={() => this.closeMarkerPreviewSoon(year)}
             onClick={() => this.handleMarkerClick(year)}
           />
         ))}
         {markers
-          .filter(({ year }) => year === this.state.hoveredMarkerYear)
+          .filter(({ year, layers }) => year === this.state.hoveredMarkerYear && layers.length > 0)
           .map(({ year, layers, left }) => (
             <div
               key={`preview-${year}`}
@@ -3061,9 +3109,16 @@ export class SemanticMapControls extends Component<Props, State> {
       let current = this.state.year;
 
       const interval = window.setInterval(() => {
-        current += 10;
-        if (current > max) {
-          current = min;
+        if (this.isSnapOnly() && this.getTimelineMarkers().length > 0) {
+          // Step from one snap point to the next, wrapping around.
+          const years = this.getTimelineMarkers().map((marker) => marker.year);
+          const next = years.find((year) => year > current);
+          current = next !== undefined ? next : years[0];
+        } else {
+          current += 10;
+          if (current > max) {
+            current = min;
+          }
         }
 
         // Update year and send to map

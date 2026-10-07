@@ -286,6 +286,8 @@ Timeline configuration options:
 | `default` | number | Default year value |
 | `locked` | boolean | Whether timeline is locked (default: false) |
 | `tour` | boolean | Whether tour mode is enabled (default: false) |
+| `snapYears` | number[] | Extra snap points besides the years of the historical maps (e.g. the epochs of the features). Drawn as dots on the timeline, without a map preview |
+| `snapOnly` | boolean | When true the slider can only rest on the snap points (map years and `snapYears`): snapping is mandatory at any distance, the snap button is hidden and auto-play steps from one point to the next (default: false) |
 
 ## Historical Map Filters
 
@@ -348,6 +350,11 @@ Note that the snap is immediate rather than elastic, so the years within the tol
 cannot be selected while it is on. With the default range that band is only two or three pixels
 wide and a mouse cannot reliably hit it anyway, but stepping with the arrow keys will jump over it
 — uncheck the box when a specific year in that band is needed.
+
+Historical maps declared as `<tiles-layer level="overlay">` in the template get their marker from
+their `year` attribute; an optional `group` attribute (default: `location`, then `identifier`) tells
+the snapshot mode which maps show the same place. The timeline options `snapYears` and `snapOnly`
+add artificial snap points and restrict the slider to the snap points.
 
 ## Feature Styling
 

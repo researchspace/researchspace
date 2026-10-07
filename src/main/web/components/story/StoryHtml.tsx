@@ -14,7 +14,13 @@ const ALLOWED_TAGS = [
   'p', 'br', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'u', 's', 'ul', 'ol', 'li',
   'a', 'blockquote', 'img', 'figure', 'figcaption', 'span',
 ];
-const ALLOWED_ATTR = ['href', 'title', 'target', 'rel', 'src', 'alt', 'data-story-goto'];
+const ALLOWED_ATTR = [
+  'href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height', 'class', 'data-story-goto',
+];
+/** Classes of the editor for alignment and list indentation; other classes are removed. */
+const ALLOWED_CLASS = /^ql-(align-(center|right|justify)|indent-[1-8])$/;
+/** Link to a slide of the story: `#3` is slide 3. */
+const SLIDE_LINK = /^#(\d+)$/;
 
 let hooksInstalled = false;
 
@@ -23,8 +29,16 @@ function installHooks() {
     return;
   }
   hooksInstalled = true;
-  // external links open in a new tab without access to the opener
   DOMPurify.addHook('afterSanitizeAttributes', (node: Element) => {
+    if (node.hasAttribute && node.hasAttribute('class')) {
+      const classes = node.getAttribute('class').split(/\s+/).filter((c) => ALLOWED_CLASS.test(c));
+      if (classes.length > 0) {
+        node.setAttribute('class', classes.join(' '));
+      } else {
+        node.removeAttribute('class');
+      }
+    }
+    // external links open in a new tab without access to the opener
     if (node.tagName === 'A' && node.getAttribute('href') && !node.hasAttribute('data-story-goto')) {
       const href = node.getAttribute('href');
       if (/^https?:\/\//i.test(href) && !href.startsWith(window.location.origin)) {
@@ -47,7 +61,7 @@ export function sanitizeStoryHtml(html: string): string {
 export interface StoryHtmlProps {
   html: string;
   className?: string;
-  /** Called when a link with `data-story-goto="n"` (slide number from 1) is clicked. */
+  /** Called when a link to a slide (`#n`, or `data-story-goto="n"`; n from 1) is clicked. */
   onGoTo?: (index: number) => void;
 }
 
@@ -56,13 +70,15 @@ export interface StoryHtmlProps {
  */
 export class StoryHtml extends React.Component<StoryHtmlProps> {
   private onClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    const target = (event.target as HTMLElement).closest('[data-story-goto]');
-    if (target && this.props.onGoTo) {
+    const link = (event.target as HTMLElement).closest('a');
+    if (!link || !this.props.onGoTo) {
+      return;
+    }
+    const slide = link.getAttribute('data-story-goto') || (SLIDE_LINK.exec(link.getAttribute('href') || '') || [])[1];
+    const index = parseInt(slide, 10);
+    if (!isNaN(index)) {
       event.preventDefault();
-      const index = parseInt(target.getAttribute('data-story-goto'), 10);
-      if (!isNaN(index)) {
-        this.props.onGoTo(index - 1);
-      }
+      this.props.onGoTo(index - 1);
     }
   };
 

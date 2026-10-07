@@ -22,10 +22,12 @@ declare namespace StoryScssNamespace {
     progress: string;
     progressLabel: string;
     richText: string;
-    richTextArea: string;
-    richTextToolbar: string;
     slideCard: string;
+    slideCardBody: string;
     slideCardHeading: string;
+    slideFields: string;
+    slidePreview: string;
+    slidePreviewColumn: string;
     slideText: string;
     slideTitle: string;
     slidesHeading: string;

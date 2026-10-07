@@ -150,6 +150,19 @@ describe('StoryHtml', () => {
     expect(html).to.contain('data-story-goto="2"');
   });
 
+  it('keeps embedded images, editor alignment classes and slide links', () => {
+    const image = 'data:image/png;base64,iVBORw0KGgo=';
+    const html = sanitizeStoryHtml(
+      `<p class="ql-align-center evil"><img src="${image}" alt="map"></p>` +
+        '<p class="foo">x</p><img src="javascript:alert(1)"><a href="#3">to slide 3</a>'
+    );
+    expect(html).to.contain(`<img src="${image}" alt="map">`);
+    expect(html).to.contain('<p class="ql-align-center">');
+    expect(html).to.contain('<p>x</p>');
+    expect(html).not.to.contain('javascript:');
+    expect(html).to.contain('<a href="#3">to slide 3</a>');
+  });
+
   it('opens external links in a new tab', () => {
     const html = sanitizeStoryHtml('<a href="https://example.org">x</a>');
     expect(html).to.contain('target="_blank"');

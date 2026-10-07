@@ -5,10 +5,10 @@
  */
 
 import * as React from 'react';
-import * as classnames from 'classnames';
-import * as _ from 'lodash';
+import Quill from 'quill';
+import 'quill/dist/quill.snow.css';
 
-import Icon from 'platform/components/ui/icon/Icon';
+import { addNotification } from 'platform/components/ui/notification';
 
 import { sanitizeStoryHtml } from './StoryHtml';
 import * as styles from './Story.scss';
@@ -20,23 +20,70 @@ export interface RichTextEditorProps {
   placeholder?: string;
 }
 
-interface ToolbarAction {
-  icon: string;
-  title: string;
-  run: () => void;
+/** Longest side of an uploaded image; larger images are scaled down before they are embedded. */
+const MAX_IMAGE_SIZE = 1600;
+/** Images larger than this (as data URI) are refused: they would be stored in the graph. */
+const MAX_IMAGE_BYTES = 1.5 * 1024 * 1024;
+
+const IMAGE_URL_ICON =
+  '<svg viewBox="0 0 18 18"><rect class="ql-stroke" height="10" width="12" x="3" y="4"></rect>' +
+  '<circle class="ql-fill" cx="6" cy="7" r="1"></circle>' +
+  '<polyline class="ql-even ql-fill" points="5 12 5 11 7 9 8 10 11 7 13 9 13 12 5 12"></polyline>' +
+  '<line class="ql-stroke" x1="9" x2="16" y1="16" y2="16"></line></svg>';
+
+let iconsInstalled = false;
+
+function installIcons() {
+  if (!iconsInstalled) {
+    iconsInstalled = true;
+    const icons = Quill.import('ui/icons') as { [name: string]: string };
+    icons['imageUrl'] = IMAGE_URL_ICON;
+  }
 }
 
 /**
- * Small WYSIWYG editor for the text of a slide: paragraphs, two heading levels, bold, italic,
- * underline, lists and links. The HTML it produces is sanitized on every change.
+ * WYSIWYG editor for the text of a slide (Quill): headings, bold, italic, underline, lists,
+ * quotes, alignment, links and images. Images are uploaded from a file (scaled down and
+ * embedded in the text) or inserted by URL. The HTML it produces is sanitized.
  */
 export class RichTextEditor extends React.Component<RichTextEditorProps> {
-  private editable = React.createRef<HTMLDivElement>();
+  private container = React.createRef<HTMLDivElement>();
+  private quill: Quill | undefined;
   /** Last HTML sent with onChange, to tell external changes of `value` from our own. */
   private lastHtml: string | undefined;
 
   componentDidMount() {
+    installIcons();
+    this.quill = new Quill(this.container.current, {
+      theme: 'snow',
+      placeholder: this.props.placeholder || 'Text of the slide…',
+      modules: {
+        toolbar: {
+          container: [
+            [{ header: [2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }, 'blockquote'],
+            [{ align: [] }],
+            ['link', 'image', 'imageUrl'],
+            ['clean'],
+          ],
+          handlers: {
+            image: () => this.uploadImage(),
+            imageUrl: () => this.insertImageByUrl(),
+          },
+        },
+      },
+    });
+    const imageUrlButton = this.container.current.parentElement.querySelector('.ql-imageUrl');
+    if (imageUrlButton) {
+      imageUrlButton.setAttribute('title', 'Image from a URL');
+    }
+    const imageButton = this.container.current.parentElement.querySelector('.ql-image');
+    if (imageButton) {
+      imageButton.setAttribute('title', 'Upload an image');
+    }
     this.setContent(this.props.value);
+    this.quill.on('text-change', this.emitChange);
   }
 
   componentDidUpdate() {
@@ -45,97 +92,122 @@ export class RichTextEditor extends React.Component<RichTextEditorProps> {
     }
   }
 
-  shouldComponentUpdate(nextProps: RichTextEditorProps) {
-    // the content is managed by the browser; re-render only for external changes
-    return nextProps.value !== this.lastHtml || nextProps.placeholder !== this.props.placeholder;
-  }
-
-  private setContent(html: string) {
-    const clean = sanitizeStoryHtml(html);
-    this.lastHtml = html;
-    if (this.editable.current && this.editable.current.innerHTML !== clean) {
-      this.editable.current.innerHTML = clean;
+  componentWillUnmount() {
+    if (this.quill) {
+      this.quill.off('text-change', this.emitChange);
     }
   }
 
+  shouldComponentUpdate(nextProps: RichTextEditorProps) {
+    // Quill owns the content; re-render only for external changes
+    return nextProps.value !== this.lastHtml;
+  }
+
+  private setContent(html: string) {
+    this.lastHtml = html;
+    const delta = this.quill.clipboard.convert({ html: sanitizeStoryHtml(html || '') });
+    this.quill.setContents(delta, 'silent');
+  }
+
   private emitChange = () => {
-    const html = sanitizeStoryHtml(this.editable.current.innerHTML);
+    const html = this.quill.getLength() <= 1 ? '' : sanitizeStoryHtml(getHtml(this.quill));
     if (html !== this.lastHtml) {
       this.lastHtml = html;
       this.props.onChange(html);
     }
   };
 
-  private exec(command: string, argument?: string) {
-    this.editable.current.focus();
-    document.execCommand(command, false, argument);
-    this.emitChange();
+  private insertImage(src: string) {
+    const range = this.quill.getSelection(true);
+    this.quill.insertEmbed(range.index, 'image', src, 'user');
+    this.quill.setSelection(range.index + 1, 0, 'silent');
   }
 
-  private onPaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
-    // paste plain text: formatting copied from other pages is rarely wanted
-    event.preventDefault();
-    const text = event.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
-  };
+  private insertImageByUrl() {
+    const url = window.prompt('Image URL (https://… or /…)');
+    if (url && url.trim()) {
+      this.insertImage(url.trim());
+    }
+  }
 
-  private addLink = () => {
-    const url = window.prompt('Link URL (https://..., /resource/..., or a slide number like #2)');
-    if (!url) {
-      return;
-    }
-    const slide = /^#(\d+)$/.exec(url.trim());
-    if (slide) {
-      // links to slides are marked with data-story-goto, which the player handles
-      const text = _.escape(String(window.getSelection()) || `slide ${slide[1]}`);
-      this.exec('insertHTML', `<a href="#" data-story-goto="${slide[1]}">${text}</a>`);
-    } else {
-      this.exec('createLink', url.trim());
-    }
-  };
+  private uploadImage() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/png, image/jpeg, image/gif, image/webp';
+    input.onchange = () => {
+      const file = input.files && input.files[0];
+      if (!file) {
+        return;
+      }
+      readImage(file).then(
+        (dataUri) => {
+          if (dataUri.length > MAX_IMAGE_BYTES) {
+            addNotification({
+              level: 'warning',
+              message: 'The image is too large to be embedded, use a smaller one or insert it by URL.',
+              autoDismiss: 8,
+            });
+          } else {
+            this.insertImage(dataUri);
+          }
+        },
+        () => addNotification({ level: 'error', message: 'The image could not be read.', autoDismiss: 6 })
+      );
+    };
+    input.click();
+  }
 
   render() {
-    const actions: ToolbarAction[] = [
-      { icon: 'format_bold', title: 'Bold', run: () => this.exec('bold') },
-      { icon: 'format_italic', title: 'Italic', run: () => this.exec('italic') },
-      { icon: 'format_underlined', title: 'Underline', run: () => this.exec('underline') },
-      { icon: 'title', title: 'Heading', run: () => this.exec('formatBlock', '<h3>') },
-      { icon: 'notes', title: 'Paragraph', run: () => this.exec('formatBlock', '<p>') },
-      { icon: 'format_list_bulleted', title: 'Bulleted list', run: () => this.exec('insertUnorderedList') },
-      { icon: 'format_list_numbered', title: 'Numbered list', run: () => this.exec('insertOrderedList') },
-      { icon: 'link', title: 'Link', run: this.addLink },
-      { icon: 'link_off', title: 'Remove link', run: () => this.exec('unlink') },
-      { icon: 'format_clear', title: 'Clear formatting', run: () => this.exec('removeFormat') },
-    ];
     return (
       <div className={styles.richText}>
-        <div className={styles.richTextToolbar} role="toolbar">
-          {actions.map((action) => (
-            <button
-              key={action.icon}
-              type="button"
-              className="btn btn-default btn-xs"
-              title={action.title}
-              aria-label={action.title}
-              // keep the selection in the editable area
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={action.run}
-            >
-              <Icon iconType="rounded" iconName={action.icon} symbol />
-            </button>
-          ))}
-        </div>
-        <div
-          ref={this.editable}
-          className={classnames(styles.richTextArea, 'form-control')}
-          contentEditable
-          suppressContentEditableWarning
-          data-placeholder={this.props.placeholder || ''}
-          onInput={this.emitChange}
-          onBlur={this.emitChange}
-          onPaste={this.onPaste}
-        />
+        <div ref={this.container} />
       </div>
     );
   }
+}
+
+/**
+ * HTML of the editor content. Quill 2.0 writes every space as `&nbsp;`, which prevents line
+ * wrapping; they are turned back into spaces.
+ */
+function getHtml(quill: Quill): string {
+  return quill.getSemanticHTML().replace(/&nbsp;/g, ' ');
+}
+
+/**
+ * Reads an image file as a data URI, scaled down so that its longest side is at most
+ * MAX_IMAGE_SIZE. Animated GIFs and small images are kept as they are.
+ */
+function readImage(file: File): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const original = reader.result as string;
+      if (file.type === 'image/gif') {
+        resolve(original);
+        return;
+      }
+      const image = new Image();
+      image.onerror = () => reject(new Error('Invalid image'));
+      image.onload = () => {
+        const scale = Math.min(1, MAX_IMAGE_SIZE / Math.max(image.width, image.height));
+        if (scale === 1 && original.length < 300 * 1024) {
+          resolve(original);
+          return;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+        const context = canvas.getContext('2d');
+        // white background for transparent images converted to JPEG
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      image.src = original;
+    };
+    reader.readAsDataURL(file);
+  });
 }

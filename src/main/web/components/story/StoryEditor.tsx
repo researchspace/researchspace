@@ -18,6 +18,7 @@ import { DEFAULT_STORY_REPOSITORY, deleteStory, loadStory, saveStory } from './S
 import { Deleted, Saved } from './StoryEvents';
 import { resolveSlideTarget } from './StoryNavigation';
 import { RichTextEditor } from './RichTextEditor';
+import { StoryHtml } from './StoryHtml';
 import * as styles from './Story.scss';
 
 export interface StoryEditorConfig {
@@ -326,41 +327,64 @@ export class StoryEditor extends Component<StoryEditorProps, State> {
             </button>
           </span>
         </div>
-        <div className="panel-body">
-          <div className="form-group">
-            <label>Title</label>
-            <input
-              className="form-control"
-              value={slide.title}
-              onChange={(e) => this.updateSlide(index, { title: e.target.value })}
-            />
-          </div>
-          <div className="form-group">
-            <label>Text</label>
-            <RichTextEditor value={slide.text} onChange={(text) => this.updateSlide(index, { text })} />
-          </div>
-          <div className="form-group">
-            <label>State URL</label>
-            <div className="input-group">
+        <div className={classnames('panel-body', styles.slideCardBody)}>
+          <div className={styles.slideFields}>
+            <div className="form-group">
+              <label>Title</label>
               <input
                 className="form-control"
-                value={slide.stateUrl}
-                placeholder="Paste the URL of the page, e.g. /resource/:test?states=..."
-                onChange={(e) => this.updateSlide(index, { stateUrl: e.target.value })}
+                value={slide.title}
+                onChange={(e) => this.updateSlide(index, { title: e.target.value })}
               />
-              <span className="input-group-btn">
-                <a
-                  className={classnames('btn btn-default', { disabled: !target })}
-                  href={target ? target.url.href : undefined}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Open the state in a new tab"
-                >
-                  <Icon iconType="rounded" iconName="open_in_new" symbol />
-                </a>
-              </span>
             </div>
-            <small className="help-block">{stateSummary}</small>
+            <div className="form-group">
+              <label>Text</label>
+              <RichTextEditor value={slide.text} onChange={(text) => this.updateSlide(index, { text })} />
+              <small className="help-block">
+                Images can be uploaded (they are scaled down and stored with the story) or inserted by URL.
+                A link to <code>#2</code> opens slide 2.
+              </small>
+            </div>
+            <div className="form-group">
+              <label>State URL</label>
+              <div className="input-group">
+                <input
+                  className="form-control"
+                  value={slide.stateUrl}
+                  placeholder="Paste the URL of the page, e.g. /resource/:test?states=..."
+                  onChange={(e) => this.updateSlide(index, { stateUrl: e.target.value })}
+                />
+                <span className="input-group-btn">
+                  <a
+                    className={classnames('btn btn-default', { disabled: !target })}
+                    href={target ? target.url.href : undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open the state in a new tab"
+                  >
+                    <Icon iconType="rounded" iconName="open_in_new" symbol />
+                  </a>
+                </span>
+              </div>
+              <small className="help-block">{stateSummary}</small>
+            </div>
+          </div>
+          <div className={styles.slidePreviewColumn}>
+            <label>Preview</label>
+            <div className={classnames(styles.story, styles.slidePreview)}>
+              <div className={styles.header}>
+                <div className={styles.storyTitle}>{this.state.story.title}</div>
+              </div>
+              <div className={styles.body}>
+                {slide.title ? <h3 className={styles.slideTitle}>{slide.title}</h3> : null}
+                <StoryHtml className={styles.slideText} html={slide.text} />
+              </div>
+              <div className={styles.footer}>
+                <span className={styles.progressLabel}>
+                  {index + 1} / {total}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

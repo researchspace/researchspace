@@ -18,7 +18,7 @@
  */
 
 import * as Kefir from 'kefir';
-import { AuthoringState, ElementIri, ElementTypeIri, ElementModel } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { EntityMetadata } from './FieldConfigurationCommon';
 
@@ -28,9 +28,9 @@ export interface OntodiaPersistence {
 }
 
 export interface OntodiaPersistenceParams {
-  readonly entityMetadata: ReadonlyMap<ElementTypeIri, EntityMetadata>;
-  readonly state: AuthoringState;
-  fetchModel(iri: ElementIri): Kefir.Property<ElementModel>;
+  readonly entityMetadata: ReadonlyMap<Reactodia.ElementTypeIri, EntityMetadata>;
+  readonly state: Reactodia.AuthoringState;
+  fetchModel(iri: Reactodia.ElementIri): Kefir.Property<Reactodia.ElementModel>;
 }
 
 export interface OntodiaPersistenceResult {
@@ -38,5 +38,5 @@ export interface OntodiaPersistenceResult {
    * Result entities data after persistence operation completed.
    * `null` value for an entity indicates that it was deleted.
    */
-  finalizedEntities: Map<ElementIri, ElementModel | null>;
+  finalizedEntities: Map<Reactodia.ElementIri, Reactodia.ElementModel | null>;
 }

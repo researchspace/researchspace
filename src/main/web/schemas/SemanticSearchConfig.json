@@ -612,6 +612,16 @@
                     "const": "text",
                     "type": "string"
                 },
+                "minSearchTermLength": {
+                    "default": 3,
+                    "description": "Minimum number of input characters that triggers the search.",
+                    "type": "number"
+                },
+                "minTokenLength": {
+                    "default": "undefined (no filtering)",
+                    "description": "If tokenizeLuceneQuery is true, this parameter can be used to\nfilter out tokens shorter than the specified length.\n\nWhen set, e.g. minTokenLength=3, and the input string is \"an apple\",\nonly \"apple*\" will be propagated to the query.\n\nWhen undefined (default), no token length filtering is applied,\npreserving backward-compatible behavior where all tokens are included.",
+                    "type": "number"
+                },
                 "queryPattern": {
                     "default": "`$subject ?__relation__ ?__value__ .`",
                     "description": "Injected variables:\n  * `__value__` - string literal with user input. User input is split into words and interleaved with `*`. E.g for the user input \"Hello World\", injected literal will be \"Hello* World*\"",
@@ -628,7 +638,9 @@
                 "queryPattern",
                 "helpPage",
                 "escapeLuceneSyntax",
-                "tokenizeLuceneQuery"
+                "minSearchTermLength",
+                "tokenizeLuceneQuery",
+                "minTokenLength"
             ],
             "required": [
                 "kind",

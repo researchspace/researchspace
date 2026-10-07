@@ -47,137 +47,137 @@ import com.google.inject.Provider;
 
 public abstract class AbstractServiceWrappingSail<C extends AbstractServiceWrappingSailConfig> extends AbstractSail {
 
-    private C config;
-    private ServiceDescriptor serviceDescriptor = null;
+  private C config;
+  private ServiceDescriptor serviceDescriptor = null;
 
-    @Inject
-    protected Provider<MpSparqlServiceRegistry> serviceRegistryProvider;
+  @Inject
+  protected Provider<MpSparqlServiceRegistry> serviceRegistryProvider;
 
-    @Inject
-    private Provider<SecretResolver> secretResolver;
+  @Inject
+  protected Provider<SecretResolver> secretResolver;
 
-    protected Map<IRI, Parameter> mapOutputParametersByProperty = null;
-    protected Map<IRI, Parameter> mapInputParametersByProperty = null;
-    protected Optional<Parameter> subjectParameter = null;
+  protected Map<IRI, Parameter> mapOutputParametersByProperty = null;
+  protected Map<IRI, Parameter> mapInputParametersByProperty = null;
+  protected Optional<Parameter> subjectParameter = null;
 
-    public AbstractServiceWrappingSail(C config) {
-        this.config = config;
+  public AbstractServiceWrappingSail(C config) {
+    this.config = config;
 
+  }
+
+  @Override
+  protected void initializeInternal() throws SailException {
+    this.resolveSecrets(config);
+    this.initParameters();
+  }
+
+  private void resolveSecrets(C config) {
+    if (config.getUnResolvedUsername() != null && config.getUnResolvedPassword() != null) {
+      String username = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+          config.getUnResolvedUsername());
+      config.setUsername(username);
+      String password = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+          config.getUnResolvedPassword());
+      config.setPassword(password);
     }
+  }
 
-    @Override
-    protected void initializeInternal() throws SailException {
-        this.resolveSecrets(config);
-        this.initParameters();
-    }
+  @Override
+  public boolean isWritable() throws SailException {
+    return false;
+  }
 
-    private void resolveSecrets(C config) {
-        if (config.getUnResolvedUsername() != null && config.getUnResolvedPassword() != null) {
-            String username = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
-                    config.getUnResolvedUsername());
-            config.setUsername(username);
-            String password = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
-                    config.getUnResolvedPassword());
-            config.setPassword(password);
-        }
-    }
+  @Override
+  public ValueFactory getValueFactory() {
+    return SimpleValueFactory.getInstance();
+  }
 
-    @Override
-    public boolean isWritable() throws SailException {
-        return false;
-    }
+  @Override
+  protected void shutDownInternal() throws SailException {
 
-    @Override
-    public ValueFactory getValueFactory() {
-        return SimpleValueFactory.getInstance();
-    }
+  }
 
-    @Override
-    protected void shutDownInternal() throws SailException {
-
-    }
-
-    public ServiceDescriptor getServiceDescriptor() {
-        if ((serviceDescriptor == null) && (this.config.getServiceID() != null) && (serviceRegistryProvider != null)) {
-            MpSparqlServiceRegistry registry = serviceRegistryProvider.get();
-            if (registry != null) {
-                registry.getDescriptorForIri(this.config.getServiceID()).ifPresent(descriptor -> {
-                    this.serviceDescriptor = descriptor;
-                });
-            }
-        }
-        return serviceDescriptor;
-    }
-
-    public void setServiceDescriptor(ServiceDescriptor serviceDescriptor) {
-        this.serviceDescriptor = serviceDescriptor;
-    }
-
-    protected void initParameters() {
-        this.mapOutputParametersByProperty = Maps.newHashMap();
-        this.mapInputParametersByProperty = Maps.newHashMap();
-
-        ServiceDescriptor descriptor = this.getServiceDescriptor();
-
-        if (descriptor == null) {
-            throw new IllegalStateException("Service descriptor is not configured or does not exist. Hint: does "
-                    + this.config.getServiceID() + " point to an existing service descriptor?");
-        }
-
-        // Collect definitions of input parameters from the service descriptor
-        readParametersFromConfig(descriptor, descriptor.getInputParameters(), mapInputParametersByProperty);
-        // Collect definitions of output parameters from the service descriptor
-        readParametersFromConfig(descriptor, descriptor.getOutputParameters(), mapOutputParametersByProperty);
-
-        subjectParameter = readSubjectParameter(descriptor);
-    }
-
-    protected void readParametersFromConfig(ServiceDescriptor descriptor, Map<String, Parameter> parametersById,
-            Map<IRI, Parameter> parametersByPropertyIri) {
-        List<StatementPattern> statementPatterns = descriptor.getStatementPatterns();
-
-        parametersById.entrySet().stream().forEach(entry -> {
-            Parameter param = entry.getValue();
-
-            parametersById.put(param.getParameterName(), param);
-
-            Optional<IRI> propertyIri = getPropertyIRI4Parameter(param.getParameterName(), statementPatterns);
-            if (propertyIri.isPresent()) {
-                parametersByPropertyIri.put(propertyIri.get(), param);
-            }
+  public ServiceDescriptor getServiceDescriptor() {
+    if ((serviceDescriptor == null) && (this.config.getServiceID() != null) && (serviceRegistryProvider != null)) {
+      MpSparqlServiceRegistry registry = serviceRegistryProvider.get();
+      if (registry != null) {
+        registry.getDescriptorForIri(this.config.getServiceID()).ifPresent(descriptor -> {
+          this.serviceDescriptor = descriptor;
         });
+      }
+    }
+    return serviceDescriptor;
+  }
+
+  public void setServiceDescriptor(ServiceDescriptor serviceDescriptor) {
+    this.serviceDescriptor = serviceDescriptor;
+  }
+
+  protected void initParameters() {
+    this.mapOutputParametersByProperty = Maps.newHashMap();
+    this.mapInputParametersByProperty = Maps.newHashMap();
+
+    ServiceDescriptor descriptor = this.getServiceDescriptor();
+
+    if (descriptor == null) {
+      throw new IllegalStateException("Service descriptor is not configured or does not exist. Hint: does "
+          + this.config.getServiceID() + " point to an existing service descriptor?");
     }
 
-    protected Optional<Parameter> readSubjectParameter(ServiceDescriptor descriptor) {
-        Map<String, Parameter> outputParameters = descriptor.getOutputParameters();
+    // Collect definitions of input parameters from the service descriptor
+    readParametersFromConfig(descriptor, descriptor.getInputParameters(), mapInputParametersByProperty);
+    // Collect definitions of output parameters from the service descriptor
+    readParametersFromConfig(descriptor, descriptor.getOutputParameters(), mapOutputParametersByProperty);
 
-        return outputParameters.entrySet().stream().map(entry -> entry.getValue())
-                .filter(param -> (!param.getSubjectPatterns().isEmpty() && param.getObjectPatterns().isEmpty()))
-                .findFirst();
+    subjectParameter = readSubjectParameter(descriptor);
+  }
 
-    }
+  protected void readParametersFromConfig(ServiceDescriptor descriptor, Map<String, Parameter> parametersById,
+      Map<IRI, Parameter> parametersByPropertyIri) {
+    List<StatementPattern> statementPatterns = descriptor.getStatementPatterns();
 
-    protected Optional<IRI> getPropertyIRI4Parameter(String parameterName, List<StatementPattern> statementPatterns) {
-        return statementPatterns.stream()
-                .filter(stmtPattern -> !stmtPattern.getObjectVar().hasValue()
-                        && stmtPattern.getObjectVar().getName().equals(parameterName)
-                        && stmtPattern.getPredicateVar().hasValue())
-                .map(stmtPattern -> stmtPattern.getPredicateVar().getValue()).map(pred -> (IRI) pred).findFirst();
-    }
+    parametersById.entrySet().stream().forEach(entry -> {
+      Parameter param = entry.getValue();
 
-    public C getConfig() {
-        return config;
-    }
+      parametersById.put(param.getParameterName(), param);
 
-    public Map<IRI, Parameter> getMapOutputParametersByProperty() {
-        return mapOutputParametersByProperty;
-    }
+      Optional<IRI> propertyIri = getPropertyIRI4Parameter(param.getParameterName(), statementPatterns);
+      if (propertyIri.isPresent()) {
+        parametersByPropertyIri.put(propertyIri.get(), param);
+      }
+    });
+  }
 
-    public Map<IRI, Parameter> getMapInputParametersByProperty() {
-        return mapInputParametersByProperty;
-    }
+  protected Optional<Parameter> readSubjectParameter(ServiceDescriptor descriptor) {
+    Map<String, Parameter> outputParameters = descriptor.getOutputParameters();
 
-    public Optional<Parameter> getSubjectParameter() {
-        return subjectParameter;
-    }
+    return outputParameters.entrySet().stream().map(entry -> entry.getValue())
+        .filter(param -> (!param.getSubjectPatterns().isEmpty() && param.getObjectPatterns().isEmpty()))
+        .findFirst();
+
+  }
+
+  protected Optional<IRI> getPropertyIRI4Parameter(String parameterName, List<StatementPattern> statementPatterns) {
+    return statementPatterns.stream()
+        .filter(stmtPattern -> !stmtPattern.getObjectVar().hasValue()
+            && stmtPattern.getObjectVar().getName().equals(parameterName)
+            && stmtPattern.getPredicateVar().hasValue())
+        .map(stmtPattern -> stmtPattern.getPredicateVar().getValue()).map(pred -> (IRI) pred).findFirst();
+  }
+
+  public C getConfig() {
+    return config;
+  }
+
+  public Map<IRI, Parameter> getMapOutputParametersByProperty() {
+    return mapOutputParametersByProperty;
+  }
+
+  public Map<IRI, Parameter> getMapInputParametersByProperty() {
+    return mapInputParametersByProperty;
+  }
+
+  public Optional<Parameter> getSubjectParameter() {
+    return subjectParameter;
+  }
 }

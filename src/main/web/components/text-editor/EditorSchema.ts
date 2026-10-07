@@ -107,7 +107,6 @@ export const schema: Slate.SchemaProperties = {
           match: [
             {
               object: 'text',
-              text: (s: string) => s !== '',
             } as any,
             {
               object: 'inline',
@@ -115,17 +114,7 @@ export const schema: Slate.SchemaProperties = {
             },
           ]
         },
-      ],
-      normalize: (editor: Slate.Editor, error: Slate.SlateError) => {
-        console.log('error in schema');
-        console.log(error.code)
-        switch (error.code) {
-          case 'child_text_invalid' as any:
-            console.log('adding empty node')
-            editor.setNodeByKey(error.node.key, Block.empty);
-            return;
-        }
-      }
+      ]
     },
     [Block.h1]: {
       nodes: [{ match: { object: 'text' } }]
@@ -162,3 +151,4 @@ export const schema: Slate.SchemaProperties = {
     },
   },
 };
+

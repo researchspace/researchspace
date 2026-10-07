@@ -131,6 +131,14 @@ public interface ConfigurationGroup {
      */
     List<String> getStringList(String paramName, List<String> fallbackValue);
 
+
+    /**
+     * Returns the value of the parameter interpreted as a provided enum class value.
+     *
+     * @see ConfigurationGroup#getString(String, String)
+     */
+    <T extends Enum<T>> T getEnum(String paramName, Class<T> enumClass, T fallbackValue);
+
     /**
      * Returns static type of the configuration parameter.
      *

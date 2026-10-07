@@ -20,7 +20,7 @@
 package org.researchspace.config.groups;
 
 public enum ConfigurationParameterType {
-    STRING("string"), BOOLEAN("boolean"), INTEGER("integer"), STRING_LIST("stringList");
+    STRING("string"), BOOLEAN("boolean"), INTEGER("integer"), ENUM("enum"), STRING_LIST("stringList");
 
     private String typeName;
 

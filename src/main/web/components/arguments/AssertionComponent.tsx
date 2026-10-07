@@ -487,14 +487,18 @@ export class AssertionComponent extends Component<Props, State> {
           Add semantic narrative...
         </a>
         {addingNarrative ? (
-          <Panel collapsible expanded={addingNarrative}>
-            <DropArea
-              alwaysVisible={true}
-              query={SEMANTIC_NARRATIVE_ASK_QUERY}
-              repository="assets"
-              onDrop={(narrative) => this.setState({ narrative })}
-              dropMessage="You can drag and drop Semantic Narrative from Clipboard here, to use it as a description"
-            />
+          <Panel expanded={addingNarrative}>
+            <Panel.Collapse>
+              <Panel.Body>
+                <DropArea
+                  alwaysVisible={true}
+                  query={SEMANTIC_NARRATIVE_ASK_QUERY}
+                  repository="assets"
+                  onDrop={(narrative) => this.setState({ narrative })}
+                  dropMessage="You can drag and drop Semantic Narrative from Clipboard here, to use it as a description"
+                />
+              </Panel.Body>
+            </Panel.Collapse>
           </Panel>
         ) : null}
       </div>

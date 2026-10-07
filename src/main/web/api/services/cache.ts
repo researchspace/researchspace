@@ -23,6 +23,7 @@ import * as Kefir from 'kefir';
 import { Rdf } from 'platform/api/rdf';
 
 const POST_INVALIDATE_ALL = '/rest/cache/all/invalidate';
+const POST_INVALIDATE_RESOURCES = '/rest/cache/resources/invalidate';
 
 /**
  * Invalidate all caches.
@@ -37,6 +38,16 @@ export function invalidateAllCaches() {
 export function invalidateCacheForResource(resource: Rdf.Iri) {
   const url = POST_INVALIDATE_ALL + '/' + encodeURIComponent(resource.value);
   return sendRequest(url);
+}
+
+/**
+ * Invalidate all caches for several resources in a single request.
+ */
+export function invalidateCacheForResources(resources: ReadonlyArray<Rdf.Iri>) {
+  const req = request.post(POST_INVALIDATE_RESOURCES)
+    .type('application/json')
+    .send(resources.map((r) => r.value));
+  return Kefir.fromNodeCallback<string>((cb) => req.end((err, res) => cb(err, res ? res.text : undefined))).toProperty();
 }
 
 function sendRequest(url: string): Kefir.Property<string> {

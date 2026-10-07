@@ -19,7 +19,7 @@
 import * as React from 'react';
 import { findDOMNode } from 'react-dom';
 import * as Slate from 'slate';
-import { RenderNodeProps } from 'slate-react';
+import { RenderInlineProps } from 'slate-react';
 import { Overlay, Popover, FormControl, ButtonGroup, Button } from 'react-bootstrap';
 
 import { Inline } from './EditorSchema';
@@ -27,8 +27,7 @@ import { Inline } from './EditorSchema';
 import * as styles from './TextEditor.scss';
 import Icon from '../ui/icon/Icon';
 
-export interface ExternalLinkProps extends RenderNodeProps {
-  editor: Slate.Editor
+export interface ExternalLinkProps extends RenderInlineProps {
 }
 
 interface ExternalLinkState {

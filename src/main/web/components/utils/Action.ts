@@ -18,6 +18,7 @@
  */
 
 import * as Kefir from 'kefir';
+import * as _ from 'lodash';
 
 export interface Action<T> {
   (args: T): void;
@@ -29,7 +30,7 @@ export function Action<T>(initalValue?: T): Action<T> {
   const fn: any = function (args: T): void {
     pool.plug(Kefir.constant(args));
   };
-  if (initalValue) {
+  if (!_.isUndefined(initalValue)) {
     fn(initalValue);
   }
   fn.$property = pool.toProperty();

@@ -118,6 +118,8 @@ public class LabelCacheTest extends AbstractRepositoryBackedIntegrationTest {
         namespaceRule.set("rdfs", RDFS.NAMESPACE);
         namespaceRule.set("skos", SKOS.NAMESPACE);
         namespaceRule.set("myns", CUSTOM_NAMESPACE);
+
+        setUIConfigurationParameter("preferredLabelsResolutionStrategy", "PREFER_LANGUAGE");
     }
 
     @After
@@ -622,6 +624,309 @@ public class LabelCacheTest extends AbstractRepositoryBackedIntegrationTest {
         Assert.assertEquals(IRI1_LABEL_NOLANG, label.get().stringValue());
     }
 
+    /**
+     * Test logic when PREFER_PROPERTY strategy is selected.
+     * 
+     * Config:
+     * - preferredLabels: RDFS.LABEL, SKOS.ALT_LABEL
+     * - preferredLanguages: en
+     * - strategy: PREFER_PROPERTY
+     * 
+     * Data:
+     * - RDFS.LABEL: "label (de)" (worse language match)
+     * - SKOS.ALT_LABEL: "label (en)" (better language match)
+     * 
+     * Expectation:
+     * The RDFS.LABEL (de) should be chosen because RDFS.LABEL has higher property priority,
+     * overriding the better language match of SKOS.ALT_LABEL.
+     */
+    @Test
+    public void testPreferPropertyStrategy01() throws Exception {
+        setPreferredLabelsResolutionStrategyProperty();
+        setPreferredLabelRdfsLabelSkosLabelCustomLabel(); // rdfs > skos > custom
+        setPreferredLanguageEn(); // en
+
+        // RDFS label has worse language match (de) than SKOS label (en)
+        // But PREFER_PROPERTY should pick RDFS label because it is first in preferredLabels list
+        addIri1DeLiteral(RDFS.LABEL, IRI1_LABEL_DE + "-rdfs");
+        addIri1EnLiteral(SKOS.ALT_LABEL, IRI1_LABEL_EN + "-skos");
+
+        final Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), null);
+
+        Assert.assertTrue(label.isPresent());
+        Assert.assertEquals(IRI1_LABEL_DE + "-rdfs", label.get().stringValue());
+    }
+
+    /**
+     * Test logic when PREFER_PROPERTY strategy is selected.
+     * 
+     * Config:
+     * - preferredLabels: RDFS.LABEL, SKOS.ALT_LABEL
+     * - preferredLanguages: en
+     * - strategy: PREFER_PROPERTY
+     * 
+     * Data:
+     * - RDFS.LABEL: (missing)
+     * - SKOS.ALT_LABEL: "label (en)"
+     * 
+     * Expectation:
+     * The SKOS.ALT_LABEL (en) should be chosen because the higher priority property (RDFS.LABEL)
+     * is missing.
+     */
+    @Test
+    public void testPreferPropertyStrategy02() throws Exception {
+        setPreferredLabelsResolutionStrategyProperty();
+        setPreferredLabelRdfsLabelSkosLabelCustomLabel(); // rdfs > skos > custom
+        setPreferredLanguageEn(); // en
+
+        // RDFS label is missing. SKOS label (en) is present.
+        // Should pick SKOS label.
+        addIri1EnLiteral(SKOS.ALT_LABEL, IRI1_LABEL_EN + "-skos");
+
+        final Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), null);
+
+        Assert.assertTrue(label.isPresent());
+        Assert.assertEquals(IRI1_LABEL_EN + "-skos", label.get().stringValue());
+    }
+
+    /**
+     * Test logic when PREFER_PROPERTY strategy is selected.
+     * 
+     * Config:
+     * - preferredLabels: RDFS.LABEL, SKOS.ALT_LABEL
+     * - preferredLanguages: en
+     * - strategy: PREFER_PROPERTY
+     * 
+     * Data:
+     * - RDFS.LABEL: "label (de)", "label (en)"
+     * - SKOS.ALT_LABEL: "label (en)"
+     * 
+     * Expectation:
+     * The RDFS.LABEL (en) should be chosen because RDFS.LABEL has higher property priority,
+     * and within that property, "en" matches the preferred language.
+     */
+    @Test
+    public void testPreferPropertyStrategy03() throws Exception {
+        setPreferredLabelsResolutionStrategyProperty();
+        setPreferredLabelRdfsLabelSkosLabelCustomLabel(); // rdfs > skos > custom
+        setPreferredLanguageEn(); // en
+
+        // RDFS label has both DE and EN. SKOS has EN.
+        // Should pick RDFS label (EN) because RDFS is preferred, and within RDFS, EN is preferred.
+        addIri1DeLiteral(RDFS.LABEL, IRI1_LABEL_DE + "-rdfs");
+        addIri1EnLiteral(RDFS.LABEL, IRI1_LABEL_EN + "-rdfs");
+        addIri1EnLiteral(SKOS.ALT_LABEL, IRI1_LABEL_EN + "-skos");
+
+        final Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), null);
+
+        Assert.assertTrue(label.isPresent());
+        Assert.assertEquals(IRI1_LABEL_EN + "-rdfs", label.get().stringValue());
+    }
+
+    /**
+     * Test logic when PREFER_PROPERTY strategy is selected.
+     * 
+     * Config:
+     * - preferredLabels: RDFS.LABEL, SKOS.ALT_LABEL
+     * - preferredLanguages: en
+     * - strategy: PREFER_PROPERTY
+     * 
+     * Data:
+     * - RDFS.LABEL: "label (fr)" (language not in preferred list)
+     * - SKOS.ALT_LABEL: "label (en)" (preferred language)
+     * 
+     * Expectation:
+     * The RDFS.LABEL (fr) should be chosen because RDFS.LABEL has higher property priority
+     * and contains a value, even if the language is not preferred.
+     */
+    @Test
+    public void testPreferPropertyStrategy04() throws Exception {
+        setPreferredLabelsResolutionStrategyProperty();
+        setPreferredLabelRdfsLabelSkosLabelCustomLabel(); // rdfs > skos > custom
+        setPreferredLanguageEn(); // en
+
+        // RDFS label has FR (not in preferred list). SKOS label has EN.
+        // PREFER_PROPERTY should pick RDFS because it is higher priority property and has a value,
+        // even if the language is not preferred.
+        addIri1FrLiteral(RDFS.LABEL, IRI1_LABEL_FR + "-rdfs");
+        addIri1EnLiteral(SKOS.ALT_LABEL, IRI1_LABEL_EN + "-skos");
+
+        final Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), null);
+
+        Assert.assertTrue(label.isPresent());
+        Assert.assertEquals(IRI1_LABEL_FR + "-rdfs", label.get().stringValue());
+    }
+
+    /**
+     * Test logic when PREFER_PROPERTY strategy is selected with multiple preferred languages.
+     * 
+     * Config:
+     * - preferredLabels: RDFS.LABEL, SKOS.ALT_LABEL
+     * - preferredLanguages: en, fr, de
+     * - strategy: PREFER_PROPERTY
+     * 
+     * Data:
+     * - RDFS.LABEL: "label (de)" (3rd preferred language)
+     * - SKOS.ALT_LABEL: "label (en)" (1st preferred language)
+     * 
+     * Expectation:
+     * The RDFS.LABEL (de) should be chosen.
+     * Even though SKOS has a better language match (en is #1, de is #3),
+     * RDFS is the higher priority property. In PREFER_PROPERTY mode,
+     * property priority takes precedence over language priority between properties.
+     */
+    @Test
+    public void testPreferPropertyStrategy05_MultiLang() throws Exception {
+        setPreferredLabelsResolutionStrategyProperty();
+        setPreferredLabelRdfsLabelSkosLabelCustomLabel(); // rdfs > skos > custom
+        setUIConfigurationParameter("preferredLanguages", Lists.newArrayList("en", "fr", "de"));
+
+        addIri1DeLiteral(RDFS.LABEL, IRI1_LABEL_DE + "-rdfs");
+        addIri1EnLiteral(SKOS.ALT_LABEL, IRI1_LABEL_EN + "-skos");
+
+        final Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), null);
+
+        Assert.assertTrue(label.isPresent());
+        Assert.assertEquals(IRI1_LABEL_DE + "-rdfs", label.get().stringValue());
+    }
+
+    /**
+     * Test logic when PREFER_PROPERTY strategy is selected with multiple preferred languages.
+     * 
+     * Config:
+     * - preferredLabels: RDFS.LABEL, SKOS.ALT_LABEL
+     * - preferredLanguages: en, fr, de
+     * - strategy: PREFER_PROPERTY
+     * 
+     * Data:
+     * - RDFS.LABEL: "label (de)" (3rd pref lang), "label (fr)" (2nd pref lang)
+     * - SKOS.ALT_LABEL: "label (en)" (1st pref lang)
+     * 
+     * Expectation:
+     * The RDFS.LABEL (fr) should be chosen.
+     * RDFS is selected (highest priority property).
+     * Within RDFS, "fr" (rank 2) is preferred over "de" (rank 3).
+     * The SKOS label (en, rank 1) is ignored because it's on a lower priority property.
+     */
+    @Test
+    public void testPreferPropertyStrategy06_MultiLang() throws Exception {
+        setPreferredLabelsResolutionStrategyProperty();
+        setPreferredLabelRdfsLabelSkosLabelCustomLabel(); // rdfs > skos > custom
+        setUIConfigurationParameter("preferredLanguages", Lists.newArrayList("en", "fr", "de"));
+
+        addIri1DeLiteral(RDFS.LABEL, IRI1_LABEL_DE + "-rdfs");
+        addIri1FrLiteral(RDFS.LABEL, IRI1_LABEL_FR + "-rdfs");
+        addIri1EnLiteral(SKOS.ALT_LABEL, IRI1_LABEL_EN + "-skos");
+
+        final Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), null);
+
+        Assert.assertTrue(label.isPresent());
+        Assert.assertEquals(IRI1_LABEL_FR + "-rdfs", label.get().stringValue());
+    }
+
+    /**
+     * Test logic when PREFER_PROPERTY strategy is selected with multiple preferred languages.
+     * 
+     * Config:
+     * - preferredLabels: RDFS.LABEL, SKOS.ALT_LABEL
+     * - preferredLanguages: en, fr, de
+     * - strategy: PREFER_PROPERTY
+     * 
+     * Data:
+     * - RDFS.LABEL: (missing)
+     * - SKOS.ALT_LABEL: "label (de)" (3rd pref lang), "label (fr)" (2nd pref lang)
+     * 
+     * Expectation:
+     * The SKOS.ALT_LABEL (fr) should be chosen.
+     * RDFS is missing, so it falls back to SKOS.
+     * Within SKOS, "fr" (rank 2) is preferred over "de" (rank 3).
+     */
+    @Test
+    public void testPreferPropertyStrategy07_MultiLang() throws Exception {
+        setPreferredLabelsResolutionStrategyProperty();
+        setPreferredLabelRdfsLabelSkosLabelCustomLabel(); // rdfs > skos > custom
+        setUIConfigurationParameter("preferredLanguages", Lists.newArrayList("en", "fr", "de"));
+
+        addIri1DeLiteral(SKOS.ALT_LABEL, IRI1_LABEL_DE + "-skos");
+        addIri1FrLiteral(SKOS.ALT_LABEL, IRI1_LABEL_FR + "-skos");
+
+        final Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), null);
+
+        Assert.assertTrue(label.isPresent());
+        Assert.assertEquals(IRI1_LABEL_FR + "-skos", label.get().stringValue());
+    }
+
+    /**
+     * Test logic when PREFER_PROPERTY strategy is selected and a preferred language is passed to getLabel.
+     * 
+     * Config:
+     * - preferredLabels: RDFS.LABEL, SKOS.ALT_LABEL
+     * - preferredLanguages: en, de
+     * - strategy: PREFER_PROPERTY
+     * 
+     * Call: getLabel(..., "fr")
+     * Effective Language Priority: fr, en, de
+     * 
+     * Data:
+     * - RDFS.LABEL: "label (en)" (2nd pref lang), "label (fr)" (1st pref lang)
+     * - SKOS.ALT_LABEL: "label (fr)" (1st pref lang)
+     * 
+     * Expectation:
+     * The RDFS.LABEL (fr) should be chosen.
+     * RDFS is the highest priority property.
+     * Within RDFS, "fr" matches the passed preferred language (rank 0), so it is chosen over "en".
+     */
+    @Test
+    public void testPreferPropertyStrategy08_OverrideLang() throws Exception {
+        setPreferredLabelsResolutionStrategyProperty();
+        setPreferredLabelRdfsLabelSkosLabelCustomLabel(); // rdfs > skos > custom
+        setUIConfigurationParameter("preferredLanguages", Lists.newArrayList("en", "de"));
+
+        addIri1EnLiteral(RDFS.LABEL, IRI1_LABEL_EN + "-rdfs");
+        addIri1FrLiteral(RDFS.LABEL, IRI1_LABEL_FR + "-rdfs");
+        addIri1FrLiteral(SKOS.ALT_LABEL, IRI1_LABEL_FR + "-skos");
+
+        final Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), "fr");
+
+        Assert.assertTrue(label.isPresent());
+        Assert.assertEquals(IRI1_LABEL_FR + "-rdfs", label.get().stringValue());
+    }
+
+    /**
+     * Test logic when PREFER_PROPERTY strategy is selected and a preferred language is passed to getLabel.
+     * 
+     * Config:
+     * - preferredLabels: RDFS.LABEL, SKOS.ALT_LABEL
+     * - preferredLanguages: en, de
+     * - strategy: PREFER_PROPERTY
+     * 
+     * Call: getLabel(..., "fr")
+     * Effective Language Priority: fr, en, de
+     * 
+     * Data:
+     * - RDFS.LABEL: "label (en)" (2nd pref lang)
+     * - SKOS.ALT_LABEL: "label (fr)" (1st pref lang)
+     * 
+     * Expectation:
+     * The RDFS.LABEL (en) should be chosen.
+     * RDFS is the highest priority property. It has a label.
+     * Even though SKOS has a better language match ("fr"), property priority takes precedence.
+     */
+    @Test
+    public void testPreferPropertyStrategy09_OverrideLang_PropertyPriority() throws Exception {
+        setPreferredLabelsResolutionStrategyProperty();
+        setPreferredLabelRdfsLabelSkosLabelCustomLabel(); // rdfs > skos > custom
+        setUIConfigurationParameter("preferredLanguages", Lists.newArrayList("en", "de"));
+
+        addIri1EnLiteral(RDFS.LABEL, IRI1_LABEL_EN + "-rdfs");
+        addIri1FrLiteral(SKOS.ALT_LABEL, IRI1_LABEL_FR + "-skos");
+
+        final Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), "fr");
+
+        Assert.assertTrue(label.isPresent());
+        Assert.assertEquals(IRI1_LABEL_EN + "-rdfs", label.get().stringValue());
+    }
+
     @Test
     @Ignore
     public void testPerformance() throws Exception {
@@ -697,6 +1002,10 @@ public class LabelCacheTest extends AbstractRepositoryBackedIntegrationTest {
         Field f = LabelCache.class.getDeclaredField("cache");
         f.setAccessible(true);
         return (ResourcePropertyCache<Object, Literal>) f.get(labelCache);
+    }
+
+    void setPreferredLabelsResolutionStrategyProperty() {
+        setUIConfigurationParameter("preferredLabelsResolutionStrategy", "PREFER_PROPERTY");
     }
 
     void setPreferredLabelRdfsLabel() {

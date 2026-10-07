@@ -62,6 +62,13 @@ export interface WorkspaceHandlers {
   deleteAnnotation: (iri: Rdf.Iri) => Kefir.Property<void>;
 }
 
+export interface SidebarTab {
+  readonly key: string;
+  readonly label: string;
+  readonly iconUrl?: string;
+  readonly template: string;
+}
+
 export interface AnnotationBodyType {
   readonly iri: Rdf.Iri;
   readonly label: string;

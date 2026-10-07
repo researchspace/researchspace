@@ -29,6 +29,9 @@ var webpack = require('webpack'),
 module.exports = function (defaults) {
     const webpackConfig = webpackConfigFn(defaults);
     webpackConfig.mode = 'development';
+    // Use a separate cache for tests to avoid conflicts with the main build cache
+    // which contains MiniCssExtractPlugin dependencies that are not available here
+    webpackConfig.cache.cacheDirectory = path.resolve(defaults.ROOT_DIR, 'build/webpack_karma_cache');
     delete webpackConfig.optimization.splitChunks;
     
     // Replace MiniCssExtractPlugin.loader with style-loader for tests

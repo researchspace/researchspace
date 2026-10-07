@@ -11,7 +11,7 @@
     <div class="resource-card__header-actions">
         <div class="resource-card__buttons-container">   
           {{#if knowledgeMapCard}}
-            <mp-draggable iri='{{iri}}'>
+            <mp-draggable iri='{{iri}}' drag-image-selector='.resource-card'>
               <button type="button" class="btn btn-default resource-card__button" title="Drag item {{#if knowledgeMapCard}}outside the map{{/if}}">
                 <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
               </button>
@@ -42,7 +42,7 @@
       <div class="resource-card__buttons-container" style="{{#if clipboardList}}gap:5px{{/if}}">
     
         {{#if (or narrativeCard knowledgeMapCard)}}
-          <mp-draggable iri='{{iri}}'>
+          <mp-draggable iri='{{iri}}' drag-image-selector='.resource-card'>
             <button type="button" class="btn btn-default resource-card__button" title="Drag item {{#if knowledgeMapCard}}outside the map{{/if}}">
               <rs-icon icon-type="rounded" icon-name="drag_pan" symbol="true"></rs-icon>
             </button>
@@ -162,11 +162,17 @@
             </mp-resource-thumbnail>
           {{/if}}
         {{else}}
-          <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
-            <mp-resource-thumbnail-fallback>
-              [[> defaultCardIcon]]
-            </mp-resource-thumbnail-fallback>
-          </mp-resource-thumbnail>
+          {{#if imageAuthoritative}}
+            [[!-- authoring in-session: the in-memory image field is empty and trusted, so
+                  don't fall back to the server thumbnail (still the pre-edit image until saved) --]]
+            [[> defaultCardIcon]]
+          {{else}}
+            <mp-resource-thumbnail iri='{{iri}}' class="resource-card__thumbnail">
+              <mp-resource-thumbnail-fallback>
+                [[> defaultCardIcon]]
+              </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>
+          {{/if}}
         {{/if}}
 
       {{else}}

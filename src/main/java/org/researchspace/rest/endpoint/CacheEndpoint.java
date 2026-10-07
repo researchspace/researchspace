@@ -21,12 +21,16 @@ package org.researchspace.rest.endpoint;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +40,8 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.security.Permissions.CACHES;
 
@@ -79,6 +85,24 @@ public class CacheEndpoint {
             logger.debug("Cache invalidation for " + resource.stringValue() + " has been triggered by a REST call.");
             cacheManager.invalidateResources(Collections.singleton(resource));
             return Response.ok("Cache has been invalidated").build();
+        } catch (Exception e) {
+            logger.error("Cache invalidation has been faild: {}", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @POST()
+    @Path("/resources/invalidate")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RequiresAuthentication
+    @RequiresPermissions(CACHES.INVALIDATE_ALL)
+    public Response invalidateCacheForResources(List<String> resources) {
+        try {
+            ValueFactory vf = SimpleValueFactory.getInstance();
+            Set<IRI> iris = resources.stream().map(vf::createIRI).collect(Collectors.toSet());
+            logger.debug("Cache invalidation for {} resources has been triggered by a REST call.", iris.size());
+            cacheManager.invalidateResources(iris);
+            return Response.ok("Cache has been invalidated for " + iris.size() + " resources").build();
         } catch (Exception e) {
             logger.error("Cache invalidation has been faild: {}", e);
             return Response.serverError().entity(e.getMessage()).build();

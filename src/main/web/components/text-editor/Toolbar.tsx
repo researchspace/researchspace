@@ -191,7 +191,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   onExternalLinkClick = (event: React.MouseEvent<Button>) => {
     event.preventDefault();
     const { editor, value } = this.props;
-
+    
     if (value.selection.isCollapsed) {
       const linkText = Slate.Text.create({ text: 'link' });
       editor.current
@@ -219,9 +219,9 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   onInternalLinkClick = (event: React.MouseEvent<Button>) => {
     event.preventDefault();
     const { editor, value } = this.props;
-
+    
     if (value.selection.isCollapsed) {
-      const linkText = Slate.Text.create({ text: 'link' });
+      const linkText = Slate.Text.create({ text: 'link' }); 
       editor.current
         .insertInline({
           type: Inline.internalLink,
@@ -288,7 +288,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
           </ButtonGroup> */}
 
 {/* Links Buttons hidden as they have bugs to be fixed  */}
-{/*           <Dropdown id='links' disabled={this.isTextSelectionActionDisabled()}>
+           <Dropdown id='links' disabled={this.isTextSelectionActionDisabled()}>
             <Dropdown.Toggle>
               <Icon iconType='rounded' iconName='add_link' symbol className='icon-left'/>
               Links
@@ -304,7 +304,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
             </MenuItem>
               
             </Dropdown.Menu>
-          </Dropdown> */}
+          </Dropdown> 
 
         </div>
         

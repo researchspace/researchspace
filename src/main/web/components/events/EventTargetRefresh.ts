@@ -79,6 +79,18 @@ export class EventTargetRefresh extends Component<EventTargetRefreshProps, Event
   }
 
   componentDidMount() {
+    this.subscribe();
+  }
+
+  componentDidUpdate(prevProps: EventTargetRefreshProps) {
+    if (prevProps.id !== this.props.id || prevProps.refreshInterval !== this.props.refreshInterval) {
+      this.unsubscribe();
+      this.cancelation = new Cancellation();
+      this.subscribe();
+    }
+  }
+
+  private subscribe() {
     this.cancelation
       .map(
         listen({
@@ -93,13 +105,17 @@ export class EventTargetRefresh extends Component<EventTargetRefreshProps, Event
     }
   }
 
-  componentWillUnmount() {
+  private unsubscribe() {
     this.cancelation.cancelAll();
     // cleanup the timer
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe();
   }
 
   render() {

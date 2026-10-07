@@ -168,7 +168,8 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
     fieldClone.maxOccurs = 1;
 
     return (
-      <Panel header={title}>
+      <Panel>
+        <Panel.Heading>{title}</Panel.Heading>
         {this.assertionHeader(target, fieldClone)}
         <hr />
         {this.noBeliefs() ? (

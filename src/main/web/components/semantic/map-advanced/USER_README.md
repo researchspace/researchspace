@@ -479,8 +479,8 @@ Inside an `<app-state>`, the map and its controls can keep their state in the UR
 | controls | `year` | timeline year |
 | controls | `syncWithTime` | whether the year drives the historical maps |
 | controls | `layers` | `{visible: [identifiers, top first], opacity: {identifier: value}}` |
-| controls | `styling` | `{enabled, colorBy, labelBy, labelBackground}` |
+| controls | `styling` | `{enabled, colorBy, labelBy, labelBackground, colors}`; `colors` lists the categories whose color differs from the palette, as rgba strings |
 | controls | `hiddenGroups` | legend categories switched off |
 | controls | `panel` | open sidebar panel |
 
-The state is recorded after user actions only. A stored state is applied once the map has loaded its data; a stored view replaces the initial fit. While "Sync with time" is on, the dated historical maps follow the year, and `layers` records the visibility they return to when the sync is switched off. Custom group colours, the swipe/spyglass tools and the sun position are not shared yet.
+The state is recorded after user actions only. A stored state is applied once the map has loaded its data; a stored view replaces the initial fit. While "Sync with time" is on, the dated historical maps follow the year, and `layers` records the visibility they return to when the sync is switched off. The swipe/spyglass tools and the sun position are not shared yet.

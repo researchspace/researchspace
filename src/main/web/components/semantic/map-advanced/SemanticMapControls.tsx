@@ -120,7 +120,8 @@ interface State {
  * - `syncWithTime`: whether the year drives the historical maps;
  * - `layers`: `{visible: [identifiers, top first], opacity: {identifier: value}}` of overlays and
  *   feature layers (basemaps are shared by the map);
- * - `styling`: `{enabled, colorBy, labelBy, labelBackground}`;
+ * - `styling`: `{enabled, colorBy, labelBy, labelBackground, colors}`, where `colors` maps the legend
+ *   categories whose color differs from the palette to an rgba string;
  * - `hiddenGroups`: legend categories that are switched off;
  * - `panel`: open sidebar panel, or null.
  */
@@ -661,6 +662,7 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
       update.featuresColorTaxonomy = state.styling.colorBy || '';
       update.selectedFeaturesLabel = state.styling.labelBy || '';
       update.labelBackgroundEnabled = Boolean(state.styling.labelBackground);
+      update.groupColorAssociations = this.getRestoredGroupColors(state.styling.colors || {});
     }
     if (Array.isArray(state.hiddenGroups)) {
       const hidden = state.hiddenGroups;
@@ -760,17 +762,73 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
     return _.isEmpty(opacity) ? { visible } : { visible, opacity };
   }
 
+  private getStylingSnapshot() {
+    const styling: { [key: string]: any } = {
+      enabled: this.state.stylingEnabled,
+      colorBy: this.state.featuresColorTaxonomy,
+      labelBy: this.state.selectedFeaturesLabel,
+      labelBackground: this.state.labelBackgroundEnabled,
+    };
+    const colors = this.getCustomGroupColors();
+    if (!_.isEmpty(colors)) {
+      styling.colors = colors;
+    }
+    return styling;
+  }
+
+  /**
+   * Colors chosen by the user for the legend categories: the categories whose color differs
+   * from the palette (or the default color), as rgba strings.
+   */
+  private getCustomGroupColors(): { [group: string]: string } {
+    const colors: { [group: string]: string } = {};
+    Object.keys(this.state.groupColorAssociations).forEach((group) => {
+      const color = normalizeColor(this.state.groupColorAssociations[group]);
+      if (color && rgbKey(color) !== rgbKey(this.getPaletteColor(group))) {
+        colors[group] = color;
+      }
+    });
+    return colors;
+  }
+
+  /**
+   * Category colors for a restored state: the given colors, and the palette color for the
+   * other categories.
+   */
+  private getRestoredGroupColors(colors: { [group: string]: string }): { [group: string]: any } {
+    const restored: { [group: string]: any } = {};
+    Object.keys(this.state.groupColorAssociations).forEach((group) => {
+      restored[group] = this.getPaletteColor(group);
+    });
+    Object.keys(colors).forEach((group) => {
+      const color = normalizeColor(colors[group]);
+      if (color) {
+        restored[group] = color;
+      }
+    });
+    return restored;
+  }
+
+  /** Color of a category in the `features-colors-palette` prop, or the default color. */
+  private getPaletteColor(group: string): string {
+    let palette = this.props.featuresColorsPalette as any;
+    if (typeof palette === 'string') {
+      try {
+        palette = JSON.parse(palette);
+      } catch (e) {
+        palette = {};
+      }
+    }
+    const key = Object.keys(palette || {}).find((label) => label.toLowerCase() === group.toLowerCase());
+    return key ? palette[key] : this.defaultFeaturesColor;
+  }
+
   private getSharedSnapshot(): ComponentState {
     return {
       year: this.state.year,
       syncWithTime: this.state.syncWithTime,
       layers: this.getLayersSnapshot(),
-      styling: {
-        enabled: this.state.stylingEnabled,
-        colorBy: this.state.featuresColorTaxonomy,
-        labelBy: this.state.selectedFeaturesLabel,
-        labelBackground: this.state.labelBackgroundEnabled,
-      },
+      styling: this.getStylingSnapshot(),
       hiddenGroups: Object.keys(this.state.groupDisabled)
         .filter((group) => this.state.groupDisabled[group])
         .sort(),
@@ -3488,6 +3546,36 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
       this.setState({ isPlaying: true, animationInterval: interval });
     }
   };
+}
+
+/**
+ * Category colors are rgba strings, or the objects of the color picker (with an `rgb` field).
+ * Returns an rgba string, or undefined for an invalid value.
+ */
+function normalizeColor(color: any): string | undefined {
+  if (typeof color === 'string') {
+    return rgbKey(color) ? color : undefined;
+  }
+  if (color && color.rgb && typeof color.rgb.r === 'number') {
+    const { r, g, b } = color.rgb;
+    return `rgba(${r}, ${g}, ${b}, 0.4)`;
+  }
+  return undefined;
+}
+
+/** The red, green and blue components of a color, ignoring alpha (the map sets its own). */
+function rgbKey(color: string): string | undefined {
+  const value = (color || '').trim();
+  const match = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(value);
+  if (match) {
+    return `${match[1]},${match[2]},${match[3]}`;
+  }
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value);
+  if (hex) {
+    const digits = hex[1].length === 3 ? hex[1].replace(/(.)/g, '$1$1') : hex[1];
+    return [0, 2, 4].map((i) => parseInt(digits.substr(i, 2), 16)).join(',');
+  }
+  return undefined;
 }
 
 export default SemanticMapControls;

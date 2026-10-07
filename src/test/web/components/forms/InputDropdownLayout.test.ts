@@ -26,7 +26,7 @@ const definition = normalizeFieldDefinition({ id: 'material', label: 'Material',
   autosuggestionPattern: 'SELECT ?value ?label WHERE { ?value <https://example.org/label> ?label FILTER(CONTAINS(?label, ?__token__)) }',
 });
 
-describe('Readable input dropdowns', () => {
+describe('Input dropdown rollback', () => {
   let host: HTMLDivElement;
   let server: sinon.SinonFakeServer;
   let selected: FieldValue;
@@ -41,7 +41,7 @@ describe('Readable input dropdowns', () => {
   beforeEach(() => {
     host = document.createElement('div');
     host.className = 'semantic-form';
-    host.style.cssText = 'position:fixed;left:16px;top:16px;width:240px;height:170px;overflow:auto';
+    host.style.cssText = 'position:fixed;left:16px;top:16px;width:500px;height:500px;overflow:visible';
     document.body.appendChild(host);
     selected = FieldValue.empty;
     server = sinon.fakeServer.create();
@@ -94,54 +94,22 @@ describe('Readable input dropdowns', () => {
     await document.fonts.ready; await settle();
   }
 
-  function containedMenu() {
-    const popup = menu(), rect = popup.getBoundingClientRect();
-    expect(popup.matches(':popover-open')).to.equal(true);
-    expect(rect.left).to.be.at.least(7);
-    expect(rect.right).to.be.at.most(document.documentElement.clientWidth - 7);
-    expect(rect.top).to.be.at.least(7);
-    expect(rect.bottom).to.be.at.most(document.documentElement.clientHeight - 7);
-    expect(popup.scrollWidth).to.be.at.most(popup.clientWidth + 1);
-    expect(getComputedStyle(popup).backgroundColor).to.equal('rgb(255, 255, 255)');
-  }
-
   for (const kind of ['select', 'autocomplete', 'tree'] as const) {
-    it(`${kind}: escapes a narrow clipping panel with readable wrapped options`, async () => {
-      await draw(kind); containedMenu();
-      const popup = menu(), rect = popup.getBoundingClientRect();
-      expect(rect.width).to.equal(320);
-      expect(rect.bottom).to.be.greaterThan(host.getBoundingClientRect().bottom);
-      const point = document.elementFromPoint(rect.left + 20, Math.min(rect.bottom - 20, host.getBoundingClientRect().bottom + 10));
-      expect(popup.contains(point), 'menu remains above surrounding form fields').to.equal(true);
-      const options = host.querySelectorAll<HTMLElement>('.Select-option, .LazyTreeSelector--itemContent');
-      const long = options[1], short = options[0];
-      expect(long.getBoundingClientRect().height).to.be.greaterThan(short.getBoundingClientRect().height);
-      for (const option of Array.from(options)) expect(option.scrollWidth).to.be.at.most(option.clientWidth + 1);
+    it(`${kind}: uses the original in-place dropdown without a native popover`, async () => {
+      await draw(kind);
+      const popup = menu();
+      expect(popup).not.to.equal(null);
+      expect(popup.hasAttribute('popover')).to.equal(false);
+      expect(getComputedStyle(popup).position).to.equal('absolute');
+      expect(host.contains(popup)).to.equal(true);
       const scroll = find('.Select-menu, .ReactVirtualized__List');
-      expect(scroll.getBoundingClientRect().bottom).to.be.at.most(rect.bottom);
+      expect(scroll.clientHeight).to.be.greaterThan(0);
       expect(scroll.scrollHeight).to.be.greaterThan(scroll.clientHeight);
-    });
-
-    it(`${kind}: flips above a low field and follows width changes without losing its state`, async () => {
-      host.style.top = `${document.documentElement.clientHeight - 75}px`;
-      await draw(kind); containedMenu();
-      const popup = menu(), trigger = find('.Select-control, .SemanticTreeInput--inputAndButtons');
-      expect(popup.getBoundingClientRect().bottom).to.be.at.most(trigger.getBoundingClientRect().top);
-      host.style.width = '500px'; host.style.top = '16px'; await settle();
-      expect(menu()).to.equal(popup); containedMenu();
-      expect(popup.getBoundingClientRect().width).to.equal(500);
-      expect(popup.getBoundingClientRect().top).to.be.at.least(trigger.getBoundingClientRect().bottom);
-      if (kind === 'autocomplete') expect((find('input') as HTMLInputElement).value).to.equal('stone');
       if (kind === 'tree') {
         const rows = Array.from(host.querySelectorAll<HTMLElement>('.LazyTreeSelector--item'));
-        for (let i = 1; i < rows.length; i++) {
-          expect(rows[i].getBoundingClientRect().top).to.be.at.least(rows[i - 1].getBoundingClientRect().bottom - 1);
-        }
+        for (const row of rows) expect(row.parentElement.getBoundingClientRect().height).to.equal(30);
+        expect(find('.LazyTreeSelector--wrapped')).to.equal(null);
       }
-      const spacer = document.createElement('div'); spacer.style.height = '900px'; host.appendChild(spacer);
-      host.scrollTop = 300; await settle();
-      expect(menu()).to.equal(null);
-      expect(host.scrollTop).to.equal(300);
     });
   }
 
@@ -170,18 +138,16 @@ describe('Readable input dropdowns', () => {
     checkbox.click(); await settle();
     const apply = find('.SemanticTreeInput--dropdownFooter .btn-action') as HTMLButtonElement;
     expect(apply.disabled).to.equal(false);
-    host.style.width = '500px'; await settle();
+    host.style.width = '600px'; await settle();
     expect((find('input[type="checkbox"]') as HTMLInputElement).checked).to.equal(true);
     apply.click(); await settle();
     expect(menu()).to.equal(null);
     expect(find('.SemanticTreeInput--textInput').textContent).to.contain('Limestone');
     find('.SemanticTreeInput--browseButton').click(); await settle();
     find('input[type="checkbox"]').click(); await settle();
-    find('.SemanticTreeInput--dropdown').dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}));
-    await settle();
+    find('.SemanticTreeInput--dropdownFooter button:not(.btn-action)').click(); await settle();
     expect(menu()).to.equal(null);
     expect(find('.SemanticTreeInput--textInput').textContent).to.contain('Limestone');
-    expect(document.activeElement).to.equal(find('.SemanticTreeInput--browseButton'));
   });
 
   it('tree: keeps search and Apply visible while scrolling and renders filtered results', async () => {

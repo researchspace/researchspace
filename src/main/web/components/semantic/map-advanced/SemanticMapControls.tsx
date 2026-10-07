@@ -245,7 +245,7 @@ interface Props {
 /** Width of the slider thumb in px; marker offsets must use the same inset to line up with it. */
 const MARKER_THUMB_WIDTH = 20;
 /** Smallest gap in px between two year dots before they stop being separately clickable. */
-const MARKER_MIN_SEPARATION = 8;
+const MARKER_MIN_SEPARATION = 12;
 
 export class SemanticMapControls extends Component<Props, State> {
   private cancelation = new Cancellation();

@@ -126,13 +126,28 @@
 }
 
 .timelineSlider {
+  display: block;
   width: 100%;
   height: 6px;
+  margin: 0;
   -webkit-appearance: none;
   appearance: none;
   background: linear-gradient(to right, #3498db, #2ecc71);
   outline: none;
   border-radius: 3px;
+}
+
+/* Firefox draws its own track and progress bar inside the input: make them transparent and as
+   tall as the input, so the visible bar is the input background in every browser and the year
+   markers (centred on the input) sit on its axis. */
+.timelineSlider::-moz-range-track {
+  height: 6px;
+  background: transparent;
+  border: none;
+}
+
+.timelineSlider::-moz-range-progress {
+  background: transparent;
 }
 
 .timelineSlider::-webkit-slider-thumb {
@@ -262,6 +277,11 @@
 .timelineTrack {
   position: relative;
   width: 100%;
+  /* Fixed height, slider centred in it: the markers' top: 50% is then the bar's axis whatever the
+     browser's default margins or line box of a range input. */
+  height: 20px;
+  display: flex;
+  align-items: center;
   line-height: 0;
 }
 
@@ -274,25 +294,26 @@
   pointer-events: none;
 }
 
-/* Kept deliberately small: every year gets its own dot and they are laid out at least
-   MARKER_MIN_SEPARATION apart, so the smaller the dot the less the layout has to nudge
-   near-coincident years away from their true position. */
+/* Larger than the 6px bar, so it reads as a round point on it rather than a bump inside it, but
+   still small: every year gets its own dot and they are laid out at least MARKER_MIN_SEPARATION
+   apart, so the smaller the dot the less the layout has to nudge near-coincident years. */
 .timelineMarker {
   position: absolute;
   top: 50%;
-  width: 6px;
-  height: 6px;
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: #fff;
-  border: 1px solid #2c3e50;
+  border: 2px solid #2c3e50;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
   cursor: pointer;
   pointer-events: auto;
   transition: transform 0.12s ease-out, background-color 0.12s ease-out;
 }
 
-/* A larger invisible hit area, so a 6px dot is still comfortable to hit with a mouse.
+/* A larger invisible hit area, so a small dot is still comfortable to hit with a mouse.
    Its width must stay <= MARKER_MIN_SEPARATION in SemanticMapControls.tsx, otherwise adjacent
    dots overlap each other's target and the left one becomes impossible to hover. The extra
    comfort is taken vertically, where there is nothing to collide with. */
@@ -301,13 +322,13 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 8px;
-  height: 18px;
+  width: 12px;
+  height: 22px;
   transform: translate(-50%, -50%);
 }
 
 .timelineMarker:hover {
-  transform: translate(-50%, -50%) scale(1.9);
+  transform: translate(-50%, -50%) scale(1.4);
   background: #f1c40f;
   z-index: 2;
 }

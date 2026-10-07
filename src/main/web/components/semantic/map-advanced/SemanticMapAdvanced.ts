@@ -3720,7 +3720,9 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
 
   private getInputExtent() {
     if (this.props.mapOptions === undefined || this.props.mapOptions.extent === undefined) {
-      return createEmpty();
+      // no constraint: an empty extent ([Infinity, Infinity, -Infinity, -Infinity]) makes the
+      // OpenLayers 10 view unable to render
+      return undefined;
     } else {
       this.props.mapOptions.extent;
     }

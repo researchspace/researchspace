@@ -56,7 +56,11 @@
                     ?story crm:P106_is_composed_of ?first .
                     ?first rso:PX_has_sequence_position 1 ;
                       crm:P67_refers_to/crm:P1_is_identified_by/crm:P190_has_symbolic_content ?firstUrl .
-                    BIND(CONCAT(?firstUrl, IF(CONTAINS(?firstUrl, "?"), "&", "?"), "story=", ENCODE_FOR_URI(STR(?story))) AS ?playUrl)
+                    # drop the story parameters of a URL copied while a story was playing, and
+                    # encode the characters that would end the href attribute
+                    BIND(REPLACE(REPLACE(STR(?firstUrl), "([?&])(story|storySlide)=[^&#]*", "$1"), "[?&]+$", "") AS ?pageUrl)
+                    BIND(CONCAT(?pageUrl, IF(CONTAINS(?pageUrl, "?"), "&", "?"), "story=", ENCODE_FOR_URI(STR(?story))) AS ?rawPlayUrl)
+                    BIND(REPLACE(REPLACE(REPLACE(REPLACE(?rawPlayUrl, "\"", "%22"), "<", "%3C"), ">", "%3E"), "\u0027", "%27") AS ?playUrl)
                   }
                 }
                 GROUP BY ?story ?title ?created
@@ -69,7 +73,8 @@
               ]'
               no-result-template='<p>There are no stories yet.</p>'>
               <template id="actions">
-                {{#if play.value}}<a class="btn btn-default btn-sm" href="{{play.value}}" target="_blank" rel="noopener noreferrer">Play</a>{{/if}}
+                [[!-- triple braces: the HTML escaping of = and & would break the URL; the query encodes quotes and angle brackets --]]
+                {{#if play.value}}<a class="btn btn-default btn-sm" href="{{{play.value}}}" target="_blank" rel="noopener noreferrer">Play</a>{{/if}}
                 <semantic-link class="btn btn-default btn-sm" iri="http://www.researchspace.org/resource/Stories"
                   urlqueryparam-story="{{story.value}}">Edit</semantic-link>
               </template>

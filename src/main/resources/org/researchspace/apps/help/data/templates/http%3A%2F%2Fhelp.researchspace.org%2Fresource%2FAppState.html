@@ -1,0 +1,232 @@
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+    <h1 id="rs-doc_appState">Application State</h1>
+
+    <p>The <code>&lt;app-state&gt;</code> component keeps the state of the components inside it (map view, table page, open frames, &hellip;) in the page URL or in the backend. A page can then be shared, bookmarked or reopened exactly as the user left it.</p>
+
+    <ul>
+      <li><a href="#rs-doc_usage">Usage</a></li>
+      <li><a href="#rs-doc_compatibleComponents">Compatible components</a></li>
+      <li><a href="#rs-doc_storageModes">Storage modes</a></li>
+      <li><a href="#rs-doc_configuration">Configuration</a></li>
+      <li><a href="#rs-doc_events">Events</a></li>
+      <li><a href="#rs-doc_permissions">Permissions</a></li>
+      <li><a href="#rs-doc_developers">Making a component compatible</a></li>
+    </ul>
+
+    <hr class="divider">
+    <h2 id="rs-doc_usage">Usage</h2>
+
+    <p>Wrap the components in <code>&lt;app-state&gt;</code> and list, on each component, the state variables to share in <code>shared-state-vars</code>. A component needs an <code>id</code> to share its state.</p>
+
+    <mp-code-block mode="text/html">
+<![CDATA[<app-state id="workspace" auto-sync="true">
+  <semantic-table id="results" shared-state-vars="currentPage,filterValue"
+                  query="SELECT ?place ?label WHERE { ... }">
+  </semantic-table>
+  <semantic-map id="map" shared-state-vars="currentExtent,currentZoom"
+                query="SELECT ?place ?wkt WHERE { ... }">
+  </semantic-map>
+</app-state>]]>
+    </mp-code-block>
+
+    <p>Components inside <code>&lt;app-state&gt;</code> find it automatically. A component rendered outside of it, for example in an overlay dialog, refers to it with <code>app-state-id="workspace"</code>.</p>
+
+    <hr class="divider">
+    <h2 id="rs-doc_compatibleComponents">Compatible components</h2>
+
+    <p>Only the components below can share their state. Other variable names in <code>shared-state-vars</code> are ignored with a warning in the browser console.</p>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Shared state variables</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;rs-dashboard&gt;</code> (Thinking Frames)</td>
+          <td>
+            <code>layoutModel</code>: layout of the frames (positions, sizes, tabs)<br/>
+            <code>openFrames</code>: open frames with their view, resource and label<br/>
+            <code>activeFrameId</code>: selected frame<br/>
+            The three variables are restored together.
+          </td>
+        </tr>
+        <tr>
+          <td><code>&lt;semantic-map&gt;</code></td>
+          <td>
+            <code>currentExtent</code>: visible area <code>[minX, minY, maxX, maxY]</code> in EPSG:3857<br/>
+            <code>currentZoom</code>: zoom level
+          </td>
+        </tr>
+        <tr>
+          <td><code>&lt;semantic-table&gt;</code></td>
+          <td>
+            <code>currentPage</code>: current page, starting from 0<br/>
+            <code>filterValue</code>: text in the filter input
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The Thinking Frames page uses <code>&lt;app-state&gt;</code> in backend mode: the save button creates a link to the current frames.</p>
+
+    <hr class="divider">
+    <h2 id="rs-doc_storageModes">Storage modes</h2>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>How it works</th>
+          <th>Use it for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>url</code> (default)</td>
+          <td>
+            The state is encoded in the <code>states</code> URL parameter.
+            With <code>auto-sync="true"</code> the URL follows every change and can be copied from the address bar.
+            Without it, the save button creates a short link (<code>/l/&hellip;</code>).
+          </td>
+          <td>Small states, such as a map view or a table page. Very long URLs can be rejected by servers and proxies.</td>
+        </tr>
+        <tr>
+          <td><code>backend</code></td>
+          <td>
+            The save button stores the state on the server (in the runtime storage, under <code>config/app-states/</code>);
+            the URL only carries <code>stateId</code>.
+            Users are warned before leaving the page with unsaved changes.
+          </td>
+          <td>Large states, such as Thinking Frames layouts.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+    <h2 id="rs-doc_configuration">Configuration</h2>
+
+    <mp-documentation type="AppStateConfig"></mp-documentation>
+
+    <p>Attributes of the compatible components:</p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>id</code></td>
+          <td>Required to share state; the state is stored under this id.</td>
+        </tr>
+        <tr>
+          <td><code>shared-state-vars</code></td>
+          <td>Comma separated names of the variables to share. Without it the component does not take part.</td>
+        </tr>
+        <tr>
+          <td><code>app-state-id</code></td>
+          <td>Id of the <code>&lt;app-state&gt;</code> component, needed only when the component is not rendered inside it.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+    <h2 id="rs-doc_events">Events</h2>
+
+    <p>A state can be applied to the components without reloading the page, for example from a button or from another component, with these events targeted at the <code>&lt;app-state&gt;</code> id:</p>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Data</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>AppState.ApplyState</code></td>
+          <td>
+            <code>states</code>: states keyed by component id<br/>
+            <code>mode</code>: <code>merge</code> (default) changes only the given variables; <code>replace</code> also resets the missing ones<br/>
+            <code>transition</code>: <code>{"animate": true, "duration": 1000}</code> animates the change where supported (maps)<br/>
+            <code>updateUrl</code>: whether the URL is updated, defaults to <code>auto-sync</code>
+          </td>
+          <td>Applies the states. Components that mount later receive their state when they do.</td>
+        </tr>
+        <tr>
+          <td><code>AppState.LoadState</code></td>
+          <td><code>stateId</code>, <code>transition</code></td>
+          <td>Loads a state saved in the backend and applies it.</td>
+        </tr>
+        <tr>
+          <td><code>AppState.StateChanged</code></td>
+          <td><code>states</code></td>
+          <td>Triggered by <code>&lt;app-state&gt;</code> whenever the shared state changes.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <mp-code-block mode="text/html">
+<![CDATA[<mp-event-trigger type="AppState.ApplyState" targets='["workspace"]'
+                  data='{"states": {"map": {"currentExtent": [1358358, 5681238, 1385414, 5705635]}},
+                         "transition": {"animate": true}}'>
+  <button class="btn btn-default">Show Florence</button>
+</mp-event-trigger>]]>
+    </mp-code-block>
+
+    <hr class="divider">
+    <h2 id="rs-doc_permissions">Permissions</h2>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Operation</th>
+          <th>Permission</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Creating a link with the save button (both modes)</td>
+          <td><code>services:url-minify</code></td>
+        </tr>
+        <tr>
+          <td>Opening a link to a saved state</td>
+          <td>None: the random state id works as a capability, like short links. Anyone with the link can open it, and the components still apply their own data permissions.</td>
+        </tr>
+        <tr>
+          <td>Deleting a saved state (<code>DELETE /rest/app-state/delete/{id}</code>)</td>
+          <td>The user who saved it, or <code>services:app-state:delete:any</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+    <h2 id="rs-doc_developers">Making a component compatible</h2>
+
+    <p>A component takes part by extending <code>SharedStateComponent</code> (<code>platform/components/semantic/app-state/SharedStateComponent</code>) instead of <code>Component</code>, and adding <code>SharedStateProps</code> to its props. By default:</p>
+    <ul>
+      <li>the component registers with the enclosing <code>&lt;app-state&gt;</code> on mount and unregisters on unmount; overrides of <code>componentDidMount</code> and <code>componentWillUnmount</code> must call <code>super</code>;</li>
+      <li>after every <code>setState</code>, the shared variables that changed are sent to <code>&lt;app-state&gt;</code>;</li>
+      <li>a state received from <code>&lt;app-state&gt;</code> is copied into the component state.</li>
+    </ul>
+
+    <p>Protected methods to override when the state needs more than that:</p>
+    <table class="table table-striped">
+      <tbody>
+        <tr><td><code>getSupportedSharedStateVars()</code></td><td>Names of the variables the component supports.</td></tr>
+        <tr><td><code>handleSharedStateSync(state, {mode, origin, transition})</code></td><td>Applies a received state, e.g. moving a map view.</td></tr>
+        <tr><td><code>onSharedStateResolved(hasStoredState)</code></td><td>Called once, after the stored state (if any) has been applied, or right after mount when the component does not share state. Use it instead of timers to set up defaults.</td></tr>
+        <tr><td><code>isAutoSyncEnabled()</code>, <code>updateSharedState(state)</code></td><td>Disable the automatic sync and send values that are not in the React state.</td></tr>
+        <tr><td><code>getInitialSharedState()</code>, <code>setSharedStateBaseline(state)</code></td><td>Keep defaults computed while loading out of the shared state.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Shared values must be plain JSON. Keep them small, especially in URL mode.</p>
+  </div>
+</div>

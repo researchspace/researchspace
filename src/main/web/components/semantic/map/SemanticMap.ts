@@ -54,6 +54,12 @@ import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { Component, ComponentContext } from 'platform/api/components';
 import { LayoutChanged } from 'platform/components/dashboard/DashboardEvents';
+import {
+  SharedStateComponent,
+  SharedStateProps,
+  SharedStateSyncOptions,
+} from 'platform/components/semantic/app-state/SharedStateComponent';
+import { ComponentState, StateTransition } from 'platform/components/semantic/app-state/AppStateEvents';
 
 import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
@@ -106,7 +112,7 @@ export interface SemanticMapConfig {
   id?: string;
 }
 
-export type SemanticMapProps = SemanticMapConfig & Props<any>;
+export type SemanticMapProps = SemanticMapConfig & SharedStateProps & Props<any>;
 
 interface MapState {
   tupleTemplate?: Data.Maybe<HandlebarsTemplateDelegate>;
@@ -115,12 +121,29 @@ interface MapState {
   isLoading?: boolean;
 }
 
+/**
+ * Shared state of the map view: extent and zoom in the view projection (EPSG:3857).
+ */
+interface MapViewState {
+  currentExtent?: number[];
+  currentZoom?: number;
+}
+
+const SHARED_STATE_VARS = ['currentExtent', 'currentZoom'];
+const DEFAULT_TRANSITION_DURATION = 1000;
+
 const MAP_REF = 'researchspace-map-widget';
 
-export class SemanticMap extends Component<SemanticMapProps, MapState> {
+export class SemanticMap extends SharedStateComponent<SemanticMapProps, MapState> {
+
   // A single master source holds all features (Points, Polygons, etc.)
   private masterSource: VectorSource;
   private map: Map;
+  /**
+   * View received from app-state that has not been applied yet.
+   */
+  private pendingView: { view: MapViewState; transition?: StateTransition } | undefined;
+  private isTrackingView = false;
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -146,6 +169,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   public componentDidMount() {
+    super.componentDidMount();
     this.createMap();
   }
 
@@ -366,16 +390,20 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           const allFeatures = this.createFeatures(m);
           this.updateFeatures(allFeatures);
 
-          const view = this.map.getView();
-          const extent = this.calculateExtent();
-          if (extent && extent[0] !== Infinity) {
-            view.fit(extent, { maxZoom: 10, padding: [50, 50, 50, 50] });
-          }
-
-          if (fixZoomLevel) {
-            view.setZoom(fixZoomLevel);
+          if (this.pendingView) {
+            this.applyPendingView();
+          } else {
+            const view = this.map.getView();
+            const extent = this.calculateExtent();
+            if (extent && extent[0] !== Infinity) {
+              view.fit(extent, { maxZoom: 10, padding: [50, 50, 50, 50] });
+            }
+            if (fixZoomLevel) {
+              view.setZoom(fixZoomLevel);
+            }
           }
         }
+        this.trackView();
       });
 
       stream.onError((error) =>
@@ -472,6 +500,72 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       return props['layout']['tupleTemplate'];
     } else {
       return props.tupleTemplate;
+    }
+  }
+
+  protected getSupportedSharedStateVars() {
+    return SHARED_STATE_VARS;
+  }
+
+  protected isAutoSyncEnabled() {
+    // the view is pushed on 'moveend', it is not part of the React state
+    return false;
+  }
+
+  protected getInitialSharedState(): ComponentState {
+    // the view is known only after the query results have been fitted
+    return {};
+  }
+
+  protected handleSharedStateSync(state: MapViewState, options: SharedStateSyncOptions) {
+    const view = { ...(this.pendingView ? this.pendingView.view : {}), ...parseViewState(state) };
+    this.pendingView = { view, transition: options.transition };
+    if (this.isTrackingView) {
+      this.applyPendingView();
+    }
+  }
+
+  /**
+   * Starts sending the view to app-state when it changes. The current view is the
+   * baseline, so the initial fit is not reported as a change.
+   */
+  private trackView() {
+    if (this.isTrackingView || !this.map || this.getSharedStateVars().length === 0) {
+      return;
+    }
+    this.isTrackingView = true;
+    this.setSharedStateBaseline(this.getViewState());
+    this.map.on('moveend', () => this.updateSharedState(this.getViewState()));
+    if (this.pendingView) {
+      this.applyPendingView();
+    }
+  }
+
+  private getViewState(): MapViewState {
+    const view = this.map.getView();
+    const extent = view.calculateExtent(this.map.getSize());
+    return {
+      currentExtent: extent.map((coordinate) => Math.round(coordinate * 100) / 100),
+      currentZoom: Math.round(view.getZoom() * 100) / 100,
+    };
+  }
+
+  private applyPendingView() {
+    if (!this.map || !this.pendingView) {
+      return;
+    }
+    const { view: state, transition } = this.pendingView;
+    this.pendingView = undefined;
+    const view = this.map.getView();
+    const duration = transition && transition.animate ? transition.duration || DEFAULT_TRANSITION_DURATION : 0;
+    if (state.currentExtent) {
+      view.fit(state.currentExtent as [number, number, number, number], duration ? { duration } : {});
+    } else if (typeof state.currentZoom === 'number') {
+      if (duration) {
+        view.animate({ zoom: state.currentZoom, duration });
+      } else {
+        view.setZoom(state.currentZoom);
+      }
     }
   }
 }
@@ -601,3 +695,24 @@ function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {
 }
 
 export default SemanticMap;
+
+/**
+ * Validates a view state received from app-state. Earlier versions could store the
+ * extent as a JSON string.
+ */
+function parseViewState(state: ComponentState): MapViewState {
+  let extent = state.currentExtent;
+  if (typeof extent === 'string') {
+    try {
+      extent = JSON.parse(extent);
+    } catch (e) {
+      extent = undefined;
+    }
+  }
+  const isValidExtent =
+    Array.isArray(extent) && extent.length === 4 && extent.every((c) => typeof c === 'number' && isFinite(c));
+  return {
+    currentExtent: isValidExtent ? extent : undefined,
+    currentZoom: typeof state.currentZoom === 'number' ? state.currentZoom : undefined,
+  };
+}

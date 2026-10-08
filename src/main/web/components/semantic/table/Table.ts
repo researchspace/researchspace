@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createElement, ReactElement, ComponentClass, ClassAttributes } from 'react';
+import { createElement, ReactElement, ComponentClass, ClassAttributes, Component as ReactComponent, ChangeEvent } from 'react';
 import * as Griddle from 'griddle-react';
 import { GriddleConfig, ColumnMetadata } from 'griddle-react';
 import * as _ from 'lodash';
@@ -100,6 +100,15 @@ export interface TableConfig {
   data: Data.Either<ReadonlyArray<any>, SparqlClient.SparqlSelectResult>;
   currentPage?: number;
   onPageChange?: (page: number) => void;
+  /**
+   * Value of the filter input. Used together with `onFilterChange`.
+   */
+  filterValue?: string;
+  /**
+   * Called when the user changes the filter. When defined, the filter input follows
+   * external changes of `filterValue`.
+   */
+  onFilterChange?: (filterValue: string) => void;
   showLiteralDatatype?: boolean;
   linkParams?: {};
   showCopyToClipboardButton?: boolean;
@@ -130,6 +139,7 @@ interface RenderingState {
 
 export class Table extends Component<TableProps, State> {
   private readonly cancellation = new Cancellation();
+  private readonly filterComponent = createControlledFilterComponent(() => this.props);
 
   constructor(props: TableProps, context: any) {
     super(props, context);
@@ -213,6 +223,9 @@ export class Table extends Component<TableProps, State> {
       customPagerComponentOptions: paginationProps,
       useCustomFilterer: true,
       customFilterer: makeCellFilterer(renderingState),
+      ...(config.onFilterChange
+        ? { useCustomFilterComponent: true, customFilterComponent: this.filterComponent }
+        : {}),
     };
 
     let griddleConfig = config.data.fold<ExtendedGriddleConfig>(
@@ -463,6 +476,74 @@ export class Table extends Component<TableProps, State> {
       }
     };
   }
+}
+
+interface GriddleFilterProps {
+  changeFilter: (value: string) => void;
+  placeholderText?: string;
+}
+
+/**
+ * Creates a Griddle filter input that reports changes to `onFilterChange` and follows
+ * external changes of `filterValue`. It renders the same markup as the default Griddle
+ * filter. The class is created once per table: Griddle remounts the filter whenever
+ * the component type changes.
+ */
+function createControlledFilterComponent(getTableProps: () => TableProps): ComponentClass<GriddleFilterProps> {
+  return class ControlledFilter extends ReactComponent<GriddleFilterProps, { value: string }> {
+    /**
+     * Last `filterValue` received from the table props. The input follows it only when
+     * it changes, so that typing is not overridden by a stale value.
+     */
+    private externalValue = getTableProps().filterValue || '';
+
+    constructor(props: GriddleFilterProps) {
+      super(props);
+      this.state = { value: this.externalValue };
+    }
+
+    componentDidMount() {
+      if (this.externalValue) {
+        this.props.changeFilter(this.externalValue);
+      }
+    }
+
+    componentDidUpdate() {
+      const externalValue = getTableProps().filterValue || '';
+      if (externalValue !== this.externalValue) {
+        this.externalValue = externalValue;
+        if (externalValue !== this.state.value) {
+          this.setState({ value: externalValue });
+          this.props.changeFilter(externalValue);
+        }
+      }
+    }
+
+    private onChange = (event: ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      this.setState({ value });
+      this.props.changeFilter(value);
+      const { onFilterChange } = getTableProps();
+      if (onFilterChange) {
+        onFilterChange(value);
+      }
+    };
+
+    render() {
+      return createElement(
+        'div',
+        { className: 'filter-container' },
+        createElement('input', {
+          type: 'text',
+          name: 'filter',
+          placeholder: this.props.placeholderText,
+          className: 'form-control',
+          onChange: this.onChange,
+          value: this.state.value,
+        })
+      );
+    }
+  };
 }
 
 function isPrimitiveDatatype(data: any): boolean {

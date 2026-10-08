@@ -25,7 +25,11 @@ import FlexLayout, { Model, Node, Action, Actions,
 import { IJsonRowNode, IJsonTabNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
 
 import { setFrameNavigation } from 'platform/api/navigation';
-import { Component } from 'platform/api/components';
+import {
+  SharedStateComponent,
+  SharedStateProps,
+} from 'platform/components/semantic/app-state/SharedStateComponent';
+import { ComponentState } from 'platform/components/semantic/app-state/AppStateEvents';
 import { TemplateItem } from 'platform/components/ui/template';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
@@ -45,6 +49,7 @@ import Icon from '../ui/icon/Icon';
 
 import { BuiltInEvents,  registerEventSource, unregisterEventSource } from 'platform/api/events';
 import { ConfigHolder } from 'platform/api/services/config-holder';
+import { DashboardStateAdapters, DashboardSharedState, SHARED_STATE_VARS } from './DashboardStateAdapters';
 
 export interface Item {
   readonly id: string;
@@ -147,7 +152,7 @@ export interface DashboardLinkedViewConfig {
   unique: boolean;
 }
 
-export interface Props {
+export interface Props extends SharedStateProps {
   /**
    * Used when dashboard is used as a target for events.
    */
@@ -200,9 +205,10 @@ export interface State {
   layout?: Model;
   items?: ReadonlyArray<Item>;
   focus?: string;
+  activeFrameId?: string;
 }
 
-export class DashboardComponent extends Component<Props, State> {
+export class DashboardComponent extends SharedStateComponent<Props, State> {
   static defaultProps: Partial<Props> = {
     frameMinSize: 260,
     linkedViews: [],
@@ -213,6 +219,15 @@ export class DashboardComponent extends Component<Props, State> {
   private layoutRef = React.createRef<Layout>();
   private subscription: Kefir.Subscription;
   private itemLabelCount = 0;
+  /**
+   * Whether the layout has been restored from a shared state.
+   */
+  private isRestored = false;
+  /**
+   * Whether layout changes are sent to app-state. Starts after the initial frames have
+   * been added, so that the default layout does not count as a change.
+   */
+  private isTrackingState = false;
 
   private frameLabel = (label?: string) => {
     this.itemLabelCount = this.itemLabelCount + 1;
@@ -221,8 +236,7 @@ export class DashboardComponent extends Component<Props, State> {
     const displayCustomLabel = this.props.initialView?.data?.["customLabel"] && (this.state.items.length == 0) ?this.props.initialView.data["customLabel"]:displayLabel;
 
     return { 
-      // id: uniqueId(displayLabel.replace(/\s/g, '')),
-      id: uniqueId('frame'),
+      id: this.newFrameId(),
       index: this.itemLabelCount, 
       label: displayCustomLabel
     }
@@ -326,46 +340,6 @@ export class DashboardComponent extends Component<Props, State> {
           },
         });
 
-    if (this.props.initialView) { 
-      const item = {
-        ...this.frameLabel(),
-        resourceIri: this.props.initialView.resource,
-        viewId: this.props.initialView.view,
-        data: this.props.initialView.data,
-      }; 
-      this.onAddNewItem(item);
-    } else {
-      this.onAddNewItem();
-    }
-
-
-    if (this.props.leftPanels) {
-      this.props.leftPanels.forEach((panelConfig, i) =>
-        this.layoutRef.current.addTabToTabSet(
-          this.state.layout
-              .getBorderSet()
-              .getBorders()
-              .find(b => b.getLocation() === DockLocation.LEFT)
-              .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': { 'panelIndex': i }, 'enableClose': false, 'className': panelConfig.class }
-        )
-      );
-    }
-
-    if (this.props.rightPanels) {
-      this.props.rightPanels.forEach((panelConfig, i) =>
-        this.layoutRef.current.addTabToTabSet(
-          this.state.layout
-              .getBorderSet()
-              .getBorders()
-              .find(b => b.getLocation() === DockLocation.RIGHT)
-              .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': { 'panelIndex': i }, 'enableClose': false, 'className': panelConfig.class }
-        )
-      );
-    }
-
-    
     // That is ugly hack for in frame navigation until we find a better way to do this
     setFrameNavigation(true, (iri: Rdf.Iri, props?: {}): boolean => {
       if (iri.value.startsWith('http://www.researchspace.org/instances/narratives')) {
@@ -432,18 +406,169 @@ export class DashboardComponent extends Component<Props, State> {
         return false;
       }
     });
+
+    // registers with app-state; the initial frames are added in onSharedStateResolved
+    super.componentDidMount();
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    if (prevState.items !== this.state.items || prevState.activeFrameId !== this.state.activeFrameId) {
+      this.syncDashboardState();
+    }
   }
 
   componentWillUnmount() {
     setFrameNavigation(false);
     this.cancellation.cancelAll();
-    this.subscription.unsubscribe();
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+    super.componentWillUnmount();
   }
 
-  private onAddNewItem = (item: Item = this.frameLabel()) => {
-    // check if item.resourceIri exists and is an actual iri to prevent errors
-    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")) && !(item?.resourceIri.startsWith("https://"))) 
+  protected getSupportedSharedStateVars() {
+    return SHARED_STATE_VARS;
+  }
+
+  protected isAutoSyncEnabled() {
+    // the layout is serialized and sent by syncDashboardState
+    return false;
+  }
+
+  protected getInitialSharedState(): ComponentState {
+    // the initial layout is a default, it is not part of the shared state
+    return {};
+  }
+
+  protected handleSharedStateSync(state: ComponentState) {
+    if (state.layoutModel && state.openFrames) {
+      this.restoreDashboardState({
+        layoutModel: state.layoutModel,
+        openFrames: state.openFrames,
+        activeFrameId: state.activeFrameId,
+        version: state.version || 1,
+      });
+    }
+  }
+
+  protected onSharedStateResolved() {
+    if (this.isRestored) {
+      this.addSidePanels();
+      this.startStateTracking();
       return;
+    }
+    const initialItem = this.props.initialView
+      ? {
+          ...this.frameLabel(),
+          resourceIri: this.props.initialView.resource,
+          viewId: this.props.initialView.view,
+          data: this.props.initialView.data,
+        }
+      : this.frameLabel();
+    this.onAddNewItem(initialItem, () => {
+      this.addSidePanels();
+      // wait for the updates queued while adding the frame
+      this.setState({}, () => this.startStateTracking());
+    });
+  }
+
+  private addSidePanels() {
+    this.addBorderPanels(this.props.leftPanels, DockLocation.LEFT, 'leftItem');
+    this.addBorderPanels(this.props.rightPanels, DockLocation.RIGHT, 'rightItem');
+  }
+
+  /**
+   * Adds the configured panels to a border, skipping those already in the layout
+   * (a restored layout contains them).
+   */
+  private addBorderPanels(panels: Props['leftPanels'], location: DockLocation, component: string) {
+    if (!panels) {
+      return;
+    }
+    const border = this.state.layout
+      .getBorderSet()
+      .getBorders()
+      .find((b) => b.getLocation() === location);
+    const existing = border
+      .getChildren()
+      .filter((node) => node instanceof TabNode && node.getComponent() === component)
+      .map((node: TabNode) => node.getConfig()?.panelIndex);
+    panels.forEach((panelConfig, i) => {
+      if (existing.indexOf(i) < 0) {
+        this.layoutRef.current.addTabToTabSet(border.getId(), {
+          type: 'tab',
+          name: panelConfig.label,
+          component,
+          config: { panelIndex: i },
+          enableClose: false,
+          className: panelConfig.class,
+        });
+      }
+    });
+  }
+
+  private getDashboardSharedState(): DashboardSharedState {
+    return DashboardStateAdapters.createDashboardState(this.state.layout, this.state.items, this.state.activeFrameId);
+  }
+
+  private startStateTracking() {
+    this.isTrackingState = true;
+    if (this.sharedStateManager) {
+      this.setSharedStateBaseline({ ...this.getDashboardSharedState() });
+    }
+  }
+
+  /**
+   * Sends the layout and the open frames to app-state when they have changed.
+   */
+  private syncDashboardState = () => {
+    if (!this.isTrackingState || !this.sharedStateManager || !this.state.layout || !this.state.items) {
+      return;
+    }
+    // the layout and the frames are only meaningful together
+    this.updateSharedState({ ...this.getDashboardSharedState() }, true);
+  };
+
+  private restoreDashboardState(dashboardState: DashboardSharedState) {
+    const extracted = DashboardStateAdapters.extractDashboardState(dashboardState);
+    if (!extracted || !extracted.model) {
+      console.warn(`rs-dashboard: ignoring an invalid shared state for "${this.props.id}"`);
+      return;
+    }
+    const { model, items, activeFrameId } = extracted;
+    this.isRestored = true;
+    this.itemLabelCount = items.reduce((max, item) => Math.max(max, item.index || 0), 0);
+    // the restored layout is not a change to send back
+    const wasTracking = this.isTrackingState;
+    this.isTrackingState = false;
+    this.setState({ layout: model, items, activeFrameId }, () => {
+      if (activeFrameId && model.getNodeById(activeFrameId)) {
+        model.doAction(FlexLayout.Actions.selectTab(activeFrameId));
+      }
+      if (wasTracking) {
+        this.startStateTracking();
+      }
+    });
+  }
+
+  /**
+   * Returns a frame id that is not used by the open frames, including restored ones.
+   */
+  private newFrameId(): string {
+    const usedIds = new Set(this.state.items.map((item) => item.id));
+    let id: string;
+    do {
+      id = uniqueId('frame');
+    } while (usedIds.has(id));
+    return id;
+  }
+
+  private onAddNewItem = (item: Item = this.frameLabel(), onAdded?: () => void) => {
+    // check if item.resourceIri exists and is an actual iri to prevent errors
+    if (item?.resourceIri && !(item?.resourceIri.startsWith("http://")) && !(item?.resourceIri.startsWith("https://"))) {
+      onAdded?.();
+      return;
+    }
   
     // check if an item with the same resourceIri is already in the tabset
     const itemIsAlreadyOpen = this.state.items.filter((i) => item.resourceIri && i.resourceIri === item.resourceIri && i.viewId === item.viewId)
@@ -455,6 +580,7 @@ export class DashboardComponent extends Component<Props, State> {
         viewId: item.viewId,
         resourceIri: item.resourceIri,
       });
+      onAdded?.();
       return
     }
     const itemViewConfig = this.props.views.find(({id}) => id === item.viewId);
@@ -463,6 +589,7 @@ export class DashboardComponent extends Component<Props, State> {
     const viewConfig = !itemViewConfig?itemLinkedViewConfig:itemViewConfig;
 
     if (viewConfig?.unique && this.state.items.find(i => i.viewId === item.viewId)) {
+      onAdded?.();
       return;
     } else {
       this.setState(
@@ -496,6 +623,7 @@ export class DashboardComponent extends Component<Props, State> {
             viewId: item.viewId,
             resourceIri: item.resourceIri,
           });
+          onAdded?.();
         }
       );
     }
@@ -847,7 +975,8 @@ export class DashboardComponent extends Component<Props, State> {
     // where we don't allow new netsted tabs
     if(node.getConfig()?.type !== 'nested') {
       renderValues.stickyButtons.push(
-        <button className='flexlayout__tab_toolbar_sticky_button'
+        <button key={`add-tab-${node.getId()}`}
+          className='flexlayout__tab_toolbar_sticky_button'
           onMouseDown={event=> event.stopPropagation()}
           onClick={(event) => {
             this.onAddNewItem();
@@ -869,8 +998,8 @@ export class DashboardComponent extends Component<Props, State> {
     const mapsDashboardItems = [];
     maps.forEach(map => mapsDashboardItems.push(map.id));
 
-    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB, Actions.MAXIMIZE_TOGGLE]
-    if (actions.includes(action.type))
+    const actions = [Actions.ADJUST_BORDER_SPLIT, Actions.ADJUST_SPLIT, Actions.MOVE_NODE, Actions.ADD_NODE, Actions.SELECT_TAB, Actions.DELETE_TAB, Actions.MAXIMIZE_TOGGLE, Actions.RENAME_TAB]
+    if (actions.includes(action.type)) {
       trigger({
         eventType: LayoutChanged,
         source: 'dashboard',
@@ -883,9 +1012,30 @@ export class DashboardComponent extends Component<Props, State> {
         targets: mapsDashboardItems,
       });
 
+    }
+
     if (action.type === Actions.DELETE_TAB) {
       const tab = this.state.layout.getNodeById(action.data.node) as TabNode;
       return this.onRemoveItem(action, tab.getConfig().itemId);
+    } else if (action.type === Actions.SELECT_TAB) {
+      // Update active frame ID when a tab is selected
+      const tab = this.state.layout.getNodeById(action.data.tabNode) as TabNode;
+      if (tab) {
+        this.setState({ activeFrameId: tab.getId() });
+      }
+      return action;
+    } else if (action.type === Actions.RENAME_TAB) {
+      // Handle tab rename - update the item label in state
+      const tabNode = this.state.layout.getNodeById(action.data.node) as TabNode;
+      if (tabNode) {
+        const itemId = tabNode.getConfig().itemId;
+        const newName = action.data.text;
+        
+        this.setState(prevState => ({
+          items: prevState.items.map(item => (item.id === itemId ? { ...item, label: newName } : item)),
+        }));
+      }
+      return action;
     } else {
       return action;
     }
@@ -900,6 +1050,7 @@ export class DashboardComponent extends Component<Props, State> {
       //  titleFactory={this.titleFactory}
         onRenderTabSet={this.onRenderTabSet}
         onAction={this.onLayoutAction}
+        onModelChange={this.syncDashboardState}
         icons={this.tabIcons()}
       />
     );

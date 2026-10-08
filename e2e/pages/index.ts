@@ -10,3 +10,4 @@ export { KmEntityCard } from './KmEntityCard';
 export { EntityForm } from './EntityForm';
 export { Clipboard } from './Clipboard';
 export { sel, toolbar } from './selectors';
+export { ThinkingFrames } from './ThinkingFrames';

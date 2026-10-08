@@ -37,6 +37,12 @@ import { ControlledPropsHandler } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
 
 import { ColumnConfiguration, Table, TableConfig, TableLayout } from './Table';
+import {
+  SharedStateComponent,
+  SharedStateProps,
+  SharedStateSyncOptions,
+} from 'platform/components/semantic/app-state/SharedStateComponent';
+import { ComponentState } from 'platform/components/semantic/app-state/AppStateEvents';
 
 interface ControlledProps {
   /**
@@ -51,7 +57,13 @@ interface TableState {
   isLoading?: boolean;
   currentPage?: number;
   error?: any;
+  filterValue?: string;
 }
+
+/**
+ * State variables of the table that can be shared through `<app-state>`.
+ */
+const SHARED_STATE_VARS: Array<keyof TableState> = ['currentPage', 'filterValue'];
 
 interface Options {
   /**
@@ -167,10 +179,11 @@ function isRowConfig(config: SemanticTableConfig): config is RowConfig {
 export type SemanticTableConfig = BaseConfig | ColumnConfig | RowConfig;
 export type SemanticTableProps = SemanticTableConfig &
   ControlledPropsHandler<ControlledProps> &
+  SharedStateProps &
   ComponentProps &
   Props<SemanticTable>;
 
-export class SemanticTable extends Component<SemanticTableProps, TableState> {
+export class SemanticTable extends SharedStateComponent<SemanticTableProps, TableState> {
   static propTypes: Partial<Record<keyof SemanticTableProps, any>> = {
     ...Component.propTypes,
     onControlledPropChange: PropTypes.func,
@@ -208,10 +221,32 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
 
   public componentDidMount() {
     this.prepareConfigAndExecuteQuery(this.props, this.context);
+    // registers with app-state after the query has reset the current page,
+    // so that a restored page is not overwritten
+    super.componentDidMount();
   }
 
   componentWillUnmount() {
+    super.componentWillUnmount();
     this.cancellation.cancelAll();
+  }
+
+  protected getSupportedSharedStateVars() {
+    return SHARED_STATE_VARS;
+  }
+
+  protected handleSharedStateSync(state: ComponentState, options: SharedStateSyncOptions) {
+    const updates: Partial<TableState> = {};
+    this.getSharedStateVars().forEach((varName) => {
+      if (state[varName] !== undefined) {
+        updates[varName] = state[varName];
+      } else if (options.mode === 'replace') {
+        updates[varName] = varName === 'currentPage' ? 0 : undefined;
+      }
+    });
+    // shouldComponentUpdate ignores page and filter changes made by the user,
+    // a state coming from app-state has to be rendered
+    this.setState(updates, () => this.forceUpdate());
   }
 
   public render() {
@@ -239,14 +274,25 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
       prefetchLabels: this.props.prefetchLabels,
     };
     layout = this.handleDeprecatedLayout(layout);
+    
     const { onControlledPropChange, ...otherProps } = this.props;
+    const sharesPage = this.isSharedVariable('currentPage');
     const controlledProps: Partial<TableConfig> = {
       currentPage: this.state.currentPage,
-      onPageChange: onControlledPropChange ? (page) => {
-        this.setState({currentPage: page});
-        onControlledPropChange({ currentPage: page });
-      } : undefined,
+      onPageChange:
+        onControlledPropChange || sharesPage
+          ? (page) => {
+              this.setState({ currentPage: page });
+              if (onControlledPropChange) {
+                onControlledPropChange({ currentPage: page });
+              }
+            }
+          : undefined,
     };
+    if (this.isSharedVariable('filterValue')) {
+      controlledProps.filterValue = this.state.filterValue;
+      controlledProps.onFilterChange = (filterValue) => this.setState({ filterValue });
+    }
     return createElement(Table, {
       ...otherProps,
       ...controlledProps,

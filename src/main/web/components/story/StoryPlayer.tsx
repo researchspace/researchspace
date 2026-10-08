@@ -73,7 +73,7 @@ export interface StoryConfig {
   /**
    * Width of the card, as a CSS length.
    *
-   * @default "360px"
+   * @default "400px"
    */
   width?: string;
 
@@ -175,7 +175,7 @@ export class StoryPlayer extends Component<StoryProps, State> {
     repository: DEFAULT_STORY_REPOSITORY,
     layout: 'floating',
     position: 'middle-right',
-    width: '360px',
+    width: '400px',
     collapsible: true,
     collapsed: false,
     showTitle: true,

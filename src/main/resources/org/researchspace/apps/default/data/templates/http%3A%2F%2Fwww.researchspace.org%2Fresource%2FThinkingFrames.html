@@ -26,8 +26,6 @@
 
 <div class='page_100vh thinking-frames-page'>
   <rs-dashboard
-    home-page-iri="http://www.researchspace.org/resource/Start"
-
     [[#if (urlParam "view")]]
       initial-view='{
         "view": "[[urlParam "view"]]",
@@ -53,16 +51,20 @@
     [[else]]
       [[#if view]]
         initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
+      [[else]]
+        initial-view='{"view": "dashboard"}'
       [[/if]]
     [[/if]]
+
+    default-view-id="dashboard"
 
     views='[
 
     {
-    	"id": "homepage",
-      "label": "Homepage",
-      "iconName": "homepage-button",
-      "template": "{{> homepage}}"
+    	"id": "dashboard",
+      "label": "Dashboard",
+      "iconName": "dashboard_customize",
+      "template": "{{> dashboard}}"
     },
 
     {
@@ -436,7 +438,7 @@
     
     <template id='finder'>[[> rsp:Finder]]</template>
 
-    <template id='homepage'>
+    <template id='dashboard'>
       [[> rsp:Start]] 
     </template>
 

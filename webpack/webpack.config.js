@@ -265,6 +265,8 @@ module.exports = function(isProd) {
                     'basil.js': 'basil.js/src/basil.js',
                     'handlebars': 'handlebars/dist/handlebars.js',
                     'jsonld': path.join(ROOT_DIR, 'node_modules/jsonld/dist/jsonld.js'),
+                    'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js',
+                    'react/jsx-runtime': 'react/jsx-runtime.js',
                 },
             ),
             extensions: ['.ts', '.tsx', '.js', '.scss'],
@@ -293,7 +295,7 @@ module.exports = function(isProd) {
             }),    
             new CircularDependencyPlugin({
                 // exclude detection of files based on a RegExp
-                exclude: /src\/main\/web\/ontodia|node_modules/,
+                exclude: /node_modules/,
                 // add errors to webpack instead of warnings
                 failOnError: true,
                 // allow import cycles that include an asyncronous import,

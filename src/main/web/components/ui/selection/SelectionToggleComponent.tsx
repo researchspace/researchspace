@@ -54,6 +54,7 @@ interface State {
  */
 class SelectionToggleComponent extends Component<Props, State> {
   private cancellation = new Cancellation();
+  private suppressToggleEvent = false;
 
   static contextTypes = SelectionGroupContextTypes;
   context: SelectionGroupContext;
@@ -71,8 +72,19 @@ class SelectionToggleComponent extends Component<Props, State> {
     }
   }
 
+  componentWillReceiveProps(nextProps: Props) {
+    if (nextProps.tag !== this.props.tag) {
+      this.suppressToggleEvent = true;
+      this.setState({
+        value: this.context.getSelectionValue ? this.context.getSelectionValue(nextProps.tag) : false,
+      });
+    }
+  }
+
   componentDidUpdate(prevProps: Props, prevState: State) {
-    if (this.state.value !== prevState.value) {
+    const suppressed = this.suppressToggleEvent;
+    this.suppressToggleEvent = false;
+    if (this.state.value !== prevState.value && !suppressed) {
       trigger({
         eventType: SelectionEvents.Toggle,
         source: 'SelectionToggle',

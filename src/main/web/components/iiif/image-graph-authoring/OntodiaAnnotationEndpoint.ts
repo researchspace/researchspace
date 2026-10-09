@@ -18,7 +18,7 @@
 
 import * as Kefir from 'kefir';
 import * as SparqlJs from 'sparqljs';
-import { ElementModel, ElementIri, ElementTypeIri, LinkTypeIri, LiteralProperty, LocalizedString } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { trigger } from 'platform/api/events';
 import { Rdf } from 'platform/api/rdf';
@@ -36,6 +36,7 @@ import {
 import { AnnotationEndpoint } from 'platform/data/iiif/AnnotationEndpoint';
 
 export interface OntodiaAnnotationEndpointFields {
+  label: string;
   boundingBox: string;
   value: string;
   viewport: string;
@@ -43,7 +44,7 @@ export interface OntodiaAnnotationEndpointFields {
 }
 
 export interface MiradorRegion {
-  region: ElementModel;
+  region: Reactodia.ElementModel;
   isNew: boolean;
 }
 export type MiradorRegions = { [canvasId: string]: Array<MiradorRegion> };
@@ -88,12 +89,12 @@ export class OntodiaAnnotationEndpoint implements AnnotationEndpoint {
           img: canvasIri,
         };
         query = SparqlClient.setBindings(SparqlUtil.parseQuery<SparqlJs.ConstructQuery>(REGION_QUERY), bindings);
-        query = prepareRegionsQuery(query, region.label, 'label');
-        query = prepareRegionsQuery(query, region.properties[this.fields.value] as LiteralProperty, 'svgValue');
-        query = prepareRegionsQuery(query, region.properties[this.fields.viewport] as LiteralProperty, 'viewport');
+        query = prepareRegionsQuery(query, region.properties[this.fields.label], 'label');
+        query = prepareRegionsQuery(query, region.properties[this.fields.value], 'svgValue');
+        query = prepareRegionsQuery(query, region.properties[this.fields.viewport], 'viewport');
         query = prepareRegionsQuery(
           query,
-          region.properties[this.fields.boundingBox] as LiteralProperty,
+          region.properties[this.fields.boundingBox],
           'boundingBox'
         );
       }
@@ -111,8 +112,8 @@ export class OntodiaAnnotationEndpoint implements AnnotationEndpoint {
       data: {
         elementData,
         targets: annotation.on.map((on) => ({
-          targetIri: on.full as ElementIri,
-          linkTypeId: this.fields.isPrimaryAreaOf as LinkTypeIri,
+          targetIri: on.full,
+          linkTypeId: this.fields.isPrimaryAreaOf,
         })),
       },
     });
@@ -136,7 +137,7 @@ export class OntodiaAnnotationEndpoint implements AnnotationEndpoint {
       eventType: OntodiaEvents.DeleteElement,
       source: this.miradorId,
       targets: [this.ontodiaId],
-      data: { iri: annotation['@id'] as ElementIri },
+      data: { iri: annotation['@id'] },
     });
     return Kefir.constant(undefined);
   }
@@ -180,49 +181,27 @@ CONSTRUCT {
 function convertAnnotationToElementModel(
   annotation: OARegionAnnotation,
   fields: OntodiaAnnotationEndpointFields
-): ElementModel {
+): Reactodia.ElementModel {
   const textResource = getAnnotationTextResource(annotation);
   return {
-    id: annotation['@id'] as ElementIri,
-    types: [rso.EX_Digital_Image_Region.value as ElementTypeIri],
-    label: { values: [{ value: textResource.chars, language: '' }] },
+    id: annotation['@id'],
+    types: [rso.EX_Digital_Image_Region.value],
     properties: {
-      [fields.boundingBox]: {
-        type: 'string',
-        values: annotation.on.map((on) => ({ value: on.selector.default.value, language: '' })),
-      },
-      [fields.value]: {
-        type: 'string',
-        values: annotation.on.map((on) => ({ value: on.selector.item.value, language: '' })),
-      },
-      [fields.viewport]: {
-        type: 'string',
-        values: [
-          {
-            value: annotation['http://www.researchspace.org/ontology/viewport'],
-            language: '',
-          },
-        ],
-      },
-      [fields.isPrimaryAreaOf]: {
-        type: 'uri',
-        values: annotation.on.map(
-          on =>
-            ({value: on.full, type: 'uri'})
-        ),
-      },
+      [fields.label]: [Rdf.literal(textResource.chars)],
+      [fields.boundingBox]: annotation.on.map((on) => Rdf.literal(on.selector.default.value)),
+      [fields.value]: annotation.on.map((on) => Rdf.literal(on.selector.item.value)),
+      [fields.viewport]: [Rdf.literal(annotation['http://www.researchspace.org/ontology/viewport'])],
+      [fields.isPrimaryAreaOf]: annotation.on.map(on => Rdf.iri(on.full)),
     }
   };
 }
 
 function prepareRegionsQuery(
   query: SparqlJs.ConstructQuery,
-  property: {
-    values: ReadonlyArray<LocalizedString>;
-  },
+  propertyValues: ReadonlyArray<Reactodia.Rdf.NamedNode | Reactodia.Rdf.Literal> | undefined,
   parameter: string
 ): SparqlJs.ConstructQuery {
-  return SparqlClient.prepareParsedQuery(property.values.map(({ value }) => ({ [parameter]: Rdf.literal(value) })))(
-    query
-  );
+  return SparqlClient.prepareParsedQuery(
+    (propertyValues ?? []).map(({ value }) => ({ [parameter]: Rdf.literal(value) }))
+  )(query);
 }

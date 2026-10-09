@@ -18,7 +18,7 @@
  */
 
 import { Component } from 'react';
-import { isMatch } from 'lodash';
+import { isEqual, isMatch } from 'lodash';
 
 import { Cancellation } from 'platform/api/async';
 import { Event, listen, trigger } from 'platform/api/events';
@@ -95,6 +95,23 @@ export class EventProxy extends Component<EventProxyProps, void> {
   private cancelation = new Cancellation();
 
   componentDidMount() {
+    this.subscribe();
+  }
+
+  componentDidUpdate(prevProps: EventProxyProps) {
+    if (
+      prevProps.onEventType !== this.props.onEventType ||
+      !isEqual(prevProps.onEventTypes, this.props.onEventTypes) ||
+      prevProps.onEventSource !== this.props.onEventSource ||
+      prevProps.onEventTarget !== this.props.onEventTarget
+    ) {
+      this.cancelation.cancelAll();
+      this.cancelation = new Cancellation();
+      this.subscribe();
+    }
+  }
+
+  private subscribe() {
     if (this.props.onEventTypes) {
       this.props.onEventTypes.forEach(
         eventType => {

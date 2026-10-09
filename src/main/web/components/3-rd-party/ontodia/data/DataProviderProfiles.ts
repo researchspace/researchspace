@@ -17,9 +17,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SparqlDataProviderSettings } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
-export const WikidataSettings: SparqlDataProviderSettings = {
+export const CommonSparqlSettings = {
+  // In this query we have such complex ORDER BY to get consistent ordering in the instance search:
+  // try to order by label, normalizing case and datatype.
+  // If there is no labels then order by string representation of the IRI, also normalizing case.
+  lookupQuery:
+`SELECT \${outerProjection} WHERE {
+    \${filterInnerPrelude}
+    {
+        SELECT DISTINCT \${innerProjection} ?localName WHERE {
+            \${filterByType}
+            \${filterByRefElementLink}
+            \${filterByText}
+            \${filterAdditionalRestriction}
+            OPTIONAL { ?inst rdfs:label ?label }
+            BIND(REPLACE(LCASE(STR(?inst)), '(^.*)(#|/)([^/]*)$', '$3') AS ?localName)
+        } ORDER BY DESC(COALESCE(?score, 0)) ASC(STR(LCASE(?label))) ASC(?localName) \${limit}
+    }
+    \${queryTypes}
+    \${queryElementInfo}
+} ORDER BY DESC(COALESCE(?score, 0)) ASC(STR(LCASE(?label))) ASC(?localName)`,
+} satisfies Partial<Reactodia.SparqlDataProviderSettings>;
+
+export const WikidataSettings: Reactodia.SparqlDataProviderSettings = {
+  ...CommonSparqlSettings,
   linkConfigurations: [],
   propertyConfigurations: [],
 
@@ -64,7 +87,7 @@ BIND(IF(STRLEN(?strInst) > 33,
   VALUES (?target) {\${ids}}
 }`,
 
-  elementInfoQuery: `PREFIX ontodia: <https://ontodia.org/context/v1.json/>
+  elementInfoQuery: `PREFIX ontodia: <urn:reactodia:sparql:>
 CONSTRUCT {
   ?inst ontodia:type ?class .
   ?inst ?propType ?propValue.
@@ -125,7 +148,8 @@ OPTIONAL { ?inst rdfs:label ?label }
 `,
 };
 
-export const OwlNoStatsSettings: SparqlDataProviderSettings = {
+export const OwlNoStatsSettings: Reactodia.SparqlDataProviderSettings = {
+  ...CommonSparqlSettings,
   linkConfigurations: [],
   propertyConfigurations: [],
 
@@ -160,7 +184,7 @@ BIND(0 as ?score)
   VALUES (?target) {\${ids}}
 }`,
 
-  elementInfoQuery: `PREFIX ontodia: <https://ontodia.org/context/v1.json/>
+  elementInfoQuery: `PREFIX ontodia: <urn:reactodia:sparql:>
 
 CONSTRUCT {
   ?inst ontodia:type ?class .
@@ -212,7 +236,7 @@ OPTIONAL { ?inst \${dataLabelProperty} ?label }
   filterAdditionalRestriction: '',
 };
 
-export const OwlStatsSettings: SparqlDataProviderSettings = {
+export const OwlStatsSettings: Reactodia.SparqlDataProviderSettings = {
   ...OwlNoStatsSettings,
 
   classTreeQuery: `SELECT ?class ?instcount ?label ?parent WHERE {

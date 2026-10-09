@@ -45,30 +45,6 @@ export const GridTemplate = `
   <mp-resource-card iri='{{iri.value}}'>${DefaultSetItemActions}</mp-resource-card>
 `;
 
-/*
-export const SetListTemplate = `
-  <div style='display: flex; align-items: center; justify-content: space-between;'>
-    <div style='overflow: hidden;'>
-      ${DefaultItemLabel}
-    </div>
-    <div class='set-management__item-actions' style='margin-left: auto;'>
-      <bs-dropdown-button pull-right=true bs-style='link' title=''
-                          id='set-actions-{{iri.value}}'>
-        <mp-set-management-action-manage-set>
-          <bs-menu-item event-key='manage' draggable="false">Manage set</bs-menu-item>
-        </mp-set-management-action-manage-set>
-        <mp-set-management-action-rename-set>
-          <bs-menu-item event-key='rename' draggable="false">Rename set</bs-menu-item>
-        </mp-set-management-action-rename-set>
-        <mp-set-management-action-remove-set>
-          <bs-menu-item event-key='remove' draggable="false">Remove set</bs-menu-item>
-        </mp-set-management-action-remove-set>
-      </bs-dropdown-button>
-    </div>
-  </div>
-`;
-*/
-
 export const SetListTemplate = `
   <div style='display: flex; align-items: center; justify-content: space-between;'>
   <div style='overflow: hidden;'>
@@ -105,7 +81,13 @@ export const KeywordSearch: KeywordFilter = {
   placeholder: 'Search in clipboard...',
   placeholderInSet: 'Search in set',
   queryPattern: `
-    ?itemHolder ?__preferredLabel__ ?itemLabel .
+    {
+      ?item ?__preferredLabel__ ?itemLabel .
+    } UNION {
+      ?item crm:P1_is_identified_by/crm:P190_has_symbolic_content ?itemLabel .
+    } UNION {
+      ?itemHolder ?__preferredLabel__ ?itemLabel .
+    }
     FILTER REGEX(STR(?itemLabel), "(.*?)?__token__", "i")`,
 };
 export const MinSearchTermLength = 3;

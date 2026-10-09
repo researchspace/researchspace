@@ -137,7 +137,7 @@ export function navigateToResource(
  * new windows/tab not from the action triggered by the user
  */
 export function openResourceInNewWindow(iri: Rdf.Iri, props?: {}, repository?: string): void {
-  window.open(construcUrlForResourceSync(iri, props, repository).toString(), '_blank');
+  window.open(constructUrlForResourceSync(iri, props, repository).toString(), '_blank');
 }
 
 export function openExternalLink(url: uri.URI, target = '_blank') {
@@ -199,12 +199,12 @@ export function constructUrlForResource(
       const resourcePath = ConfigHolder.getEnvironmentConfig().resourceUrlMapping.value;
       return constructUrl(`${resourcePath}${mUri.get()}`, props, repository, fragment);
     } else {
-      return construcUrlForResourceSync(iri, props, repository, fragment);
+      return constructUrlForResourceSync(iri, props, repository, fragment);
     }
   }
 }
 
-export function construcUrlForResourceSync(iri: Rdf.Iri, props: {} = {}, repository = 'default', fragment = '') {
+export function constructUrlForResourceSync(iri: Rdf.Iri, props: {} = {}, repository = 'default', fragment = '') {
   const simpleUrl = constructSimpleUrl(iri, props, repository, fragment);
   if (simpleUrl) {
     return simpleUrl;
@@ -216,9 +216,9 @@ export function construcUrlForResourceSync(iri: Rdf.Iri, props: {} = {}, reposit
 }
 
 /**
- * If IRI is a resolvalbe one, which means it starts with platformBaseIri, then we can construct
+ * If IRI is a resolvable one, which means it starts with platformBaseIri, then we can construct
  * a simple URL. E.g
- * http://example.com/resource/123 and platform is actually runnnig on http://example.com/resource.
+ * http://example.com/resource/123 and platform is actually running on http://example.com/resource.
  * In this case there is no need to resolve IRI to prefixed IRI or use ?uri query parameter.
  */
 function constructSimpleUrl(

@@ -30,6 +30,11 @@ export interface DraggableProps {
    */
   iri: string;
   /**
+   * CSS selector of an ancestor to use as the drag preview instead of the
+   * element itself (e.g. the whole card when dragging by an inner handle).
+   */
+  dragImageSelector?: string;
+  /**
    * Styles that are added to the component, if it dragged.
    */
   dragStyles?: CSSProperties;
@@ -99,6 +104,15 @@ export class Draggable extends Component<DraggableProps, State> {
     // One can drop into draft-js contenteditable only if some known to browser mime-type is set
     e.dataTransfer.setData(DRAG_AND_DROP_FORMAT_IE, this.props.iri);
 
+    const { dragImageSelector } = this.props;
+    if (dragImageSelector && e.dataTransfer.setDragImage) {
+      const preview = this.source.closest(dragImageSelector);
+      if (preview) {
+        const rect = preview.getBoundingClientRect();
+        e.dataTransfer.setDragImage(preview, e.clientX - rect.left, e.clientY - rect.top);
+      }
+    }
+
     this.setState({ isDragged: true });
     if (this.props.onDragStart) {
       this.props.onDragStart(this.props.iri);
@@ -137,6 +151,8 @@ export class Draggable extends Component<DraggableProps, State> {
       style: style,
       draggable: true,
       onMouseDown: (e) => e.stopPropagation(),
+      // stop pointerdown too, or pointer-event canvases pan instead of dragging
+      onPointerDown: (e) => e.stopPropagation(),
     });
   }
 }

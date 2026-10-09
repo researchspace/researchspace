@@ -78,6 +78,7 @@ public class ProxyConfigs {
         private String socketTimeout;
         private String forwardip;
         private String preserveHost;
+        private String stripPathPrefix;
 
         public String getPreserveHost() {
             return preserveHost;
@@ -85,6 +86,14 @@ public class ProxyConfigs {
 
         public void setPreserveHost(String preserveHost) {
             this.preserveHost = preserveHost;
+        }
+
+        public String getStripPathPrefix() {
+            return stripPathPrefix;
+        }
+
+        public void setStripPathPrefix(String stripPathPrefix) {
+            this.stripPathPrefix = stripPathPrefix;
         }
 
         public String getPreserveCookies() {
@@ -190,6 +199,7 @@ public class ProxyConfigs {
                 pmap.put(ProxyServlet.P_HANDLEREDIRECTS, proxyConfig.handleRedirects);
                 pmap.put(ProxyServlet.P_CONNECTTIMEOUT, proxyConfig.socketTimeout);
                 pmap.put(ProxyServlet.P_FORWARDEDFOR, proxyConfig.forwardip);
+                pmap.put("stripPathPrefix", proxyConfig.stripPathPrefix);
 
                 URI uri = null;
                 uri = new URI(proxyConfig.targetUri);

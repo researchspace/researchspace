@@ -139,6 +139,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   private editorRef: React.RefObject<Editor>;
   private readonly cancellation = new Cancellation();
   private templateSelection = this.cancellation.derive();
+  private documentLoading = this.cancellation.derive();
 
   static defaultProps: Partial<TextEditorProps> = {
     resourceTemplates: [],
@@ -369,10 +370,14 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   } 
 
   componentDidMount() {
+    this.loadDocument();
+  }
+
+  private loadDocument() {
     if (this.props.documentIri) {
       const documentIri = Rdf.iri(this.props.documentIri);
-      this.cancellation.map(
-        this.fetchDocument(documentIri)        
+      this.documentLoading.map(
+        this.fetchDocument(documentIri)
       ).observe({
         value: this.onDocumentLoad,
         error: error => console.error(error)
@@ -380,7 +385,19 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     }
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps: TextEditorProps) {
+    if (this.props.documentIri !== prevProps.documentIri) {
+      this.documentLoading = this.cancellation.deriveAndCancel(this.documentLoading);
+      this.setState(
+        {
+          documentIri: this.props.documentIri,
+          loading: !!this.props.documentIri,
+        },
+        () => this.loadDocument()
+      );
+      return;
+    }
+
     // when slate Value is rendered we need to find top most block for sidebar positioning
 
     const { value, anchorBlock } = this.state;

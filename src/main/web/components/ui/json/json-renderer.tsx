@@ -66,6 +66,7 @@ interface Props {
  */
 export class GenericJsonRenderer<T> extends Component<Props, State> {
   private readonly cancellation = new Cancellation();
+  private fetching = this.cancellation.derive();
 
   constructor(props: Props, state: State) {
     super(props, state);
@@ -106,8 +107,19 @@ export class GenericJsonRenderer<T> extends Component<Props, State> {
   }
 
   public componentDidMount() {
+    this.fetchData();
+  }
+
+  public componentDidUpdate(prevProps: Props) {
+    if (this.props.getUrl !== prevProps.getUrl) {
+      this.fetching = this.cancellation.deriveAndCancel(this.fetching);
+      this.setState({ isLoading: true, data: undefined, loadingError: undefined }, () => this.fetchData());
+    }
+  }
+
+  private fetchData() {
     const { getUrl } = this.props;
-    this.cancellation.map(GenericRestService.getJson<T[] | T>(getUrl)).observe({
+    this.fetching.map(GenericRestService.getJson<T[] | T>(getUrl)).observe({
       value: (value) => {
         this.setState({
           isLoading: false,

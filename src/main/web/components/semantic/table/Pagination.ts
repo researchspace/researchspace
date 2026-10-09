@@ -18,6 +18,7 @@
  */
 
 import { Component } from 'react';
+import { createPortal } from 'react-dom';
 import * as D from 'react-dom-factories';
 
 interface GriddlePaginationProps {
@@ -29,6 +30,7 @@ interface GriddlePaginationProps {
 }
 
 export interface CustomPaginationProps {
+  container?: HTMLElement;
   externalCurrentPage?: number;
   onPageChange?: (newPage: number) => void;
 }
@@ -61,15 +63,17 @@ export class Pagination extends Component<PaginationProps, {}> {
       typeof props.externalCurrentPage === 'number' && props.externalCurrentPage !== props.currentPage;
 
     if (shouldUpdatePage) {
-      this.setPage(props.externalCurrentPage);
+      this.setPage(props.externalCurrentPage, props);
     }
   }
 
   pageChange = (event) => {
-    this.setPage(parseInt(event.target.getAttribute('data-value')));
+    event.preventDefault();
+    this.setPage(parseInt(event.currentTarget.getAttribute('data-value'), 10));
   };
 
-  private setPage(newPage: number) {
+  private setPage(newPage: number, props = this.props) {
+    if (newPage < 0 || newPage >= props.maxPage || newPage === props.currentPage) return;
     this.props.setPage(newPage);
     if (this.props.onPageChange) {
       this.props.onPageChange(newPage);
@@ -84,7 +88,11 @@ export class Pagination extends Component<PaginationProps, {}> {
         },
         D.a(
           {
-            onClick: this.props.previous,
+            href: '#',
+            'aria-label': 'Previous page',
+            'aria-disabled': this.props.currentPage === 0,
+            tabIndex: this.props.currentPage === 0 ? -1 : 0,
+            onClick: event => { event.preventDefault(); this.setPage(this.props.currentPage - 1); },
           },
           D.span({}, '\xAB')
         )
@@ -96,7 +104,11 @@ export class Pagination extends Component<PaginationProps, {}> {
         },
         D.a(
           {
-            onClick: this.props.next,
+            href: '#',
+            'aria-label': 'Next page',
+            'aria-disabled': this.props.currentPage === this.props.maxPage - 1,
+            tabIndex: this.props.currentPage === this.props.maxPage - 1 ? -1 : 0,
+            onClick: event => { event.preventDefault(); this.setPage(this.props.currentPage + 1); },
           },
           D.span({}, '\xBB')
         )
@@ -118,12 +130,15 @@ export class Pagination extends Component<PaginationProps, {}> {
               key: i,
               className: selected,
             },
-            D.a({ 'data-value': i, onClick: this.pageChange } as any, i + 1)
+            D.a({ href: '#', 'data-value': i, onClick: this.pageChange,
+              'aria-label': `Page ${i + 1}`, 'aria-current': selected ? 'page' : undefined } as any, i + 1)
           )
         );
       }
 
-      return D.nav({}, D.ul({ className: 'pagination' }, previous, options, next));
+      const pagination = D.nav({ 'aria-label': 'Table pagination' },
+        D.ul({ className: 'pagination' }, previous, options, next));
+      return this.props.container ? createPortal(pagination, this.props.container) : pagination;
     } else {
       return D.nav({});
     }

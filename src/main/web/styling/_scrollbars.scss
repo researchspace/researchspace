@@ -18,37 +18,51 @@
  */
  
 
-// scrollbars
-/* Only Chrome */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background-color: transparent;
-    -webkit-box-shadow: inset 0 0 6px $scrollbar-track;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-
-    -webkit-border-radius: 0px;
-    border-radius: 0px;
-    background-color: $scrollbar-bg;
-    -webkit-box-shadow: inset 0 0 6px rgba(190, 190, 202, 0.5); 
-    
-}
-  
-::-webkit-scrollbar-corner {
-    background-color: transparent;
-}
-
-/* Only FireFox */
-
-@-moz-document url-prefix() {
-    * {
-      scrollbar-color: $scrollbar-bg transparent;
-      scrollbar-width: thin;
+// Application-wide defaults; themes may override the --rs-scrollbar-* hooks.
+// A 4px visible thumb sits inside an 8px gutter in WebKit/Blink. The subtle
+// track stays visible so scrollable areas remain discoverable.
+@supports selector(::-webkit-scrollbar) {
+    ::-webkit-scrollbar {
+        width: var(--rs-scrollbar-size, 8px);
+        height: var(--rs-scrollbar-size, 8px);
     }
+    ::-webkit-scrollbar-track {
+        background: var(--rs-scrollbar-track, #{$scrollbar-track});
+        border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background-color: var(--rs-scrollbar-thumb, #7c7c87);
+        background-clip: padding-box;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        min-height: 28px;
+    }
+    ::-webkit-scrollbar-thumb:hover,
+    ::-webkit-scrollbar-thumb:active {
+        background-color: var(--rs-scrollbar-thumb-hover, #555560);
+    }
+    ::-webkit-scrollbar-corner { background: transparent; }
+}
+
+// Do not set the standard properties in Blink/WebKit: non-auto values would
+// disable the custom pseudo-element styling above. Firefox owns thin's size.
+@supports not selector(::-webkit-scrollbar) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--rs-scrollbar-thumb, #7c7c87) var(--rs-scrollbar-track, #{$scrollbar-track});
+    }
+    *:hover, *:focus-within {
+        scrollbar-color: var(--rs-scrollbar-thumb-hover, #555560) var(--rs-scrollbar-track, #{$scrollbar-track});
+    }
+}
+
+// Keep native accessibility behaviour for high contrast and touch devices.
+@media (forced-colors: active), (pointer: coarse) {
+    * { scrollbar-width: auto; scrollbar-color: auto; }
+    ::-webkit-scrollbar,
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-thumb,
+    ::-webkit-scrollbar-thumb:hover,
+    ::-webkit-scrollbar-thumb:active,
+    ::-webkit-scrollbar-corner { all: revert; }
 }

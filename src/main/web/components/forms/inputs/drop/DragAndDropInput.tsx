@@ -21,6 +21,8 @@ import * as React from 'react';
 import * as Immutable from 'immutable';
 import * as uuid from 'uuid';
 import * as _ from 'lodash';
+import { Modal, Button } from 'react-bootstrap';
+import { AssetCardLayoutContext } from '../../AssetCardLayoutContext';
 
 import { Rdf } from 'platform/api/rdf';
 import { listen } from 'platform/api/events';
@@ -34,6 +36,8 @@ import { FieldValue, AtomicValue } from '../../FieldValues';
 import {
   MultipleValuesInput,
   MultipleValuesProps,
+  CardinalityCheckingHandler,
+  MultipleValuesHandlerProps,
 } from '../MultipleValuesInput';
 
 import { createDropAskQueryForField } from '../../ValidationHelpers';
@@ -81,6 +85,17 @@ export interface DragAndDropInputProps extends MultipleValuesProps {
    */
   itemTemplate?: string
 
+  /** Explicit layout, overriding a containing rs-form-asset-view. */
+  cardLayout?: 'row' | 'grid' | 'tile';
+
+  /** Type-specific creation forms, selected when clicking the empty drop area. */
+  nestedFormTemplates?: Array<{
+    label: string;
+    nestedForm: string;
+    parentIri?: string;
+    passValuesFor?: string[];
+  }>;
+
   nestedFormTemplate?: string
 }
 
@@ -101,6 +116,9 @@ interface State {
   id: string;
 
   nestedForm?: React.ReactElement<any>;
+  choosingForm?: boolean;
+  loadingForm?: boolean;
+  formError?: string;
 }
 
 /**
@@ -108,6 +126,12 @@ interface State {
  */
 export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps, State> {
   private cancelation = new Cancellation();
+  private mounted = false;
+  private formRequest = 0;
+
+  static makeHandler(props: MultipleValuesHandlerProps<DragAndDropInputProps>) {
+    return new CardinalityCheckingHandler(props);
+  }
 
   static defaultProps: Partial<DragAndDropInputProps> = {
     dropAreaTemplate: '<span>Drop resource here</span>',
@@ -122,8 +146,8 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     `,
     itemTemplate: `
       {{> rsp:ResourceCard  iri=iri
-                            viewId="setItem"
-                            dragAndDropInputCard=true
+                            viewId=inputId inputId=inputId
+                            dragAndDropInputCard=true cardLayout=cardLayout
       }}
     `
   }
@@ -140,6 +164,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
   }
 
   componentDidMount() {
+    this.mounted = true;
     this.cancelation
       .map(
         listen({
@@ -151,18 +176,25 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
 
     tryExtractNestedForm(this.props.children, this.context, this.props.nestedFormTemplate)
         .then(nestedForm => {
-          if (nestedForm != undefined) {
+          if (this.mounted && nestedForm != undefined) {
             this.setState({nestedForm});
           }
         });
   }
 
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    this.mounted = false;
+    this.formRequest++;
+    this.cancelation.cancelAll();
+  }
+
   render() {
-    const canCreateNew = !_.isEmpty(this.state.nestedForm);
+    const canCreateNew = !_.isEmpty(this.state.nestedForm) || !_.isEmpty(this.props.nestedFormTemplates);
     return (
       <div className={styles.holder} ref={this.htmlElement}>
         {
-          this.props.readonly ? this.renderItems(false) :
+          this.props.readonly ? this.renderItemsWithLayout(false) :
           (
             <React.Fragment>
               <DropArea
@@ -171,7 +203,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
                 onDrop={this.onDrop}
                 dropMessage={this.dropMessage()}
               >
-                {this.renderItems(canCreateNew)}
+                {this.renderItemsWithLayout(canCreateNew)}
                 {canCreateNew ? <div style={{display: 'none'}}>{this.props.children}</div>  : null}
               </DropArea>
               {
@@ -186,6 +218,16 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
                   </NestedModalForm>
                 ): null
               }
+              <Modal show={!!this.state.choosingForm} onHide={this.closeFormChooser}>
+                <Modal.Header closeButton><Modal.Title>Create resource</Modal.Title></Modal.Header>
+                <Modal.Body>
+                  {this.state.formError ? <div role='alert'>{this.state.formError}</div> : null}
+                  {(this.props.nestedFormTemplates || []).map((form, index) => (
+                    <Button key={index} type='button' block disabled={this.state.loadingForm}
+                      onClick={() => this.chooseForm(index)}>{form.label}</Button>
+                  ))}
+                </Modal.Body>
+              </Modal>
             </React.Fragment>
           )
         }
@@ -215,7 +257,14 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     );
   }
 
-  private renderItems(canCreateNew: boolean) {
+  private renderItemsWithLayout(canCreateNew: boolean) {
+    return <AssetCardLayoutContext.Consumer>{inherited => {
+      const layout = this.props.cardLayout || inherited;
+      return this.renderItems(canCreateNew, layout === 'grid' ? 'tile' : layout);
+    }}</AssetCardLayoutContext.Consumer>;
+  }
+
+  private renderItems(canCreateNew: boolean, cardLayout?: string) {
     const className =
       this.props.renderHeader === false ?
       `${styles.itemArea} ${styles['itemArea--no-header']}` : styles.itemArea ;
@@ -228,7 +277,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
       <div className={className}>
         {
           this.props.values.map(v => {
-            if (FieldValue.isAtomic(v) && v.value.isIri) {
+            if (FieldValue.isAtomic(v) && v.value.isIri()) {
               return (
                 <Draggable iri={v.value.value}
                   key={v.value.value}
@@ -239,7 +288,22 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
                     <TemplateItem
                       template={{
                         source: this.props.itemTemplate,
-                        options: { iri: v.value.value, inputId: this.state.id }
+                        options: {
+                          iri: v.value.value, inputId: this.state.id, cardLayout,
+                          // The captured template context belongs to the enclosing
+                          // form, not this selected value. Nulls deliberately shadow
+                          // its card metadata so ResourceCard resolves the asset's
+                          // own type, renderer and actions (including fallback cards).
+                          // An item template can still pass explicit overrides.
+                          resourceConfig: null,
+                          resourceOntologyClass: null,
+                          resourceLabel: null,
+                          resourceIcon: null,
+                          resourceDescription: null,
+                          resourceFormIRI: null,
+                          resourceVisualisationTemplate: null,
+                          resourceVisualisationTemplateIRI: null,
+                        }
                       }}
                     />
                   </div>
@@ -258,8 +322,33 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
   }
 
   private onCreateNew = () => {
+    if (!_.isEmpty(this.props.nestedFormTemplates)) {
+      this.setState({ choosingForm: true, formError: undefined });
+      return;
+    }
     this.setState((state) => ({ nestedFormOpen: !state.nestedFormOpen }));
-  }
+  };
+
+  private closeFormChooser = () => {
+    this.formRequest++;
+    this.setState({ choosingForm: false, loadingForm: false });
+  };
+
+  private chooseForm = (index: number) => {
+    const form = this.props.nestedFormTemplates[index];
+    const request = ++this.formRequest;
+    this.setState({ loadingForm: true, formError: undefined });
+    tryExtractNestedForm(undefined, this.context, form.nestedForm,
+      form.parentIri ? Rdf.iri(form.parentIri) : undefined, form.passValuesFor).then(nestedForm => {
+      if (!this.mounted || request !== this.formRequest) return;
+      if (!nestedForm) throw new Error('No creation form was found.');
+      this.setState({ nestedForm, nestedFormOpen: true, choosingForm: false, loadingForm: false });
+    }).catch(error => {
+      if (this.mounted && request === this.formRequest) {
+        this.setState({ loadingForm: false, formError: String(error.message || error) });
+      }
+    });
+  };
 
   private onNestedFormSubmit = (value: AtomicValue) => {
     this.setState({ nestedFormOpen: false });
@@ -290,6 +379,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
       this.props.values.findIndex(
         v => FieldValue.isAtomic(v) && v.value.isIri() && v.value.equals(iri)
       );
+    if (itemIndex < 0) return;
     const values = this.props.values.remove(itemIndex)
     const { updateValues, handler } = this.props;
     updateValues(({ errors }) => handler.validate({ values, errors }));

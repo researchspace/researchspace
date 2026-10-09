@@ -13,7 +13,7 @@
 
 <mp-event-target-template-render id="{{viewId}}-entity-editor-area" template='{{> template}}'>
   <template id='template'>
-    <div class="resource-editView-container">
+    <div class="resource-editView-container{{#if collection}} resource-editView-container--authority{{/if}}">
       {{#if collectionDeleted}}
         <div class="page__grid-container">
           <div class="page__content-container resource-editView-form-container">
@@ -53,9 +53,9 @@
       {{else if resourceConfigurationError}}
         <div class="page__grid-container">
           <div class="page__content-container resource-editView-form-container">
-            <div class='resource-editView-formHeader'>
-              <div class="resource-editView-formHeader-title-container">
-                <h2 class="resource-editView-formHeader-title">
+            <div class='resource-record-header resource-record-header--editor'>
+              <div class="resource-record-header-title-container">
+                <h2 class="resource-record-header-title">
                   <div class="link-draggable">
                     <mp-draggable iri='{{iri}}'>
                       <div class="text-truncate">
@@ -66,6 +66,7 @@
                 </h2>
               </div>
               <div class="btn-inline-container">
+                {{#if iri}}[[> rsp:ResourceViewButton]]{{/if}}
                 <mp-event-trigger id='{{viewId}}-resourceConfigurationErrorArea-refresh-trigger' 
                                   type='Component.TemplateUpdate' 
                                   targets='["{{viewId}}-resource-editor-frame"]'
@@ -233,9 +234,10 @@
       {{else}}
         {{#if collection}}
           {{#if resourceMembershipProperty}}
-            <mp-splitpane min-size=250 
-                          default-size=400 
-                          snap-threshold=150 
+            <mp-splitpane class="authority-browser"
+                          min-size=48
+                          default-size=320
+                          snap-threshold=180
                           default-open=true
                           persist-resize=false 
                           always-render=true >
@@ -268,13 +270,13 @@
                     </button>
                   </div>
                 </mp-splitpane-toggle-off>
-                <mp-splitpane-sidebar-open style="flex: 1;">
+                <mp-splitpane-sidebar-open class="authority-browser__tree" style="flex: 1;">
                   <div class="split-pane__sidebar-open">
                     <div class="collection-terms-area">
                       {{#if editable}}
                         <mp-event-trigger id='{{viewId}}-form-new-trigger' 
                                           type='Component.TemplateUpdate' 
-                                          data='{"mode": "new", "currentView": "{{viewId}}" }' 
+                                          data='{"mode": "new", "currentView": "{{viewId}}", "iri": null, "broader": null}'
                                           targets='["{{collection}}-mytree", "{{viewId}}-term-forms"]'>
                           <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
                             <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
@@ -450,12 +452,13 @@
             <div class="page__content-container resource-editView-form-container">
               <mp-event-target-template-render id='{{viewId}}-term-forms' template='{{> template}}'>
                 <template id='template'>
-                  <div class='resource-editView-formHeader'>
-                    <div class="{{#if (eq mode 'deleted')}}{{else}}resource-editView-formHeader-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
+                  {{#if mode}}
+                  <div class='resource-record-header resource-record-header--editor'>
+                    <div class="{{#if (eq mode 'deleted')}}{{else}}resource-record-header-title-container{{/if}}" style="{{#if (eq mode 'deleted')}}width: 100%;{{/if}}">
                       {{#switch mode}}
                         {{#case "new" break=true}}
                           {{#if broader}}
-                            <h2 class="resource-editView-formHeader-title">
+                            <h2 class="resource-record-header-title">
                               New 
                               {{#if collectionLabel}}
                                 <span style="text-transform: lowercase;">{{collectionLabel}}</span>
@@ -483,7 +486,7 @@
                               {{/if}}
                             </h2>
                           {{else}}
-                            <h2 class="resource-editView-formHeader-title">New
+                            <h2 class="resource-record-header-title">New
                               {{#if collection}}
                                 {{#if collectionLabel}}
                                   <span style="text-transform: lowercase;">{{collectionLabel}}</span>
@@ -502,7 +505,8 @@
                         {{/case}}
 
                         {{#case "edit" break=true}}
-                          <h2 class="resource-editView-formHeader-title">
+                          {{#unless editable}}<span class="resource-record-header__mode">Read only</span>{{/unless}}
+                          <h2 class="resource-record-header-title">
                             <div class="link-draggable">
                             [[!--  <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true"></rs-icon> --]]
                             
@@ -554,7 +558,7 @@
                         {{/case}}
 
                         {{#case "view" break=true}}
-                          <h2 class="resource-editView-formHeader-title">
+                          <h2 class="resource-record-header-title">
                             <div>
                               <div class="link-draggable">
                             [[!--    <rs-icon icon-type="rounded" icon-name="drag_indicator" symbol="true"></rs-icon> --]]
@@ -667,13 +671,14 @@
                         {{/if}} 
 
                         {{#if (not (or (eq mode "new") (eq mode "deleted")))}}
+                          {{> rsp:ResourceViewButton}}
                           {{#if (eq resourceConfiguration "http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document")}}
                             <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
                                                       urlqueryparam-view='authority-list' 
                                                       urlqueryparam-resource='{{iri}}'>
-                                <button class="btn btn-action btn-textAndIcon">
+                                <button type="button" class="resource-record-header__action resource-record-header__action--icon"
+                                        title="List of resources" aria-label="List of resources">
                                   <rs-icon icon-type="rounded" icon-name="list" symbol="true"></rs-icon>
-                                  <span>List of resources</span>
                                 </button>
                             </semantic-link-container>
                           {{/if}} 
@@ -735,7 +740,7 @@
                             </mp-overlay-dialog-content>
 
                           </mp-overlay-dialog>
-
+                         
                           <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
                                             type='Component.TemplateUpdate' 
                                             targets='["{{#if collection}}{{viewId}}-term-forms{{else}}{{viewId}}-resource-editor-frame{{/if}}"]'
@@ -758,6 +763,7 @@
                                                             iri=iri
                                                             resourceConfig=resourceConfiguration
                                                             resourceLabel=resourceName
+                                                            resourceVisualisationTemplateIRI=resourceVisualisationTemplateIRI
                                                             resourceEditorButton=true
                                                             hidePreview=true
                                                             headerButton=true
@@ -767,6 +773,25 @@
                       </div>
                     {{/if}}
                   </div>
+
+                  {{else if collection}}
+                    <section class="authority-browser-empty-state" aria-label="Authority items">
+                      <h2>Select an authority item</h2>
+                      <p>Select an item from the list to view its details.</p>
+                      {{#if editable}}
+                        <mp-event-trigger id="{{viewId}}-empty-authority-new-trigger"
+                                          type="Component.TemplateUpdate"
+                                          data='{"mode": "new", "currentView": "{{viewId}}", "iri": null, "broader": null}'
+                                          targets='["{{collection}}-mytree", "{{viewId}}-term-forms"]'>
+                          <button type="button" class="btn btn-action btn-textAndIcon">
+                            <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                            <span>New authority item</span>
+                          </button>
+                        </mp-event-trigger>
+                        <p class="authority-browser-empty-state__hint">The new item will be added to <mp-label iri="{{collection}}"></mp-label>.</p>
+                      {{/if}}
+                    </section>
+                  {{/if}}
 
                   [[!-- Update Search page if a particular resource is created --]]
                   <mp-event-proxy id='{{viewId}}-update-ResourceSearchPage-on-form-creation'
@@ -879,6 +904,7 @@
                                                 {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
                                                 "resourceConfig":"{{resourceConfiguration}}",
                                                 {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                                {{#if data}}"data":{{{stringify data}}},{{/if}}
                                                 {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
                                                 "editable": {{editable}},
                                                 "mode": "{{mode}}",
@@ -953,6 +979,4 @@
       {{/if}}
     </div>
   </template>
-</mp-event-target-template-render> 
-
-
+</mp-event-target-template-render>

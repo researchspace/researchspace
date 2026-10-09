@@ -17,75 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* .resource-scheme-content {
-
-    .warning-area {
-
-        background-color: $color-white;
-        padding: 30px;
-        margin-bottom: 20px;
-
-        .warning-message {
-
-            background-color: $color-white;
-            color: $color-danger;
-            font-size: 1.1em;
-            font-weight: bold;
-            line-height: 1.5;
-            margin-bottom: 15px;
-        }
-
-        ul {
-            margin-bottom: 0;
-            line-height: 1.45;
-        }
-    }
-
-    .resource-scheme-row {
-
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-right: 8px;
-        margin-bottom: 10px;
-
-        .form-group {
-
-            margin-bottom: 0;
-        }
-
-        .form-control {
-
-            min-width: 275px;
-            height: auto;
-            padding: 10px 10px 10px $input-height;
-            border: 1px solid transparent;
-            background-image: url(/assets/images/icons/search_grey.svg);
-            background-repeat: no-repeat;
-            background-size: 16px 16px;
-            background-position: left 10px center;
-
-            font-size: 14.5px;
-
-            &::placeholder {
-                opacity: .8;
-            }
-
-            &:focus,
-            &:focus-within {
-                background-color: $color-white;
-            }
-        }
-    }
-
-    .resource-scheme-title {
-
-        padding-left: 2px;
-        margin: 0;
-    } 
-
-}*/
-
 .resource-editView-container {
 
     width: 100%;
@@ -222,44 +153,14 @@
         }
     }
 
+    // Keep the shared page grid gutters so the header and form stay inset.
     .resource-editView-form-container {
 
         height: 100%;
+        min-height: 0;
         overflow: hidden;
         display: flex;
-        flex-direction: column; 
-
-        .resource-editView-formHeader {
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
-
-            .resource-editView-formHeader-title-container {
-                flex: 1 1 0%;
-                display: flex;
-                align-items: center;
-                column-gap: 30px;
-                max-height: 35px;
-
-                overflow: hidden;
-
-                .text-type-subheader {
-                    display: flex; 
-                    align-items: center;
-                    column-gap: 8px;
-                }
-            }
-
-            .resource-editView-formHeader-title {
-                margin: 0;
-                font-size: 20px;
-
-                overflow: hidden;
-                span {
-              //      text-transform: lowercase;
-                }
-            }
-        }
+        flex-direction: column;
 
         #tabs {
 
@@ -300,15 +201,113 @@
                 overflow-x: auto;
 
                 position: relative;
+                
             } 
+
+            .form-tabs {
+
+                & .nav.nav-tabs {
+                    padding: 1px 20px;
+                }
+
+                & .tab-pane {
+                    padding: 0 20px;
+
+                    .form-tabs-subtabs-content, .form-tabs-subtabs-content .tab-pane {
+                        padding: 0;
+                    }
+                }
+            }
+
+            .btn-form-actions {
+                padding-right: 20px;
+            }
 
             .select-text-field .Select,
             .SemanticTreeInput--inputAndButtons,
             .autocomplete-text-field__select {
-                min-width: 230px;
+                min-width: 0;
+                max-width: 100%;
             }
         } 
     }
+}
+
+.resource-editView-container--authority {
+    container: authority-browser-layout / inline-size;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.authority-browser {
+    > .Pane { min-width: 0; min-height: 0; }
+    > .Pane1 { max-width: 40%; }
+
+    .authority-browser__tree,
+    .split-pane__sidebar-open,
+    .collection-terms-area,
+    .LazyTree--component {
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .authority-browser__tree { overflow: hidden; }
+    .collection-terms-area > .btn { white-space: normal; }
+    .split-pane__sidebar-header h4 { min-width: 0; overflow-wrap: break-word; }
+    .split-pane__sidebar-header i { flex: none; }
+
+    .split-pane__sidebar .btn-toggle-on {
+        width: 100%;
+        padding: 20px 10px;
+        h4 { display: none; }
+    }
+}
+
+// Preserve both pane subtrees and form values when the authority frame narrows.
+@container authority-browser-layout (max-width: 800px) {
+    .authority-browser {
+        flex-direction: column !important;
+
+        > .Pane1 {
+            width: 100% !important;
+            max-width: none;
+            flex: 0 0 48px !important;
+
+            &:has(.split-pane__sidebar-header) {
+                flex-basis: 240px !important;
+                max-height: 35%;
+            }
+        }
+
+        > .Pane2 { overflow: hidden; }
+        > .Resizer { display: none; }
+        .split-pane__leftsidebar { border-right: 0; border-bottom: 1px solid $color-border; }
+
+        .split-pane__sidebar-header .btn-toggle-off,
+        .split-pane__sidebar .btn-toggle-on { padding: 10px 16px; }
+        .split-pane__sidebar .btn-toggle-on h4 {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .split-pane__sidebar-header i,
+        .btn-toggle-on-content i { transform: rotate(90deg); }
+        .split-pane__sidebar-open { padding: 0 16px 12px; }
+        .collection-terms-area .LazyTree--alignmentTreeContainer { margin-top: 10px; }
+    }
+}
+
+.authority-browser-empty-state {
+    max-width: 560px;
+    padding: 20px 0;
+
+    h2 { margin: 0 0 12px; font-size: 22px; }
+    p { margin: 0 0 16px; }
+    .btn { max-width: 100%; white-space: normal; }
+    .btn i { flex: none; }
+    .authority-browser-empty-state__hint { margin: 12px 0 0; }
 }
 
 .navigationMenu_ItemConfigContainer {
@@ -329,12 +328,7 @@
 
     .resource-editView-container {
 
-        .page__grid-container {
-            grid-template-columns: 15px 1fr 15px;
-            grid-template-rows: 15px auto 15px;
-        }
-
-        & .resource-editView-form-container .resource-editView-formHeader .resource-editView-formHeader-title {
+        & .resource-editView-form-container .resource-record-header .resource-record-header-title {
 
             font-size: 18px;
         }

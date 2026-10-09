@@ -50,7 +50,7 @@ export interface FieldBasedVisualizationConfig {
    *
    * See <semantic-link iri='http://help.researchspace.org/resource/Help:SemanticForm' target="_blank"></semantic-link> for more details about field definitions.
    */
-  fields: FieldDefinitionProp[];
+  fields: FieldDefinitionProp[] | string;
 
   /**
    * <semantic-link iri='http://help.researchspace.org/resource/Help:TemplatingSystem' target="_blank">Template</semantic-link>, that gets the `fields` value with the list of field definitions injected as template context.
@@ -110,10 +110,55 @@ export class FieldBasedVisualization extends Component<FieldBasedVisualizationCo
     });
   }
 
+  private normalizeFields(fields: FieldDefinitionProp[] | string): FieldDefinitionProp[] {
+    if (Array.isArray(fields)) {
+      return fields;
+    }
+
+    if (typeof fields === 'string') {
+      const trimmedFields = fields.trim();
+
+      try {
+        const parsedFields = JSON.parse(trimmedFields);
+
+        if (Array.isArray(parsedFields)) {
+          return parsedFields as FieldDefinitionProp[];
+        }
+
+        throw new Error('Parsed fields value is not an array.');
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        throw new Error(
+          'mp-field-visualization expected "fields" to be a JSON array. ' +
+          'Received: ' + trimmedFields + '. ' +
+          'Details: ' + message
+        );
+      }
+    }
+
+    throw new Error(
+      'mp-field-visualization expected "fields" to be an array or a JSON array string.'
+    );
+  }
+
   private fetchFieldValues() {
-    const { fields, subject, additionalSubjects } = this.props;
+    const { subject, additionalSubjects } = this.props;
+
+    const fields = this.normalizeFields(this.props.fields);
+
+    if (fields.length === 0) {
+      this.setState({
+        fieldsData: [],
+        isLoading: false,
+        noData: true,
+      });
+      return;
+    }
+
     const subjectIri = Rdf.iri(subject);
     const otherSubjects = additionalSubjects.map(s => Rdf.iri(s));
+
     Kefir.combine(
       fields.map(
         normalizeFieldDefinition

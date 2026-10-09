@@ -88,6 +88,9 @@ interface BaseConfig extends ControlledProps {
 
   className?: string;
 
+  /** Keep pagination outside the table's scrolling content. @default false */
+  separatePagination?: boolean;
+
   /**
    * Number of rows to show on the one page
    *

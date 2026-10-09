@@ -19,17 +19,7 @@
 
 import * as Kefir from 'kefir';
 import * as Immutable from 'immutable';
-import {
-  ElementIri,
-  ElementTypeIri,
-  LocalizedString,
-  Property,
-  ElementModel,
-  LinkModel,
-  AuthoringState,
-  isLiteralProperty,
-  isIriProperty,
-} from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Rdf } from 'platform/api/rdf';
 
@@ -67,7 +57,7 @@ export function fetchInitialModel(
 }
 
 export function getEntityMetadata(
-  elementData: ElementModel,
+  elementData: Reactodia.ElementModel,
   allMetadata: ReadonlyMap<string, EntityMetadata>
 ): EntityMetadata | undefined {
   for (const type of elementData.types) {
@@ -78,16 +68,15 @@ export function getEntityMetadata(
   return undefined;
 }
 
-export function convertElementModelToCompositeValue(model: ElementModel, metadata: EntityMetadata): CompositeValue {
+export function convertElementModelToCompositeValue(
+  model: Reactodia.ElementModel,
+  metadata: EntityMetadata
+): CompositeValue {
   const fields = Immutable.Map<string, FieldState>().withMutations((map) => {
     metadata.fieldByIri.forEach((definition, fieldId) => {
       let fieldValues: FieldValue[] = [];
       if (definition.iri === metadata.typeField.iri) {
         fieldValues = model.types.map((type) => FieldValue.fromLabeled({ value: Rdf.iri(type) }));
-      } else if (metadata.imageField && definition.iri === metadata.imageField.iri) {
-        fieldValues = model.image ? [FieldValue.fromLabeled({ value: Rdf.iri(model.image) })] : [];
-      } else if (definition.iri === metadata.labelField.iri) {
-        fieldValues = convertLocalizedStringsToFieldValues(model.label.values);
       } else {
         const property = model.properties[definition.iri];
         if (property) {
@@ -110,11 +99,13 @@ export function convertElementModelToCompositeValue(model: ElementModel, metadat
   };
 }
 
-export function convertCompositeValueToElementModel(composite: CompositeValue, metadata: EntityMetadata): ElementModel {
-  let types: ElementTypeIri[] | undefined;
-  let labels: LocalizedString[] | undefined;
-  let image: string | undefined;
-  const properties: { [id: string]: Property } = {};
+export function convertCompositeValueToElementModel(
+  composite: CompositeValue,
+  metadata: EntityMetadata
+): Reactodia.ElementModel {
+  let types: Reactodia.ElementTypeIri[] | undefined;
+  const properties: { [id: string]: Array<Reactodia.Rdf.NamedNode | Reactodia.Rdf.Literal> } =
+    Object.create(null);
 
   composite.fields.forEach((field, fieldId) => {
     const definition = metadata.fieldByIri.get(fieldId);
@@ -122,65 +113,37 @@ export function convertCompositeValueToElementModel(composite: CompositeValue, m
       types = field.values
         .map(FieldValue.asRdfNode)
         .filter((v) => v && v.isIri())
-        .map((v) => v.value as ElementTypeIri)
-        .toArray();
-    } else if (metadata.imageField && definition.iri === metadata.imageField.iri) {
-      image = field.values
-        .map(FieldValue.asRdfNode)
-        .filter((v) => v && v.isIri())
-        .map((v) => v.value)
-        .first();
-    } else if (definition.iri === metadata.labelField.iri) {
-      labels = field.values
-        .map((v) => {
-          if (FieldValue.isAtomic(v) && v.value.isLiteral()) {
-            return FieldValue.asRdfNode(v) as Rdf.Literal;
-          }
-        })
+        .map((v): Reactodia.ElementTypeIri => v.value)
         .toArray();
     } else {
       field.values.forEach((v) => {
         if (!FieldValue.isAtomic(v)) {
           return;
         }
+        let propertyValues = properties[definition.iri];
+        if (!propertyValues) {
+          propertyValues = [];
+          properties[definition.iri] = propertyValues;
+        }
         if (v.value.isLiteral()) {
-          const { value, language } = FieldValue.asRdfNode(v) as Rdf.Literal;
-          const property = properties[definition.iri] || { type: 'string', values: [] };
-          if (isLiteralProperty(property)) {
-            property.values = [
-              ...property.values,
-              {
-                value,
-                language,
-                datatype: definition.xsdDatatype,
-              },
-            ];
-          }
-          properties[definition.iri] = property;
+          propertyValues.push(FieldValue.asRdfNode(v) as Rdf.Literal);
         } else if (v.value.isIri()) {
-          const { value } = FieldValue.asRdfNode(v) as Rdf.Iri;
-          const property = properties[definition.iri] || { type: 'uri', values: [] };
-          if (isIriProperty(property)) {
-            property.values = [...property.values, { type: 'uri', value }];
-          }
-          properties[definition.iri] = property;
+          propertyValues.push(FieldValue.asRdfNode(v) as Rdf.Iri);
         }
       });
     }
   });
 
   return {
-    id: composite.subject.value as ElementIri,
+    id: composite.subject.value,
     types: types || [],
-    label: { values: labels || [] },
-    image,
     properties,
   };
 }
 
 export function applyEventsToCompositeValue(params: {
-  elementIri: ElementIri;
-  state: AuthoringState;
+  elementIri: Reactodia.ElementIri;
+  state: Reactodia.AuthoringState;
   metadata: EntityMetadata;
   initialModel: CompositeValue;
 }): CompositeValue | EmptyValue {
@@ -188,37 +151,37 @@ export function applyEventsToCompositeValue(params: {
 
   let currentModel = initialModel;
   let deleted = false;
-  let newIri: ElementIri;
+  let newIri: Reactodia.ElementIri;
 
   state.elements.forEach((event) => {
-    if (event.deleted) {
-      const { after } = event;
-      if (after.id === elementIri) {
+    if (event.type === 'entityDelete') {
+      const { data } = event;
+      if (data.id === elementIri) {
         deleted = true;
       }
     } else {
-      const changeEvent = event;
-      const { after } = changeEvent;
-      if (after.id === elementIri) {
-        currentModel = applyElementModelToCompositeValue(after, currentModel, metadata);
-        newIri = changeEvent.newIri !== currentModel.subject.value ? changeEvent.newIri : undefined;
+      const { data } = event;
+      if (data.id === elementIri) {
+        currentModel = applyElementModelToCompositeValue(data, currentModel, metadata);
+        newIri = event.type === 'entityChange' && event.newIri !== currentModel.subject.value
+          ? event.newIri : undefined;
       }
     }
   });
 
   state.links.forEach((event) => {
-    if (event.deleted) {
-      const { after } = event;
-      if (after.sourceId === elementIri) {
-        currentModel = deleteLinkFromCompositeValue(after, currentModel, metadata);
+    if (event.type === 'relationDelete') {
+      const { data } = event;
+      if (data.sourceId === elementIri) {
+        currentModel = deleteLinkFromCompositeValue(data, currentModel, metadata);
       }
     } else {
-      const { before, after } = event;
-      if (before && before.sourceId === elementIri) {
-        currentModel = deleteLinkFromCompositeValue(before, currentModel, metadata);
+      const { data } = event;
+      if (event.type === 'relationChange' && event.before.sourceId === elementIri) {
+        currentModel = deleteLinkFromCompositeValue(event.before, currentModel, metadata);
       }
-      if (after.sourceId === elementIri) {
-        currentModel = applyLinkModelToCompositeValue(after, currentModel, metadata);
+      if (data.sourceId === elementIri) {
+        currentModel = applyLinkModelToCompositeValue(data, currentModel, metadata);
       }
     }
   });
@@ -229,9 +192,9 @@ export function applyEventsToCompositeValue(params: {
     const updater = (previous: FieldState) => {
       const newValueSet = previous.values
         .filter((value) => {
-          const relatedElementIri = FieldValue.asRdfNode(value).value as ElementIri;
+          const relatedElementIri: Reactodia.ElementIri = FieldValue.asRdfNode(value).value;
           const event = state.elements.get(relatedElementIri);
-          const isTargetValueDeleted = event && event.deleted;
+          const isTargetValueDeleted = event && event.type === 'entityDelete';
           return !isTargetValueDeleted;
         })
         .toList();
@@ -252,7 +215,7 @@ export function applyEventsToCompositeValue(params: {
 }
 
 function applyLinkModelToCompositeValue(
-  link: LinkModel,
+  link: Reactodia.LinkModel,
   composite: CompositeValue,
   metadata: EntityMetadata
 ): CompositeValue {
@@ -270,7 +233,7 @@ function applyLinkModelToCompositeValue(
 }
 
 function applyElementModelToCompositeValue(
-  model: ElementModel,
+  model: Reactodia.ElementModel,
   composite: CompositeValue,
   metadata: EntityMetadata
 ): CompositeValue {
@@ -281,12 +244,8 @@ function applyElementModelToCompositeValue(
       return;
     }
     let values = [];
-    if (definition.id === metadata.labelField.id) {
-      values = convertLocalizedStringsToFieldValues(model.label.values);
-    } else if (definition.id === metadata.typeField.id) {
+    if (definition.id === metadata.typeField.id) {
       values = model.types.map((type) => FieldValue.fromLabeled({ value: Rdf.iri(type) }));
-    } else if (metadata.imageField && definition.id === metadata.imageField.id && model.image) {
-      values = [FieldValue.fromLabeled({ value: Rdf.iri(model.image) })];
     } else {
       const property = model.properties[fieldIri];
       if (property) {
@@ -302,26 +261,14 @@ function applyElementModelToCompositeValue(
   return CompositeValue.set(composite, { fields });
 }
 
-function convertPropertyToFieldValues(property: Property): FieldValue[] {
-  if (isIriProperty(property)) {
-    return property.values.map(({ value }) => FieldValue.fromLabeled({ value: Rdf.iri(value) }));
-  } else if (isLiteralProperty(property)) {
-    return convertLocalizedStringsToFieldValues(property.values);
-  }
-  return [];
-}
-
-function convertLocalizedStringsToFieldValues(property: ReadonlyArray<LocalizedString>) {
-  return property.map(({ value, language, datatype }) => {
-    const literal = language
-      ? Rdf.langLiteral(value, language)
-      : Rdf.literal(value, datatype ? Rdf.iri(datatype.value) : undefined);
-    return FieldValue.fromLabeled({ value: literal });
-  });
+function convertPropertyToFieldValues(
+  values: ReadonlyArray<Reactodia.Rdf.NamedNode | Reactodia.Rdf.Literal>
+): FieldValue[] {
+  return values.map(v => FieldValue.fromLabeled({ value: Rdf.toNode(v) as Rdf.Iri | Rdf.Literal }));
 }
 
 function deleteLinkFromCompositeValue(
-  link: LinkModel,
+  link: Reactodia.LinkModel,
   composite: CompositeValue,
   metadata: EntityMetadata
 ): CompositeValue {

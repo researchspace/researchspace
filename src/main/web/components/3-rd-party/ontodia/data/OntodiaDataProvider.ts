@@ -18,28 +18,23 @@
  */
 
 import * as SparqlJs from 'sparqljs';
-import {
-  RDFDataProvider,
-  SparqlDataProvider,
-  SparqlDataProviderSettings,
-  DPDefinition,
-  SparqlDataProviderOptions,
-  LinkConfiguration,
-  CompositeDataProvider,
-  PropertyConfiguration,
-} from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { WrappingError } from 'platform/api/async';
+import { Rdf } from 'platform/api/rdf';
 import { SparqlUtil, SparqlTypeGuards, VariableRenameBinder } from 'platform/api/sparql';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 import { getBaseUrl } from 'platform/api/http';
 import { FieldDefinition } from 'platform/components/forms';
-import { xsd, rdf } from 'platform/api/rdf/vocabularies';
+import { xsd } from 'platform/api/rdf/vocabularies';
 
 import { OwlStatsSettings, OwlNoStatsSettings, WikidataSettings } from './DataProviderProfiles';
-import {RSOwlNoStatsSettings} from './RSOwlNoStatsSettings';
+import { RSOwlNoStatsSettings } from './RSOwlNoStatsSettings';
 
 export const RDF_DATA_PROVIDER_NAME = 'rdf';
+
+const LEGACY_ELEMENT_INFO_NAMESPACE = 'https://ontodia.org/context/v1.json/';
+const REACTODIA_ELEMENT_INFO_NAMESPACE = 'urn:reactodia:sparql:';
 
 const SUPPORTED_PROFILES = {
   default: OwlStatsSettings,
@@ -52,16 +47,16 @@ export type SupportedConfigName = keyof typeof SUPPORTED_PROFILES;
 
 export function createDataProvider(params: {
   configName?: SupportedConfigName;
-  options: SparqlDataProviderOptions;
-  settings: SparqlDataProviderSettings;
+  options: Reactodia.SparqlDataProviderOptions;
+  settings: Reactodia.SparqlDataProviderSettings;
   repositories: string[];
   createRDFStorage?: boolean;
   fields?: ReadonlyArray<FieldDefinition>;
   forceFields?: ReadonlyMap<string, FieldDefinition>;
-}): SparqlDataProvider | CompositeDataProvider {
+}): Reactodia.SparqlDataProvider | Reactodia.CompositeDataProvider {
   const { configName, options, settings, repositories, createRDFStorage, fields, forceFields } = params;
 
-  let sparqlProfile: SparqlDataProviderSettings;
+  let sparqlProfile: Reactodia.SparqlDataProviderSettings;
   if (configName) {
     sparqlProfile = SUPPORTED_PROFILES[configName];
     if (!sparqlProfile) {
@@ -71,30 +66,38 @@ export function createDataProvider(params: {
     sparqlProfile = SUPPORTED_PROFILES['default'];
   }
 
-  // apply label properties from the config to full text search in Ontodia
   sparqlProfile.dataLabelProperty = ConfigHolder.getUIConfig().labelPropertyPattern;
 
-  // this is workaround for field-based navigation
   const fieldConfigDefaults = createFieldConfiguration(fields, forceFields);
 
-  const effectiveSettings: SparqlDataProviderSettings = {
+  const effectiveSettings = upgradeLegacyProviderSettings({
     ...sparqlProfile,
     ...fieldConfigDefaults,
     ...settings,
-  };
+  });
 
   if (repositories.length === 1 && !createRDFStorage) {
     const [repository] = repositories;
     return new OptimizingDataProvider(
-      { ...options, endpointUrl: getEndpointUrlForRepository(repository) },
+      {
+        ...options,
+        endpointUrl: getEndpointUrlForRepository(repository),
+        factory: Rdf.DataFactory,
+        // Prevent unbounded POST queries.
+        chunk: options.chunk ?? { maxSize: 100, unit: 'itemCount' },
+      },
       effectiveSettings
     );
   }
 
-  const dataProviders: DPDefinition[] = repositories.map((repository) => ({
+  const dataProviders = repositories.map((repository): Reactodia.DataProviderDefinition => ({
     name: repository,
-    dataProvider: new OptimizingDataProvider(
-      { ...options, endpointUrl: getEndpointUrlForRepository(repository) },
+    provider: new OptimizingDataProvider(
+      {
+        ...options,
+        endpointUrl: getEndpointUrlForRepository(repository),
+        chunk: options.chunk ?? { maxSize: 100, unit: 'itemCount' },
+      },
       effectiveSettings
     ),
   }));
@@ -102,11 +105,26 @@ export function createDataProvider(params: {
   if (createRDFStorage) {
     dataProviders.push({
       name: RDF_DATA_PROVIDER_NAME,
-      dataProvider: new RDFDataProvider({ data: [], parsers: {} }),
+      provider: new Reactodia.RdfDataProvider({factory: Rdf.DataFactory}),
     });
   }
 
-  return new CompositeDataProvider(dataProviders);
+  return new Reactodia.CompositeDataProvider({providers: dataProviders});
+}
+
+/** Maps Ontodia's reserved query namespace to Reactodia's namespace. */
+export function upgradeLegacyProviderSettings(
+  settings: Reactodia.SparqlDataProviderSettings
+): Reactodia.SparqlDataProviderSettings {
+  const { elementInfoQuery } = settings;
+  if (!elementInfoQuery || elementInfoQuery.indexOf(LEGACY_ELEMENT_INFO_NAMESPACE) < 0) {
+    return settings;
+  }
+  return {
+    ...settings,
+    elementInfoQuery: elementInfoQuery.split(LEGACY_ELEMENT_INFO_NAMESPACE)
+      .join(REACTODIA_ELEMENT_INFO_NAMESPACE),
+  };
 }
 
 function getEndpointUrlForRepository(repository: string) {
@@ -117,27 +135,26 @@ function getEndpointUrlForRepository(repository: string) {
 function createFieldConfiguration(
   fields?: ReadonlyArray<FieldDefinition>,
   forceFields?: ReadonlyMap<string, FieldDefinition>
-): Partial<SparqlDataProviderSettings> {
+): Partial<Reactodia.SparqlDataProviderSettings> {
   const linkConfigurations = createLinkConfigurations(fields);
   const propertyConfigurations = createPropertyConfiguration(fields, forceFields);
 
-  let fieldConfigDefaults: Partial<SparqlDataProviderSettings> = {
+  let fieldConfigDefaults: Partial<Reactodia.SparqlDataProviderSettings> = {
     linkConfigurations,
     propertyConfigurations,
   };
   if (linkConfigurations.length > 0) {
     fieldConfigDefaults = {
       ...fieldConfigDefaults,
+      // Labels are supplied by prepareLabels.
       elementInfoQuery: `
-        PREFIX ontodia: <https://ontodia.org/context/v1.json/>
+        PREFIX ontodia: <urn:reactodia:sparql:>
         CONSTRUCT {
             ?inst ontodia:type ?class .
-            ?inst ontodia:label ?label .
             ?inst ?propType ?propValue.
         } WHERE {
             VALUES (?inst) {\${ids}}
             OPTIONAL { ?inst a ?class }
-            OPTIONAL { ?inst \${dataLabelProperty} ?label }
             OPTIONAL {
               \${propertyConfigurations}
             }
@@ -148,15 +165,15 @@ function createFieldConfiguration(
   return fieldConfigDefaults;
 }
 
-class OptimizingDataProvider extends SparqlDataProvider {
-  executeSparqlQuery<Binding>(query: string) {
+class OptimizingDataProvider extends Reactodia.SparqlDataProvider {
+  executeSparqlSelect<Binding>(query: string, options?: { signal?: AbortSignal }) {
     const optimizedQuery = this.optimizeAndAddPrefixes(query);
-    return super.executeSparqlQuery<Binding>(optimizedQuery);
+    return super.executeSparqlSelect<Binding>(optimizedQuery, options);
   }
 
-  executeSparqlConstruct(query: string) {
+  executeSparqlConstruct(query: string, options?: { signal?: AbortSignal }) {
     const optimizedQuery = this.optimizeAndAddPrefixes(query);
-    return super.executeSparqlConstruct(optimizedQuery);
+    return super.executeSparqlConstruct(optimizedQuery, options);
   }
 
   private optimizeAndAddPrefixes(query: string): string {
@@ -172,13 +189,12 @@ class OptimizingDataProvider extends SparqlDataProvider {
   }
 }
 
-function createLinkConfigurations(fields?: ReadonlyArray<FieldDefinition>): LinkConfiguration[] {
+function createLinkConfigurations(fields?: ReadonlyArray<FieldDefinition>): Reactodia.LinkConfiguration[] {
   if (!fields || fields.length === 0) {
     return [];
   }
   return fields
     .filter((field) => {
-      // if it's non-literal field or at least have something in range
       return xsd.anyURI.equals(field.xsdDatatype);
     })
     .map(fieldToLinkConfig);
@@ -187,19 +203,18 @@ function createLinkConfigurations(fields?: ReadonlyArray<FieldDefinition>): Link
 function createPropertyConfiguration(
   fields?: ReadonlyArray<FieldDefinition>,
   forceFields?: ReadonlyMap<string, FieldDefinition>
-): PropertyConfiguration[] {
+): Reactodia.PropertyConfiguration[] {
   if (!fields || fields.length === 0) {
     return [];
   }
   return fields
     .filter((field) => {
-      // pass only literal values
       return (forceFields && forceFields.has(field.iri)) || !xsd.anyURI.equals(field.xsdDatatype);
     })
     .map(fieldToPropertyConfig);
 }
 
-function fieldToLinkConfig(field: FieldDefinition): LinkConfiguration {
+function fieldToLinkConfig(field: FieldDefinition): Reactodia.LinkConfiguration {
   const parsedQuery = parseSelectPattern(field);
   const domain = field.domain ? field.domain.map((iri) => iri.value) : undefined;
 
@@ -218,7 +233,7 @@ function fieldToLinkConfig(field: FieldDefinition): LinkConfiguration {
   };
 }
 
-function fieldToPropertyConfig(field: FieldDefinition): PropertyConfiguration {
+function fieldToPropertyConfig(field: FieldDefinition): Reactodia.PropertyConfiguration {
   const parsedQuery = parseSelectPattern(field);
   const domain = field.domain ? field.domain.map((iri) => iri.value) : undefined;
 
@@ -280,19 +295,14 @@ function parseDirectPredicate(patterns: SparqlJs.Pattern[]): string | undefined 
           const isLabelTriple = /^[?$]label$/.test(t.object);
           if (isPredicateTriple) {
             predicate = t.predicate as SparqlJs.Term;
-          } else if (isLabelTriple) {
-            // ignore
-          } else {
-            // pattern is too complex
+          } else if (!isLabelTriple) {
             return undefined;
           }
         }
         break;
       case 'bind':
-        // ignore
         break;
       default:
-        // pattern is too complex
         return undefined;
     }
   }

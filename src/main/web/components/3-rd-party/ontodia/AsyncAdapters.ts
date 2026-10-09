@@ -18,11 +18,11 @@
  */
 
 import * as Kefir from 'kefir';
-import { CancellationToken } from 'ontodia';
 
-import { Cancellation as PlatformCancellation } from 'platform/api/async';
-
-export function observableToCancellablePromise<T>(observable: Kefir.Observable<T>, ct: CancellationToken): Promise<T> {
+export function observableToCancellablePromise<T>(
+  observable: Kefir.Observable<T>,
+  ct: AbortSignal
+): Promise<T> {
   if (ct.aborted) {
     return Promise.reject(makeCancelledError());
   }
@@ -79,8 +79,12 @@ export function observableToCancellablePromise<T>(observable: Kefir.Observable<T
     if (!resolved) {
       if (ct.aborted) {
         markResolvedAndCleanup();
+        reject(makeCancelledError());
       } else {
-        tokenSubscription = () => markResolvedAndCleanup();
+        tokenSubscription = () => {
+          markResolvedAndCleanup();
+          reject(makeCancelledError());
+        };
         ct.addEventListener('abort', tokenSubscription);
       }
     }
@@ -88,19 +92,7 @@ export function observableToCancellablePromise<T>(observable: Kefir.Observable<T
 }
 
 function makeCancelledError() {
-  return new Error('The operation was cancelled');
-}
-
-export function deriveCancellationToken(cancellation: PlatformCancellation): CancellationToken {
-  return {
-    get aborted() {
-      return cancellation.aborted;
-    },
-    addEventListener: (event: 'abort', handler) => {
-      cancellation.onCancel(handler);
-    },
-    removeEventListener: (event: 'abort', handler) => {
-      cancellation.offCancel(handler);
-    },
-  };
+  const error = new Error('The operation was cancelled');
+  error.name = 'AbortError';
+  return error;
 }

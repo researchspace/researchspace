@@ -78,7 +78,7 @@ public class FileStorageEndpoint {
             StoragePath prefix = fileManager.parseTargetDirectory(folder);
             ManagedFileName managedName;
             if (customFileName.isEmpty()) {
-                managedName = ManagedFileName.generateFromFileName(prefix, fileDisposition.getFileName(),
+                managedName = ManagedFileName.generateFromFileName(prefix, MultipartFileNames.getFileName(fileDisposition),
                         fileManager::generateSequenceNumber);
             } else {
                 managedName = ManagedFileName.validate(prefix, customFileName);
@@ -155,10 +155,10 @@ public class FileStorageEndpoint {
             ManagedFileName managedName;
             if (fileNameHack.equals("true")) {
                 managedName = ManagedFileName.generateFromFileName(ObjectKind.FILE,
-                        fileDisposition.getFileName(), null);
+                        MultipartFileNames.getFileName(fileDisposition), null);
             } else {
                 managedName = ManagedFileName.generateFromFileName(ObjectKind.FILE,
-                        fileDisposition.getFileName(), fileManager::generateSequenceNumber);
+                        MultipartFileNames.getFileName(fileDisposition), fileManager::generateSequenceNumber);
             }
             String mediaType = fileDisposition.getType();
 
@@ -228,7 +228,7 @@ public class FileStorageEndpoint {
 
         try {
             ManagedFileName managedName = ManagedFileName.generateFromFileName(ObjectKind.FILE,
-                    fileDisposition.getFileName(), fileManager::generateSequenceNumber);
+                    MultipartFileNames.getFileName(fileDisposition), fileManager::generateSequenceNumber);
 
             fileManager.storeFile(platformStorage.getStorage(storageId), managedName,
                     platformStorage.getDefaultMetadata(),

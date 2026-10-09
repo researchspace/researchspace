@@ -17,11 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReactElement, createElement, Props, MouseEvent, CSSProperties } from 'react';
+import { createElement, Props, MouseEvent, CSSProperties } from 'react';
 import * as D from 'react-dom-factories';
 import { assign } from 'lodash';
 import * as classNames from 'classnames';
-import * as Maybe from 'data.maybe';
 import * as _ from 'lodash';
 
 import { Component } from 'platform/api/components';
@@ -32,7 +31,7 @@ import {
   navigateToResource,
   getCurrentUrl,
   constructUrlForResource,
-  construcUrlForResourceSync,
+  constructUrlForResourceSync,
 } from '../Navigation';
 
 export enum ResourceLinkAction {
@@ -63,7 +62,7 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
     this.state = {
       url:
         this.props.resource && this.props.resource.value
-          ? construcUrlForResourceSync(
+          ? constructUrlForResourceSync(
               this.props.resource,
               this.props.params,
               this.getRepository(),

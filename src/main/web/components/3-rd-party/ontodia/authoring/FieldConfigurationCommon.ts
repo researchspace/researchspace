@@ -18,7 +18,7 @@
  */
 
 import { ReactNode } from 'react';
-import { ElementTypeIri, CancellationToken } from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Rdf } from 'platform/api/rdf';
 import { xsd } from 'platform/api/rdf/vocabularies';
@@ -30,7 +30,7 @@ import { FormBasedPersistenceProps } from './FormBasedPersistence';
 export interface FieldConfiguration {
   readonly authoringMode: boolean;
   readonly enforceConstraints: boolean;
-  readonly metadata: Map<ElementTypeIri, EntityMetadata> | undefined;
+  readonly metadata: Map<Reactodia.ElementTypeIri, EntityMetadata> | undefined;
   readonly persistence: OntodiaPersistenceMode | undefined;
   readonly allFields: ReadonlyArray<Forms.FieldDefinition>;
   readonly datatypeFields: ReadonlyMap<string, Forms.FieldDefinition>;
@@ -40,7 +40,7 @@ export interface FieldConfiguration {
 export type OntodiaPersistenceMode = FormBasedPersistenceProps;
 
 export interface FieldConfigurationItem {
-  getRequiredFields?(props: any, ct: CancellationToken): Promise<ReadonlyArray<Rdf.Iri>>;
+  getRequiredFields?(props: any, ct: AbortSignal): Promise<ReadonlyArray<Rdf.Iri>>;
   configure(props: any, context: FieldConfigurationContext): Promise<void>;
 }
 
@@ -52,13 +52,13 @@ export interface FieldConfigurationContext {
   readonly defaultImageIri?: string;
   readonly defaultSubjectTemplate?: string;
 
-  readonly cancellationToken: CancellationToken;
-  readonly collectedMetadata: Map<ElementTypeIri, EntityMetadata>;
+  readonly cancellationToken: AbortSignal;
+  readonly collectedMetadata: Map<Reactodia.ElementTypeIri, EntityMetadata>;
   readonly collectedInputOverrides: Forms.InputOverride[];
 }
 
 export interface EntityMetadata {
-  readonly entityType: ElementTypeIri;
+  readonly entityType: Reactodia.ElementTypeIri;
   readonly fields: ReadonlyArray<Forms.FieldDefinition>;
   readonly fieldByIri: Immutable.Map<string, Forms.FieldDefinition>;
   readonly datatypeFields: Immutable.Set<string>;

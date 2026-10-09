@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { assign } from 'lodash';
+import { assign, isEqual } from 'lodash';
 import { Component, ComponentClass } from 'react';
 import * as maybe from 'data.maybe';
 
@@ -79,7 +79,18 @@ export function registerCytoscapeExtension<Options>({
       this.registerExtension(this.props, this.context.cytoscapeApi);
     }
 
+    componentDidUpdate(prevProps: Options) {
+      if (!isEqual(prevProps, this.props)) {
+        this.destroyInstance();
+        this.registerExtension(this.props, this.context.cytoscapeApi);
+      }
+    }
+
     componentWillUnmount() {
+      this.destroyInstance();
+    }
+
+    private destroyInstance() {
       this.state.instance.map((instance) => {
         // for layouts, instance can be actual cytoscape instance
         // we shouldn't destroy it here

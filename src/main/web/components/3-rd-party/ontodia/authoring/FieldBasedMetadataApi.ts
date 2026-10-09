@@ -19,22 +19,13 @@
 
 import * as Kefir from 'kefir';
 import * as SparqlJs from 'sparqljs';
-import {
-  CancellationToken,
-  ElementModel,
-  ElementTypeIri,
-  LinkTypeIri,
-  MetadataApi,
-  PropertyTypeIri,
-  LinkModel,
-  ElementIri,
-  LinkDirection,
-  PLACEHOLDER_ELEMENT_TYPE,
-} from 'ontodia';
+import * as Reactodia from '@reactodia/workspace';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 import { getLabel } from 'platform/api/services/resource-label';
+import { rdfs } from 'platform/api/rdf/vocabularies';
 
 import { generateSubjectByTemplate } from 'platform/components/forms';
 
@@ -42,196 +33,254 @@ import { observableToCancellablePromise } from '../AsyncAdapters';
 import { EntityMetadata, isObjectProperty } from './FieldConfigurationCommon';
 import { getEntityMetadata, convertElementModelToCompositeValue } from './OntodiaPersistenceCommon';
 
-export class FieldBasedMetadataApi implements MetadataApi {
-  constructor(private entityMetadata: Map<ElementTypeIri, EntityMetadata>) {}
+export class FieldBasedMetadataApi implements Reactodia.MetadataProvider {
+  constructor(private entityMetadata: Map<Reactodia.ElementTypeIri, EntityMetadata>) {}
 
-  async generateNewElement(types: ReadonlyArray<ElementTypeIri>, ct: CancellationToken): Promise<ElementModel> {
-    let typeIri: ElementTypeIri | undefined;
-    if (types && types.length !== 0) {
-      typeIri = types[0];
-    }
+  getLiteralLanguages(): ReadonlyArray<string> {
+    const { preferredLanguages } = ConfigHolder.getUIConfig();
+    return preferredLanguages.length === 0 ? ['en'] : preferredLanguages;
+  }
 
+  async createEntity(
+    type: Reactodia.ElementTypeIri,
+    options: { readonly signal?: AbortSignal }
+  ): Promise<Reactodia.MetadataCreatedEntity> {
+    const { signal } = options;
     let typeLabel: string;
-    if (typeIri && typeIri !== PLACEHOLDER_ELEMENT_TYPE) {
-      typeLabel = await observableToCancellablePromise(getLabel(Rdf.iri(typeIri)), ct);
+    if (type && type !== Reactodia.PlaceholderEntityType) {
+      typeLabel = await observableToCancellablePromise(getLabel(Rdf.iri(type)), signal);
     } else {
       typeLabel = 'Entity';
     }
 
-    const newModel: ElementModel = {
-      id: '' as ElementIri,
-      types: [...types],
-      label: { values: [{ value: `New ${typeLabel}`, language: '' }] },
+    let newModel: Reactodia.ElementModel = {
+      id: '',
+      types: [type],
       properties: {},
     };
-    return {
+    const metadata = getEntityMetadata(newModel, this.entityMetadata);
+    newModel = {
       ...newModel,
       id: this.generateIriForModel(newModel),
+      properties: {
+        [metadata?.labelField.iri ?? rdfs.label.value]: [Rdf.literal(`New ${typeLabel}`)],
+      }
     };
+    return {data: newModel};
   }
 
-  generateIriForModel(model: ElementModel): ElementIri {
+  generateIriForModel(model: Reactodia.ElementModel): Reactodia.ElementIri {
     let metadata: EntityMetadata | undefined;
     if (model.types.length > 0) {
       const firstType = model.types[0];
-      if (firstType !== PLACEHOLDER_ELEMENT_TYPE) {
+      if (firstType !== Reactodia.PlaceholderEntityType) {
         metadata = this.entityMetadata.get(firstType);
       }
     }
     if (metadata) {
-      const newComposite = convertElementModelToCompositeValue({ ...model, id: '' as ElementIri }, metadata);
+      const newComposite = convertElementModelToCompositeValue({ ...model, id: '' }, metadata);
       const generatedIri = generateSubjectByTemplate(metadata.newSubjectTemplate, undefined, newComposite);
-      return generatedIri.value as ElementIri;
+      return generatedIri.value;
     } else {
       const uuid = () =>
         Math.floor((1 + Math.random()) * 0x100000000)
           .toString(16)
           .substring(1);
-      return `http://researchspace.org/NewEntity-${uuid()}` as ElementIri;
+      return `http://researchspace.org/NewEntity-${uuid()}`;
     }
   }
 
-  canDropOnCanvas(source: ElementModel, ct: CancellationToken): Promise<boolean> {
-    return this.typesOfElementsDraggedFrom(source, ct).then((elementTypes) => elementTypes.length > 0);
-  }
-
-  canDropOnElement(source: ElementModel, target: ElementModel, ct: CancellationToken): Promise<boolean> {
-    return this.possibleLinkTypes(source, target, ct).then((types) => types.length > 0);
-  }
-
-  possibleLinkTypes(
-    source: ElementModel,
-    target: ElementModel,
-    ct: CancellationToken
-  ): Promise<Array<{ linkTypeIri: LinkTypeIri; direction: LinkDirection }>> {
-    const task = Kefir.combine(
-      {
-        outgoing: this.getPossibleLinkTypes(source, target),
-        incoming: this.getPossibleLinkTypes(target, source),
-      },
-      ({ outgoing, incoming }) => {
-        return [
-          ...outgoing.map((linkTypeIri) => ({ linkTypeIri, direction: LinkDirection.out })),
-          ...incoming.map((linkTypeIri) => ({ linkTypeIri, direction: LinkDirection.in })),
-        ];
+  async createRelation(
+    source: Reactodia.ElementModel,
+    target: Reactodia.ElementModel,
+    linkType: Reactodia.LinkTypeIri,
+    options: { readonly signal?: AbortSignal }
+  ): Promise<Reactodia.MetadataCreatedRelation> {
+    return {
+      data: {
+        sourceId: source.id,
+        targetId: target.id,
+        linkTypeId: linkType,
+        properties: {},
       }
-    );
-    return observableToCancellablePromise(task, ct);
+    };
   }
 
-  private getPossibleLinkTypes(source: ElementModel, target: ElementModel): Kefir.Property<LinkTypeIri[]> {
+  async canConnect(
+    source: Reactodia.ElementModel,
+    target: Reactodia.ElementModel | undefined,
+    linkType: Reactodia.LinkTypeIri | undefined,
+    options: { readonly signal?: AbortSignal }
+  ): Promise<Reactodia.MetadataCanConnect[]> {
+    const { signal } = options;
     const sourceMetadata = getEntityMetadata(source, this.entityMetadata);
-    const targetMetadata = getEntityMetadata(target, this.entityMetadata);
-    if (!(sourceMetadata && targetMetadata)) {
-      return Kefir.constant([]);
+    const targetMetadata = target ? getEntityMetadata(target, this.entityMetadata) : undefined;
+    if (!sourceMetadata || (target && !targetMetadata)) {
+      return [];
     }
 
     const typeRequest = new BaseTypeClosureRequest();
     typeRequest.addAll(source.types);
-    typeRequest.addAll(target.types);
+    if (target) {
+      typeRequest.addAll(target.types);
+    }
 
-    return typeRequest.query().map((typeClosure) => {
-      const possibleLinks = new Set<LinkTypeIri>();
+    const typeClosure = await observableToCancellablePromise(typeRequest.query(), signal);
 
-      sourceMetadata.fieldByIri.forEach((field, fieldIri) => {
-        const isCompatibleField =
-          isObjectProperty(field, sourceMetadata) &&
-          hasCompatibleType(field.domain, source.types, typeClosure) &&
-          hasCompatibleType(field.range, target.types, typeClosure);
-        if (isCompatibleField) {
-          possibleLinks.add(fieldIri as LinkTypeIri);
-        }
+    const targetOutLinks = new Map<Reactodia.ElementTypeIri, Set<Reactodia.LinkTypeIri>>();
+    const targetInLinks = new Map<Reactodia.ElementTypeIri, Set<Reactodia.LinkTypeIri>>();
+    const anyOutLinks = new Set<Reactodia.LinkTypeIri>();
+    const anyInLinks = new Set<Reactodia.LinkTypeIri>();
+
+    this.addLinkTypes(source, sourceMetadata, target, linkType, typeClosure, 'range', targetOutLinks, anyOutLinks);
+
+    if (target && targetMetadata) {
+      this.addLinkTypes(target, targetMetadata, source, linkType, typeClosure, 'domain', targetInLinks, anyInLinks);
+    } else {
+      this.entityMetadata.forEach((metadata, targetType) => {
+        this.addLinkTypes(undefined, metadata, source, linkType, typeClosure, 'domain', targetInLinks, anyInLinks);
       });
+    }
 
-      return Array.from(possibleLinks);
+    const connections: Reactodia.MetadataCanConnect[] = [];
+
+    this.entityMetadata.forEach((metadata, elementType) => {
+      let specificOutLinks = targetOutLinks.get(elementType);
+      if (specificOutLinks) {
+        anyOutLinks.forEach(outLink => specificOutLinks.add(outLink));
+      } else {
+        specificOutLinks = anyOutLinks;
+      }
+
+      let specificInLinks = targetInLinks.get(elementType);
+      if (specificInLinks) {
+        anyInLinks.forEach(inLink => specificInLinks.add(inLink));
+      } else {
+        specificInLinks = anyInLinks;
+      }
+
+      if (specificOutLinks.size > 0 || specificInLinks.size > 0) {
+        connections.push({
+          targetTypes: new Set([elementType]),
+          outLinks: Array.from(specificOutLinks),
+          inLinks: Array.from(specificInLinks),
+        });
+      }
+    });
+
+    return connections;
+  }
+
+  /**
+   * Collects link types connecting `source` to `target`, keyed by the type of
+   * the element on the other side (`field.range` for outgoing, `field.domain`
+   * for incoming).
+   */
+  private addLinkTypes(
+    source: Reactodia.ElementModel | undefined,
+    sourceMetadata: EntityMetadata,
+    target: Reactodia.ElementModel | undefined,
+    linkType: Reactodia.LinkTypeIri | undefined,
+    typeClosure: Map<Reactodia.ElementTypeIri, Set<Reactodia.ElementTypeIri>>,
+    groupByEndpoint: 'range' | 'domain',
+    linksByType: Map<Reactodia.ElementTypeIri, Set<Reactodia.LinkTypeIri>>,
+    anyLinks: Set<Reactodia.LinkTypeIri>
+  ): void {
+    sourceMetadata.fieldByIri.forEach((field, fieldIri) => {
+      const isCompatibleField =
+        isObjectProperty(field, sourceMetadata) &&
+        (!source || hasCompatibleType(field.domain, source.types, typeClosure)) &&
+        (!target || hasCompatibleType(field.range, target.types, typeClosure)) &&
+        (!linkType || fieldIri === linkType);
+
+      if (isCompatibleField) {
+        const endpointTypes = groupByEndpoint === 'range' ? field.range : field.domain;
+        if (endpointTypes && endpointTypes.length > 0) {
+          for (const iri of endpointTypes) {
+            let linkTypes = linksByType.get(iri.value);
+            if (!linkTypes) {
+              linkTypes = new Set<Reactodia.LinkTypeIri>();
+              linksByType.set(iri.value, linkTypes);
+            }
+            linkTypes.add(fieldIri);
+          }
+        } else {
+          anyLinks.add(fieldIri);
+        }
+      }
     });
   }
 
-  typesOfElementsDraggedFrom(source: ElementModel, ct: CancellationToken): Promise<ElementTypeIri[]> {
-    const metadata = getEntityMetadata(source, this.entityMetadata);
-    if (!metadata) {
-      return Promise.resolve([]);
-    }
-
-    const typeRequest = new BaseTypeClosureRequest();
-    typeRequest.addAll(source.types);
-
-    const task = typeRequest.query().map((typeClosure) => {
-      const targetTypes = new Set<ElementTypeIri>();
-
-      metadata.fieldByIri.forEach((field) => {
-        const isCompatibleField =
-          isObjectProperty(field, metadata) && hasCompatibleType(field.domain, source.types, typeClosure);
-        if (isCompatibleField) {
-          for (const rangeType of field.range) {
-            const entityType = rangeType.value as ElementTypeIri;
-            if (this.entityMetadata.has(entityType)) {
-              targetTypes.add(entityType);
-            }
-          }
-        }
-      });
-
-      this.entityMetadata.forEach((otherMetadata) => {
-        otherMetadata.fieldByIri.forEach((field) => {
-          const isCompatibleField =
-            isObjectProperty(field, otherMetadata) && hasCompatibleType(field.range, source.types, typeClosure);
-          if (isCompatibleField) {
-            for (const domainType of field.domain) {
-              const entityType = domainType.value as ElementTypeIri;
-              if (this.entityMetadata.has(entityType)) {
-                targetTypes.add(entityType);
+  async getEntityShape(
+    types: ReadonlyArray<Reactodia.ElementTypeIri>,
+    options: { readonly signal?: AbortSignal }
+  ): Promise<Reactodia.MetadataEntityShape> {
+    const properties = new Map<Reactodia.PropertyTypeIri, Reactodia.MetadataPropertyShape>();
+    for (const type of types) {
+      const metadata = this.entityMetadata.get(type);
+      if (metadata) {
+        metadata.fieldByIri.forEach((field, fieldIri) => {
+          if (!isObjectProperty(field, metadata)) {
+            properties.set(fieldIri, {
+              valueShape: {
+                termType: 'Literal',
+                datatype: field.xsdDatatype,
               }
-            }
+            });
           }
         });
-      });
-
-      return Array.from(targetTypes);
-    });
-    return observableToCancellablePromise(task, ct);
+      }
+    }
+    return { properties };
   }
 
-  propertiesForType(type: ElementTypeIri, ct: CancellationToken): Promise<PropertyTypeIri[]> {
-    return Promise.resolve([]);
+  async getRelationShape(
+    linkType: Reactodia.LinkTypeIri,
+    source: Reactodia.ElementModel,
+    target: Reactodia.ElementModel,
+    options: { readonly signal?: AbortSignal; }
+  ): Promise<Reactodia.MetadataRelationShape> {
+    const properties = new Map<Reactodia.PropertyTypeIri, Reactodia.MetadataPropertyShape>();
+    return { properties };
   }
 
-  canDeleteElement(element: ElementModel, ct: CancellationToken): Promise<boolean> {
-    const metadata = getEntityMetadata(element, this.entityMetadata);
-    return Promise.resolve(Boolean(metadata));
-  }
-
-  filterConstructibleTypes(
-    types: ReadonlySet<ElementTypeIri>,
-    ct: CancellationToken
-  ): Promise<ReadonlySet<ElementTypeIri>> {
-    const constructibleTypes = new Set<ElementTypeIri>();
-    this.entityMetadata.forEach((metadata, key: ElementTypeIri) => {
+  async filterConstructibleTypes(
+    types: ReadonlySet<Reactodia.ElementTypeIri>,
+    options: { readonly signal?: AbortSignal }
+  ): Promise<ReadonlySet<Reactodia.ElementTypeIri>> {
+    const constructibleTypes = new Set<Reactodia.ElementTypeIri>();
+    this.entityMetadata.forEach((metadata, key) => {
       if (types.has(key)) {
         constructibleTypes.add(key);
       }
     });
-    return Promise.resolve(constructibleTypes);
+    return constructibleTypes;
   }
 
-  canEditElement(element: ElementModel, ct: CancellationToken): Promise<boolean> {
-    const metadata = getEntityMetadata(element, this.entityMetadata);
-    return Promise.resolve(Boolean(metadata));
+  async canModifyEntity(
+    entity: Reactodia.ElementModel,
+    options: { readonly signal?: AbortSignal }
+  ): Promise<Reactodia.MetadataCanModifyEntity> {
+    const metadata = getEntityMetadata(entity, this.entityMetadata);
+    const canModify = Boolean(metadata);
+    return {
+      canEdit: canModify,
+      canDelete: canModify,
+    };
   }
 
-  canLinkElement(element: ElementModel, ct: CancellationToken): Promise<boolean> {
-    const metadata = getEntityMetadata(element, this.entityMetadata);
-    return Promise.resolve(Boolean(metadata));
-  }
-
-  canDeleteLink(link: LinkModel, source: ElementModel, target: ElementModel, ct: CancellationToken): Promise<boolean> {
+  async canModifyRelation(
+    link: Reactodia.LinkModel,
+    source: Reactodia.ElementModel,
+    target: Reactodia.ElementModel,
+    options: { readonly signal?: AbortSignal }
+  ): Promise<Reactodia.MetadataCanModifyRelation> {
     const metadata = getEntityMetadata(source, this.entityMetadata);
-    return Promise.resolve(Boolean(metadata) && metadata.fieldByIri.has(link.linkTypeId));
-  }
-
-  canEditLink(link: LinkModel, source: ElementModel, target: ElementModel, ct: CancellationToken): Promise<boolean> {
-    const metadata = getEntityMetadata(source, this.entityMetadata);
-    return Promise.resolve(Boolean(metadata) && metadata.fieldByIri.has(link.linkTypeId));
+    const canModify = Boolean(metadata) && metadata.fieldByIri.has(link.linkTypeId);
+    return {
+      canChangeType: canModify,
+      canDelete: canModify,
+    };
   }
 }
 
@@ -241,28 +290,28 @@ export class BaseTypeClosureRequest {
       'SELECT REDUCED ?type ?base WHERE { ?type rdfs:subClassOf* ?base }'
   );
 
-  readonly derivedTypes = new Set<ElementTypeIri>();
+  readonly derivedTypes = new Set<Reactodia.ElementTypeIri>();
 
-  addAll(types: ReadonlyArray<ElementTypeIri>) {
+  addAll(types: ReadonlyArray<Reactodia.ElementTypeIri>) {
     for (const type of types) {
       this.derivedTypes.add(type);
     }
   }
 
-  query(): Kefir.Property<Map<ElementTypeIri, Set<ElementTypeIri>>> {
+  query(): Kefir.Property<Map<Reactodia.ElementTypeIri, Set<Reactodia.ElementTypeIri>>> {
     const values: Array<{ type: Rdf.Iri }> = [];
     this.derivedTypes.forEach((type) => {
       values.push({ type: Rdf.iri(type) });
     });
     const preparedQuery = SparqlClient.prepareParsedQuery(values)(BaseTypeClosureRequest.BASE_TYPES_QUERY);
     return SparqlClient.select(preparedQuery).map(({ results }) => {
-      const baseTypes = new Map<ElementTypeIri, Set<ElementTypeIri>>();
+      const baseTypes = new Map<Reactodia.ElementTypeIri, Set<Reactodia.ElementTypeIri>>();
       for (const binding of results.bindings) {
-        const type = binding.type.value as ElementTypeIri;
-        const base = binding.base.value as ElementTypeIri;
+        const type: Reactodia.ElementTypeIri = binding.type.value;
+        const base: Reactodia.ElementTypeIri = binding.base.value;
         let baseSet = baseTypes.get(type);
         if (!baseSet) {
-          baseSet = new Set<ElementTypeIri>();
+          baseSet = new Set<Reactodia.ElementTypeIri>();
           baseTypes.set(type, baseSet);
         }
         baseSet.add(base);
@@ -274,13 +323,13 @@ export class BaseTypeClosureRequest {
 
 export function hasCompatibleType(
   requiredTypes: ReadonlyArray<Rdf.Iri>,
-  targetTypes: ReadonlyArray<ElementTypeIri>,
-  targetTypesClosure: Map<ElementTypeIri, Set<ElementTypeIri>>
+  targetTypes: ReadonlyArray<Reactodia.ElementTypeIri>,
+  targetTypesClosure: Map<Reactodia.ElementTypeIri, Set<Reactodia.ElementTypeIri>>
 ) {
   for (const targetType of targetTypes) {
     const closure = targetTypesClosure.get(targetType);
     for (const requiredType of requiredTypes) {
-      if (closure.has(requiredType.value as ElementTypeIri)) {
+      if (closure.has(requiredType.value)) {
         return true;
       }
     }

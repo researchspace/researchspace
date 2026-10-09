@@ -2,7 +2,6 @@
 import { createElement } from 'react';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import * as Kefir from 'kefir';
 import * as Handlebars from 'handlebars';
 import { mount } from 'platform-tests/configuredEnzyme';
 import { mockConfig } from 'platform-tests/mocks';
@@ -10,8 +9,8 @@ import { DashboardComponent } from 'platform/components/dashboard/DashboardCompo
 import { ResourceLinkContainer } from 'platform/api/navigation/components/ResourceLinkContainer';
 import * as Navigation from 'platform/api/navigation';
 import { ConfigHolder } from 'platform/api/services/config-holder';
-import * as Labels from 'platform/api/services/resource-label';
 import { Rdf } from 'platform/api/rdf';
+import { DataContextFunctions } from 'platform/api/services/template/functions/DataContextFunctions';
 
 const source = require('!!raw-loader!../../../../main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FResourceViewButton.html').default;
 const framesSource = require('!!raw-loader!../../../../main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FThinkingFrames.html').default;
@@ -21,12 +20,19 @@ const dashboardIri = Rdf.iri('http://www.researchspace.org/resource/ThinkingFram
 const customTemplate = 'https://example.org/templates/person';
 mockConfig();
 
-function viewAction(resourceVisualisationTemplateIRI?: string, configuration = resourceConfiguration) {
+function viewAction(configuredTemplateIRI?: string, configuration = resourceConfiguration,
+    inheritedTemplateIRI?: string) {
   const fragment = document.createElement('div');
   const engine = Handlebars.create();
   engine.registerHelper('eq', (left, right) => left === right);
+  engine.registerHelper('bind', DataContextFunctions.bind);
+  engine.registerHelper('getResourceConfigurationValue', (config: string, key: string) => {
+    expect(config).to.equal(configuration);
+    expect(key).to.equal('resourceVisualisationTemplateIRI');
+    return configuredTemplateIRI;
+  });
   fragment.innerHTML = engine.compile(source)({
-    iri, resourceConfiguration: configuration, resourceVisualisationTemplateIRI, viewId: 'editor-frame',
+    iri, resourceConfiguration: configuration, resourceVisualisationTemplateIRI: inheritedTemplateIRI, viewId: 'editor-frame',
   });
   const link = fragment.querySelector('semantic-link-container');
   expect(link, 'View must provide navigation outside the dashboard').not.to.equal(null);
@@ -64,12 +70,16 @@ async function waitFor(check: () => boolean) {
 }
 
 describe('Resource view navigation', () => {
-  let label: sinon.SinonStub;
+  let server: sinon.SinonFakeServer;
   beforeEach(() => {
-    label = sinon.stub(Labels, 'getLabel').callsFake(() => Kefir.constant('Example entity'));
+    server = sinon.fakeServer.create();
+    server.respondImmediately = true;
+    server.respondWith('POST', /\/rest\/data\/rdf\/utils\/getLabelsForRdfValue/, [
+      200, { 'Content-Type': 'application/json' }, JSON.stringify({ [iri]: 'Example entity' }),
+    ]);
   });
   afterEach(() => {
-    label.restore();
+    server.restore();
     Navigation.setFrameNavigation(false);
   });
 
@@ -88,6 +98,22 @@ describe('Resource view navigation', () => {
     });
   });
 
+  it('uses the current configuration instead of a stale inherited visualisation', () => {
+    const action = viewAction(customTemplate, resourceConfiguration, 'https://example.org/templates/stale');
+    expect(Navigation.NavigationUtils.extractParams(action)).to.deep.equal({
+      view: 'resource-detailed-visualisation', resource: iri,
+      resourceConfig: resourceConfiguration, resourceVisualisationTemplate: customTemplate,
+    });
+  });
+
+  it('uses the default view when the configuration has no visualisation, even with an inherited value', () => {
+    const action = viewAction(undefined, resourceConfiguration, customTemplate);
+    expect(Navigation.NavigationUtils.extractParams(action)).to.deep.equal({
+      view: 'resource', resource: iri, resourceConfig: resourceConfiguration,
+      resourceVisualisationTemplate: '',
+    });
+  });
+
   it('retains the create-form defaults and URL label when initialising a frame', () => {
     expect(initialView({view: 'resource-editor', entityTypeConfig: resourceConfiguration,
       customLabel: 'New person'})).to.deep.equal({
@@ -100,8 +126,8 @@ describe('Resource view navigation', () => {
       mode: 'edit'}).data.mode).to.equal('edit');
   });
 
-  it('leaves the dashboard default unchanged when no initial view is supplied', () => {
-    expect(initialView()).to.equal(undefined);
+  it('uses the dashboard view when no initial view is supplied', () => {
+    expect(initialView()).to.deep.equal({ view: 'dashboard' });
   });
 
   it('uses the context view when no URL view is supplied', () => {
@@ -114,6 +140,23 @@ describe('Resource view navigation', () => {
       view: 'resource', resource: iri,
       data: {resourceConfig: resourceConfiguration, resourceVisualisationTemplate: ''},
     });
+  });
+
+  it('keeps new-resource editors independent when no resource IRI is available', async () => {
+    const dashboard = mount(createElement(DashboardComponent, {
+      id: 'thinking-frames', dashboardIri,
+      initialView: { view: 'resource-editor', resource: undefined, data: {} },
+      views: [{ id: 'resource-editor', label: 'New resource', template: '<input aria-label="New entity" />' }],
+    }));
+    try {
+      Navigation.navigateToResource(dashboardIri, { view: 'resource-editor' }).onValue(() => {});
+      await waitFor(() => dashboard.state('items').length === 2);
+      const items = dashboard.state('items');
+      expect(items[0].id).not.to.equal(items[1].id);
+      expect(items.every(item => !item.resourceIri && item.viewId === 'resource-editor')).to.equal(true);
+    } finally {
+      dashboard.unmount();
+    }
   });
 
   [

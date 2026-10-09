@@ -376,7 +376,7 @@ export class DashboardComponent extends Component<Props, State> {
         trigger({
           eventType: 'Dashboard.AddFrame',
           source: 'link',
-          targets: ['thinking-frames'],
+          targets: [this.props.id],
           data: {
             resourceIri: iri.value,
             viewId: 'semantic-narrative',
@@ -388,7 +388,7 @@ export class DashboardComponent extends Component<Props, State> {
         trigger({
           eventType: 'Dashboard.AddFrame',
           source: 'link',
-          targets: ['thinking-frames'],
+          targets: [this.props.id],
           data: {
             resourceIri: props['resource'],
             viewId: props['view'],
@@ -400,7 +400,7 @@ export class DashboardComponent extends Component<Props, State> {
         trigger({
           eventType: 'Dashboard.AddFrame',
           source: 'link',
-          targets: ['thinking-frames'],
+          targets: [this.props.id],
           data: {
             ...props
           }
@@ -412,7 +412,7 @@ export class DashboardComponent extends Component<Props, State> {
           trigger({
             eventType: 'Dashboard.AddFrame',
             source: 'link',
-            targets: ['thinking-frames'],
+            targets: [this.props.id],
             data: {
               resourceIri: 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Image',
               viewId: 'resource-search',
@@ -424,7 +424,7 @@ export class DashboardComponent extends Component<Props, State> {
           trigger({
             eventType: 'Dashboard.AddFrame',
             source: 'link',
-            targets: ['thinking-frames'],
+            targets: [this.props.id],
             data: {
               resourceIri: iri.value,
               viewId: 'resource',
@@ -457,9 +457,11 @@ export class DashboardComponent extends Component<Props, State> {
         return;
     }
   
-    // check if an item with the same resourceIri and viewId is already in the tabset
-    // This allows matching items even when resourceIri is undefined
-    const itemIsAlreadyOpen = this.state.items.filter((i) => (i.resourceIri === item.resourceIri && i.viewId === item.viewId) && (item.viewId !== "resource-editor"));
+    // Reuse an existing resource editor so its unsaved inputs remain mounted.
+    // New-resource editors have no resource IRI and must remain independent.
+    const reuseFrame = item.viewId !== 'resource-editor' || Boolean(item.resourceIri);
+    const itemIsAlreadyOpen = this.state.items.filter((i) =>
+      reuseFrame && i.resourceIri === item.resourceIri && i.viewId === item.viewId);
     
     // if is already open, then select it and set to active, otherwise it will create a new tab with the selected item
     if(itemIsAlreadyOpen.length > 0) { 

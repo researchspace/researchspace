@@ -1,0 +1,642 @@
+<div class="page__grid-container help-page-container">
+  <div class="page__content-container">
+
+    <h1>Sigma Graph Component</h1>
+
+    <style>
+      .documentation__code-example {
+        display: block;
+        overflow-x: auto;
+        margin: 1rem 0 1.5rem;
+        padding: 1rem;
+        background: #f7fafc;
+        border: 1px solid #d8e0ea;
+        border-radius: 4px;
+        color: #1f2937;
+        line-height: 1.45;
+        white-space: pre;
+      }
+
+      .documentation__code-example code {
+        white-space: pre;
+      }
+    </style>
+
+
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+        <p>
+          The <code>&lt;semantic-sigma-graph&gt;</code> component visualises RDF graph data using
+          <a href="https://www.sigmajs.org/">Sigma.js</a>. Sigma renders through WebGL, making it
+          suitable for interactive graph exploration, including larger graphs where the older semantic
+          graph component may become less responsive.
+        </p>
+
+        <p>
+          The component is designed for graph-shaped SPARQL <code>CONSTRUCT</code> results. It can be
+          configured with colours, sizing, layout controls, edge filtering, search, grouping, graph
+          persistence and event-based integration with other ResearchSpace components. If no
+          <code>layout</code> is specified, the component applies the lightweight deterministic
+          <code>circular</code> layout once after mounting. Other layouts are available from the layout
+          selector. Choose a layout and press Apply or Start; navigation controls preserve that choice.
+        </p>
+
+        <p>
+          If the graph needs to communicate with other components, or if more than one Sigma graph is
+          used on the same page, provide a stable <code>id</code>. The id is used as the component-level
+          event identity so that events from different graph instances do not interfere with each other.
+        </p>
+
+        <p class="alert alert-info">
+          <strong>Layout note:</strong> the default initial presentation is <code>circular</code>. Set
+          <code>layout="noverlap"</code>, <code>layout="circlepack"</code>, <code>layout="random"</code>
+          or another layout value only when a graph should use a different initial layout. Force and
+          ForceAtlas2 are available in the same layout selector, but their supervisors are created
+          lazily when started or configured as the initial <code>layout</code>. Further node clicks and
+          expansions can restart the applied continuous layout.
+        </p>
+
+      </div>
+
+      <div class="documentation__intro__demo" id="demo-basic-live">
+        <h2>Try all graph controls</h2>
+        <p>This live example starts with ForceAtlas2. Use its layout menu to try all six layouts,
+          search for a displayed node label, filter relationships, zoom, and return to the whole graph.
+          Click Alice or Bob to add neighbours from the example's expansion query.</p>
+        <semantic-sigma-graph
+          id="sigma-layout-controls-demo"
+          height="600px"
+          width="100%"
+          layout="forceAtlas2"
+          layout-run-duration="10000"
+          max-force-nodes="500"
+          controls="true"
+          search-box="true"
+          edge-filter="true"
+          query="
+            prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            prefix person: <http://example.com/person/>
+            prefix org: <http://example.com/org/>
+            prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+            CONSTRUCT {
+              ?s ?p ?o .
+            } WHERE {
+              SELECT ?s ?p ?o WHERE {
+                VALUES (?s ?p ?o) {
+                  (person:alice foaf:knows person:bob)
+                  (person:alice foaf:knows person:carol)
+                  (person:carol foaf:knows person:mike)
+                  (person:mike foaf:knows person:carol)
+                  (person:bob foaf:knows person:carol)
+                  (person:alice foaf:knows person:mike)
+                  (person:alice foaf:member org:W3C)
+                  (person:mike foaf:member org:W3C)
+                  (person:alice rdf:type foaf:Person)
+                  (person:carol rdf:type foaf:Person)
+                  (person:mike rdf:type foaf:Person)
+                  (person:bob rdf:type foaf:Person)
+                  (org:W3C rdf:type foaf:Organization)
+                }
+              }
+            }"
+          node-query="
+            prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            prefix person: <http://example.com/person/>
+            prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+            CONSTRUCT {
+              ?s ?p ?o .
+              ?s rdf:type foaf:Person .
+              ?o rdf:type foaf:Person .
+            } WHERE {
+              VALUES (?s ?p ?o) {
+                (person:alice foaf:knows person:david)
+                (person:bob foaf:knows person:emma)
+                (person:david foaf:knows person:emma)
+                (person:emma foaf:knows person:mike)
+              }
+              FILTER (?s = ?subject || ?o = ?subject)
+            }"
+          colours='{
+            "http://xmlns.com/foaf/0.1/Person": "#2980b9",
+            "http://xmlns.com/foaf/0.1/Organization": "#27ae60",
+            "edge": "#9aa6b2"
+          }'
+          sizes='{
+            "nodes": 11,
+            "edges": 4
+          }'>
+        </semantic-sigma-graph>
+      </div>
+    </div>
+
+    <div style="clear: both;"></div>
+
+    <h2>When to use it</h2>
+
+    <p>
+      Use this component when the user needs to explore relationships between RDF resources, rather than
+      only inspect a tabular result set. Typical use cases include object networks, people and organisation
+      networks, provenance chains, event networks, collection-item relationships, and any view where users
+      need to follow links interactively.
+    </p>
+
+    <p>
+      For small, static diagrams the older <semantic-link iri="Help:SemanticGraph">Semantic Graph</semantic-link>
+      component may still be sufficient. Use <code>&lt;semantic-sigma-graph&gt;</code> where interaction,
+      layout control, incremental graph expansion, filtering or WebGL performance is important.
+    </p>
+
+    <h2>Basic usage</h2>
+
+    <p>
+      The minimum useful configuration is a SPARQL <code>CONSTRUCT</code> query and a height. The
+      query should construct subject-predicate-object triples. Include <code>rdf:type</code> triples when
+      you want type-based colours or grouping.
+    </p>
+
+    <p>
+      The examples below are rendered as static code blocks. Copy an example into a normal page to run it.
+      Use <code>layout</code> to choose the initial layout; if omitted, the graph starts with
+      <code>circular</code>. The live example above explicitly starts with ForceAtlas2.
+    </p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="resource-network"
+  height="500px"
+  query="
+    prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+    prefix person: &lt;http://example.com/person/&gt;
+    prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+
+    CONSTRUCT {
+      ?s ?p ?o .
+    } WHERE {
+      VALUES (?s ?p ?o) {
+        (person:alice foaf:knows person:bob)
+        (person:alice foaf:knows person:carol)
+        (person:bob rdf:type foaf:Person)
+        (person:carol rdf:type foaf:Person)
+        (person:alice rdf:type foaf:Person)
+      }
+    }"&gt;
+&lt;/semantic-sigma-graph&gt;</code></pre>
+
+    <h2>Configuration</h2>
+
+    <mp-documentation type="SigmaGraphConfig"></mp-documentation>
+
+    <h2>Examples</h2>
+
+    <h3>Complete example: layouts, search, filters and navigation</h3>
+
+    <p>
+      The <a href="#demo-basic-live">live example above</a> uses the complete configuration below.
+      Its initial and expansion queries supply their triples through <code>VALUES</code>, so no example
+      dataset needs to be imported. Resource and relationship labels follow your installation's label service.
+      Copy this component into a page to test every control together.
+    </p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="sigma-layout-controls-demo"
+  height="600px"
+  width="100%"
+  layout="forceAtlas2"
+  layout-run-duration="10000"
+  max-force-nodes="500"
+  controls="true"
+  search-box="true"
+  edge-filter="true"
+  query="
+    prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+    prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+    prefix person: &lt;http://example.com/person/&gt;
+    prefix org: &lt;http://example.com/org/&gt;
+    prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+
+    CONSTRUCT {
+      ?s ?p ?o .
+    } WHERE {
+      SELECT ?s ?p ?o WHERE {
+        VALUES (?s ?p ?o) {
+          (person:alice foaf:knows person:bob)
+          (person:alice foaf:knows person:carol)
+          (person:carol foaf:knows person:mike)
+          (person:mike foaf:knows person:carol)
+          (person:bob foaf:knows person:carol)
+          (person:alice foaf:knows person:mike)
+          (person:alice foaf:member org:W3C)
+          (person:mike foaf:member org:W3C)
+          (person:alice rdf:type foaf:Person)
+          (person:carol rdf:type foaf:Person)
+          (person:mike rdf:type foaf:Person)
+          (person:bob rdf:type foaf:Person)
+          (org:W3C rdf:type foaf:Organization)
+        }
+      }
+    }"
+  node-query="
+    prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+    prefix person: &lt;http://example.com/person/&gt;
+    prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+
+    CONSTRUCT {
+      ?s ?p ?o .
+      ?s rdf:type foaf:Person .
+      ?o rdf:type foaf:Person .
+    } WHERE {
+      VALUES (?s ?p ?o) {
+        (person:alice foaf:knows person:david)
+        (person:bob foaf:knows person:emma)
+        (person:david foaf:knows person:emma)
+        (person:emma foaf:knows person:mike)
+      }
+      FILTER (?s = ?subject || ?o = ?subject)
+    }"
+  colours='{
+    "http://xmlns.com/foaf/0.1/Person": "#2980b9",
+    "http://xmlns.com/foaf/0.1/Organization": "#27ae60",
+    "edge": "#9aa6b2"
+  }'
+  sizes='{
+    "nodes": 11,
+    "edges": 4
+  }'&gt;
+&lt;/semantic-sigma-graph&gt;</code></pre>
+
+    <h4>Layout choices and buttons</h4>
+    <p>Open the toolbar button labelled <strong>Choose graph layout</strong>, select an algorithm,
+      and press its action button. Changing the dropdown prepares a choice; Apply or Start activates it.
+      Search, filters, zoom and See whole graph preserve both the dropdown selection and the applied layout.</p>
+
+    <table class="table table-striped">
+      <thead><tr><th>Layout</th><th>Action button</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>Circular (<code>circular</code>)</td><td>Apply</td><td>Places nodes around a circle once.</td></tr>
+        <tr><td>Circle pack (<code>circlepack</code>)</td><td>Apply</td><td>Packs nodes into circles once.</td></tr>
+        <tr><td>Random (<code>random</code>)</td><td>Apply</td><td>Assigns a new random placement once.</td></tr>
+        <tr><td>Noverlap (<code>noverlap</code>)</td><td>Apply</td><td>Reduces overlap from the current positions.</td></tr>
+        <tr><td>Force (<code>force</code>)</td><td>Start / Restart</td><td>Runs a continuous layout for small graphs; switches to ForceAtlas2 above the configured node limit.</td></tr>
+        <tr><td>ForceAtlas2 (<code>forceAtlas2</code>)</td><td>Start / Restart</td><td>Runs the force-directed layout in a worker.</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Restart</strong> begins a fresh run period for a running continuous layout.
+      <strong>Stop</strong> stops the active continuous layout immediately, even if a different option
+      is selected in the dropdown. Stop is disabled when no continuous layout is active.</p>
+
+    <h4>Search, filtering and camera controls</h4>
+    <table class="table table-striped">
+      <thead><tr><th>Control</th><th>How to try it</th><th>Layout behaviour</th></tr></thead>
+      <tbody>
+        <tr><td>Search</td><td>Type at least two characters from a displayed node label and select its suggestion. Enter selects an exact label; empty Enter does nothing. Press Escape or click the graph background to clear the search.</td><td>Highlights the selected node and centres the camera; keeps the existing layout.</td></tr>
+        <tr><td>Filter</td><td>Open the Filter panel and toggle relationship labels. Use (all) to show or hide all relationship labels.</td><td>Changes visibility; keeps node positions and the chosen layout.</td></tr>
+        <tr><td>Zoom In / Zoom Out</td><td>Use the + and − toolbar buttons.</td><td>Changes camera zoom only.</td></tr>
+        <tr><td>See whole graph</td><td>Use the target-shaped toolbar button after searching, zooming or panning.</td><td>Resets the camera without remounting the graph or switching to Circular. Retains expanded nodes, search and filter settings.</td></tr>
+      </tbody>
+    </table>
+    <p>These controls also preserve whether a continuous layout is running or stopped.
+      See whole graph keeps active filters: select (all) in the Filter panel if you also want every
+      relationship visible. To test expansion, click Alice, Bob, David or Emma. Newly added nodes use
+      the applied layout, and Force or ForceAtlas2 receives a fresh run period.</p>
+
+    <h3>Keep one layout and hide the layout menu</h3>
+
+    <p>Set <code>layout-controls="false"</code> alongside <code>controls="true"</code> to retain
+      Zoom In, Zoom Out and See whole graph while hiding the layout button and its menu, including
+      Start/Restart/Stop. Set <code>layout</code> to choose the algorithm. Search and edge filtering
+      remain independently configurable, and node expansion continues to use the configured layout.</p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="fixed-layout-network"
+  height="500px"
+  width="100%"
+  layout="forceAtlas2"
+  layout-run-duration="10000"
+  controls="true"
+  layout-controls="false"
+  search-box="true"
+  edge-filter="true"
+  query="
+    PREFIX person: &lt;http://example.com/person/&gt;
+    PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+    CONSTRUCT { ?s foaf:knows ?o }
+    WHERE {
+      VALUES (?s ?o) {
+        (person:alice person:bob)
+        (person:alice person:carol)
+        (person:bob person:carol)
+      }
+    }"&gt;
+&lt;/semantic-sigma-graph&gt;</code></pre>
+
+    <p><code>layout-controls</code> defaults to <code>true</code>, so existing pages retain the
+      layout menu. <code>controls="false"</code> hides the entire zoom/layout toolbar regardless
+      of <code>layout-controls</code>. Hiding the menu does not stop the layout: the usual run-duration
+      limit, visibility pauses and restart on node clicks still apply.</p>
+
+    <h3>Initial layout and ForceAtlas2</h3>
+    <p>Continuous layouts stop after <code>layout-run-duration</code> milliseconds of active time
+      (default 10000; use 0 for unlimited). Clicking or expanding a node restarts the applied continuous
+      layout and gives it a fresh run period. A click reuses an already running layout.
+      Layouts pause while their graph is outside the viewport or its document is hidden.
+      Stop prevents pending query results, dragging and visibility changes from restarting the layout;
+      a new deliberate node click or expansion starts exploration again.</p>
+
+    <p>
+      The component applies <code>circular</code> as the default initial layout. This is cheap,
+      deterministic and avoids the worker pressure associated with force-directed layouts. Layout supervisors are created only when a continuous layout starts. Static layouts run once when requested.
+      To use a different initial layout, set the component's <code>layout</code> attribute, for example
+      <code>layout="noverlap"</code>, <code>layout="circlepack"</code> or <code>layout="random"</code>.
+    </p>
+
+    <p>
+      On pages with many graph instances, omit <code>layout</code> unless a particular example needs a
+      different first presentation. The omitted value means <code>circular</code>, and users can still open
+      the layout control and apply another layout to the graph they are inspecting.
+    </p>
+
+    <p>
+      <code>ForceAtlas2</code> is available from the same layout selector as the synchronous layouts.
+      Its worker is created when that layout starts. Use <strong>Start</strong> to apply a continuous
+      layout, or configure it as the initial <code>layout</code>. Once applied, further node clicks and
+      expansions can restart it automatically.
+    </p>
+
+    <p>
+      Available layouts are:
+    </p>
+
+    <ul>
+      <li><code>circular</code>: default initial layout; deterministic circular placement.</li>
+      <li><code>noverlap</code>: reduces node overlap when applied.</li>
+      <li><code>circlepack</code>: packed circular layout.</li>
+      <li><code>random</code>: quick random placement.</li>
+      <li><code>force</code>: main-thread animation for small graphs; above <code>max-force-nodes</code> (default 500), ForceAtlas2 is used instead.</li>
+      <li><code>forceAtlas2</code>: worker-based force-directed layout; mounted and started only when requested.</li>
+    </ul>
+
+    <h3>Colour scheme and sizing</h3>
+
+    <p>
+      Use <code>colours</code> to map RDF types to node colours. The component checks the node's
+      <code>rdf:type</code> values and uses the first configured type colour it finds. The optional
+      <code>node</code> and <code>edge</code> keys define fallback colours.
+    </p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="coloured-network"
+  height="500px"
+  query="
+    prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+    prefix person: &lt;http://example.com/person/&gt;
+    prefix org: &lt;http://example.com/org/&gt;
+    prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+
+    CONSTRUCT {
+      ?s ?p ?o .
+    } WHERE {
+      VALUES (?s ?p ?o) {
+        (person:alice foaf:knows person:bob)
+        (person:alice foaf:member org:W3C)
+        (person:alice rdf:type foaf:Person)
+        (person:bob rdf:type foaf:Person)
+        (org:W3C rdf:type foaf:Organization)
+      }
+    }"
+  colours='{
+    "node": "#2d3748",
+    "edge": "#a0aec0",
+    "http://xmlns.com/foaf/0.1/Person": "#2980b9",
+    "http://xmlns.com/foaf/0.1/Organization": "#27ae60"
+  }'
+  sizes='{
+    "nodes": 12,
+    "edges": 4
+  }'&gt;
+&lt;/semantic-sigma-graph&gt;</code></pre>
+
+    <h3>Grouping repeated related nodes</h3>
+
+    <p>
+      Grouping is useful when one source node has many related target nodes of the same type through the
+      same predicate. Instead of drawing every target immediately, the component draws a group node labelled
+      with the grouped type and count.
+    </p>
+
+    <p>
+      The <code>threshold</code> controls when grouping starts. The <code>behaviour</code> controls what
+      happens when a group is expanded:
+    </p>
+
+    <ul>
+      <li><code>expand</code>: keep the group node and attach the children to it.</li>
+      <li><code>replace</code>: replace the group node with its children.</li>
+      <li><code>none</code>: show the group but do not expand it on click.</li>
+    </ul>
+
+    <p>
+      The following example is shown as code only. Documentation pages should avoid mounting many live
+      Sigma graphs at once because each live graph creates a WebGL context.
+    </p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="grouping-demo"
+  height="500px"
+  controls="true"
+  query="
+    prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+    prefix person: &lt;http://example.com/person/&gt;
+    prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+
+    CONSTRUCT {
+      ?s ?p ?o .
+    } WHERE {
+      VALUES (?s ?p ?o) {
+        (person:alice foaf:knows person:bob)
+        (person:alice foaf:knows person:carol)
+        (person:alice foaf:knows person:derek)
+        (person:alice foaf:knows person:mike)
+        (person:alice rdf:type foaf:Person)
+        (person:bob rdf:type foaf:Person)
+        (person:carol rdf:type foaf:Person)
+        (person:derek rdf:type foaf:Person)
+        (person:mike rdf:type foaf:Person)
+      }
+    }"
+  grouping='{
+    "enabled": true,
+    "threshold": 2,
+    "behaviour": "replace"
+  }'
+  colours='{
+    "http://xmlns.com/foaf/0.1/Person": "#2980b9"
+  }'&gt;
+&lt;/semantic-sigma-graph&gt;</code></pre>
+
+    <h3>Loading more data when a node is clicked</h3>
+
+    <p>
+      Use <code>node-query</code> to expand the graph on demand. The query is executed when a non-grouped
+      node is clicked. Use either <code>?subject</code> or <code>$subject</code> as the placeholder; the
+      component replaces it with the clicked node IRI before executing the query.
+    </p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="expandable-network"
+  height="600px"
+  controls="true"
+  search-box="true"
+  query="
+    CONSTRUCT {
+      ?resource ?p ?o .
+    } WHERE {
+      BIND(&lt;http://example.com/person/alice&gt; AS ?resource)
+      ?resource ?p ?o .
+    }"
+  node-query="
+    CONSTRUCT {
+      ?subject ?p ?o .
+      ?o ?op ?oo .
+    } WHERE {
+      ?subject ?p ?o .
+      OPTIONAL {
+        ?o ?op ?oo .
+      }
+    }"&gt;
+&lt;/semantic-sigma-graph&gt;</code></pre>
+
+    <h3>Persisting graph state</h3>
+    <p>Persistence requires a stable component <code>id</code>. Each graph has its own entry,
+      scoped by query, page and semantic context. Older shared entries are not imported.
+      Restoring a graph preserves its saved positions without restarting a continuous layout.</p>
+
+    <p>
+      When <code>persist-graph</code> is enabled, the current graph is saved into browser local storage
+      before the page is unloaded. On reload, the saved graph is restored and a notification is shown with
+      a reset action.
+    </p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="persistent-network"
+  height="600px"
+  controls="true"
+  persist-graph="true"
+  persist-graph-message="The graph has been restored. Use Reset to reload it from the query."
+  persist-graph-message-position="tr"
+  query="
+    CONSTRUCT {
+      ?s ?p ?o .
+    } WHERE {
+      ?s ?p ?o .
+    }"&gt;
+&lt;/semantic-sigma-graph&gt;</code></pre>
+
+    <h2>Events</h2>
+
+    <p>
+      The Sigma graph component can both emit events and respond to external events. This makes it possible
+      to coordinate the graph with search results, resource views, side panels or other Sigma graphs.
+    </p>
+
+    <p>
+      A stable <code>id</code> is strongly recommended whenever events are used. Outgoing
+      <code>Sigma.NodeClicked</code> events include the component id in <code>data.componentId</code> and
+      use the same id as the event source. Incoming events should target the graph id so that only the
+      intended graph instance responds.
+    </p>
+
+    <h3>Node click payload</h3>
+
+    <pre class="documentation__code-example"><code>{
+  componentId: "resource-network",
+  id: "&lt;http://example.com/person/alice&gt;",
+  node: "&lt;http://example.com/person/alice&gt;",
+  nodes: [
+    "http://example.com/person/alice"
+  ],
+  attributes: {
+    label: "Alice",
+    typeLabels: ["Person"],
+    color: "#2980b9"
+  }
+}</code></pre>
+
+    <h3>Targeting one graph from another component</h3>
+
+    <p>
+      The following example targets only the graph whose id is <code>resource-network</code>.
+    </p>
+
+    <pre class="documentation__code-example"><code>trigger({
+  eventType: FocusNode,
+  source: "external-control",
+  targets: ["resource-network"],
+  data: {
+    componentId: "resource-network",
+    node: "http://example.com/person/alice"
+  }
+});</code></pre>
+
+    <h3>Multiple Sigma graphs on one page</h3>
+
+    <p>
+      Multiple graphs can be placed on the same page or in separate frames. Use different ids and target
+      events explicitly.
+    </p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="object-network"
+  height="500px"
+  query="..."&gt;
+&lt;/semantic-sigma-graph&gt;
+
+&lt;semantic-sigma-graph
+  id="event-network"
+  height="500px"
+  query="..."&gt;
+&lt;/semantic-sigma-graph&gt;</code></pre>
+
+    <p>
+      Events emitted by the first graph will use <code>object-network</code> as their component id and
+      source. Events emitted by the second graph will use <code>event-network</code>. This prevents
+      node-click, focus and group-expansion events from crossing between graph instances unintentionally.
+    </p>
+
+    <mp-documentation type="SigmaEventData" disable-transform-attributes="true" hide-required-label="true"></mp-documentation>
+
+    <h2>Practical notes</h2>
+
+    <ul>
+      <li>
+        Use a stable <code>id</code> for any graph that needs to send or receive events.
+      </li>
+      <li>
+        Include <code>rdf:type</code> triples when using type-based colours or grouping.
+      </li>
+      <li>
+        Prefer <code>width="100%"</code> and an explicit <code>height</code> when embedding the graph in a responsive page.
+      </li>
+      <li>
+        Use grouping for high-degree nodes where many targets share the same source, predicate and type.
+      </li>
+      <li>
+        Use <code>node-query</code> for exploratory pages where the user should progressively expand the network.
+      </li>
+      <li>
+        Omit <code>layout</code> on pages with many examples unless a graph needs a different first
+        presentation. The omitted value uses the lightweight <code>circular</code> default.
+      </li>
+      <li>
+        Avoid mounting many live Sigma graphs on a single documentation page. Use one live example and
+        show additional configurations as escaped code blocks or screenshots to avoid exhausting browser
+        WebGL contexts.
+      </li>
+      <li>
+        Enable <code>persist-graph</code> only where restoring user-expanded graph state is useful.
+      </li>
+    </ul>
+
+  </div>
+</div>

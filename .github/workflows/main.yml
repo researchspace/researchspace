@@ -19,6 +19,45 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Authenticate before tests and packaging so registry failures surface early.
+      # Fork PRs and Dependabot builds cannot access the publishing credentials.
+      - name: Log in to Docker Hub
+        id: docker-login
+        if: >-
+          (contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master' || contains(github.ref, 'build-docker')) &&
+          github.actor != 'dependabot[bot]' &&
+          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          if [ -z "$DOCKER_HUB_USER" ] || [ -z "$DOCKER_HUB_PASSWORD" ]; then
+            echo "::error::Set DOCKER_HUB_USER and DOCKER_HUB_PASSWORD before building and publishing Docker images."
+            exit 1
+          fi
+          set -o pipefail
+          login_log=$(mktemp)
+          trap 'rm -f "$login_log"' EXIT
+          for attempt in 1 2 3 4; do
+            if printf '%s' "$DOCKER_HUB_PASSWORD" | docker login --username "$DOCKER_HUB_USER" --password-stdin 2>&1 | tee "$login_log"; then
+              break
+            else
+              login_status=$?
+            fi
+            # Retry transient registry failures; rejected credentials must fail immediately.
+            if grep -Eqi 'unauthorized|incorrect username or password|denied|401[[:space:]]+Unauthorized' "$login_log" ||
+               ! grep -Eqi 'context deadline exceeded|Client\.Timeout exceeded|TLS handshake timeout|i/o timeout|connection reset by peer|429[[:space:]]+Too Many Requests|toomanyrequests|500[[:space:]]+Internal Server Error|502[[:space:]]+Bad Gateway|503[[:space:]]+Service Unavailable|504[[:space:]]+Gateway Timeout' "$login_log"; then
+              exit "$login_status"
+            fi
+            if [ "$attempt" -eq 4 ]; then
+              echo "::error::Docker Hub login failed after 4 attempts; check Docker Hub availability and runner connectivity."
+              exit "$login_status"
+            fi
+            retry_delay=$((15 * 2 ** (attempt - 1)))
+            echo "::warning::Transient Docker Hub login failure; retrying in ${retry_delay}s (attempt ${attempt}/4)."
+            sleep "$retry_delay"
+          done
+
       # setup JDK 11
       - uses: actions/setup-java@v1
         with:
@@ -84,24 +123,6 @@ jobs:
           ORG_GRADLE_PROJECT_buildVersion: ${{env.DATE}}_${{github.sha}}
         with:
           arguments: buildZip
-
-      # Authenticate before Docker resolves the base image, not only before pushing.
-      # Fork PRs and Dependabot builds cannot access the publishing credentials.
-      - name: Log in to Docker Hub
-        id: docker-login
-        if: >-
-          (contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master' || contains(github.ref, 'build-docker')) &&
-          github.actor != 'dependabot[bot]' &&
-          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        env:
-          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-        run: |
-          if [ -z "$DOCKER_HUB_USER" ] || [ -z "$DOCKER_HUB_PASSWORD" ]; then
-            echo "::error::Set DOCKER_HUB_USER and DOCKER_HUB_PASSWORD before building and publishing Docker images."
-            exit 1
-          fi
-          printf '%s' "$DOCKER_HUB_PASSWORD" | docker login --username "$DOCKER_HUB_USER" --password-stdin
 
       - name: docker build
         if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master' || contains(github.ref, 'build-docker')

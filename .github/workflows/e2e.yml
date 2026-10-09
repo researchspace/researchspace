@@ -48,15 +48,20 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json', 'e2e/package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
 
+      # Fail before starting the stack if the lockfile is invalid or out of sync.
+      # Keep the application dependencies identical to the committed lockfile.
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund
+
       # Start the dev stack in the background (backend :10214, webpack :3000,
-      # blazegraph). `runAll` runs npm install + webpack + jetty; stdin is held
+      # blazegraph). Skip npm install because npm ci already ran; stdin is held
       # open so the blocking jetty task keeps running. The extra Node heap keeps
       # the webpack + fork-ts-checker build from running out of memory.
       - name: Start dev stack
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: |
-          bash -c 'tail -f /dev/null | ./gradlew --no-daemon runAll' > runall.log 2>&1 &
+          bash -c 'tail -f /dev/null | ./gradlew --no-daemon runAll -x npmInstall' > runall.log 2>&1 &
           echo $! > gradle.pid
           echo "dev stack starting (pid $(cat gradle.pid))"
 

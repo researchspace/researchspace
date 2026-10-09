@@ -4,8 +4,8 @@ import { createElement } from 'react';
 import { mount } from 'platform-tests/configuredEnzyme';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import * as Handlebars from 'handlebars';
 import * as Kefir from 'kefir';
+import * as Handlebars from 'handlebars';
 import * as uri from 'urijs';
 
 import * as Events from 'platform/api/events';
@@ -17,6 +17,10 @@ import * as ResourceConfig from 'platform/api/services/resource-config';
 import { ResourceFrameLink } from 'platform/components/dashboard/ResourceFrameLink';
 import { ResourceViewLink } from 'platform/components/dashboard/ResourceViewLink';
 import { ConfigHolder } from 'platform/api/services/config-holder';
+import { mockConfig } from 'platform-tests/mocks';
+import { mockResourceViewServices } from 'platform-tests/mocks/ResourceViewServices';
+
+mockConfig();
 
 const source = require('!!raw-loader!../../../../main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FResourceFieldValueFramesVisualization.html').default;
 const noFramesSource = require('!!raw-loader!../../../../main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FResourceFieldValueNoFramesVisualization.html').default;
@@ -40,10 +44,11 @@ async function settle() {
 
 describe('ResourceFrameLink', () => {
   let resolveConfig: sinon.SinonStub;
-  let configValue: sinon.SinonStub;
-  let trigger: sinon.SinonStub;
+  let trigger: sinon.SinonSpy;
   let navigate: sinon.SinonStub;
   let dashboard: sinon.SinonStub;
+  let restoreServices: () => void;
+  let events: Kefir.Subscription;
   let wrapper;
 
   function render(props = {}, repository?: string) {
@@ -54,27 +59,27 @@ describe('ResourceFrameLink', () => {
     return wrapper;
   }
 
-  beforeEach(() => {
-    resolveConfig = sinon.stub(ResourceConfig, 'getResourceConfiguration').returns(Promise.resolve(config));
-    configValue = sinon.stub(ResourceConfig, 'getResourceConfigurationValue').returns(visualisation);
-    trigger = sinon.stub(Events, 'trigger');
-    navigate = sinon.stub(Navigation, 'navigateToResource').returns(Kefir.constant(undefined));
+  beforeEach(async () => {
+    resolveConfig = sinon.stub().returns(Promise.resolve(config));
+    restoreServices = await mockResourceViewServices([config, authorityConfig], visualisation, resolveConfig);
+    trigger = sinon.spy();
+    events = Events.listen({ eventType: 'Dashboard.AddFrame' }).observe({ value: trigger });
+    navigate = sinon.stub().returns(true);
+    Navigation.setFrameNavigation(true, navigate);
     dashboard = sinon.stub(ConfigHolder, 'getDashboard').returns(Rdf.iri('https://example.org/ResearchDashboard'));
   });
 
   afterEach(() => {
     if (wrapper) { wrapper.unmount(); wrapper = undefined; }
-    resolveConfig.restore();
-    configValue.restore();
-    trigger.restore();
-    navigate.restore();
+    restoreServices();
+    events.unsubscribe();
+    Navigation.setFrameNavigation(false);
     dashboard.restore();
   });
 
   it('does not resolve configurations during rendering', () => {
     render();
     expect(resolveConfig.called).to.equal(false);
-    expect(configValue.called).to.equal(false);
     expect(wrapper.find('button').prop('type')).to.equal('button');
     expect(wrapper.text()).to.equal('Linked actor');
   });
@@ -94,7 +99,6 @@ describe('ResourceFrameLink', () => {
 
     result.resolve(config);
     await settle();
-    expect(configValue.calledWithExactly(config, 'resourceVisualisationTemplateIRI')).to.equal(true);
     expect(trigger.calledOnce).to.equal(true);
     expect(trigger.firstCall.args[0]).to.deep.equal({
       eventType: 'Dashboard.AddFrame', source: 'actor-link', targets: ['research-frames'],
@@ -106,7 +110,7 @@ describe('ResourceFrameLink', () => {
   });
 
   it('uses the configured dashboard and the generic fallback when no template is configured', async () => {
-    configValue.returns(undefined);
+    delete ResourceConfig.resourceConfigs[config].resourceVisualisationTemplateIRI;
     render({ target: undefined });
     wrapper.find('button').simulate('click');
     await settle();
@@ -151,8 +155,7 @@ describe('ResourceFrameLink', () => {
     expect(event.data.viewId).to.equal('authority-list');
     expect(event.data.resourceIri).to.equal(iri);
     expect(event.data.resourceConfig).to.equal(authorityConfig);
-    // The authority route takes priority over an ordinary visualisation template.
-    expect(configValue.calledWithExactly(authorityConfig, 'resourceVisualisationTemplateIRI')).to.equal(true);
+    expect(event.data.resourceVisualisationTemplate).to.equal(visualisation);
   });
 
   it('ignores repeated clicks while a lookup is pending', async () => {
@@ -228,41 +231,53 @@ describe('ResourceFrameLink', () => {
 
 describe('ResourceViewLink page navigation', () => {
   let wrapper;
-  let stubs: sinon.SinonStub[];
   let resolveConfig: sinon.SinonStub;
-  let configValue: sinon.SinonStub;
   let navigate: sinon.SinonStub;
-  let navigateUrl: sinon.SinonStub;
-  let trigger: sinon.SinonStub;
-  function stub(object: any, key: string) {
-    const result = sinon.stub(object, key);
-    stubs.push(result);
-    return result;
-  }
+  let navigateUrl: sinon.SinonSpy;
+  let trigger: sinon.SinonSpy;
+  let restoreServices: () => void;
+  let events: Kefir.Subscription;
+  let unsubscribeNavigation: () => void;
+  let environment;
+  let previousResource: Rdf.Iri;
+  let previousUrl: uri.URI;
   function render(props = {}) {
     wrapper = mount(createElement(ResourceViewLink, { iri, navigation: 'page', ...props },
       createElement('span', {}, 'Linked actor')), {
       context: { semanticContext: { repository: 'assets' } },
     });
   }
-  beforeEach(() => {
-    stubs = [];
-    resolveConfig = stub(ResourceConfig, 'getResourceConfiguration').returns(Promise.resolve(config));
-    configValue = stub(ResourceConfig, 'getResourceConfigurationValue').returns(visualisation);
-    navigate = stub(Navigation, 'navigateToResource').returns(Kefir.constant(undefined));
-    navigateUrl = stub(Navigation, 'navigateToUrl').returns(Kefir.constant(undefined));
-    trigger = stub(Events, 'trigger');
-    const makeUrl = (resource, params, repository) => uri('/resource/').search({
-      ...params, uri: resource.value, repository,
-    });
-    stub(Navigation, 'constructUrlForResource').callsFake(makeUrl);
-    stub(Navigation, 'constructUrlForResourceSync').callsFake(makeUrl);
-    stub(Navigation, 'getCurrentResource').returns(Rdf.iri('https://example.org/other'));
-    stub(Navigation, 'getCurrentUrl').returns(uri('/resource/'));
+  beforeEach(async () => {
+    resolveConfig = sinon.stub().returns(Promise.resolve(config));
+    restoreServices = await mockResourceViewServices([config, authorityConfig], visualisation, resolveConfig);
+    environment = ConfigHolder.getEnvironmentConfig();
+    (ConfigHolder.getEnvironmentConfig as sinon.SinonStub).returns({ resourceUrlMapping: { value: '/resource/' } });
+    previousResource = Navigation.getCurrentResource();
+    previousUrl = Navigation.getCurrentUrl();
+    Navigation.init({ pathname: '/resource/', search: '?uri=https%3A%2F%2Fexample.org%2Fother', hash: '' } as any)
+      .onValue(() => {});
+    navigate = sinon.stub().returns(true);
+    Navigation.setFrameNavigation(true, navigate);
+    // Observe standalone navigation through the public confirmation API and
+    // cancel the history change so tests cannot leave the Karma runner page.
+    navigateUrl = sinon.spy();
+    unsubscribeNavigation = Navigation.listen({ eventType: 'BEFORE_NAVIGATE', callback: (event, proceed) => {
+      navigateUrl(event.url);
+      proceed(false);
+    } });
+    trigger = sinon.spy();
+    events = Events.listen({ eventType: 'Dashboard.AddFrame' }).observe({ value: trigger });
   });
   afterEach(() => {
     if (wrapper) { wrapper.unmount(); wrapper = undefined; }
-    stubs.forEach(s => s.restore());
+    unsubscribeNavigation();
+    events.unsubscribe();
+    Navigation.setFrameNavigation(false);
+    Navigation.init({ pathname: previousUrl.path(), search: previousUrl.search(), hash: previousUrl.hash() } as any)
+      .onValue(() => {});
+    Navigation.__unsafe__setCurrentResource(previousResource);
+    (ConfigHolder.getEnvironmentConfig as sinon.SinonStub).returns(environment);
+    restoreServices();
   });
 
   it('resolves on mount and builds a real semantic link with the complete destination', async () => {
@@ -302,7 +317,7 @@ describe('ResourceViewLink page navigation', () => {
   });
 
   it('retains the generic fallback and permits disabling resource dragging', async () => {
-    configValue.returns(undefined);
+    delete ResourceConfig.resourceConfigs[config].resourceVisualisationTemplateIRI;
     render({ draggable: false });
     await settle();
     wrapper.update();
@@ -395,7 +410,7 @@ describe('ResourceViewLink page navigation', () => {
 
   it('links authorities to their standalone content view, without dashboard parameters', async () => {
     resolveConfig.returns(Promise.resolve(authorityConfig));
-    configValue.returns(undefined);
+    delete ResourceConfig.resourceConfigs[authorityConfig].resourceVisualisationTemplateIRI;
     render();
     await settle();
     wrapper.update();
@@ -405,7 +420,6 @@ describe('ResourceViewLink page navigation', () => {
     expect(params.resourceConfig).to.equal(authorityConfig);
     expect(params.view).to.equal(undefined);
     expect(params.resourceView).to.equal('page');
-    expect(configValue.calledWithExactly(authorityConfig, 'resourceVisualisationTemplateIRI')).to.equal(true);
     expect(trigger.called).to.equal(false);
   });
 

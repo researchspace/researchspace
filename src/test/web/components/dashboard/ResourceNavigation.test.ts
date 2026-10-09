@@ -2,7 +2,6 @@
 import { createElement } from 'react';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import * as Kefir from 'kefir';
 import * as Handlebars from 'handlebars';
 import { mount } from 'platform-tests/configuredEnzyme';
 import { mockConfig } from 'platform-tests/mocks';
@@ -10,7 +9,6 @@ import { DashboardComponent } from 'platform/components/dashboard/DashboardCompo
 import { ResourceLinkContainer } from 'platform/api/navigation/components/ResourceLinkContainer';
 import * as Navigation from 'platform/api/navigation';
 import { ConfigHolder } from 'platform/api/services/config-holder';
-import * as Labels from 'platform/api/services/resource-label';
 import { Rdf } from 'platform/api/rdf';
 import { DataContextFunctions } from 'platform/api/services/template/functions/DataContextFunctions';
 
@@ -72,12 +70,16 @@ async function waitFor(check: () => boolean) {
 }
 
 describe('Resource view navigation', () => {
-  let label: sinon.SinonStub;
+  let server: sinon.SinonFakeServer;
   beforeEach(() => {
-    label = sinon.stub(Labels, 'getLabel').callsFake(() => Kefir.constant('Example entity'));
+    server = sinon.fakeServer.create();
+    server.respondImmediately = true;
+    server.respondWith('POST', /\/rest\/data\/rdf\/utils\/getLabelsForRdfValue/, [
+      200, { 'Content-Type': 'application/json' }, JSON.stringify({ [iri]: 'Example entity' }),
+    ]);
   });
   afterEach(() => {
-    label.restore();
+    server.restore();
     Navigation.setFrameNavigation(false);
   });
 
@@ -124,8 +126,8 @@ describe('Resource view navigation', () => {
       mode: 'edit'}).data.mode).to.equal('edit');
   });
 
-  it('leaves the dashboard default unchanged when no initial view is supplied', () => {
-    expect(initialView()).to.equal(undefined);
+  it('uses the dashboard view when no initial view is supplied', () => {
+    expect(initialView()).to.deep.equal({ view: 'dashboard' });
   });
 
   it('uses the context view when no URL view is supplied', () => {
@@ -138,6 +140,23 @@ describe('Resource view navigation', () => {
       view: 'resource', resource: iri,
       data: {resourceConfig: resourceConfiguration, resourceVisualisationTemplate: ''},
     });
+  });
+
+  it('keeps new-resource editors independent when no resource IRI is available', async () => {
+    const dashboard = mount(createElement(DashboardComponent, {
+      id: 'thinking-frames', dashboardIri,
+      initialView: { view: 'resource-editor', resource: undefined, data: {} },
+      views: [{ id: 'resource-editor', label: 'New resource', template: '<input aria-label="New entity" />' }],
+    }));
+    try {
+      Navigation.navigateToResource(dashboardIri, { view: 'resource-editor' }).onValue(() => {});
+      await waitFor(() => dashboard.state('items').length === 2);
+      const items = dashboard.state('items');
+      expect(items[0].id).not.to.equal(items[1].id);
+      expect(items.every(item => !item.resourceIri && item.viewId === 'resource-editor')).to.equal(true);
+    } finally {
+      dashboard.unmount();
+    }
   });
 
   [

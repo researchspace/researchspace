@@ -1,6 +1,6 @@
 /** Copyright (c) 2026 ResearchSpace contributors. SPDX-License-Identifier: AGPL-3.0-or-later */
 
-import { createElement, ReactElement } from 'react';
+import { ReactElement } from 'react';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as uri from 'urijs';
@@ -13,6 +13,9 @@ import { DefaultRepositoryInfo } from 'platform/api/services/repository';
 import { DataContextFunctions } from 'platform/api/services/template/functions/DataContextFunctions';
 import { PageComponent } from 'platform/app/page/Page';
 import { getResourcePageView } from 'platform/app/page/ResourcePageView';
+import { mockConfig } from 'platform-tests/mocks';
+
+mockConfig();
 
 const resource = Rdf.iri('https://example.org/actor/one');
 const template = 'https://example.org/templates/actor';
@@ -75,39 +78,47 @@ describe('Standalone resource page rendering', () => {
 
 describe('PageComponent standalone view integration', () => {
   let stubs: sinon.SinonStub[];
-  let currentUrl: sinon.SinonStub;
-  let editor: sinon.SinonStub;
+  let previousUrl: uri.URI;
+  let previousResource: Rdf.Iri;
+  function setCurrentUrl(params: { [key: string]: string }) {
+    Navigation.init({ pathname: '/resource/', hash: '', search: uri('').search({
+      ...params, uri: resource.value, repository: 'assets',
+    }).search() } as any).onValue(() => {});
+  }
   beforeEach(() => {
-    currentUrl = sinon.stub(Navigation, 'getCurrentUrl').returns(uri('/resource/').search({
-      resourceView: 'page', resourceVisualisationTemplate: template, resourceConfig: config,
-    }));
-    editor = sinon.stub(ComponentsLoader, 'factory').callsFake(({ componentProps }) => createElement('div', componentProps));
-    stubs = [ currentUrl, editor,
-      sinon.stub(Navigation, 'getCurrentResource').returns(resource),
-      sinon.stub(Navigation, 'getCurrentRepository').returns('assets'),
+    previousUrl = Navigation.getCurrentUrl();
+    previousResource = Navigation.getCurrentResource();
+    setCurrentUrl({ resourceView: 'page', resourceVisualisationTemplate: template, resourceConfig: config });
+    stubs = [
       sinon.stub(DefaultRepositoryInfo, 'isValidDefault').returns(true),
     ];
   });
-  afterEach(() => stubs.forEach(stub => stub.restore()));
+  afterEach(() => {
+    stubs.forEach(stub => stub.restore());
+    Navigation.init({ pathname: previousUrl.path(), search: previousUrl.search(), hash: previousUrl.hash() } as any)
+      .onValue(() => {});
+    Navigation.__unsafe__setCurrentResource(previousResource);
+  });
 
   it('loads the selected template while keeping the resource URL, toolbar and repository', () => {
     const root = new PageComponent({}, {}).render();
     expect(root.props.repository).to.equal('assets');
     const [toolbar, viewer] = (root as ReactElement<any>).props.children.props.children;
-    expect(toolbar.props.iri).to.equal(resource);
+    expect(toolbar.props.iri.value).to.equal(resource.value);
     expect(viewer.props.iri.value).to.equal(template);
-    expect(viewer.props.context).to.equal(resource);
+    expect(viewer.props.context.value).to.equal(resource.value);
     expect(viewer.props.params.uri).to.equal(resource.value);
     expect(viewer.props.params.frame).to.equal('');
-    expect(editor.called).to.equal(false);
+    expect(viewer.type).not.to.equal(ComponentsLoader.component);
   });
 
   it('keeps editing the resource when action=edit is requested', () => {
-    currentUrl.returns(uri('/resource/').search({ action: 'edit', resourceView: 'page',
-      resourceVisualisationTemplate: template }));
-    new PageComponent({}, {}).render();
-    expect(editor.calledOnce).to.equal(true);
-    expect(editor.firstCall.args[0].componentTagName).to.equal('mp-internal-page-editor');
-    expect(editor.firstCall.args[0].componentProps.iri).to.equal(resource);
+    setCurrentUrl({ action: 'edit', resourceView: 'page', resourceVisualisationTemplate: template });
+    const root = new PageComponent({}, {}).render();
+    const [toolbar, editor] = (root as ReactElement<any>).props.children.props.children;
+    expect(toolbar.props.iri.value).to.equal(resource.value);
+    expect(editor.type).to.equal(ComponentsLoader.component);
+    expect(editor.props.componentTagName).to.equal('mp-internal-page-editor');
+    expect(editor.props.componentProps.iri.value).to.equal(resource.value);
   });
 });

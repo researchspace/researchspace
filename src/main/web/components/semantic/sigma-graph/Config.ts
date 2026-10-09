@@ -55,7 +55,7 @@ export interface SigmaGraphConfig {
 
     /**
      * Optional identifier. 
-     * Required if component should be controlled via external events.
+     * Required for external events and persistence across page reloads.
      * @default undefined
      */
     id?: string;
@@ -79,6 +79,14 @@ export interface SigmaGraphConfig {
     controls?: boolean;
 
     /**
+     * Show the layout menu when controls is enabled. Set false to keep zoom and
+     * See whole graph while hiding layout selection and its Start/Stop buttons.
+     * The configured layout and automatic layout on node expansion still apply.
+     * @default true
+     */
+    layoutControls?: boolean;
+
+    /**
      * Display a filter box for the edges
      * @default false
      */
@@ -94,16 +102,17 @@ export interface SigmaGraphConfig {
    grouping?: GroupingConfig;
 
    /**
-    * Query to retrieve additional graph data. ?subject will be replaced by the
-    * URI of the node that is clicked.
+    * Query to retrieve additional graph data. ?subject or $subject is bound to the
+    * IRI of the resource that is clicked. Literal and blank-node clicks do not
+    * run this query. Other variables, literals and IRIs are left unchanged.
     * @default undefined
     */
    nodeQuery?: string;
 
     /**
      * If true, the graph will be persisted in the browser's local storage.
-     * This allows the graph to be restored when the page is reloaded.
-     * If the URL of the page changes, the graph will be cleared.
+     * Requires a stable id. The query, page URL and semantic context scope
+     * the saved state; other graph instances are stored independently.
      * @default false
      */
     persistGraph?: boolean;
@@ -152,6 +161,19 @@ export interface SigmaGraphConfig {
      * @default 'circular'
      */
     layout?: SigmaGraphLayout;
+
+    /**
+     * Maximum active time for a continuous layout, in milliseconds; 0 means unlimited.
+     * Node clicks and completed expansions renew this run period.
+     * @default 10000
+     */
+    layoutRunDuration?: number;
+
+    /**
+     * Above this node count, Force uses worker-based ForceAtlas2 instead.
+     * @default 500
+     */
+    maxForceNodes?: number;
 
     /**
      *  Width of the graph.

@@ -37,6 +37,9 @@ export const LayoutControl: React.FC<LayoutControlProps> = ({
     applyLayout,
     stopAllWorkerLayouts,
     selectedLayoutIsRunning,
+    activeLayout,
+    runningLayout,
+    message,
     layoutOptions,
   } = useGraphLayout();
 
@@ -125,7 +128,7 @@ export const LayoutControl: React.FC<LayoutControlProps> = ({
             <button
               type="button"
               className="btn btn-default btn-sm"
-              disabled={!selectedIsWorker || !selectedLayoutIsRunning}
+              disabled={!activeLayout}
               onClick={stopAllWorkerLayouts}
               title="Stop layout"
             >
@@ -133,6 +136,12 @@ export const LayoutControl: React.FC<LayoutControlProps> = ({
               <span>Stop</span>
             </button>
           </div>
+          {activeLayout && (
+            <p className="graph-layout-control__hint" role="status">
+              {runningLayout ? 'Running: ' : 'Paused: '}{activeLayout}
+            </p>
+          )}
+          {message && <p className="graph-layout-control__hint" role="status">{message}</p>}
         </div>
       )}
     </div>

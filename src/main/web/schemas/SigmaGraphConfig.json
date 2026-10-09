@@ -58,6 +58,11 @@
             "description": "Display a control panel with buttons to control the graph.",
             "type": "boolean"
         },
+        "layoutControls": {
+            "default": true,
+            "description": "Show the layout menu when controls is enabled. Set false to keep zoom and See whole graph while hiding layout selection and its Start/Stop buttons. The configured layout and automatic layout on node expansion still apply.",
+            "type": "boolean"
+        },
         "edgeFilter": {
             "default": false,
             "description": "Display a filter box for the edges",
@@ -90,7 +95,7 @@
         },
         "persistGraph": {
             "default": false,
-            "description": "If true, the graph will be persisted in the browser's local storage.\nThis allows the graph to be restored when the page is reloaded.\nIf the URL of the page changes, the graph will be cleared.",
+            "description": "Persist this graph independently in browser local storage. Requires a stable component id; the query, page URL and semantic context scope the saved state.",
             "type": "boolean"
         },
         "persistGraphMessage": {
@@ -148,6 +153,16 @@
             "default": "800px",
             "description": "Width of the graph.",
             "type": "string"
+        },
+        "layoutRunDuration": {
+            "description": "Maximum active time for a continuous layout in milliseconds; 0 means unlimited. Node clicks and completed expansions renew this run period.",
+            "type": "number",
+            "default": 10000
+        },
+        "maxForceNodes": {
+            "description": "Above this node count, Force uses worker-based ForceAtlas2 instead.",
+            "type": "number",
+            "default": 500
         }
     },
     "propertyOrder": [
@@ -155,6 +170,7 @@
         "id",
         "colours",
         "controls",
+        "layoutControls",
         "edgeFilter",
         "grouping",
         "nodeQuery",
@@ -164,9 +180,10 @@
         "searchBox",
         "sizes",
         "layout",
+        "layoutRunDuration",
+        "maxForceNodes",
         "width",
         "height"
     ],
     "type": "object"
 }
-

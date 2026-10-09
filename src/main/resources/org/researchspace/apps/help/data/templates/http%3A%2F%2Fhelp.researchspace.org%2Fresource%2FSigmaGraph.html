@@ -38,7 +38,7 @@
           persistence and event-based integration with other ResearchSpace components. If no
           <code>layout</code> is specified, the component applies the lightweight deterministic
           <code>circular</code> layout once after mounting. Other layouts are available from the layout
-          selector but run only when the user explicitly applies or starts them.
+          selector. Choose a layout and press Apply or Start; navigation controls preserve that choice.
         </p>
 
         <p>
@@ -51,18 +51,25 @@
           <strong>Layout note:</strong> the default initial presentation is <code>circular</code>. Set
           <code>layout="noverlap"</code>, <code>layout="circlepack"</code>, <code>layout="random"</code>
           or another layout value only when a graph should use a different initial layout. Force and
-          ForceAtlas2 are available in the same layout selector, but their worker hooks are mounted
-          lazily and they run only when selected and started by the user, unless explicitly configured
-          as the initial <code>layout</code>.
+          ForceAtlas2 are available in the same layout selector, but their supervisors are created
+          lazily when started or configured as the initial <code>layout</code>. Further node clicks and
+          expansions can restart the applied continuous layout.
         </p>
 
       </div>
 
       <div class="documentation__intro__demo" id="demo-basic-live">
+        <h2>Try all graph controls</h2>
+        <p>This live example starts with ForceAtlas2. Use its layout menu to try all six layouts,
+          search for a displayed node label, filter relationships, zoom, and return to the whole graph.
+          Click Alice or Bob to add neighbours from the example's expansion query.</p>
         <semantic-sigma-graph
-          id="sigma-basic-demo"
-          height="500px"
+          id="sigma-layout-controls-demo"
+          height="600px"
           width="100%"
+          layout="forceAtlas2"
+          layout-run-duration="10000"
+          max-force-nodes="500"
           controls="true"
           search-box="true"
           edge-filter="true"
@@ -93,6 +100,24 @@
                   (org:W3C rdf:type foaf:Organization)
                 }
               }
+            }"
+          node-query="
+            prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            prefix person: <http://example.com/person/>
+            prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+            CONSTRUCT {
+              ?s ?p ?o .
+              ?s rdf:type foaf:Person .
+              ?o rdf:type foaf:Person .
+            } WHERE {
+              VALUES (?s ?p ?o) {
+                (person:alice foaf:knows person:david)
+                (person:bob foaf:knows person:emma)
+                (person:david foaf:knows person:emma)
+                (person:emma foaf:knows person:mike)
+              }
+              FILTER (?s = ?subject || ?o = ?subject)
             }"
           colours='{
             "http://xmlns.com/foaf/0.1/Person": "#2980b9",
@@ -134,8 +159,8 @@
 
     <p>
       The examples below are rendered as static code blocks. Copy an example into a normal page to run it.
-      Add a <code>layout</code> attribute only when you want the graph to apply an initial layout after it
-      mounts; otherwise, layout application is left to the user through the layout control.
+      Use <code>layout</code> to choose the initial layout; if omitted, the graph starts with
+      <code>circular</code>. The live example above explicitly starts with ForceAtlas2.
     </p>
 
     <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
@@ -165,23 +190,27 @@
 
     <h2>Examples</h2>
 
-    <h3>Controls, search and edge filtering</h3>
+    <h3>Complete example: layouts, search, filters and navigation</h3>
 
     <p>
-      Enable <code>controls</code> to expose zoom, reset and layout controls. Enable
-      <code>search-box</code> to search for graph nodes. Enable <code>edge-filter</code> to show a panel
-      that lets users toggle edge labels. The default initial layout is <code>circular</code>;
-      users can choose and apply another layout from the layout control if they need a different presentation.
+      The <a href="#demo-basic-live">live example above</a> uses the complete configuration below.
+      Its initial and expansion queries supply their triples through <code>VALUES</code>, so no example
+      dataset needs to be imported. Resource and relationship labels follow your installation's label service.
+      Copy this component into a page to test every control together.
     </p>
 
     <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
-  id="network-with-controls"
+  id="sigma-layout-controls-demo"
   height="600px"
   width="100%"
+  layout="forceAtlas2"
+  layout-run-duration="10000"
+  max-force-nodes="500"
   controls="true"
   search-box="true"
   edge-filter="true"
   query="
+    prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
     prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
     prefix person: &lt;http://example.com/person/&gt;
     prefix org: &lt;http://example.com/org/&gt;
@@ -190,25 +219,134 @@
     CONSTRUCT {
       ?s ?p ?o .
     } WHERE {
+      SELECT ?s ?p ?o WHERE {
+        VALUES (?s ?p ?o) {
+          (person:alice foaf:knows person:bob)
+          (person:alice foaf:knows person:carol)
+          (person:carol foaf:knows person:mike)
+          (person:mike foaf:knows person:carol)
+          (person:bob foaf:knows person:carol)
+          (person:alice foaf:knows person:mike)
+          (person:alice foaf:member org:W3C)
+          (person:mike foaf:member org:W3C)
+          (person:alice rdf:type foaf:Person)
+          (person:carol rdf:type foaf:Person)
+          (person:mike rdf:type foaf:Person)
+          (person:bob rdf:type foaf:Person)
+          (org:W3C rdf:type foaf:Organization)
+        }
+      }
+    }"
+  node-query="
+    prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+    prefix person: &lt;http://example.com/person/&gt;
+    prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+
+    CONSTRUCT {
+      ?s ?p ?o .
+      ?s rdf:type foaf:Person .
+      ?o rdf:type foaf:Person .
+    } WHERE {
       VALUES (?s ?p ?o) {
-        (person:alice foaf:knows person:bob)
-        (person:alice foaf:knows person:carol)
-        (person:alice foaf:member org:W3C)
-        (person:bob rdf:type foaf:Person)
-        (person:carol rdf:type foaf:Person)
-        (person:alice rdf:type foaf:Person)
-        (org:W3C rdf:type foaf:Organization)
+        (person:alice foaf:knows person:david)
+        (person:bob foaf:knows person:emma)
+        (person:david foaf:knows person:emma)
+        (person:emma foaf:knows person:mike)
+      }
+      FILTER (?s = ?subject || ?o = ?subject)
+    }"
+  colours='{
+    "http://xmlns.com/foaf/0.1/Person": "#2980b9",
+    "http://xmlns.com/foaf/0.1/Organization": "#27ae60",
+    "edge": "#9aa6b2"
+  }'
+  sizes='{
+    "nodes": 11,
+    "edges": 4
+  }'&gt;
+&lt;/semantic-sigma-graph&gt;</code></pre>
+
+    <h4>Layout choices and buttons</h4>
+    <p>Open the toolbar button labelled <strong>Choose graph layout</strong>, select an algorithm,
+      and press its action button. Changing the dropdown prepares a choice; Apply or Start activates it.
+      Search, filters, zoom and See whole graph preserve both the dropdown selection and the applied layout.</p>
+
+    <table class="table table-striped">
+      <thead><tr><th>Layout</th><th>Action button</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>Circular (<code>circular</code>)</td><td>Apply</td><td>Places nodes around a circle once.</td></tr>
+        <tr><td>Circle pack (<code>circlepack</code>)</td><td>Apply</td><td>Packs nodes into circles once.</td></tr>
+        <tr><td>Random (<code>random</code>)</td><td>Apply</td><td>Assigns a new random placement once.</td></tr>
+        <tr><td>Noverlap (<code>noverlap</code>)</td><td>Apply</td><td>Reduces overlap from the current positions.</td></tr>
+        <tr><td>Force (<code>force</code>)</td><td>Start / Restart</td><td>Runs a continuous layout for small graphs; switches to ForceAtlas2 above the configured node limit.</td></tr>
+        <tr><td>ForceAtlas2 (<code>forceAtlas2</code>)</td><td>Start / Restart</td><td>Runs the force-directed layout in a worker.</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Restart</strong> begins a fresh run period for a running continuous layout.
+      <strong>Stop</strong> stops the active continuous layout immediately, even if a different option
+      is selected in the dropdown. Stop is disabled when no continuous layout is active.</p>
+
+    <h4>Search, filtering and camera controls</h4>
+    <table class="table table-striped">
+      <thead><tr><th>Control</th><th>How to try it</th><th>Layout behaviour</th></tr></thead>
+      <tbody>
+        <tr><td>Search</td><td>Type at least two characters from a displayed node label and select its suggestion. Enter selects an exact label; empty Enter does nothing. Press Escape or click the graph background to clear the search.</td><td>Highlights the selected node and centres the camera; keeps the existing layout.</td></tr>
+        <tr><td>Filter</td><td>Open the Filter panel and toggle relationship labels. Use (all) to show or hide all relationship labels.</td><td>Changes visibility; keeps node positions and the chosen layout.</td></tr>
+        <tr><td>Zoom In / Zoom Out</td><td>Use the + and − toolbar buttons.</td><td>Changes camera zoom only.</td></tr>
+        <tr><td>See whole graph</td><td>Use the target-shaped toolbar button after searching, zooming or panning.</td><td>Resets the camera without remounting the graph or switching to Circular. Retains expanded nodes, search and filter settings.</td></tr>
+      </tbody>
+    </table>
+    <p>These controls also preserve whether a continuous layout is running or stopped.
+      See whole graph keeps active filters: select (all) in the Filter panel if you also want every
+      relationship visible. To test expansion, click Alice, Bob, David or Emma. Newly added nodes use
+      the applied layout, and Force or ForceAtlas2 receives a fresh run period.</p>
+
+    <h3>Keep one layout and hide the layout menu</h3>
+
+    <p>Set <code>layout-controls="false"</code> alongside <code>controls="true"</code> to retain
+      Zoom In, Zoom Out and See whole graph while hiding the layout button and its menu, including
+      Start/Restart/Stop. Set <code>layout</code> to choose the algorithm. Search and edge filtering
+      remain independently configurable, and node expansion continues to use the configured layout.</p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="fixed-layout-network"
+  height="500px"
+  width="100%"
+  layout="forceAtlas2"
+  layout-run-duration="10000"
+  controls="true"
+  layout-controls="false"
+  search-box="true"
+  edge-filter="true"
+  query="
+    PREFIX person: &lt;http://example.com/person/&gt;
+    PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+    CONSTRUCT { ?s foaf:knows ?o }
+    WHERE {
+      VALUES (?s ?o) {
+        (person:alice person:bob)
+        (person:alice person:carol)
+        (person:bob person:carol)
       }
     }"&gt;
 &lt;/semantic-sigma-graph&gt;</code></pre>
 
+    <p><code>layout-controls</code> defaults to <code>true</code>, so existing pages retain the
+      layout menu. <code>controls="false"</code> hides the entire zoom/layout toolbar regardless
+      of <code>layout-controls</code>. Hiding the menu does not stop the layout: the usual run-duration
+      limit, visibility pauses and restart on node clicks still apply.</p>
+
     <h3>Initial layout and ForceAtlas2</h3>
+    <p>Continuous layouts stop after <code>layout-run-duration</code> milliseconds of active time
+      (default 10000; use 0 for unlimited). Clicking or expanding a node restarts the applied continuous
+      layout and gives it a fresh run period. A click reuses an already running layout.
+      Layouts pause while their graph is outside the viewport or its document is hidden.
+      Stop prevents pending query results, dragging and visibility changes from restarting the layout;
+      a new deliberate node click or expansion starts exploration again.</p>
 
     <p>
       The component applies <code>circular</code> as the default initial layout. This is cheap,
-      deterministic and avoids the worker pressure associated with force-directed layouts. The layout
-      hooks are mounted lazily: the default graph mounts only the circular layout binding; noverlap,
-      circlepack, random and worker layouts are mounted only after they are requested.
+      deterministic and avoids the worker pressure associated with force-directed layouts. Layout supervisors are created only when a continuous layout starts. Static layouts run once when requested.
       To use a different initial layout, set the component's <code>layout</code> attribute, for example
       <code>layout="noverlap"</code>, <code>layout="circlepack"</code> or <code>layout="random"</code>.
     </p>
@@ -220,11 +358,10 @@
     </p>
 
     <p>
-      <code>ForceAtlas2</code> is available from the same layout selector as the synchronous layouts. Its
-      worker hooks are mounted lazily only when a worker layout is selected or requested as the initial
-      layout. Force and ForceAtlas2 are never started merely because the control exists; the user must
-      select the layout and press <strong>Start</strong>, unless that worker layout is explicitly supplied
-      as the component's initial <code>layout</code>.
+      <code>ForceAtlas2</code> is available from the same layout selector as the synchronous layouts.
+      Its worker is created when that layout starts. Use <strong>Start</strong> to apply a continuous
+      layout, or configure it as the initial <code>layout</code>. Once applied, further node clicks and
+      expansions can restart it automatically.
     </p>
 
     <p>
@@ -236,7 +373,7 @@
       <li><code>noverlap</code>: reduces node overlap when applied.</li>
       <li><code>circlepack</code>: packed circular layout.</li>
       <li><code>random</code>: quick random placement.</li>
-      <li><code>force</code>: worker-based force layout; mounted and started only when requested.</li>
+      <li><code>force</code>: main-thread animation for small graphs; above <code>max-force-nodes</code> (default 500), ForceAtlas2 is used instead.</li>
       <li><code>forceAtlas2</code>: worker-based force-directed layout; mounted and started only when requested.</li>
     </ul>
 
@@ -371,6 +508,9 @@
 &lt;/semantic-sigma-graph&gt;</code></pre>
 
     <h3>Persisting graph state</h3>
+    <p>Persistence requires a stable component <code>id</code>. Each graph has its own entry,
+      scoped by query, page and semantic context. Older shared entries are not imported.
+      Restoring a graph preserves its saved positions without restarting a continuous layout.</p>
 
     <p>
       When <code>persist-graph</code> is enabled, the current graph is saved into browser local storage
@@ -431,7 +571,8 @@
 
     <pre class="documentation__code-example"><code>trigger({
   eventType: FocusNode,
-  target: "resource-network",
+  source: "external-control",
+  targets: ["resource-network"],
   data: {
     componentId: "resource-network",
     node: "http://example.com/person/alice"

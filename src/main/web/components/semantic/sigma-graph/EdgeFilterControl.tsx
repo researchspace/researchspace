@@ -13,6 +13,7 @@ export interface EdgeFilterControlProps {
 }
 
 export const EdgeFilterControl: FC<EdgeFilterControlProps> = (props) => {
+    const [idPrefix] = React.useState(() => 'sigma-edge-filter-' + Math.random().toString(36).slice(2));
 
     const onEdgeFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const label = event.target.value;
@@ -41,17 +42,17 @@ export const EdgeFilterControl: FC<EdgeFilterControlProps> = (props) => {
     return <div>
         <ul className="filter edgeLabels">
             <li key="li-all">
-                <input onChange={onEdgeFilterChangeAll} type="checkbox" id="edge-filter-all"
+                <input onChange={onEdgeFilterChangeAll} type="checkbox" id={idPrefix + '-all'}
                     checked={allChecked}
                 />&nbsp;
-                <label htmlFor="edge-filter-all">(all)</label>
+                <label htmlFor={idPrefix + '-all'}>(all)</label>
             </li>
-            {props.edgeLabels.map(d => (
+            {props.edgeLabels.map((d, index) => (
                 <li key={"li-" + d.label}>
-                    <input onChange={onEdgeFilterChange} type="checkbox" id={"edge-filter-" + d.label} value={d.label} 
+                    <input onChange={onEdgeFilterChange} type="checkbox" id={idPrefix + '-' + index} value={d.label}
                         checked={d.visible}
                     />&nbsp;
-                    <label htmlFor={"edge-filter-" + d.label}>{d.label}</label>
+                    <label htmlFor={idPrefix + '-' + index}>{d.label}</label>
                 </li>
             ))}
         </ul>

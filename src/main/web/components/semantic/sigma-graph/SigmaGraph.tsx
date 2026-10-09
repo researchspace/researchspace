@@ -5,7 +5,8 @@
  */
 
 import * as React from 'react';
-import * as assign from 'object-assign';
+import { isEqual } from 'lodash';
+import { Cancellation } from 'platform/api/async';
 import { createElement } from 'react';
 
 import { Component } from 'platform/api/components';
@@ -15,14 +16,15 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { addNotification } from 'platform/components/ui/notification';
 
 import { MultiDirectedGraph } from "graphology";
-import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/core";
+import { SigmaContainer, ControlsContainer } from "@react-sigma/core";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
 import { GraphControls } from './GraphControls'
+import GraphSearchControl from './GraphSearchControl';
 import { GraphLayoutName, GraphLayoutProvider, isGraphLayoutName } from './GraphLayoutContext'
-import { clearStateFromLocalStorage, createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
+import { clearStateFromLocalStorage, createGraphFromElements, getStateFromLocalStorage, getGraphStorageKey, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
 import ArrowEdgeProgram from './programs/edge.arrow'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -35,6 +37,7 @@ export interface State {
     isLoading?: boolean;
     error?: any;
     warning?: string;
+    restored?: boolean;
   }
 export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
@@ -49,79 +52,88 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         };
       }
     
-    private onBeforeUnload = () => {
-        this.componentCleanup();
+    private instanceId = 'sigma-' + this.generateKey();
+    private request = new Cancellation();
+    private mounted = false;
+    private storageKey: string;
+    private loadedContext: any;
+    private sigmaSettings = {
+        defaultEdgeType: 'arrow', defaultNodeType: 'image',
+        nodeProgramClasses: { image: getNodeProgramImage() },
+        edgeProgramClasses: { arrow: ArrowEdgeProgram },
+        renderEdgeLabels: true,
     };
+    private onBeforeUnload = () => this.componentCleanup();
 
-    componentDidMount() : void {
+    componentDidMount(): void {
+        this.mounted = true;
         this.loadInitialGraphData(this.props);
         window.addEventListener('beforeunload', this.onBeforeUnload);
     }
 
-    componentWillUnmount() : void {
+    componentDidUpdate(previous: SigmaGraphConfig): void {
+        if (previous.query !== this.props.query || previous.id !== this.props.id ||
+            previous.persistGraph !== this.props.persistGraph ||
+            !isEqual(previous.grouping, this.props.grouping) ||
+            !isEqual(previous.colours, this.props.colours) || !isEqual(previous.sizes, this.props.sizes) ||
+            !isEqual(this.loadedContext, this.context.semanticContext)) {
+            this.loadInitialGraphData(this.props);
+        }
+    }
+
+    componentWillUnmount(): void {
+        this.mounted = false;
+        this.request.cancelAll();
         this.componentCleanup();
         window.removeEventListener('beforeunload', this.onBeforeUnload);
     }
 
-    private componentCleanup() : void {
-        if (this.props.persistGraph && this.state.graph) {
-            saveStateIntoLocalStorage(this.state.graph, this.props.query);
-        }
+    private componentCleanup(): void {
+        if (this.storageKey && this.state.graph) saveStateIntoLocalStorage(this.state.graph, this.storageKey);
     }
 
-    private generateKey() : string {
-        return Math.random().toString(36).substring(7);
-    }
+    private generateKey(): string { return Math.random().toString(36).slice(2); }
 
-    private loadInitialGraphData(props: SigmaGraphConfig) : void {
-        this.setState({ error:undefined });
-        const graphFromLocalStorage = (props.persistGraph && props.query) ? getStateFromLocalStorage(props.query) : null;
-        if (graphFromLocalStorage) {
-            this.setState({
-                graph: graphFromLocalStorage,
-                isLoading: false
-            })
+    private loadInitialGraphData(props: SigmaGraphConfig): void {
+        this.request.cancelAll();
+        const cancellation = this.request = new Cancellation();
+        this.loadedContext = this.context.semanticContext;
+        // Cross-reload persistence needs an explicit, stable component id.
+        this.storageKey = props.persistGraph && props.id && props.query
+            ? getGraphStorageKey(props.id, props.query, this.loadedContext, props.grouping) : undefined;
+        const storageKey = this.storageKey;
+        const restored = storageKey ? getStateFromLocalStorage(storageKey) : null;
+        const loaded = () => {
+            if (props.id && this.mounted && !cancellation.aborted) {
+                trigger({ eventType: BuiltInEvents.ComponentLoaded, source: props.id });
+            }
+        };
+        if (restored) {
+            this.setState({ graph: restored, restored: true, isLoading: false, error: undefined,
+                key: this.generateKey() }, loaded);
             addNotification({
-                level: 'success',
-                position: this.props.persistGraphMessagePosition ? this.props.persistGraphMessagePosition : 'tr',
-                message: this.props.persistGraphMessage ? this.props.persistGraphMessage : "The graph has been restored from the browser's local storage.",
-                action: {
-                    label: 'Reset',
-                    callback: () => {
-                        clearStateFromLocalStorage()
-                        this.loadInitialGraphData(this.props); 
-                    }
-                }
+                level: 'success', position: props.persistGraphMessagePosition || 'tr',
+                message: props.persistGraphMessage || "The graph has been restored from the browser's local storage.",
+                action: { label: 'Reset', callback: () => {
+                    clearStateFromLocalStorage(storageKey);
+                    if (this.mounted && this.storageKey === storageKey) this.loadInitialGraphData(this.props);
+                } },
             });
-        } else {
-            loadGraphDataFromQuery(props.query, this.context.semanticContext).onValue((elements) => {
-                    this.setState({
-                        elements: elements,
-                        noResults: !elements.length,
-                        isLoading: false
-                    })
-                })
-                .onError((error) => { this.setState({ error: error, isLoading: false }) })
-                .onEnd(() => {
-
-                    const config = assign({},
-                        {
-                            grouping: this.props.grouping || { enabled: false},
-                            sizes: this.props.sizes || { nodes: 10, edges: 5 },
-                        },
-                        this.props
-                    );
-                    const graph = createGraphFromElements(this.state.elements, config)
-                    this.setState({ graph: graph})
-                    if (this.props.id) {
-                        trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
-                    }
-                })
+            return;
         }
-    }
-
-    private newKey() : void {
-        this.setState({ key: this.generateKey() });
+        this.setState({ error: undefined, isLoading: true, restored: false, graph: undefined });
+        loadGraphDataFromQuery(props.query, this.loadedContext, cancellation).observe({
+            value: (elements) => {
+                if (!this.mounted || cancellation.aborted) return;
+                const graph = createGraphFromElements(elements, props);
+                // Mount Sigma only after the complete graph exists.
+                this.setState({ elements, graph, noResults: !elements.length, isLoading: false,
+                    key: this.generateKey() }, loaded);
+            },
+            error: (error) => {
+                if (this.mounted && !cancellation.aborted) this.setState({ error, isLoading: false });
+            },
+        });
     }
 
     render() {
@@ -131,17 +143,8 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const controls = this.props.controls || false;
         const edgeFilter = this.props.edgeFilter || false;
         
-        const componentId = this.props.id || this.state.key;
+        const componentId = this.props.id || this.instanceId;
 
-        const sigmaSettings = { 
-            defaultEdgeType: "arrow",
-            defaultNodeType: "image",
-            nodeProgramClasses: { image: getNodeProgramImage() },
-            edgeProgramClasses: { arrow: ArrowEdgeProgram },
-            renderEdgeLabels: true,
-            maxEdgeSize: 2,
-        };
-        
         const colours = this.props.colours || {};
         const grouping = this.props.grouping || { enabled: false};
         const nodeQuery = this.props.nodeQuery || "";
@@ -161,9 +164,10 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     key={ this.state.key }
                     graph={ this.state.graph } 
                     style={{ height: `${height}`, width: `${width}` }}
-                    settings={ sigmaSettings }
+                    settings={ this.sigmaSettings }
                 >
-                    <GraphLayoutProvider initialLayout={initialLayout}>
+                    <GraphLayoutProvider initialLayout={initialLayout} preservePositions={this.state.restored}
+                        layoutRunDuration={this.props.layoutRunDuration} maxForceNodes={this.props.maxForceNodes}>
                         <GraphEvents
                             id={componentId}
                             context={ this.context.semanticContext}
@@ -174,8 +178,8 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                             persistGraph={ persistGraph }
                             sizes={ sizes }
                         />
-                        {searchBox && <ControlsContainer position="bottom-left"><SearchControl /></ControlsContainer>}
-                        {controls && <GraphControls position="top-left" reset={() => this.newKey()}/>} 
+                        {searchBox && <ControlsContainer position="bottom-left"><GraphSearchControl /></ControlsContainer>}
+                        {controls && <GraphControls position="top-left" layoutControls={this.props.layoutControls} />}
                     </GraphLayoutProvider>
                 </SigmaContainer>
 

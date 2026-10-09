@@ -15,11 +15,13 @@ import { ControlsContainer, useCamera, useRegisterEvents, useSigma, useSetSettin
 import { Attributes } from "graphology-types";
 
 import { GraphEventsConfig } from './Config';
-import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
+import { getNodeQueryContext } from './NodeQuery';
+import { cleanGraph, createGraphFromElements, expandGroup, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
 import { ScatterGroupNode, FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 import { EdgeFilterControl } from './EdgeFilterControl'
 import { Panel } from './ControlPanel'
-import { isWorkerGraphLayout, useGraphLayout } from './GraphLayoutContext';
+import { useGraphLayout } from './GraphLayoutContext';
+import { LayoutExploration, LayoutPause } from './GraphLayoutRunner';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
@@ -31,18 +33,12 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const camera = useCamera();
 
     const [ activeNode, setActiveNode ] = useState<string | null>(null);
-    const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
+    const dragRef = React.useRef<{ node: string; x: number; y: number; moved: boolean; pause?: LayoutPause }>();
+    const suppressClickRef = React.useRef(false);
+    const requestsRef = React.useRef(new Map<string, { cancellation: Cancellation; exploration?: LayoutExploration }>());
 
     const [ edgeLabels, setEdgeLabels ] = useState<{label: string, visible: boolean}[]>([]);
-    const [ edgeLabelsNeedUpdate, setEdgeLabelsNeedUpdate ] = useState<boolean>(false);
-
-    const createDerivedEdgeKey = (
-    originalEdge: string,
-    source: string,
-    target: string
-): string => {
-    return `derived:${encodeURIComponent(originalEdge)}:${encodeURIComponent(source)}:${encodeURIComponent(target)}`;
-};
+    const [ topologyVersion, setTopologyVersion ] = useState(0);
 
     // Derive the labels visible to Sigma once per edgeLabels update rather than
     // recalculating them for every node and edge processed by the reducers.
@@ -55,33 +51,18 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         [edgeLabels]
     );
     
-    const {
-        appliedLayout,
-        applyLayout,
-        startSelectedWorkerLayout,
-        stopAllWorkerLayouts,
-        clearCustomBBox,
-    } = useGraphLayout();
+    const { pauseLayout, resumeLayout, mutateGraph, exploreGraph } = useGraphLayout();
 
-    /**
-     * Complete a topology-changing graph operation while all layout workers are
-     * stopped, then reapply the currently applied layout to the new topology.
-     */
-    const finishGraphMutation = (callback = () => { return undefined; }) => {
+    const withGraphCleanup = (change: () => void) => () => {
+        change();
         cleanGraph(sigma.getGraph());
-        clearCustomBBox();
-
-        if (isWorkerGraphLayout(appliedLayout)) {
-            // Only resume a worker layout if this graph previously stopped a
-            // running worker during the mutation. Merely selecting Force or
-            // ForceAtlas2 in the layout menu must not start it automatically.
-            startSelectedWorkerLayout();
-        } else {
-            applyLayout(appliedLayout);
-        }
-
-        callback();
+        setTopologyVersion(version => version + 1);
     };
+
+    useEffect(() => () => {
+        requestsRef.current.forEach(request => request.cancellation.cancelAll());
+        requestsRef.current.clear();
+    }, [sigma, props.nodeQuery, props.context]);
 
     const scatterGroupNode = (node: string, mode = 'replace') => {
         handleGroupedNodeClicked(node, () => { return undefined; }, mode);
@@ -114,78 +95,16 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     ) => {
         const effectiveMode = mode || props.grouping?.behaviour;
         if (effectiveMode !== "expand" && effectiveMode !== "replace") {
+            exploreGraph();
             return;
         }
 
-        // The worker and the frozen normalization bounds must not remain active
-        // while nodes and edges are added or removed.
-        stopAllWorkerLayouts();
-        clearCustomBBox();
-
-        const graph = sigma.getGraph();
-        const rawChildren = graph.getNodeAttribute(node, "children");
-        const children = Array.isArray(rawChildren) ? rawChildren : [];
-        const incomingEdges = graph.inEdges(node);
-        const groupNodeAttributes = graph.getNodeAttributes(node);
-        const groupX = Number.isFinite(groupNodeAttributes.x)
-            ? groupNodeAttributes.x
-            : Math.random();
-        const groupY = Number.isFinite(groupNodeAttributes.y)
-            ? groupNodeAttributes.y
-            : Math.random();
-
-        for (const child of children) {
-            if (!graph.hasNode(child.node)) {
-                const attrs = { ...child.attributes };
-                attrs.x = Number.isFinite(attrs.x) ? attrs.x : groupX;
-                attrs.y = Number.isFinite(attrs.y) ? attrs.y : groupY;
-                graph.addNode(child.node, attrs);
-            }
-        }
-
-        for (const child of children) {
-            for (const edge of incomingEdges) {
-                const edgeAttributes = { ...graph.getEdgeAttributes(edge) };
-
-                if (effectiveMode === "replace") {
-                    const edgeSource = graph.source(edge);
-                    const newEdgeKey = createDerivedEdgeKey(edge, edgeSource, child.node);
-
-                    if (!graph.hasEdge(newEdgeKey)) {
-                        graph.addEdgeWithKey(
-                            newEdgeKey,
-                            edgeSource,
-                            child.node,
-                            edgeAttributes
-                        );
-                    }
-                } else {
-                    const newEdgeKey = createDerivedEdgeKey(edge, node, child.node);
-
-                    if (!graph.hasEdge(newEdgeKey)) {
-                        graph.addEdgeWithKey(
-                            newEdgeKey,
-                            node,
-                            child.node,
-                            edgeAttributes
-                        );
-                    }
-                }
-            }
-        }
-
-        if (effectiveMode === "replace") {
-            graph.dropNode(node);
-        }
-
-        finishGraphMutation(callback);
+        exploreGraph(withGraphCleanup(() => expandGroup(sigma.getGraph(), node, effectiveMode)));
+        callback();
     };
 
     const releaseNodeFromGroupSafely = (childNode: string, groupNode: string) => {
-        stopAllWorkerLayouts();
-        clearCustomBBox();
-        releaseNodeFromGroup(sigma.getGraph(), childNode, groupNode);
-        finishGraphMutation();
+        exploreGraph(withGraphCleanup(() => releaseNodeFromGroup(sigma.getGraph(), childNode, groupNode)));
     };
 
     const handleNodeClicked = (
@@ -198,15 +117,9 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         if (attributes.grouped) {
             handleGroupedNodeClicked(node, callback);
         } else if (props.nodeQuery) {
-            // Keep the layout available while the query runs, but remove the
-            // drag-time custom box. loadMoreDataForNode stops the worker again
-            // immediately before mutating the graph.
-            clearCustomBBox();
-            startSelectedWorkerLayout();
-            loadMoreDataForNode(node, callback);
+            loadMoreDataForNode(node, callback, exploreGraph());
         } else {
-            clearCustomBBox();
-            startSelectedWorkerLayout();
+            exploreGraph();
             callback();
         }
 
@@ -232,12 +145,13 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             });
         }
 
-        sigma.refresh();
+        sigma.scheduleRefresh();
     };
 
     const loadMoreDataForNode = (
         node: string,
-        callback = () => { return undefined; }
+        callback = () => { return undefined; },
+        exploration?: LayoutExploration
     ) => {
         const queryTemplate = props.nodeQuery;
         if (!queryTemplate) {
@@ -245,47 +159,59 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             return;
         }
 
-        const query = queryTemplate.replace(/\$subject|\?subject/g, node);
-        let newElements: any[] = [];
-
-        loadGraphDataFromQuery(query, props.context)
-            .onValue((elements) => {
-                newElements = elements;
-            })
-            .onEnd(() => {
-                // Prevent the layout worker from processing an intermediate graph
-                // while nodes, edges and groups are being changed.
-                stopAllWorkerLayouts();
-                clearCustomBBox();
-
-                const graph = sigma.getGraph();
-                const newGraph = createGraphFromElements(newElements, props);
-                mergeGraphs(graph, newGraph);
-                setEdgeLabelsNeedUpdate(true);
-
-                finishGraphMutation(callback);
-            });
+        const context = getNodeQueryContext(node, props.context);
+        // Blank-node identifiers are scoped to their result and literals cannot
+        // be RDF subjects. Only named resources have a reusable expansion IRI.
+        if (!context) {
+            callback();
+            return;
+        }
+        const requestKey = JSON.stringify([queryTemplate, node]);
+        const pending = requestsRef.current.get(requestKey);
+        if (pending) {
+            // A new deliberate click may follow Stop while this same query is
+            // pending. Retain its new intent without sending a duplicate query.
+            pending.exploration = exploration;
+            return;
+        }
+        const cancellation = new Cancellation();
+        const request = { cancellation, exploration };
+        requestsRef.current.set(requestKey, request);
+        loadGraphDataFromQuery(queryTemplate, context, cancellation).observe({
+            value: (elements) => {
+                if (cancellation.aborted) return;
+                // Renew the exploration run after merging, even if its earlier
+                // time budget expired while waiting. A later Stop takes priority.
+                const newGraph = createGraphFromElements(elements, props);
+                mutateGraph(withGraphCleanup(() => mergeGraphs(sigma.getGraph(), newGraph)), request.exploration);
+                callback();
+            },
+            error: (error) => {
+                if (!cancellation.aborted) console.warn('Failed to expand Sigma graph:', error);
+            },
+            end: () => {
+                if (requestsRef.current.get(requestKey) === request) requestsRef.current.delete(requestKey);
+            },
+        });
     };
 
     // External event listeners should remain registered across ordinary renders,
     // while still invoking the latest render's state and callback implementations.
     const activeNodeRef = React.useRef(activeNode);
-    const draggedNodeRef = React.useRef(draggedNode);
     const handleNodeClickedRef = React.useRef(handleNodeClicked);
     const focusNodeRef = React.useRef(focusNode);
     const scatterGroupNodeRef = React.useRef(scatterGroupNode);
     const releaseNodeFromGroupSafelyRef = React.useRef(releaseNodeFromGroupSafely);
-    const stopAllWorkerLayoutsRef = React.useRef(stopAllWorkerLayouts);
-    const startSelectedWorkerLayoutRef = React.useRef(startSelectedWorkerLayout);
+    const pauseLayoutRef = React.useRef(pauseLayout);
+    const resumeLayoutRef = React.useRef(resumeLayout);
 
     activeNodeRef.current = activeNode;
-    draggedNodeRef.current = draggedNode;
     handleNodeClickedRef.current = handleNodeClicked;
     focusNodeRef.current = focusNode;
     scatterGroupNodeRef.current = scatterGroupNode;
     releaseNodeFromGroupSafelyRef.current = releaseNodeFromGroupSafely;
-    stopAllWorkerLayoutsRef.current = stopAllWorkerLayouts;
-    startSelectedWorkerLayoutRef.current = startSelectedWorkerLayout;
+    pauseLayoutRef.current = pauseLayout;
+    resumeLayoutRef.current = resumeLayout;
 
     // Listen to external events
     useEffect(() => {
@@ -321,7 +247,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                         if (sigma.getGraph().hasNode(node)) {
                             const currentActiveNode = activeNodeRef.current;
                             if (currentActiveNode) {
-                                sigma.getGraph().setNodeAttribute(currentActiveNode, "highlighted", false);
+                                if (sigma.getGraph().hasNode(currentActiveNode)) sigma.getGraph().setNodeAttribute(currentActiveNode, "highlighted", false);
                             }
                             handleNodeClickedRef.current(node, true, () => {
                                 highlightNode(node);
@@ -381,7 +307,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
         const handleLeaveNode = ({ node }: { node: string }) => {
             setActiveNode(null);
-            sigma.getGraph().removeNodeAttribute(node, "highlighted");
+            if (sigma.getGraph().hasNode(node)) sigma.getGraph().removeNodeAttribute(node, "highlighted");
         };
 
         sigma.on("enterNode", handleEnterNode);
@@ -393,56 +319,50 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         };
     }, [sigma]);
 
-    // Register the remaining pointer events once. Refs provide the latest state
-    // and callbacks without repeatedly registering new event handlers.
+    // A click is distinct from a drag. Refs keep pointer updates synchronous.
     useEffect(() => {
         registerEvents({
+            downNode: ({ node, event }) => {
+                if (event.original.button !== 0) return;
+                suppressClickRef.current = false;
+                dragRef.current = { node, x: event.x, y: event.y, moved: false };
+            },
+            clickNode: ({ node }) => {
+                if (!suppressClickRef.current && sigma.getGraph().hasNode(node)) handleNodeClickedRef.current(node);
+            },
+            mousemovebody: (event) => {
+                const drag = dragRef.current;
+                if (!drag || !sigma.getGraph().hasNode(drag.node)) return;
+                if (!drag.moved && Math.hypot(event.x - drag.x, event.y - drag.y) > 3) {
+                    drag.moved = true;
+                    drag.pause = pauseLayoutRef.current();
+                    if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
+                }
+                if (drag.moved) {
+                    const position = sigma.viewportToGraph(event);
+                    sigma.getGraph().mergeNodeAttributes(drag.node, { x: position.x, y: position.y });
+                }
+                event.preventSigmaDefault();
+            },
             mouseup: () => {
-                // The custom box is only needed while dragging. Keeping it after
-                // mouseup makes subsequently added or layout-moved nodes normalize
-                // outside the frozen quadtree zone.
-                sigma.setCustomBBox(null);
-
-                const currentDraggedNode = draggedNodeRef.current;
-                if (currentDraggedNode) {
-                    setDraggedNode(null);
-                    sigma.getGraph().removeNodeAttribute(currentDraggedNode, "highlighted");
-                }
-
-                const currentActiveNode = activeNodeRef.current;
-                if (currentActiveNode) {
-                    handleNodeClickedRef.current(currentActiveNode);
-                } else {
-                    startSelectedWorkerLayoutRef.current();
-                }
+                const drag = dragRef.current;
+                if (!drag) return;
+                dragRef.current = undefined;
+                suppressClickRef.current = drag.moved;
+                if (drag.moved) sigma.setCustomBBox(null);
+                resumeLayoutRef.current(drag.pause);
             },
-            mousedown: () => {
-                // Stop every continuous layout while dragging.
-                stopAllWorkerLayoutsRef.current();
-                // Disable the autoscale at the first down interaction
-                if (!sigma.getCustomBBox()) {
-                    sigma.setCustomBBox(sigma.getBBox());
-                }
-
-                const currentActiveNode = activeNodeRef.current;
-                if (currentActiveNode) {
-                    setDraggedNode(currentActiveNode);
-                }
-            },
-            mousemove: (e) => {
-                const currentDraggedNode = draggedNodeRef.current;
-                if (currentDraggedNode) {
-                    // Get new position of node
-                    const pos = sigma.viewportToGraph(e);
-                    sigma.getGraph().setNodeAttribute(currentDraggedNode, "x", pos.x);
-                    sigma.getGraph().setNodeAttribute(currentDraggedNode, "y", pos.y);
-                    sigma.refresh();
-                    // Prevent Sigma from moving the camera.
-                    e.preventSigmaDefault();
-                }
-            }
         });
     }, [registerEvents, sigma]);
+
+    // Compute visibility only after filters or topology change, never per layout frame.
+    const visibleNodes = useMemo(() => {
+        const nodes = new Set<string>();
+        if (props.edgeFilter) sigma.getGraph().forEachEdge((_edge, attributes, source, target) => {
+            if (visibleEdgeLabels.has(attributes.label)) { nodes.add(source); nodes.add(target); }
+        });
+        return nodes;
+    }, [sigma, props.edgeFilter, visibleEdgeLabels, topologyVersion]);
 
     // Control visibility of edges and nodes
     useEffect(() => {
@@ -461,21 +381,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
               newData.image = false;
             }
 
-            if (props.edgeFilter) {
-                // Retrieve all edges for this node
-                const edges = graph.edges(node);
-
-                // Filter all edges whose label is not in visibleEdgeLabels
-                const hasVisibleEdge = edges.some((edge: string) => {
-                    const edgeAttributes = graph.getEdgeAttributes(edge);
-                    return visibleEdgeLabels.has(edgeAttributes.label);
-                });
-
-                // If there are no visible edges, hide the node
-                if (!hasVisibleEdge) {
-                    newData.hidden = true;
-                }     
-            }
+            if (props.edgeFilter && !visibleNodes.has(node)) newData.hidden = true;
             return newData;
           },
           edgeReducer: (edge, data) => {
@@ -496,7 +402,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             return newData;
           },
         });
-    }, [activeNode, props.edgeFilter, setSettings, sigma, visibleEdgeLabels]);
+    }, [activeNode, props.edgeFilter, setSettings, sigma, visibleEdgeLabels, visibleNodes, topologyVersion]);
 
     // Retrieve the distinct labels after initialisation and topology changes.
     useEffect(() => {
@@ -522,8 +428,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                         : true
                 }));
         });
-        setEdgeLabelsNeedUpdate(false);
-    }, [sigma, edgeLabelsNeedUpdate]);
+    }, [sigma, topologyVersion]);
 
     if (props.edgeFilter) {
         return (

@@ -85,6 +85,24 @@ jobs:
         with:
           arguments: buildZip
 
+      # Authenticate before Docker resolves the base image, not only before pushing.
+      # Fork PRs and Dependabot builds cannot access the publishing credentials.
+      - name: Log in to Docker Hub
+        id: docker-login
+        if: >-
+          (contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master' || contains(github.ref, 'build-docker')) &&
+          github.actor != 'dependabot[bot]' &&
+          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          if [ -z "$DOCKER_HUB_USER" ] || [ -z "$DOCKER_HUB_PASSWORD" ]; then
+            echo "::error::Set DOCKER_HUB_USER and DOCKER_HUB_PASSWORD before building and publishing Docker images."
+            exit 1
+          fi
+          printf '%s' "$DOCKER_HUB_PASSWORD" | docker login --username "$DOCKER_HUB_USER" --password-stdin
+
       - name: docker build
         if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master' || contains(github.ref, 'build-docker')
         run: |
@@ -94,7 +112,23 @@ jobs:
           cp src/main/resources/org/researchspace/apps/default/config/shiro.ini $DOCKER_FOLDER/platform/config/
           cp -r dist/migrations $DOCKER_FOLDER/platform
           cd $DOCKER_FOLDER/platform
-          docker build -t researchspace/platform-ci:${DATE}_${GITHUB_SHA} .
+          set -o pipefail
+          build_log=$(mktemp)
+          trap 'rm -f "$build_log"' EXIT
+          for attempt in 1 2 3 4; do
+            if docker build --progress=plain -t "researchspace/platform-ci:${DATE}_${GITHUB_SHA}" . 2>&1 | tee "$build_log"; then
+              break
+            else
+              build_status=$?
+            fi
+            # Retry registry throttling only; Dockerfile errors must fail immediately.
+            if ! grep -Eqi '429[[:space:]]+Too Many Requests|toomanyrequests|reached.*pull rate limit' "$build_log" || [ "$attempt" -eq 4 ]; then
+              exit "$build_status"
+            fi
+            retry_delay=$((15 * 2 ** (attempt - 1)))
+            echo "::warning::Registry throttled the Docker build; retrying in ${retry_delay}s (attempt ${attempt}/4)."
+            sleep "$retry_delay"
+          done
 
       - name: get branch local name
         id: get-branch
@@ -112,31 +146,16 @@ jobs:
         run: docker tag researchspace/platform-ci:${DATE}_${GITHUB_SHA} researchspace/platform-ci:latest
 
       - name: Push docker image
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master' || contains(github.ref, 'build-docker')
-        env:
-          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-        run: |
-          echo "$DOCKER_HUB_PASSWORD" | docker login --username ${DOCKER_HUB_USER} --password-stdin
-          docker push researchspace/platform-ci:${DATE}_${GITHUB_SHA}
+        if: steps.docker-login.outcome == 'success'
+        run: docker push researchspace/platform-ci:${DATE}_${GITHUB_SHA}
 
       - name: Push latest tag for non-master
-        if: contains(github.ref, 'build-docker')
-        env:
-          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-        run: |
-          echo "$DOCKER_HUB_PASSWORD" | docker login --username ${DOCKER_HUB_USER} --password-stdin
-          docker push researchspace/platform-ci:${{steps.get-branch.outputs.branch-local-name}}
+        if: steps.docker-login.outcome == 'success' && contains(github.ref, 'build-docker')
+        run: docker push researchspace/platform-ci:${{steps.get-branch.outputs.branch-local-name}}
 
       - name: Push latest tag for master
-        if: github.ref == 'refs/heads/master'
-        env:
-          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-        run: |
-          echo "$DOCKER_HUB_PASSWORD" | docker login --username ${DOCKER_HUB_USER} --password-stdin
-          docker push researchspace/platform-ci:latest
+        if: steps.docker-login.outcome == 'success' && github.ref == 'refs/heads/master'
+        run: docker push researchspace/platform-ci:latest
 
       # upload zip bundle 
       - if: contains(github.event.pull_request.labels.*.name, 'build_zip') || github.ref == 'refs/heads/master'

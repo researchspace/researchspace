@@ -376,7 +376,7 @@ export class DashboardComponent extends Component<Props, State> {
         trigger({
           eventType: 'Dashboard.AddFrame',
           source: 'link',
-          targets: ['thinking-frames'],
+          targets: [this.props.id],
           data: {
             resourceIri: iri.value,
             viewId: 'semantic-narrative',
@@ -388,7 +388,7 @@ export class DashboardComponent extends Component<Props, State> {
         trigger({
           eventType: 'Dashboard.AddFrame',
           source: 'link',
-          targets: ['thinking-frames'],
+          targets: [this.props.id],
           data: {
             resourceIri: props['resource'],
             viewId: props['view'],
@@ -400,7 +400,7 @@ export class DashboardComponent extends Component<Props, State> {
         trigger({
           eventType: 'Dashboard.AddFrame',
           source: 'link',
-          targets: ['thinking-frames'],
+          targets: [this.props.id],
           data: {
             ...props
           }
@@ -412,7 +412,7 @@ export class DashboardComponent extends Component<Props, State> {
           trigger({
             eventType: 'Dashboard.AddFrame',
             source: 'link',
-            targets: ['thinking-frames'],
+            targets: [this.props.id],
             data: {
               resourceIri: 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Image',
               viewId: 'resource-search',
@@ -424,7 +424,7 @@ export class DashboardComponent extends Component<Props, State> {
           trigger({
             eventType: 'Dashboard.AddFrame',
             source: 'link',
-            targets: ['thinking-frames'],
+            targets: [this.props.id],
             data: {
               resourceIri: iri.value,
               viewId: 'resource',

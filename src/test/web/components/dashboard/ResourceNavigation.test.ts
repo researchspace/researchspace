@@ -12,6 +12,7 @@ import * as Navigation from 'platform/api/navigation';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 import * as Labels from 'platform/api/services/resource-label';
 import { Rdf } from 'platform/api/rdf';
+import { DataContextFunctions } from 'platform/api/services/template/functions/DataContextFunctions';
 
 const source = require('!!raw-loader!../../../../main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FResourceViewButton.html').default;
 const framesSource = require('!!raw-loader!../../../../main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FThinkingFrames.html').default;
@@ -21,12 +22,19 @@ const dashboardIri = Rdf.iri('http://www.researchspace.org/resource/ThinkingFram
 const customTemplate = 'https://example.org/templates/person';
 mockConfig();
 
-function viewAction(resourceVisualisationTemplateIRI?: string, configuration = resourceConfiguration) {
+function viewAction(configuredTemplateIRI?: string, configuration = resourceConfiguration,
+    inheritedTemplateIRI?: string) {
   const fragment = document.createElement('div');
   const engine = Handlebars.create();
   engine.registerHelper('eq', (left, right) => left === right);
+  engine.registerHelper('bind', DataContextFunctions.bind);
+  engine.registerHelper('getResourceConfigurationValue', (config: string, key: string) => {
+    expect(config).to.equal(configuration);
+    expect(key).to.equal('resourceVisualisationTemplateIRI');
+    return configuredTemplateIRI;
+  });
   fragment.innerHTML = engine.compile(source)({
-    iri, resourceConfiguration: configuration, resourceVisualisationTemplateIRI, viewId: 'editor-frame',
+    iri, resourceConfiguration: configuration, resourceVisualisationTemplateIRI: inheritedTemplateIRI, viewId: 'editor-frame',
   });
   const link = fragment.querySelector('semantic-link-container');
   expect(link, 'View must provide navigation outside the dashboard').not.to.equal(null);
@@ -85,6 +93,22 @@ describe('Resource view navigation', () => {
     expect(Navigation.NavigationUtils.extractParams(viewAction(customTemplate))).to.deep.equal({
       view: 'resource-detailed-visualisation', resource: iri,
       resourceConfig: resourceConfiguration, resourceVisualisationTemplate: customTemplate,
+    });
+  });
+
+  it('uses the current configuration instead of a stale inherited visualisation', () => {
+    const action = viewAction(customTemplate, resourceConfiguration, 'https://example.org/templates/stale');
+    expect(Navigation.NavigationUtils.extractParams(action)).to.deep.equal({
+      view: 'resource-detailed-visualisation', resource: iri,
+      resourceConfig: resourceConfiguration, resourceVisualisationTemplate: customTemplate,
+    });
+  });
+
+  it('uses the default view when the configuration has no visualisation, even with an inherited value', () => {
+    const action = viewAction(undefined, resourceConfiguration, customTemplate);
+    expect(Navigation.NavigationUtils.extractParams(action)).to.deep.equal({
+      view: 'resource', resource: iri, resourceConfig: resourceConfiguration,
+      resourceVisualisationTemplate: '',
     });
   });
 

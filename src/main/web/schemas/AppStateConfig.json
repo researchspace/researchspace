@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "autoSync": {
+            "default": false,
+            "description": "In `url` mode, update the URL whenever the shared state changes.\nWhen enabled the save button is hidden.",
+            "type": "boolean"
+        },
+        "id": {
+            "description": "Id of the app-state component. Components inside it find it automatically;\ncomponents rendered elsewhere (e.g. in an overlay) refer to it with `app-state-id`.\nThe id is also the target of the `AppState.ApplyState` and `AppState.LoadState` events.",
+            "type": "string"
+        },
+        "saveButtonPosition": {
+            "default": "top-right",
+            "description": "Position of the save button.",
+            "enum": [
+                "bottom-left",
+                "bottom-right",
+                "top-left",
+                "top-right"
+            ],
+            "type": "string"
+        },
+        "storageMode": {
+            "default": "url",
+            "description": "Where the shared state is kept:\n- `url`: in the `states` URL parameter. With `auto-sync` the URL is updated on every\n  change; otherwise the save button creates a short link.\n- `backend`: saved on the server by the save button; the URL only carries `stateId`.\n  Users are warned before leaving the page with unsaved changes.",
+            "enum": [
+                "backend",
+                "url"
+            ],
+            "type": "string"
+        },
+        "urlUpdateDelay": {
+            "default": 500,
+            "description": "Delay in milliseconds before the URL is updated after a change.",
+            "type": "number"
+        }
+    },
+    "propertyOrder": [
+        "id",
+        "storageMode",
+        "autoSync",
+        "urlUpdateDelay",
+        "saveButtonPosition"
+    ],
+    "type": "object"
+}
+

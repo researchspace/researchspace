@@ -30,8 +30,16 @@ import {
   SemanticMapControlsHandleGeneralizedData,
   SemanticMapControlsHighlightFeatures,
   SemanticMapSendVisibleGroups,
+  SemanticMapDataReady,
+  SemanticMapSend3dEnabled,
   GeneralizedEventData,
 } from './SemanticMapControlsEvents';
+import {
+  SharedStateComponent,
+  SharedStateProps,
+  SharedStateSyncOptions,
+} from 'platform/components/semantic/app-state/SharedStateComponent';
+import { ComponentState } from 'platform/components/semantic/app-state/AppStateEvents';
 import { SemanticMapRequestControlsRegistration, SemanticMapSendSelectedFeature, SemanticMapClearSelectedFeature } from './SemanticMapEvents';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -39,7 +47,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { CirclePicker, GithubPicker, SwatchesPicker } from 'react-color';
 import reactCSS from 'reactcss';
 import _ = require('lodash');
-import VectorLayer from 'ol/layer/Vector';
+import { isFeatureLayer } from './FeatureLayerUtils';
 import { containsCoordinate, intersects } from 'ol/extent';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { transformExtent } from 'ol/proj';
@@ -62,6 +70,16 @@ interface Timeline {
   default?: number;
   locked?: boolean;
   tour?: boolean;
+  /**
+   * Extra years the slider snaps to, besides the years of the historical maps (e.g. the epochs of
+   * the features). They are drawn as markers on the timeline, without a map preview.
+   */
+  snapYears?: number[];
+  /**
+   * When true the slider can only rest on the snap points (map years and `snapYears`): snapping
+   * is always on, whatever the distance, and the play button steps from one point to the next.
+   */
+  snapOnly?: boolean;
 }
 
 interface State {
@@ -113,7 +131,40 @@ interface State {
   viewportExtent: number[] | null; // Current map viewport [minX,minY,maxX,maxY] in EPSG:3857
 }
 
-interface Props {
+/**
+ * State variables of the controls that can be shared through `<app-state>`:
+ * - `year`: timeline year;
+ * - `syncWithTime`: whether the year drives the historical maps;
+ * - `layers`: `{visible: [identifiers, top first], opacity: {identifier: value}}` of overlays and
+ *   feature layers (basemaps are shared by the map);
+ * - `styling`: `{enabled, colorBy, labelBy, labelBackground, colors}`, where `colors` maps the legend
+ *   categories whose color differs from the palette to an rgba string;
+ * - `hiddenGroups`: legend categories that are switched off;
+ * - `panel`: open sidebar panel, or null.
+ */
+const SHARED_STATE_VARS = [
+  'year',
+  'syncWithTime',
+  'layers',
+  'styling',
+  'hiddenGroups',
+  'panel',
+  'related',
+];
+
+/** The related-entities panel as a story or a saved state carries it. */
+interface SharedRelated {
+  tab: string | null;
+  spatial: boolean;
+  syncWithTime: boolean;
+}
+
+interface SharedLayers {
+  visible: string[];
+  opacity?: { [identifier: string]: number };
+}
+
+interface Props extends SharedStateProps {
   targetMapId: string;
   id: string;
   featuresTaxonomies: string;
@@ -176,6 +227,11 @@ interface Props {
    * Default: false
    */
   showPaletteControls?: boolean;
+  /**
+   * Initial state of the "Enable Feature Styling" toggle (coloring, labels and legend).
+   * Default: false.
+   */
+  stylingEnabled?: boolean;
   /**
    * Default color taxonomy to use when styling is enabled.
    * Should match one of the values in featuresColorTaxonomies.
@@ -253,7 +309,7 @@ interface Props {
 /** Width of the slider thumb in px; marker offsets must use the same inset to line up with it. */
 const MARKER_THUMB_WIDTH = 20;
 /** Smallest gap in px between two year dots before they stop being separately clickable. */
-const MARKER_MIN_SEPARATION = 8;
+const MARKER_MIN_SEPARATION = 12;
 
 /**
  * Hands a subtree the template scope of the element that declared it, so each class renders with
@@ -277,8 +333,16 @@ interface RelatedEntityRow {
 /** Feed rows are a fixed height so the scroll position is arithmetic rather than measured. */
 const RELATED_ROW_HEIGHT = 64;
 
-export class SemanticMapControls extends Component<Props, State> {
+export class SemanticMapControls extends SharedStateComponent<Props, State> {
   private cancelation = new Cancellation();
+  /** The map has loaded its data (SemanticMap.DataReady). */
+  private mapDataReady = false;
+  /** State received from app-state that has not been applied yet. */
+  private pendingShared: ComponentState | null = null;
+  /** True while a received state is being applied, so that it is not sent back. */
+  private restoringShared = false;
+  /** Layers as they were when the data loaded, used to reset them. */
+  private initialLayers: SharedLayers | null = null;
   /**
    * Viewport-driven re-sync. `moveend` is not debounced on the map side, so panning would
    * otherwise flip overlay visibility (and start tile fetches) on every step of the pan.
@@ -353,7 +417,7 @@ export class SemanticMapControls extends Component<Props, State> {
       yearMarks: [],
       registeredMap: '',
       activePanel: null,
-      stylingEnabled: false, // Default to OFF
+      stylingEnabled: this.props.stylingEnabled ?? false, // Default to OFF
       labelBackgroundEnabled: false, // Default to OFF
       sunHeightDeg: 45,
       sunDirectionDeg: 180,
@@ -456,11 +520,20 @@ export class SemanticMapControls extends Component<Props, State> {
       )
       .onValue(this.handleVisibleGroupsUpdate);
 
+    this.cancelation
+      .map(listen({ eventType: SemanticMapDataReady, target: this.props.id }))
+      .onValue(this.onMapDataReady);
+
+    this.cancelation
+      .map(listen({ eventType: SemanticMapSend3dEnabled, target: this.props.id }))
+      .onValue((event) => this.setState({ is3dEnabled: Boolean(event.data) }));
+
     this.onDragEnd = this.onDragEnd.bind(this);
   }
 
   /** REACT COMPONENT LOGIC */
   public componentDidMount() {
+    super.componentDidMount();
     //this.triggerRegisterToMap();
     //this.triggerSyncFromMap();
     //TODO: the map will send the first levels autonomously after the registration
@@ -477,7 +550,10 @@ export class SemanticMapControls extends Component<Props, State> {
     if (this.props.timeline && this.props.timeline.tour) {
       // Use setTimeout to ensure the component is fully mounted
       setTimeout(() => {
-        this.handleTimelinePlay();
+        // a restored state has its own year, the tour would move it
+        if (!this.pendingShared && !this.state.isPlaying) {
+          this.handleTimelinePlay();
+        }
       }, 1000);
     }
   }
@@ -857,6 +933,11 @@ export class SemanticMapControls extends Component<Props, State> {
 
     // Remove event listener when component unmounts
     document.removeEventListener('feature-close-clicked', this.clearSelectedFeature);
+    if (this.state.animationInterval) {
+      window.clearInterval(this.state.animationInterval);
+    }
+    this.cancelation.cancelAll();
+    super.componentWillUnmount();
   }
 
   public componentDidUpdate(prevProps, prevState) {
@@ -872,6 +953,325 @@ export class SemanticMapControls extends Component<Props, State> {
     } else {
       // console.log("Groupcolors NOT changed.")
     }
+    // every user change (year, layers, styling, legend, panel) goes through a render
+    this.captureSharedState();
+  }
+
+  /** APP STATE */
+
+  protected getSupportedSharedStateVars() {
+    return SHARED_STATE_VARS;
+  }
+
+  protected isAutoSyncEnabled() {
+    // the shared state is derived from several state fields and from the layers
+    return false;
+  }
+
+  protected getInitialSharedState(): ComponentState {
+    // the layers are known only when the map has loaded its data
+    return {};
+  }
+
+  protected handleSharedStateSync(state: ComponentState, options: SharedStateSyncOptions) {
+    const received: ComponentState = {};
+    this.getSharedStateVars().forEach((name) => {
+      if (state[name] !== undefined) {
+        received[name] = state[name];
+      } else if (options.mode === 'replace') {
+        received[name] = this.getSharedDefault(name);
+      }
+    });
+    if (this.mapDataReady) {
+      this.applySharedState(received);
+    } else {
+      this.pendingShared = { ...(this.pendingShared || {}), ...received };
+    }
+  }
+
+  private onMapDataReady = () => {
+    if (this.mapDataReady) {
+      return;
+    }
+    this.mapDataReady = true;
+    this.initialLayers = this.getLayersSnapshot();
+    const pending = this.pendingShared;
+    this.pendingShared = null;
+    if (pending) {
+      this.applySharedState(pending);
+    } else {
+      this.setSharedStateBaseline(this.getSharedSnapshot());
+    }
+  };
+
+  /** Value a variable goes back to when a state in `replace` mode does not include it. */
+  private getSharedDefault(name: string): any {
+    switch (name) {
+      case 'year':
+        return this.props.timeline ? this.getTimelineDefault() : this.state.year;
+      case 'syncWithTime':
+        return this.props.syncFilterDefault ?? false;
+      case 'layers':
+        return this.initialLayers;
+      case 'styling':
+        return {
+          enabled: this.props.stylingEnabled ?? false,
+          colorBy: this.props.defaultColorTaxonomy || '',
+          labelBy: '',
+          labelBackground: false,
+        };
+      case 'hiddenGroups':
+        return [];
+      case 'panel':
+        return null;
+      case 'related':
+        return {
+          tab: this.relatedClasses.length ? this.relatedClasses[0].id : null,
+          spatial: true,
+          syncWithTime: true,
+        } as SharedRelated;
+      default:
+        return undefined;
+    }
+  }
+
+  /**
+   * Applies a received state and pushes the result to the map. Stops the timeline playback.
+   */
+  private applySharedState(state: ComponentState) {
+    this.restoringShared = true;
+    if (this.state.isPlaying && this.state.animationInterval) {
+      window.clearInterval(this.state.animationInterval);
+    }
+    const update: Partial<State> = { isPlaying: false, animationInterval: undefined };
+    if (typeof state.year === 'number') {
+      update.year = state.year;
+    }
+    if (typeof state.syncWithTime === 'boolean') {
+      update.syncWithTime = state.syncWithTime;
+    }
+    if (state.styling) {
+      update.stylingEnabled = Boolean(state.styling.enabled);
+      update.featuresColorTaxonomy = state.styling.colorBy || '';
+      update.selectedFeaturesLabel = state.styling.labelBy || '';
+      update.labelBackgroundEnabled = Boolean(state.styling.labelBackground);
+      update.groupColorAssociations = this.getRestoredGroupColors(state.styling.colors || {});
+    }
+    if (state.related) {
+      const related = state.related as SharedRelated;
+      if (typeof related.tab === 'string' || related.tab === null) {
+        update.relatedActiveTab = related.tab;
+      }
+      if (typeof related.spatial === 'boolean') {
+        update.relatedSpatialFilter = related.spatial;
+      }
+      if (typeof related.syncWithTime === 'boolean') {
+        update.relatedSyncWithTime = related.syncWithTime;
+      }
+      // The open card belongs to whatever was being looked at before; a restored state starts
+      // from the feed.
+      update.relatedSelected = null;
+    }
+    if (Array.isArray(state.hiddenGroups)) {
+      const hidden = state.hiddenGroups;
+      const groupDisabled: { [group: string]: boolean } = {};
+      Object.keys(this.state.groupDisabled).forEach((group) => {
+        groupDisabled[group] = hidden.indexOf(group) >= 0;
+      });
+      hidden.forEach((group) => {
+        groupDisabled[group] = true;
+      });
+      update.groupDisabled = groupDisabled;
+    }
+    this.setState(update as State, () => {
+      if (state.layers) {
+        this.applyLayersState(state.layers);
+      }
+      if (typeof state.syncWithTime === 'boolean' || state.layers) {
+        if (this.state.syncWithTime) {
+          // the restored visibility is what switching the sync off goes back to
+          this.setState({ syncPreviousVisibility: this.captureSyncBaseline() }, () => this.applySyncWithTime());
+        } else {
+          this.setState({ syncPreviousVisibility: null });
+        }
+      } else {
+        this.applySyncWithTime();
+      }
+      this.triggerSendYear();
+      this.triggerSendFeaturesLabelToMap();
+      trigger({
+        eventType: SemanticMapControlsSendLabelBackgroundToMap,
+        source: this.props.id,
+        targets: [this.props.targetMapId],
+        data: this.state.labelBackgroundEnabled,
+      });
+      this.setFeaturesColorTaxonomy();
+      this.triggerSendFeaturesColorsAssociationsToMap();
+      if (state.related) {
+        // The restored tab and filters decide what to ask for, and the rows were deliberately not
+        // part of the state, so they have to be fetched for the restored view.
+        this.loadRelatedEntities();
+      }
+      this.triggerSendLayers();
+      if (state.panel !== undefined && (state.panel || null) !== this.state.activePanel) {
+        this.togglePanel(state.panel || this.state.activePanel);
+      }
+      this.restoringShared = false;
+      this.setSharedStateBaseline(this.getSharedSnapshot());
+    });
+  }
+
+  /**
+   * Applies visibility and opacity to the overlays and feature layers, and puts the visible ones
+   * in the given order.
+   */
+  private applyLayersState(layersState: SharedLayers) {
+    const visible = Array.isArray(layersState.visible) ? layersState.visible : [];
+    const opacity = layersState.opacity || {};
+    const sharedLayers = this.getSharedLayers();
+    sharedLayers.forEach((layer) => {
+      const identifier = layer.get('identifier');
+      layer.setVisible(visible.indexOf(identifier) >= 0);
+      layer.setOpacity(typeof opacity[identifier] === 'number' ? opacity[identifier] : 1);
+    });
+    // reorder the visible layers within the positions they already occupy
+    const ordered = visible
+      .map((identifier) => sharedLayers.find((layer) => layer.get('identifier') === identifier))
+      .filter((layer) => layer);
+    const slots = this.state.mapLayers
+      .map((layer, index) => (ordered.indexOf(layer) >= 0 ? index : -1))
+      .filter((index) => index >= 0);
+    const mapLayers = [...this.state.mapLayers];
+    slots.forEach((slot, i) => {
+      mapLayers[slot] = ordered[i];
+    });
+    this.setState({ mapLayers, overlayVisualization: 'normal' });
+  }
+
+  /** Overlays and feature layers that have an identifier; basemaps are shared by the map. */
+  private getSharedLayers(): any[] {
+    return this.state.mapLayers.filter(
+      (layer) => layer.get('identifier') && (layer.get('level') === 'overlay' || isFeatureLayer(layer))
+    );
+  }
+
+  private getLayersSnapshot(): SharedLayers {
+    const baseline = this.state.syncWithTime ? this.state.syncPreviousVisibility : null;
+    const visible: string[] = [];
+    const opacity: { [identifier: string]: number } = {};
+    this.getSharedLayers().forEach((layer) => {
+      const identifier = layer.get('identifier');
+      // while the sync drives the dated overlays, share the visibility it will go back to
+      const isVisible =
+        baseline && identifier in baseline ? baseline[identifier] : layer.getVisible();
+      if (isVisible) {
+        visible.push(identifier);
+      }
+      const value = Math.round(layer.getOpacity() * 100) / 100;
+      if (value !== 1) {
+        opacity[identifier] = value;
+      }
+    });
+    return _.isEmpty(opacity) ? { visible } : { visible, opacity };
+  }
+
+  private getStylingSnapshot() {
+    const styling: { [key: string]: any } = {
+      enabled: this.state.stylingEnabled,
+      colorBy: this.state.featuresColorTaxonomy,
+      labelBy: this.state.selectedFeaturesLabel,
+      labelBackground: this.state.labelBackgroundEnabled,
+    };
+    const colors = this.getCustomGroupColors();
+    if (!_.isEmpty(colors)) {
+      styling.colors = colors;
+    }
+    return styling;
+  }
+
+  /**
+   * Colors chosen by the user for the legend categories: the categories whose color differs
+   * from the palette (or the default color), as rgba strings.
+   */
+  private getCustomGroupColors(): { [group: string]: string } {
+    const colors: { [group: string]: string } = {};
+    Object.keys(this.state.groupColorAssociations).forEach((group) => {
+      const color = normalizeColor(this.state.groupColorAssociations[group]);
+      if (color && rgbKey(color) !== rgbKey(this.getPaletteColor(group))) {
+        colors[group] = color;
+      }
+    });
+    return colors;
+  }
+
+  /**
+   * Category colors for a restored state: the given colors, and the palette color for the
+   * other categories.
+   */
+  private getRestoredGroupColors(colors: { [group: string]: string }): { [group: string]: any } {
+    const restored: { [group: string]: any } = {};
+    Object.keys(this.state.groupColorAssociations).forEach((group) => {
+      restored[group] = this.getPaletteColor(group);
+    });
+    Object.keys(colors).forEach((group) => {
+      const color = normalizeColor(colors[group]);
+      if (color) {
+        restored[group] = color;
+      }
+    });
+    return restored;
+  }
+
+  /** Color of a category in the `features-colors-palette` prop, or the default color. */
+  private getPaletteColor(group: string): string {
+    let palette = this.props.featuresColorsPalette as any;
+    if (typeof palette === 'string') {
+      try {
+        palette = JSON.parse(palette);
+      } catch (e) {
+        palette = {};
+      }
+    }
+    const key = Object.keys(palette || {}).find((label) => label.toLowerCase() === group.toLowerCase());
+    return key ? palette[key] : this.defaultFeaturesColor;
+  }
+
+  private getSharedSnapshot(): ComponentState {
+    return {
+      year: this.state.year,
+      syncWithTime: this.state.syncWithTime,
+      layers: this.getLayersSnapshot(),
+      styling: this.getStylingSnapshot(),
+      hiddenGroups: Object.keys(this.state.groupDisabled)
+        .filter((group) => this.state.groupDisabled[group])
+        .sort(),
+      panel: this.state.activePanel,
+      related: this.getRelatedSnapshot(),
+    };
+  }
+
+  /**
+   * Which tab the related-entities panel is on and how it is filtered. The rows themselves are
+   * never captured: they are derived from the viewport and the declared queries, so a restored
+   * state refetches them rather than carrying a stale copy of someone else's results.
+   */
+  private getRelatedSnapshot(): SharedRelated {
+    return {
+      tab: this.state.relatedActiveTab,
+      spatial: this.state.relatedSpatialFilter,
+      syncWithTime: this.state.relatedSyncWithTime,
+    };
+  }
+
+  /**
+   * Sends the shared variables that changed. Ignored while the map loads, while a received
+   * state is applied and while the timeline plays.
+   */
+  private captureSharedState() {
+    if (!this.sharedStateManager || !this.mapDataReady || this.restoringShared || this.state.isPlaying) {
+      return;
+    }
+    this.updateSharedState(this.getSharedSnapshot());
   }
 
   /** EVENTS */
@@ -1063,16 +1463,35 @@ export class SemanticMapControls extends Component<Props, State> {
    * matters because buildings are filtered by bob/eoe independently of the maps.
    */
   private snapYearToMarkers(year: number): number {
-    if (!this.state.snapToMapYears) {
+    const snapOnly = this.isSnapOnly();
+    if (!snapOnly && !this.state.snapToMapYears) {
       return year;
     }
-    const markerYears = this.getYearMarkers().map((marker) => marker.year);
+    const markerYears = this.getTimelineMarkers().map((marker) => marker.year);
     if (!markerYears.length) {
       return year;
     }
-    const tolerance = this.props.snapToleranceYears ?? 3;
     const closest = this.findClosestMark(year, markerYears);
+    if (snapOnly) {
+      return closest;
+    }
+    const tolerance = this.props.snapToleranceYears ?? 3;
     return Math.abs(closest - year) <= tolerance ? closest : year;
+  }
+
+  /** `timeline.snapOnly`: the slider may only rest on the snap points. */
+  private isSnapOnly(): boolean {
+    return Boolean(this.props.timeline && this.props.timeline.snapOnly);
+  }
+
+  /** `timeline.snapYears` inside the timeline range, as numbers. */
+  private getExtraSnapYears(): number[] {
+    const years = (this.props.timeline && this.props.timeline.snapYears) || [];
+    const min = this.props.timeline ? this.props.timeline.min : -Infinity;
+    const max = this.getTimelineMax();
+    return years
+      .map((year) => Number(year))
+      .filter((year) => Number.isFinite(year) && year >= min && year <= max);
   }
 
   /**
@@ -1255,7 +1674,7 @@ export class SemanticMapControls extends Component<Props, State> {
           eventType: SemanticMapControlsSendToggle3d,
           source: this.props.id,
           targets: [this.props.targetMapId],
-          data: 'toggle',
+          data: this.state.is3dEnabled,
         });
 
         // Re-send current sun controls after enabling 3D so Cesium receives the latest values.
@@ -2529,7 +2948,7 @@ export class SemanticMapControls extends Component<Props, State> {
               <React.Fragment>
                 {/* Snap toggle lives on the timeline because that is what it governs, and shows
                     only alongside the markers, when there is something to snap to. */}
-                {this.areYearMarkersVisible() && (
+                {this.areYearMarkersVisible() && !this.isSnapOnly() && (
                   <div className={styles.timelineToolbar}>
                     <label
                       className={`${styles.mapToggle} ${styles.timelineSnapToggle}`}
@@ -2549,28 +2968,57 @@ export class SemanticMapControls extends Component<Props, State> {
                 {/* Wrapper so the year markers can be positioned against the slider itself,
                     rather than against the padded container around it. */}
                 <div className={styles.timelineTrack} ref={this.timelineTrackRef}>
-                  <input
-                    type={'range'}
-                    className={styles.timelineSlider}
-                    min={this.props.timeline.min}
-                    max={this.getTimelineMax()}
-                    step={1}
-                    value={this.state.year}
-                    onChange={this.handleTimelineChange}
-                    disabled={this.props.timeline.locked}
-                  />
+                  {this.isSteppedTimeline() ? (
+                    <input
+                      type={'range'}
+                      className={styles.timelineSlider}
+                      min={0}
+                      max={this.getSnapStops().length - 1}
+                      step={1}
+                      value={this.getNearestStopIndex(this.state.year, this.getSnapStops())}
+                      onChange={this.handleSteppedTimelineChange}
+                      disabled={this.props.timeline.locked}
+                    />
+                  ) : (
+                    <input
+                      type={'range'}
+                      className={styles.timelineSlider}
+                      min={this.props.timeline.min}
+                      max={this.getTimelineMax()}
+                      step={1}
+                      value={this.state.year}
+                      onChange={this.handleTimelineChange}
+                      disabled={this.props.timeline.locked}
+                    />
+                  )}
                   {this.areYearMarkersVisible() && this.renderYearMarkers()}
                 </div>
                 <div className={styles.yearLabel}>{this.state.year}</div>
 
-                {/* Tick marks */}
-                <div className={styles['timeline-ticks']}>
-                  {this.generateTickMarks().map((year) => (
-                    <div key={year} style={{ fontSize: '12px', color: '#666' }}>
-                      {year}
-                    </div>
-                  ))}
-                </div>
+                {/* Tick marks: the snap points on a stepped timeline, centuries otherwise */}
+                {this.isSteppedTimeline() ? (
+                  <div className={styles.timelineStopLabels}>
+                    {this.getSnapStops().map((year) => (
+                      <div
+                        key={year}
+                        className={`${styles.timelineStopLabel} ${
+                          year === this.state.year ? styles.timelineStopLabelActive : ''
+                        }`}
+                        style={{ left: this.getMarkerOffset(year) }}
+                      >
+                        {year}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles['timeline-ticks']}>
+                    {this.generateTickMarks().map((year) => (
+                      <div key={year} style={{ fontSize: '12px', color: '#666' }}>
+                        {year}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </React.Fragment>
             )}
           </div>
@@ -2894,7 +3342,7 @@ export class SemanticMapControls extends Component<Props, State> {
     }
     let vectorLayers = [];
     allLayers.forEach((layer) => {
-      if (layer instanceof VectorLayer) {
+      if (isFeatureLayer(layer)) {
         vectorLayers.push(layer);
       }
     });
@@ -3030,7 +3478,7 @@ export class SemanticMapControls extends Component<Props, State> {
    */
   private getGeometryLayers(): any[] {
     return this.state.mapLayers.filter(layer => 
-      layer.get('level') === 'feature' || layer instanceof VectorLayer
+      isFeatureLayer(layer)
     );
   }
   
@@ -3092,6 +3540,19 @@ export class SemanticMapControls extends Component<Props, State> {
    * that year (1982 covers six islands in the current data). Years outside the timeline range, and
    * undated layers, are dropped — they have nowhere to sit on the bar.
    */
+  /** Timeline markers: the historical-map years plus the extra `timeline.snapYears` (no maps). */
+  private getTimelineMarkers(): Array<{ year: number; layers: any[] }> {
+    const markers = this.getYearMarkers();
+    const known = new Set(markers.map((marker) => marker.year));
+    this.getExtraSnapYears().forEach((year) => {
+      if (!known.has(year)) {
+        known.add(year);
+        markers.push({ year, layers: [] });
+      }
+    });
+    return markers.sort((a, b) => a.year - b.year);
+  }
+
   private getYearMarkers(): Array<{ year: number; layers: any[] }> {
     const min = this.props.timeline ? this.props.timeline.min : null;
     const max = this.getTimelineMax();
@@ -3130,7 +3591,7 @@ export class SemanticMapControls extends Component<Props, State> {
    * offsets fall back to the exact CSS calc.
    */
   private getMarkerLayout(): Array<{ year: number; layers: any[]; left: string }> {
-    const markers = this.getYearMarkers();
+    const markers = this.getTimelineMarkers();
     const usable = this.state.trackWidth - MARKER_THUMB_WIDTH;
     if (!markers.length || usable <= 0) {
       return markers.map(({ year, layers }) => ({ year, layers, left: this.getMarkerOffset(year) }));
@@ -3140,8 +3601,7 @@ export class SemanticMapControls extends Component<Props, State> {
     const span = this.getTimelineMax() - min;
     const half = MARKER_THUMB_WIDTH / 2;
     const positions = markers.map(({ year }) => {
-      const fraction = span > 0 ? Math.min(1, Math.max(0, (year - min) / span)) : 0;
-      return half + fraction * usable;
+      return half + this.getYearFraction(year) * usable;
     });
 
     // Forward: never closer than MARKER_MIN_SEPARATION.
@@ -3163,8 +3623,7 @@ export class SemanticMapControls extends Component<Props, State> {
         let rawSum = 0;
         let laidSum = 0;
         for (let i = start; i <= end; i++) {
-          const fraction = span > 0 ? Math.min(1, Math.max(0, (markers[i].year - min) / span)) : 0;
-          rawSum += half + fraction * usable;
+          rawSum += half + this.getYearFraction(markers[i].year) * usable;
           laidSum += positions[i];
         }
         const delta = rawSum / count - laidSum / count;
@@ -3195,7 +3654,13 @@ export class SemanticMapControls extends Component<Props, State> {
    * (sync) or the sidebar list (temporal filter).
    */
   private areYearMarkersVisible(): boolean {
-    return Boolean(this.props.timeline) && (this.state.syncWithTime || this.state.filterByTime);
+    return (
+      Boolean(this.props.timeline) &&
+      (this.state.syncWithTime ||
+        this.state.filterByTime ||
+        this.isSnapOnly() ||
+        this.getExtraSnapYears().length > 0)
+    );
   }
 
   /**
@@ -3204,12 +3669,58 @@ export class SemanticMapControls extends Component<Props, State> {
    * with it — hence the 20px thumb width baked in here.
    */
   private getMarkerOffset(year: number): string {
-    const min = this.props.timeline.min;
-    const max = this.getTimelineMax();
-    const span = max - min;
-    const fraction = span > 0 ? Math.min(1, Math.max(0, (year - min) / span)) : 0;
+    const fraction = this.getYearFraction(year);
     return `calc(${MARKER_THUMB_WIDTH / 2}px + ${fraction} * (100% - ${MARKER_THUMB_WIDTH}px))`;
   }
+
+  /**
+   * Position of a year along the slider (0..1): proportional to time, or, on a stepped timeline,
+   * the index of its snap point, so that the points are evenly spaced.
+   */
+  private getYearFraction(year: number): number {
+    if (this.isSteppedTimeline()) {
+      const stops = this.getSnapStops();
+      return this.getNearestStopIndex(year, stops) / (stops.length - 1);
+    }
+    const min = this.props.timeline.min;
+    const span = this.getTimelineMax() - min;
+    return span > 0 ? Math.min(1, Math.max(0, (year - min) / span)) : 0;
+  }
+
+  /** Years of the snap points (historical maps and `timeline.snapYears`), ascending. */
+  private getSnapStops(): number[] {
+    return this.getTimelineMarkers().map((marker) => marker.year);
+  }
+
+  private getNearestStopIndex(year: number, stops: number[]): number {
+    let best = 0;
+    stops.forEach((stop, i) => {
+      if (Math.abs(stop - year) < Math.abs(stops[best] - year)) {
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  /**
+   * With `timeline.snapOnly` the slider moves between the snap points only, so it is drawn as
+   * evenly spaced steps: points close in time stay apart, and the native slider drags smoothly
+   * from one step to the next.
+   */
+  private isSteppedTimeline(): boolean {
+    return this.isSnapOnly() && this.getSnapStops().length >= 2;
+  }
+
+  private handleSteppedTimelineChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (this.props.timeline && this.props.timeline.locked) {
+      return;
+    }
+    const stops = this.getSnapStops();
+    const index = Math.min(stops.length - 1, Math.max(0, parseInt(event.target.value, 10) || 0));
+    if (stops[index] !== this.state.year) {
+      this.commitTimelineYear(stops[index]);
+    }
+  };
 
   /**
    * Shared spatial/temporal filtering used both by the sidebar list and by "Sync with time",
@@ -3289,11 +3800,11 @@ export class SemanticMapControls extends Component<Props, State> {
     }
     
     // Check if this is a features/geometry layer vs a tile/overlay layer
-    const isFeatureLayer = layer.get('level') === 'feature' || layer instanceof VectorLayer;
+    const isFeatureLayerChange = isFeatureLayer(layer);
     
     // For features layers, don't reset visualization mode - just update the layer directly
     // Features layers are independent of the tile layer visualization modes
-    if (isFeatureLayer) {
+    if (isFeatureLayerChange) {
       // Force re-render without changing any other state
       this.forceUpdate();
     } else {
@@ -3486,14 +3997,14 @@ export class SemanticMapControls extends Component<Props, State> {
             key={year}
             className={`${styles.timelineMarker} ${year === this.state.year ? styles.timelineMarkerActive : ''}`}
             style={{ left }}
-            title={`${year} — ${layers.length} ${layers.length === 1 ? 'map' : 'maps'}`}
+            title={layers.length ? `${year} — ${layers.length} ${layers.length === 1 ? 'map' : 'maps'}` : String(year)}
             onMouseEnter={() => this.openMarkerPreview(year)}
             onMouseLeave={() => this.closeMarkerPreviewSoon(year)}
             onClick={() => this.handleMarkerClick(year)}
           />
         ))}
         {markers
-          .filter(({ year }) => year === this.state.hoveredMarkerYear)
+          .filter(({ year, layers }) => year === this.state.hoveredMarkerYear && layers.length > 0)
           .map(({ year, layers, left }) => (
             <div
               key={`preview-${year}`}
@@ -3562,8 +4073,11 @@ export class SemanticMapControls extends Component<Props, State> {
     }
 
     const input = event.target as HTMLInputElement;
-    const value = this.snapYearToMarkers(parseInt(input.value));
+    this.commitTimelineYear(this.snapYearToMarkers(parseInt(input.value)));
+  };
 
+  /** Sets the timeline year and sends it to the map. */
+  private commitTimelineYear(value: number) {
     // Add pulse animation class to year label
     const yearLabel = document.querySelector(`.${styles.yearLabel}`) as HTMLElement;
     if (yearLabel) {
@@ -3584,7 +4098,7 @@ export class SemanticMapControls extends Component<Props, State> {
         this.scrollFeedToYear(false);
       }
     );
-  };
+  }
 
   /**
    * Handle timeline play button click
@@ -3608,9 +4122,16 @@ export class SemanticMapControls extends Component<Props, State> {
       let current = this.state.year;
 
       const interval = window.setInterval(() => {
-        current += 10;
-        if (current > max) {
-          current = min;
+        if (this.isSnapOnly() && this.getTimelineMarkers().length > 0) {
+          // Step from one snap point to the next, wrapping around.
+          const years = this.getTimelineMarkers().map((marker) => marker.year);
+          const next = years.find((year) => year > current);
+          current = next !== undefined ? next : years[0];
+        } else {
+          current += 10;
+          if (current > max) {
+            current = min;
+          }
         }
 
         // Update year and send to map
@@ -3633,6 +4154,36 @@ export class SemanticMapControls extends Component<Props, State> {
       this.setState({ isPlaying: true, animationInterval: interval });
     }
   };
+}
+
+/**
+ * Category colors are rgba strings, or the objects of the color picker (with an `rgb` field).
+ * Returns an rgba string, or undefined for an invalid value.
+ */
+function normalizeColor(color: any): string | undefined {
+  if (typeof color === 'string') {
+    return rgbKey(color) ? color : undefined;
+  }
+  if (color && color.rgb && typeof color.rgb.r === 'number') {
+    const { r, g, b } = color.rgb;
+    return `rgba(${r}, ${g}, ${b}, 0.4)`;
+  }
+  return undefined;
+}
+
+/** The red, green and blue components of a color, ignoring alpha (the map sets its own). */
+function rgbKey(color: string): string | undefined {
+  const value = (color || '').trim();
+  const match = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(value);
+  if (match) {
+    return `${match[1]},${match[2]},${match[3]}`;
+  }
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value);
+  if (hex) {
+    const digits = hex[1].length === 3 ? hex[1].replace(/(.)/g, '$1$1') : hex[1];
+    return [0, 2, 4].map((i) => parseInt(digits.substr(i, 2), 16)).join(',');
+  }
+  return undefined;
 }
 
 export default SemanticMapControls;

@@ -264,6 +264,18 @@
     },
 
     {
+    	"id": "story-editor",
+      "label": "Story",
+      "description": "Write a guided tour of slides that show states of a page",
+      "iconName": "auto_stories",
+      "template": "{{> storyEditor}}",
+      "itemBodyTemplate": "{{> itemBodyTemplate}}",
+      "resourceNotRequired": true,
+      "checkQuery": "ASK { ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/story> . }",
+      "type": "authoring"
+    },
+
+    {
     	"id": "semantic-narrative-resources",
       "label": "Semantic narrative resources",
       "description": "Resources in the semantic narrative",
@@ -523,6 +535,18 @@
 
     <template id='semanticNarrative'>
       [[> rsp:SemanticNarrativeTemplate]]
+    </template>
+
+    <template id='storyEditor'>
+      <div class='page__grid-container'>
+        <div style='padding: 20px;'>
+          {{#if iri}}
+            <rs-story-editor story='{{iri}}'></rs-story-editor>
+          {{else}}
+            <rs-story-editor></rs-story-editor>
+          {{/if}}
+        </div>
+      </div>
     </template>
 
     <template id='semanticNarrativeResources'>

@@ -53,6 +53,9 @@ To integrate the SemanticMapAdvanced component into your HTML page, you need to 
 | `year-filtering` | boolean | No | Enable filtering by year (default: false) |
 | `vector-levels` | JSON Array | No | Possible levels of features in the map |
 | `selected-feature-style` | JSON Object | No | Style configuration for selected features |
+| `labels-min-zoom` | number | No | Draw feature labels only above this zoom level (default: all zoom levels). Useful with many features, since labels are drawn on the CPU |
+| `features-fill-opacity` | number | No | Fill opacity (0-1) of the features loaded by `query`, replacing the opacity of their colors |
+| `features-stroke-opacity` | number | No | Stroke opacity (0-1) of the features loaded by `query` |
 
 ### SemanticMapControls Attributes
 
@@ -75,6 +78,7 @@ To integrate the SemanticMapAdvanced component into your HTML page, you need to 
 | `base-map-template` | string | No | Template for base maps panel |
 | `buildings-template` | string | No | Template for buildings panel |
 | `template-mapping` | JSON Object | No | Mapping of data kinds to templates |
+| `styling-enabled` | boolean | No | Initial state of the "Enable Feature Styling" toggle, which also shows the colors legend (default: false) |
 | `spatial-filter-default` | boolean | No | Initial state of the "filter by zoom" checkbox (default: true) |
 | `temporal-filter-default` | boolean | No | Initial state of the "filter by time" checkbox (default: false) |
 | `sync-filter-default` | boolean | No | Initial state of the "sync with time" checkbox (default: false) |
@@ -96,6 +100,7 @@ The `query` attribute expects a SPARQL SELECT query that projects geographic dat
 Additional variables can be included for feature properties:
 
 - `?subject`: IRI of the corresponding resource
+- `?id`: Unique id of the geometry, when a resource has several of them (e.g. one per epoch, with its own `?bob`/`?eoe`). Defaults to `?subject`; rows repeating an id are ignored. Selection, highlight, zoom and recoloring still work by `?subject`, on all its geometries
 - `?description`: Short textual description
 - `?link`: IRI for linking
 - `?color`: Custom color for the feature
@@ -281,6 +286,8 @@ Timeline configuration options:
 | `default` | number | Default year value |
 | `locked` | boolean | Whether timeline is locked (default: false) |
 | `tour` | boolean | Whether tour mode is enabled (default: false) |
+| `snapYears` | number[] | Extra snap points besides the years of the historical maps (e.g. the epochs of the features). Drawn as dots on the timeline, without a map preview |
+| `snapOnly` | boolean | When true the slider can only rest on the snap points (map years and `snapYears`): the timeline is drawn as evenly spaced steps labelled with their years (the native slider drags from step to step), the snap button is hidden and auto-play steps from one point to the next (default: false) |
 
 ## Historical Map Filters
 
@@ -343,6 +350,11 @@ Note that the snap is immediate rather than elastic, so the years within the tol
 cannot be selected while it is on. With the default range that band is only two or three pixels
 wide and a mouse cannot reliably hit it anyway, but stepping with the arrow keys will jump over it
 — uncheck the box when a specific year in that band is needed.
+
+Historical maps declared as `<tiles-layer level="overlay">` in the template get their marker from
+their `year` attribute; an optional `group` attribute (default: `location`, then `identifier`) tells
+the snapshot mode which maps show the same place. The timeline options `snapYears` and `snapOnly`
+add artificial snap points and restrict the slider to the snap points.
 
 ## Related Entities Panel
 
@@ -510,3 +522,31 @@ semantic-map-advanced {
 9. **Custom Templates**: Use custom templates for feature details to provide rich, interactive information.
 
 10. **Event Handling**: Listen for component events to integrate the map with other components on your page.
+
+## Sharing the map state (app-state and stories)
+
+Inside an `<app-state>`, the map and its controls can keep their state in the URL, so that a view can be shared and replayed by a story (`rs-story`):
+
+```html
+<app-state id="map-state" auto-sync="true">
+  <semantic-map-controls id="map-controls" target-map-id="map"
+    shared-state-vars="year,syncWithTime,layers,styling,hiddenGroups,panel" ...></semantic-map-controls>
+  <semantic-map-advanced id="map" target-controls='["map-controls"]'
+    shared-state-vars="view,basemap,selected,mode3d" ...></semantic-map-advanced>
+</app-state>
+```
+
+| Component | Variable | Value |
+|---|---|---|
+| map | `view` | `{center: [x, y], zoom, rotation}` in EPSG:3857 |
+| map | `basemap` | identifier of the visible basemap |
+| map | `selected` | IRI of the selected subject |
+| map | `mode3d` | `{enabled: boolean}` |
+| controls | `year` | timeline year |
+| controls | `syncWithTime` | whether the year drives the historical maps |
+| controls | `layers` | `{visible: [identifiers, top first], opacity: {identifier: value}}` |
+| controls | `styling` | `{enabled, colorBy, labelBy, labelBackground, colors}`; `colors` lists the categories whose color differs from the palette, as rgba strings |
+| controls | `hiddenGroups` | legend categories switched off |
+| controls | `panel` | open sidebar panel |
+
+The state is recorded after user actions only. A stored state is applied once the map has loaded its data; a stored view replaces the initial fit. While "Sync with time" is on, the dated historical maps follow the year, and `layers` records the visibility they return to when the sync is switched off. The swipe/spyglass tools and the sun position are not shared yet.

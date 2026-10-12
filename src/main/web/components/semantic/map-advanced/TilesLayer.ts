@@ -34,6 +34,12 @@ export interface ProviderConfig {
   location: String;
 
   year: String;
+
+  /**
+   * Optional grouping key of overlays showing the same place, used by the "snapshot" temporal mode
+   * of the controls (only the latest map of each group is kept). Defaults to location, then identifier.
+   */
+  group?: String;
 }
 
 export type ProviderProps = ProviderConfig & Props<any>;

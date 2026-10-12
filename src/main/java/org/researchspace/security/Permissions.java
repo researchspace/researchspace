@@ -290,8 +290,12 @@ public class Permissions {
         public static final String INVALIDATE_ALL = "caches:*:invalidate";
     }
 
+    @PermissionsDocGroup(desc = "Permissions for platform services.")
     public static class SERVICES {
+        @PermissionsDocField(desc = "Grants permission to create short links and to save application states (app-state component in backend storage mode).")
         public static final String URL_MINIFY = "services:url-minify";
+        @PermissionsDocField(desc = "Grants permission to delete application states saved by other users. Users can always delete the states they saved.")
+        public static final String APP_STATE_DELETE_ANY = "services:app-state:delete:any";
     }
 
     @PermissionsDocGroup(desc = "Permissions for managing and executing Query as a Service (QaaS) objects.")

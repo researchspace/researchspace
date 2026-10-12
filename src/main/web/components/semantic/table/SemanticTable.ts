@@ -37,7 +37,12 @@ import { ControlledPropsHandler } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
 
 import { ColumnConfiguration, Table, TableConfig, TableLayout } from './Table';
-import { SharedStateComponent, SharedStateProps } from '../app-state/SharedStateComponent';
+import {
+  SharedStateComponent,
+  SharedStateProps,
+  SharedStateSyncOptions,
+} from 'platform/components/semantic/app-state/SharedStateComponent';
+import { ComponentState } from 'platform/components/semantic/app-state/AppStateEvents';
 
 interface ControlledProps {
   /**
@@ -52,11 +57,13 @@ interface TableState {
   isLoading?: boolean;
   currentPage?: number;
   error?: any;
-  // Additional state variables that can be shared
-  sortColumn?: string;
-  sortDirection?: 'asc' | 'desc';
   filterValue?: string;
 }
+
+/**
+ * State variables of the table that can be shared through `<app-state>`.
+ */
+const SHARED_STATE_VARS: Array<keyof TableState> = ['currentPage', 'filterValue'];
 
 interface Options {
   /**
@@ -213,29 +220,33 @@ export class SemanticTable extends SharedStateComponent<SemanticTableProps, Tabl
   }
 
   public componentDidMount() {
-    // Call parent's componentDidMount for AppState registration
-    super.componentDidMount();
-    
     this.prepareConfigAndExecuteQuery(this.props, this.context);
-    
-    // Request current state from AppState after initialization
-    setTimeout(() => {
-      this.requestCurrentState();
-    }, 100);
+    // registers with app-state after the query has reset the current page,
+    // so that a restored page is not overwritten
+    super.componentDidMount();
   }
 
   componentWillUnmount() {
-    // Call parent's componentWillUnmount for cleanup
     super.componentWillUnmount();
     this.cancellation.cancelAll();
   }
 
-  /**
-   * Handle shared state synchronization from AppState
-   */
-  protected handleSharedStateSync(syncedState: any): void {
-    // Simply apply the synced state directly since the property names match
-    this.setState(syncedState);
+  protected getSupportedSharedStateVars() {
+    return SHARED_STATE_VARS;
+  }
+
+  protected handleSharedStateSync(state: ComponentState, options: SharedStateSyncOptions) {
+    const updates: Partial<TableState> = {};
+    this.getSharedStateVars().forEach((varName) => {
+      if (state[varName] !== undefined) {
+        updates[varName] = state[varName];
+      } else if (options.mode === 'replace') {
+        updates[varName] = varName === 'currentPage' ? 0 : undefined;
+      }
+    });
+    // shouldComponentUpdate ignores page and filter changes made by the user,
+    // a state coming from app-state has to be rendered
+    this.setState(updates, () => this.forceUpdate());
   }
 
   public render() {
@@ -265,28 +276,29 @@ export class SemanticTable extends SharedStateComponent<SemanticTableProps, Tabl
     layout = this.handleDeprecatedLayout(layout);
     
     const { onControlledPropChange, ...otherProps } = this.props;
+    const sharesPage = this.isSharedVariable('currentPage');
     const controlledProps: Partial<TableConfig> = {
       currentPage: this.state.currentPage,
-      onPageChange: (page) => {
-        this.setState({currentPage: page});
-        if (onControlledPropChange) {
-          onControlledPropChange({ currentPage: page });
-        }
-      },
-      onFilterChange: (filterValue) => {
-        this.setState({filterValue});
-      },
-      onSortChange: (sortColumn, sortDirection) => {
-        this.setState({sortColumn, sortDirection});
-      },
+      onPageChange:
+        onControlledPropChange || sharesPage
+          ? (page) => {
+              this.setState({ currentPage: page });
+              if (onControlledPropChange) {
+                onControlledPropChange({ currentPage: page });
+              }
+            }
+          : undefined,
     };
+    if (this.isSharedVariable('filterValue')) {
+      controlledProps.filterValue = this.state.filterValue;
+      controlledProps.onFilterChange = (filterValue) => this.setState({ filterValue });
+    }
     return createElement(Table, {
       ...otherProps,
       ...controlledProps,
       layout: maybe.fromNullable(layout),
       numberOfDisplayedRows: maybe.fromNullable(this.props.numberOfDisplayedRows),
       data: Either.Right<any[], SparqlClient.SparqlSelectResult>(this.state.data),
-      initialFilter: this.state.filterValue,
       ref: this.TABLE_REF,
     });
   }

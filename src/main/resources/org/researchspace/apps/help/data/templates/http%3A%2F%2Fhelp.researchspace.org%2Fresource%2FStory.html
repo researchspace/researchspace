@@ -1,0 +1,135 @@
+<div class="page__grid-container help-page-container">
+  <div class='page__content-container'>
+    <h1 id="rs-doc_story">Stories</h1>
+
+    <p>A story is a guided tour of slides. Each slide has a title, a text and the URL of a state of a page, for example a map with a given view, year, historical maps and colours. While the reader moves from slide to slide, the page changes accordingly, without reloading.</p>
+
+    <ul>
+      <li><a href="#rs-doc_authoring">Writing a story</a></li>
+      <li><a href="#rs-doc_player">Showing a story</a></li>
+      <li><a href="#rs-doc_events">Events</a></li>
+      <li><a href="#rs-doc_model">Data model and queries</a></li>
+      <li><a href="#rs-doc_permissions">Permissions</a></li>
+    </ul>
+
+    <hr class="divider">
+    <h2 id="rs-doc_authoring">Writing a story</h2>
+
+    <ol>
+      <li>Open the page the story is about. Its components must be inside an <semantic-link iri="http://help.researchspace.org/resource/AppState"><code>&lt;app-state&gt;</code></semantic-link> with <code>auto-sync="true"</code>, and declare the state they share with <code>shared-state-vars</code>.</li>
+      <li>Set up the view of the first slide (zoom, year, historical maps, colours, &hellip;) and copy the URL from the address bar.</li>
+      <li>In <semantic-link iri="http://www.researchspace.org/resource/Stories">Stories</semantic-link> (also in the Administration page and in Thinking Frames), create a story, add a slide, write its text and paste the URL.</li>
+      <li>Repeat for the other slides, save, and use <em>Preview</em> to try it.</li>
+    </ol>
+
+    <p>A link in a slide text can point to another slide: insert a link to <code>#3</code> to go to slide 3.</p>
+
+    <mp-documentation type="StoryEditorConfig"></mp-documentation>
+
+    <hr class="divider">
+    <h2 id="rs-doc_player">Showing a story</h2>
+
+    <p>Place <code>&lt;rs-story&gt;</code> inside the same <code>&lt;app-state&gt;</code> as the components it drives:</p>
+
+    <mp-code-block mode="text/html">
+<![CDATA[<app-state id="map-state" auto-sync="true">
+  <semantic-map-controls id="map-controls" target-map-id="map"
+    shared-state-vars="year,syncWithTime,layers,styling,hiddenGroups,panel" ...>
+  </semantic-map-controls>
+  <semantic-map-advanced id="map" target-controls='["map-controls"]'
+    shared-state-vars="view,basemap,selected" ...>
+  </semantic-map-advanced>
+
+  \[[#if (urlParam "story")]]
+    <rs-story id="story" story='\[[urlParam "story"]]' position="middle-right"></rs-story>
+  \[[/if]]
+</app-state>]]>
+    </mp-code-block>
+
+    <p>Opening the page with <code>?story=&lt;story IRI&gt;</code> then shows the story. The current slide is kept in the URL (<code>storySlide</code>), so a link opens the story at that slide. When a slide shows another page, that page is opened and an <code>&lt;rs-story&gt;</code> on it continues the story.</p>
+
+    <p>When a slide is shown, the components mentioned by any slide of the story get the state of that slide; those that the slide does not mention go back to their defaults, so that the state of the previous slide does not leak into it.</p>
+
+    <mp-documentation type="StoryConfig"></mp-documentation>
+
+    <hr class="divider">
+    <h2 id="rs-doc_events">Events</h2>
+
+    <table class="table table-striped">
+      <thead><tr><th>Event</th><th>Data</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>Story.Next</code>, <code>Story.Previous</code></td><td></td><td>Moves to the next or previous slide (target: the <code>rs-story</code> id).</td></tr>
+        <tr><td><code>Story.GoTo</code></td><td><code>{"index": 2}</code> (from 0) or <code>{"slide": "&lt;slide IRI&gt;"}</code></td><td>Shows a slide.</td></tr>
+        <tr><td><code>Story.Reset</code></td><td></td><td>Applies the current slide again, e.g. after the reader moved the map.</td></tr>
+        <tr><td><code>Story.Loaded</code></td><td><code>story</code>, <code>total</code></td><td>Triggered when the story has been loaded.</td></tr>
+        <tr><td><code>Story.SlideChanged</code></td><td><code>story</code>, <code>index</code>, <code>slide</code>, <code>total</code></td><td>Triggered when a slide is shown.</td></tr>
+        <tr><td><code>Story.Saved</code>, <code>Story.Deleted</code></td><td><code>story</code></td><td>Triggered by <code>rs-story-editor</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+    <h2 id="rs-doc_model">Data model and queries</h2>
+
+    <p>Stories are LDP resources of the container <code>http://www.researchspace.org/resource/system/storyContainer</code> in the <code>default</code> repository, modelled with CIDOC-CRM:</p>
+
+    <mp-code-block mode="text/turtle">
+<![CDATA[<story> a crm:E73_Information_Object ;
+  crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/story> ;
+  rdfs:label "Title" ;
+  crm:P1_is_identified_by <story/primary_appellation> ;     # E41, P190 "Title"
+  crm:P67i_is_referred_to_by <story/description> ;          # E73 typed text_type/description, P190
+  crm:P94i_was_created_by <story/creation> ;                # E65, P14 creator, P4 E52 P82 date
+  crm:P106_is_composed_of <story/slide/1>, <story/slide/2> .
+
+<story/slide/1> a crm:E73_Information_Object ;
+  crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/story_slide> ;
+  crm:P106i_forms_part_of <story> ;
+  rso:PX_has_sequence_position 1 ;
+  crm:P1_is_identified_by <story/slide/1/primary_appellation> ;  # slide title
+  crm:P190_has_symbolic_content "<p>Text</p>"^^rdf:HTML ;
+  crm:P67_refers_to <story/slide/1/view> .
+
+<story/slide/1/view> a crmdig:D1_Digital_Object ;
+  crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/app_state_view> ;
+  crm:P1_is_identified_by <story/slide/1/view/url> .         # E42 typed resource_type/url, P190 "/resource/..."]]>
+    </mp-code-block>
+
+    <p>CIDOC-CRM has no construct for the order of parts, so the position of a slide is given by <code>rso:PX_has_sequence_position</code>.</p>
+
+    <h3>Listing stories</h3>
+    <mp-code-block mode="application/sparql-query">
+<![CDATA[PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+SELECT ?story ?title WHERE {
+  ?story crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/story> ;
+    crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+    crm:P190_has_symbolic_content ?title .
+}]]>
+    </mp-code-block>
+
+    <h3>Slides of a story, in order</h3>
+    <mp-code-block mode="application/sparql-query">
+<![CDATA[PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX rso: <http://www.researchspace.org/ontology/>
+SELECT ?slide ?position ?text ?stateUrl WHERE {
+  <STORY_IRI> crm:P106_is_composed_of ?slide .
+  ?slide rso:PX_has_sequence_position ?position .
+  OPTIONAL { ?slide crm:P190_has_symbolic_content ?text }
+  OPTIONAL { ?slide crm:P67_refers_to/crm:P1_is_identified_by/crm:P190_has_symbolic_content ?stateUrl }
+} ORDER BY ?position]]>
+    </mp-code-block>
+
+    <p>In a <code>semantic-query</code> template, query with <code>repository="default"</code> and render the HTML text of a slide with triple braces: <code>{{{{raw}}}}{{{text.value}}}{{{{/raw}}}}</code>. The text is written by story authors; <code>rs-story</code> sanitizes it before showing it.</p>
+
+    <hr class="divider">
+    <h2 id="rs-doc_permissions">Permissions</h2>
+
+    <table class="table table-striped">
+      <thead><tr><th>Operation</th><th>Permission</th></tr></thead>
+      <tbody>
+        <tr><td>Reading and playing stories</td><td>SPARQL query on the <code>default</code> repository (<code>sparql:default:query:*</code>, granted to guests by default)</td></tr>
+        <tr><td>Creating, editing, deleting stories</td><td><code>api:ldp:container:&lt;http://www.researchspace.org/resource/system/storyContainer&gt;:create|update|delete:any|owner</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

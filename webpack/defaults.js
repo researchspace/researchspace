@@ -48,6 +48,7 @@ module.exports = function() {
             "components/persistence",
             "components/semantic/lazy-tree",
             "components/semantic/radar-plot",
+            "components/semantic/app-state",
             "components/semantic/tree",
             "components/sets/views",
             "components/ui/highlight",
@@ -70,10 +71,14 @@ module.exports = function() {
             "components/timeline",
             "components/dashboard",
             "components/text-editor",
+            "components/story",
             "components/forms/inputs/drop",
             "components/semantic/map-advanced"
         ],
         jsonSchemTypes: [
+            "AppStateConfig",
+            "StoryConfig",
+            "StoryEditorConfig",
             "SparqlDownloadProps",
             "ConfigDocProps",
             "CodeBlockProps", 

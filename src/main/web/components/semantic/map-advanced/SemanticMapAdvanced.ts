@@ -122,6 +122,7 @@ import {
   SemanticMapControlsHandleGeneralizedData,
   SemanticMapSendVisibleGroups,
   SemanticMapSendViewportExtent,
+  SemanticMapSendViewportZoom,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -1838,13 +1839,26 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
    */
   private sendViewportExtentToControls(): void {
     if (!this.map || this.state.registeredControls.length === 0) return;
-    const extent = this.map.getView().calculateExtent(this.map.getSize());
+    const view = this.map.getView();
+    const extent = view.calculateExtent(this.map.getSize());
     trigger({
       eventType: SemanticMapSendViewportExtent,
       data: extent as number[],
       source: this.props.id,
       targets: this.state.registeredControls,
     });
+    // Sent alongside the extent, as its own event so the existing payload shape stays untouched.
+    // An extent alone cannot be turned into a zoom level without knowing the map's pixel size,
+    // and controls that want a "only below this zoom" threshold need the level itself.
+    const zoom = view.getZoom();
+    if (typeof zoom === 'number') {
+      trigger({
+        eventType: SemanticMapSendViewportZoom,
+        data: zoom,
+        source: this.props.id,
+        targets: this.state.registeredControls,
+      });
+    }
   }
 
   /**

@@ -192,6 +192,7 @@ The components communicate through a custom event system defined in `SemanticMap
 | `SemanticMapControlsSendFeaturesColorTaxonomyToMap` | Sends color taxonomy to the map |
 | `SemanticMapControlsSendGroupColorsAssociationsToMap` | Sends color associations to the map |
 | `SemanticMapControlsSendYear` | Sends year to the map |
+| `SemanticMapSendViewportZoom` | Map → controls: current zoom level, for the related-entities threshold |
 | `SemanticMapControlsRegister` | Registers controls with the map |
 | `SemanticMapControlsUnregister` | Unregisters controls from the map |
 | `SemanticMapControlsToggleMeasurement` | Toggles measurement tool |

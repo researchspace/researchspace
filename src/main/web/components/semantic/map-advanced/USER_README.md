@@ -344,6 +344,72 @@ cannot be selected while it is on. With the default range that band is only two 
 wide and a mouse cannot reliably hit it anyway, but stepping with the arrow keys will jump over it
 — uncheck the box when a specific year in that band is needed.
 
+## Related Entities Panel
+
+Declare one `<related-entities-class>` per class of entity you want listed, as children of
+`<semantic-map-controls>`. The panel appears in the sidebar as soon as at least one is declared.
+Everything domain-specific lives in these elements, so the map component itself stays free of any
+project vocabulary.
+
+```html
+<semantic-map-controls ...>
+  <related-entities-class id="sources" label="Sources" icon="fa fa-file-text-o" limit="300"
+      query='SELECT ?entity ?year WHERE { ... FILTER(?__spatial__) } ORDER BY ?year'
+      spatial-pattern='?entity ex:place ?p . ?p ex:lat ?lat . FILTER(?lat >= ?__minLat__ ...)'>
+    <template id='row'>...</template>
+    <template id='detail'>...</template>
+  </related-entities-class>
+</semantic-map-controls>
+```
+
+| Attribute | Required | Description |
+|-----------|----------|-------------|
+| `id` | Yes | Tab key, unique among siblings |
+| `label` | Yes | Tab label |
+| `icon` | No | Icon class for the tab |
+| `query` | Yes | SELECT projecting `?entity` and a numeric `?year`, ordered by `?year` |
+| `spatial-pattern` | No | Patterns spliced in at `FILTER(?__spatial__)` while the spatial filter is on |
+| `limit` | No | Row cap (default 200) |
+
+`<semantic-map-controls>` itself takes `related-min-zoom`: below that map zoom the panel shows a
+prompt instead of querying, which keeps a zoomed-out view from launching a region-wide query. The
+threshold is read from the map's own zoom level, broadcast as `SemanticMap.SendViewportZoom`.
+
+**The query contract.** Project `?entity` (the IRI) and `?year`. The year must already be a
+**number**: a dataset may encode dates in several incompatible ways, and normalising them is the
+query author's job — rows whose year is missing or unparseable are dropped, since they have no
+place in a chronological feed. Every other projected binding is passed to the row and detail
+templates. End with `ORDER BY ?year`, or the row cap returns an arbitrary window.
+
+**The viewport.** The current map extent is substituted into these reserved variables wherever the
+query or the spatial pattern uses them, in both projections because different data needs different
+ones:
+
+- `?__minX__` `?__minY__` `?__maxX__` `?__maxY__` — EPSG:3857, as expected by SQL/geometry services
+- `?__minLon__` `?__minLat__` `?__maxLon__` `?__maxLat__` — WGS84 degrees, for graph-side comparisons
+
+They are only legal in **value positions**. Using one in `SELECT`, `BIND(... AS ?x)`, `VALUES` or
+`GROUP BY` fails with an explicit error naming the class and the variable.
+
+**The spatial filter.** Mark the place with `FILTER(?__spatial__)` and put the patterns in
+`spatial-pattern`. When the filter is on they are spliced in; when it is off the placeholder is
+removed and nothing replaces it, so the unfiltered query goes out smaller rather than carrying a
+world-sized bounding box — which for a SQL service is a different execution plan entirely. The
+fragment inherits the host query's `PREFIX` declarations.
+
+**Templates.** `<template id='row'>` renders a feed row and `<template id='detail'>` the card
+opened by clicking it; both receive that row's bindings. Each class renders with its own template
+scope, so partials defined under one class do not leak into another.
+
+**The feed is padded** by half its height at both ends, so the row the timeline points at is
+centred even when it is the first or the last — the alternative is a scroll that clamps at the end
+of the list and quietly shows the wrong row in the middle.
+
+**Time.** The timeline year is never a query input — the feed holds every dated entity and the year
+only scrolls it, so panning is the only thing that refetches. Rows sit at constant spacing
+regardless of how far apart their years are; rows away from the centre fade out. The binding is
+one-way: scrolling the feed by hand never moves the timeline.
+
 ## Feature Styling
 
 Features can be styled based on properties using the controls component:

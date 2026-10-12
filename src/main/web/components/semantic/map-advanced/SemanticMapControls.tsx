@@ -22,6 +22,7 @@ import {
   SemanticMapControlsSendSunDirection,
   SemanticMapControlsSendYear,
   SemanticMapSendViewportExtent,
+  SemanticMapSendViewportZoom,
   SemanticMapControlsSendVectorLevels,
   SemanticMapControlsRegister,
   SemanticMapControlsUnregister,
@@ -41,6 +42,13 @@ import _ = require('lodash');
 import VectorLayer from 'ol/layer/Vector';
 import { containsCoordinate, intersects } from 'ol/extent';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { transformExtent } from 'ol/proj';
+import { SparqlClient, SparqlUtil, PatternBinder } from 'platform/api/sparql';
+import { Rdf } from 'platform/api/rdf';
+import {
+  RelatedEntitiesClassModel,
+  extractRelatedEntitiesClass,
+} from './RelatedEntitiesClass';
 
 const sliderbar: CSSProperties = {
   width: '100%',
@@ -93,6 +101,15 @@ interface State {
   snapToMapYears: boolean; // Whether the timeline slider snaps to the historical-map year markers
   hoveredMarkerYear: number | null; // Year marker whose preview is currently open
   trackWidth: number; // Measured px width of the slider track, used to merge colliding markers
+  relatedActiveTab: string | null; // id of the related-entities class currently shown
+  relatedSelected: { entity: string; classId: string } | null; // open detail card, null = feed
+  relatedSpatialFilter: boolean; // Restrict related entities to the current viewport
+  relatedSyncWithTime: boolean; // Scroll the feed to follow the timeline year
+  relatedLoading: boolean;
+  relatedError: string | null;
+  relatedVersion: number; // Bumped when results change; the rows themselves are an instance field
+  viewportZoom: number | null; // Current map zoom, used for the related-entities threshold
+  relatedFeedHeight: number; // Measured px height of the feed, so any row can be centred
   viewportExtent: number[] | null; // Current map viewport [minX,minY,maxX,maxY] in EPSG:3857
 }
 
@@ -217,6 +234,12 @@ interface Props {
    */
   snapToleranceYears?: number;
   /**
+   * Smallest map zoom at which the related-entities panel will query. Below it the panel shows a
+   * prompt instead, which keeps a zoomed-out view from launching queries over a whole region.
+   * Omitted, there is no threshold.
+   */
+  relatedMinZoom?: number;
+  /**
    * Behaviour of the temporal ("filter by time") filter applied to the sidebar list of
    * historical-map sources:
    * - `snapshot`   : per `filterGroup`, list only the single most-recent source with `year <= selectedYear`.
@@ -232,6 +255,28 @@ const MARKER_THUMB_WIDTH = 20;
 /** Smallest gap in px between two year dots before they stop being separately clickable. */
 const MARKER_MIN_SEPARATION = 8;
 
+/**
+ * Hands a subtree the template scope of the element that declared it, so each class renders with
+ * its own `<template>` partials instead of the controls'. PlatformComponent.getChildContext pushes
+ * `markupTemplateScope` down; this only exists because the platform's copy of this three-line
+ * class lives inside AnnotationSidebar and is not exported.
+ */
+class TemplateScopeProvider extends Component<any, {}> {
+  public render() {
+    return React.Children.only(this.props.children);
+  }
+}
+
+/** One row of a related-entities feed: the entity, its year, and the raw bindings for templates. */
+interface RelatedEntityRow {
+  entity: string;
+  year: number;
+  binding: { [name: string]: any };
+}
+
+/** Feed rows are a fixed height so the scroll position is arithmetic rather than measured. */
+const RELATED_ROW_HEIGHT = 64;
+
 export class SemanticMapControls extends Component<Props, State> {
   private cancelation = new Cancellation();
   /**
@@ -240,6 +285,19 @@ export class SemanticMapControls extends Component<Props, State> {
    */
   private applySyncWithTimeDebounced = _.debounce(() => this.applySyncWithTime(), 200);
   private timelineTrackRef = React.createRef<HTMLDivElement>();
+  /**
+   * Related-entities classes declared as children, and their rows. The rows deliberately live
+   * outside `state`: `getTemplateContext()` spreads the whole state into every template render,
+   * and a few hundred rows would be re-serialised on each one.
+   */
+  private relatedClasses: RelatedEntitiesClassModel[] = [];
+  private relatedRows: { [classId: string]: RelatedEntityRow[] } = {};
+  private relatedCacheKey: { [classId: string]: string } = {};
+  private relatedCancellation = new Cancellation();
+  private relatedFeedRef = React.createRef<HTMLDivElement>();
+  /** Set while we drive the feed ourselves, so a scroll listener could tell it from a user scroll. */
+  private isAutoScrolling = false;
+  private loadRelatedEntitiesDebounced = _.debounce(() => this.loadRelatedEntities(), 300);
   /** Grace period before a marker preview closes, so the pointer can travel from dot to panel. */
   private previewCloseTimer: number | undefined;
   /** Marker collision depends on how wide the bar actually is, so remeasure when the window changes. */
@@ -309,6 +367,15 @@ export class SemanticMapControls extends Component<Props, State> {
       snapToMapYears: this.props.snapFilterDefault ?? true,
       hoveredMarkerYear: null,
       trackWidth: 0,
+      relatedActiveTab: null,
+      relatedSelected: null,
+      relatedSpatialFilter: true,
+      relatedSyncWithTime: true,
+      relatedLoading: false,
+      relatedError: null,
+      relatedVersion: 0,
+      viewportZoom: null,
+      relatedFeedHeight: 0,
       viewportExtent: null,
     };
     this.toggleGroupDisabled = this.toggleGroupDisabled.bind(this);
@@ -333,6 +400,14 @@ export class SemanticMapControls extends Component<Props, State> {
         })
       )
       .onValue(this.receiveViewportExtent);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapSendViewportZoom,
+        })
+      )
+      .onValue(this.receiveViewportZoom);
 
     this.cancelation
       .map(
@@ -389,12 +464,13 @@ export class SemanticMapControls extends Component<Props, State> {
     //this.triggerRegisterToMap();
     //this.triggerSyncFromMap();
     //TODO: the map will send the first levels autonomously after the registration
-    this.processTemplateChildren();
 
     // Add event listener for the feature-close-clicked custom event
     document.addEventListener('feature-close-clicked', this.clearSelectedFeature);
 
+    this.collectRelatedClasses();
     this.measureTrackWidth();
+    this.measureRelatedFeed();
     window.addEventListener('resize', this.measureTrackWidthDebounced);
 
     // Start animation if tour is enabled
@@ -407,35 +483,322 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   /**
-   * Process template children and register them as partials
+   * Reads the `<related-entities-class>` children once. Invalid children throw with a message
+   * naming the offending element, rather than silently producing an empty panel.
    */
-  private processTemplateChildren() {
-    // Create a template scope builder
-    const builder = TemplateService.TemplateScope.builder();
-    let hasTemplates = false;
-
-    // Extract templates from children
+  private collectRelatedClasses() {
+    const classes: RelatedEntitiesClassModel[] = [];
     React.Children.forEach(this.props.children, (child) => {
-      if (React.isValidElement(child) && child.type === 'template') {
-        const id = child.props.id;
-        const content = child.props.children;
-        if (id && content) {
-          // Register the template content as a partial
-          console.log(`Registering template with id: ${id}`);
-          builder.registerPartial(id, content);
-          hasTemplates = true;
+      if (!child || typeof child !== 'object') {
+        return;
+      }
+      try {
+        classes.push(extractRelatedEntitiesClass(child));
+      } catch (e) {
+        // Not a related-entities child (the component also accepts <template> and others).
+        if (String(e && e.message).indexOf('must set') !== -1) {
+          console.error('[MapControls] ' + e.message);
         }
       }
     });
-
-    // If we found templates, build a new template scope and update the component's props
-    if (hasTemplates) {
-      const scope = builder.build();
-      // We can't directly modify props, but we can use the existing markupTemplateScope
-      // property that's already part of the component system
-      (this.props as any).markupTemplateScope = scope;
+    this.relatedClasses = classes;
+    if (classes.length && !this.state.relatedActiveTab) {
+      this.setState({ relatedActiveTab: classes[0].id });
     }
   }
+
+  private getActiveRelatedClass(): RelatedEntitiesClassModel | undefined {
+    return this.relatedClasses.find((c) => c.id === this.state.relatedActiveTab);
+  }
+
+  private getRelatedRows(classId: string): RelatedEntityRow[] {
+    return this.relatedRows[classId] || [];
+  }
+
+  /**
+   * Identifies a fetch by everything that can change its result. The extent is rounded so that
+   * sub-metre jitter from a map animation does not invalidate the cache.
+   */
+  private getRelatedCacheKey(cls: RelatedEntitiesClassModel): string {
+    const extent = this.state.viewportExtent;
+    const spatial = this.state.relatedSpatialFilter && extent
+      ? extent.map((v) => Math.round(v)).join(',')
+      : 'all';
+    return cls.id + '|' + spatial;
+  }
+
+  /**
+   * Runs one class's query. The timeline year is deliberately NOT an input: the feed holds every
+   * dated entity and the year only drives scrolling, so panning is the only thing that refetches.
+   */
+  private loadRelatedEntities() {
+    const cls = this.getActiveRelatedClass();
+    if (!cls) {
+      return;
+    }
+    if (!this.isRelatedZoomSufficient()) {
+      // Below the threshold there is nothing to show, and a region-wide query is exactly what the
+      // threshold exists to prevent. Forget the cache key so zooming back in refetches.
+      this.relatedCacheKey[cls.id] = '';
+      this.setState({ relatedLoading: false, relatedError: null });
+      return;
+    }
+    const cacheKey = this.getRelatedCacheKey(cls);
+    if (this.relatedCacheKey[cls.id] === cacheKey) {
+      return;
+    }
+
+    let query: any;
+    try {
+      query = this.buildRelatedQuery(cls);
+    } catch (e) {
+      this.relatedCacheKey[cls.id] = cacheKey;
+      this.setState({ relatedError: String(e && e.message ? e.message : e), relatedLoading: false });
+      return;
+    }
+
+    this.relatedCacheKey[cls.id] = cacheKey;
+    this.setState({ relatedLoading: true, relatedError: null });
+
+    this.relatedCancellation = this.cancelation.deriveAndCancel(this.relatedCancellation);
+    this.relatedCancellation
+      .map(SparqlClient.select(query, { context: this.context.semanticContext }))
+      .observe({
+        value: (result) => {
+          this.relatedRows[cls.id] = this.toRelatedRows(result);
+          this.setState(
+            (prev) => ({ relatedLoading: false, relatedVersion: prev.relatedVersion + 1 }),
+            () => this.scrollFeedToYear(false)
+          );
+        },
+        error: (error) => {
+          console.error('[MapControls] related entities query failed for "' + cls.id + '"', error);
+          this.relatedCacheKey[cls.id] = '';
+          this.setState({ relatedLoading: false, relatedError: 'Query failed' });
+        },
+      });
+  }
+
+  /**
+   * Applies the reserved bindings and the spatial placeholder to a class query.
+   *
+   * `?__spatial__` is a FILTER placeholder rather than an injected VALUES block: when the spatial
+   * filter is off the patterns are replaced by nothing, so the query that goes out is smaller
+   * instead of carrying a world-sized bounding box, which for an SQL service is a different plan
+   * entirely.
+   */
+  private buildRelatedQuery(cls: RelatedEntitiesClassModel): any {
+    let parsed: any;
+    try {
+      parsed = SparqlUtil.parseQuerySync(cls.query);
+    } catch (e) {
+      throw new Error('Could not parse the query of "' + cls.id + '": ' + e);
+    }
+
+    const extent = this.state.viewportExtent;
+    const spatialOn = this.state.relatedSpatialFilter && Boolean(extent);
+
+    // Splice in the class's own spatial patterns, or nothing at all when the filter is off.
+    // PatternBinder removes the placeholder FILTER either way, so "off" yields a smaller query
+    // rather than a world-sized bounding box.
+    const spatialPatterns = spatialOn ? this.parseSpatialPattern(cls, parsed) : [];
+    new PatternBinder('__spatial__', spatialPatterns).sparqlQuery(parsed);
+
+    if (spatialOn) {
+      const lonLat = transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
+      const num = (v: number) => Rdf.literal(v.toFixed(3));
+      try {
+        parsed = SparqlClient.setBindings(parsed, {
+          __minX__: num(extent[0]),
+          __minY__: num(extent[1]),
+          __maxX__: num(extent[2]),
+          __maxY__: num(extent[3]),
+          __minLon__: num(lonLat[0]),
+          __minLat__: num(lonLat[1]),
+          __maxLon__: num(lonLat[2]),
+          __maxLat__: num(lonLat[3]),
+        });
+      } catch (e) {
+        throw new Error(
+          'Could not bind the viewport into "' + cls.id + '". The reserved variables are only ' +
+          'allowed in value positions, never in SELECT, BIND, VALUES or GROUP BY. (' + e + ')'
+        );
+      }
+    }
+
+    SparqlUtil.addOrChangeLimit(parsed, cls.limit);
+    return parsed;
+  }
+
+  /**
+   * Parses a class's `spatial-pattern` into the patterns PatternBinder splices in. The fragment is
+   * wrapped in a throwaway query because sparql.js only parses complete queries, and the host
+   * query's own PREFIX declarations are carried over — the fragment is conceptually part of that
+   * query, so an author who declared a prefix there should be able to use it here too.
+   */
+  private parseSpatialPattern(cls: RelatedEntitiesClassModel, hostQuery: any): any[] {
+    if (!cls.spatialPattern) {
+      return [];
+    }
+    const prefixes = (hostQuery && hostQuery.prefixes) || {};
+    const declarations = Object.keys(prefixes)
+      .map((prefix) => 'PREFIX ' + prefix + ': <' + prefixes[prefix] + '>')
+      .join('\n');
+    try {
+      const wrapper: any = SparqlUtil.parseQuerySync(
+        declarations + '\nSELECT * WHERE { ' + cls.spatialPattern + ' }'
+      );
+      return wrapper.where || [];
+    } catch (e) {
+      throw new Error('Could not parse the spatial-pattern of "' + cls.id + '": ' + e);
+    }
+  }
+
+  /**
+   * Keeps only rows that can sit on the timeline. `?year` must already be a number: normalising
+   * the several date encodings a dataset may use is the query author's job, not the platform's.
+   */
+  private toRelatedRows(result: SparqlClient.SparqlSelectResult): RelatedEntityRow[] {
+    const rows: RelatedEntityRow[] = [];
+    result.results.bindings.forEach((binding: any) => {
+      const entity = binding['entity'];
+      const year = binding['year'];
+      if (!entity || !year) {
+        return;
+      }
+      const numericYear = Number(year.value);
+      if (!Number.isFinite(numericYear)) {
+        return;
+      }
+      rows.push({ entity: entity.value, year: numericYear, binding });
+    });
+    return rows.sort((a, b) => a.year - b.year);
+  }
+
+  /**
+   * Index of the first row at or after the current year, by binary search — this runs on every
+   * timeline tick, including the 500ms autoplay.
+   */
+  private findRelatedRowIndexForYear(rows: RelatedEntityRow[], year: number): number {
+    let low = 0;
+    let high = rows.length - 1;
+    let found = -1;
+    while (low <= high) {
+      const mid = (low + high) >> 1;
+      if (rows[mid].year >= year) {
+        found = mid;
+        high = mid - 1;
+      } else {
+        low = mid + 1;
+      }
+    }
+    return found === -1 ? rows.length - 1 : found;
+  }
+
+  /**
+   * Centres the feed on the current year.
+   *
+   * Deliberately not `scrollIntoView({behavior:'smooth'})`: that also scrolls every scrollable
+   * ancestor, and a smooth scroll can be neither cancelled nor queued, so a new one every
+   * timeline tick restarts the animation and never arrives. Rows have a fixed height, so the
+   * target is arithmetic.
+   */
+  private scrollFeedToYear(animate: boolean) {
+    if (!this.state.relatedSyncWithTime || this.state.relatedSelected) {
+      return;
+    }
+    const container = this.relatedFeedRef.current;
+    const cls = this.getActiveRelatedClass();
+    if (!container || !cls) {
+      return;
+    }
+    const rows = this.getRelatedRows(cls.id);
+    if (!rows.length) {
+      return;
+    }
+    const index = this.findRelatedRowIndexForYear(rows, this.state.year);
+    // The feed is padded by half its height at both ends, so centring row i is simply i * height.
+    const target = Math.max(0, index * RELATED_ROW_HEIGHT);
+    this.isAutoScrolling = true;
+    if (animate && typeof container.scrollTo === 'function') {
+      container.scrollTo({ top: target, behavior: 'smooth' });
+    } else {
+      container.scrollTop = target;
+    }
+    window.requestAnimationFrame(() => {
+      this.isAutoScrolling = false;
+    });
+  }
+
+  /**
+   * Opens (or closes) the panel and fetches on first open — nothing else would trigger the initial
+   * load, since the feed is only invalidated by panning and by the filters.
+   */
+  private openRelatedPanel() {
+    const wasOpen = this.state.activePanel === 'related';
+    this.togglePanel('related');
+    if (!wasOpen) {
+      this.loadRelatedEntities();
+    }
+  }
+
+  /**
+   * Crossing the zoom threshold changes whether the panel may query at all, so a plain zoom that
+   * does not change the answer must not cause work.
+   */
+  private receiveViewportZoom = (event: any) => {
+    const zoom = event.data as number;
+    const wasAllowed = this.isRelatedZoomSufficient();
+    this.setState({ viewportZoom: zoom }, () => {
+      if (this.isRelatedZoomSufficient() !== wasAllowed) {
+        this.loadRelatedEntitiesDebounced();
+      }
+    });
+  };
+
+  private isRelatedZoomSufficient(): boolean {
+    const min = this.props.relatedMinZoom;
+    if (typeof min !== 'number' || !Number.isFinite(min)) {
+      return true;
+    }
+    return typeof this.state.viewportZoom === 'number' && this.state.viewportZoom >= min;
+  }
+
+  /**
+   * Half a feed's height, minus half a row — the padding each end needs so that even the first and
+   * last rows can sit at the vertical centre. Without it the scroll clamps at 0 and the row the
+   * timeline points at is not the one in the middle.
+   */
+  private getRelatedFeedPadding(): number {
+    return Math.max(0, (this.state.relatedFeedHeight - RELATED_ROW_HEIGHT) / 2);
+  }
+
+  private measureRelatedFeed() {
+    const node = this.relatedFeedRef.current;
+    if (!node) {
+      return;
+    }
+    const height = node.clientHeight;
+    if (height && height !== this.state.relatedFeedHeight) {
+      this.setState({ relatedFeedHeight: height }, () => this.scrollFeedToYear(false));
+    }
+  }
+
+  private handleRelatedTabChange = (classId: string) => {
+    // The open card belongs to the previous tab, so it must go.
+    this.setState({ relatedActiveTab: classId, relatedSelected: null }, () => {
+      this.loadRelatedEntities();
+      this.scrollFeedToYear(false);
+    });
+  };
+
+  private handleRelatedSpatialFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ relatedSpatialFilter: event.target.checked }, () => this.loadRelatedEntities());
+  };
+
+  private handleRelatedSyncChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ relatedSyncWithTime: event.target.checked }, () => this.scrollFeedToYear(true));
+  };
 
   /**
    * Get template context for rendering
@@ -480,8 +843,12 @@ export class SemanticMapControls extends Component<Props, State> {
 
   public componentWillUnmount() {
     console.log('Will unmount: ', this.props.id);
+    // Every listen() in the constructor is registered on this cancellation; without this the
+    // subscriptions outlive the component and later fire setState on an unmounted instance.
+    this.cancelation.cancelAll();
     this.applySyncWithTimeDebounced.cancel();
     this.measureTrackWidthDebounced.cancel();
+    this.loadRelatedEntitiesDebounced.cancel();
     if (this.previewCloseTimer) {
       window.clearTimeout(this.previewCloseTimer);
     }
@@ -493,6 +860,11 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   public componentDidUpdate(prevProps, prevState) {
+    // The feed only exists once its panel is open, so its height cannot be measured before then.
+    if (this.state.activePanel === 'related') {
+      this.measureRelatedFeed();
+    }
+
     // TODO: if we care about colors (i.e. details maps controls don't)
     if (this.state.groupColorAssociations !== prevState.groupColorAssociations) {
       console.log('Groupcolors changed. Sending...');
@@ -738,6 +1110,7 @@ export class SemanticMapControls extends Component<Props, State> {
     this.setState({ year }, () => {
       this.triggerSendYear();
       this.applySyncWithTime();
+      this.scrollFeedToYear(true);
     });
   };
 
@@ -864,7 +1237,13 @@ export class SemanticMapControls extends Component<Props, State> {
   private receiveViewportExtent = (event: any) => {
     // "Sync with time" honours the spatial filter, so panning/zooming can change which historical
     // maps should be on.
-    this.setState({ viewportExtent: event.data as number[] }, () => this.applySyncWithTimeDebounced());
+    this.setState({ viewportExtent: event.data as number[] }, () => {
+      this.applySyncWithTimeDebounced();
+      // Related entities are scoped by extent, so panning is what invalidates them.
+      if (this.state.relatedSpatialFilter) {
+        this.loadRelatedEntitiesDebounced();
+      }
+    });
   };
 
   private triggerSendToggle3d() {
@@ -1584,6 +1963,25 @@ export class SemanticMapControls extends Component<Props, State> {
             </button>
           </OverlayTrigger>
           
+          {/* Related entities panel button — only when the page declared at least one class */}
+          {this.relatedClasses.length > 0 && (
+            <OverlayTrigger
+              placement="right"
+              overlay={<Tooltip id="tooltip-related-entities">Related entities</Tooltip>}
+            >
+              <button
+                className={`${styles.mapControlsButton} ${
+                  this.state.activePanel === 'related' ? styles.mapControlsButtonActive : ''
+                } map-control-button-related`}
+                onClick={() => this.openRelatedPanel()}
+              >
+                <span className="map-control-icon-related">
+                  <i className="fa fa-list-ul" style={{ fontSize: '22px' }}></i>
+                </span>
+              </button>
+            </OverlayTrigger>
+          )}
+
           {/* Divider between panel buttons and visualization mode buttons */}
           <hr className={styles.mapControlsSeparator} />
           
@@ -1641,6 +2039,8 @@ export class SemanticMapControls extends Component<Props, State> {
         </div>
 
         {/* Panels */}
+        {this.state.activePanel === 'related' && this.renderRelatedPanel()}
+
         {this.state.activePanel === 'details' && (
           <div className={`${styles.mapControlsPanel} ${this.getPanelAnimationClass('details')}`}>
             {/* Standalone close button */}
@@ -1762,24 +2162,26 @@ export class SemanticMapControls extends Component<Props, State> {
                   borderBottom: '1px solid rgba(0,0,0,0.08)',
                 }}
               >
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}>
+                <label className={styles.mapToggle}>
                   <input
                     type="checkbox"
                     checked={this.state.filterByZoom}
                     onChange={this.handleFilterByZoomChange}
                   />
+                  <span className={styles.mapToggleTrack}></span>
                   <span>{this.props.spatialFilterLabel || 'Filter by zoom'}</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}>
+                <label className={styles.mapToggle}>
                   <input
                     type="checkbox"
                     checked={this.state.filterByTime}
                     onChange={this.handleFilterByTimeChange}
                   />
+                  <span className={styles.mapToggleTrack}></span>
                   <span>{this.props.temporalFilterLabel || 'Filter by time'}</span>
                 </label>
                 <label
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '13px' }}
+                  className={styles.mapToggle}
                   title="Let the timeline year decide which historical maps are drawn on the map"
                 >
                   <input
@@ -1787,6 +2189,7 @@ export class SemanticMapControls extends Component<Props, State> {
                     checked={this.state.syncWithTime}
                     onChange={this.handleSyncWithTimeChange}
                   />
+                  <span className={styles.mapToggleTrack}></span>
                   <span>{this.props.syncFilterLabel || 'Sync with time'}</span>
                 </label>
               </div>
@@ -1985,12 +2388,13 @@ export class SemanticMapControls extends Component<Props, State> {
                       {/* Label background toggle - only show when a label is selected */}
                       {this.state.selectedFeaturesLabel && this.state.selectedFeaturesLabel !== '' && this.state.selectedFeaturesLabel !== 'none' && (
                         <div className={styles.labelBackgroundToggle}>
-                          <label className={styles.checkboxLabel}>
+                          <label className={styles.mapToggle}>
                             <input
                               type="checkbox"
                               checked={this.state.labelBackgroundEnabled}
                               onChange={() => this.handleLabelBackgroundToggle()}
                             />
+                            <span className={styles.mapToggleTrack}></span>
                             <span>Show label background</span>
                           </label>
                         </div>
@@ -2128,15 +2532,15 @@ export class SemanticMapControls extends Component<Props, State> {
                 {this.areYearMarkersVisible() && (
                   <div className={styles.timelineToolbar}>
                     <label
-                      className={styles.timelineSnapToggle}
+                      className={`${styles.mapToggle} ${styles.timelineSnapToggle}`}
                       title="Make the timeline stick to the years that have historical maps"
                     >
                       <input
                         type="checkbox"
-                        className={styles.timelineSnapCheckbox}
                         checked={this.state.snapToMapYears}
                         onChange={this.handleSnapToMapYearsToggle}
                       />
+                      <span className={styles.mapToggleTrack}></span>
                       <span>{this.props.snapFilterLabel || 'Snap to map years'}</span>
                     </label>
                   </div>
@@ -2918,6 +3322,152 @@ export class SemanticMapControls extends Component<Props, State> {
     }
   }
 
+  private renderRelatedPanel() {
+    const cls = this.getActiveRelatedClass();
+    return (
+      <div
+        className={`${styles.mapControlsPanel} ${styles.mapControlsPanelFlex} ${this.getPanelAnimationClass(
+          'related'
+        )}`}
+      >
+        <button
+          onClick={() => this.togglePanel('related')}
+          className={styles.mapControlsPanelCloseX}
+          title="Close panel"
+        >
+          <i className="fa fa-times"></i>
+        </button>
+
+        {this.state.relatedSelected ? this.renderRelatedDetail() : this.renderRelatedFeed(cls)}
+      </div>
+    );
+  }
+
+  private renderRelatedFeed(cls: RelatedEntitiesClassModel | undefined) {
+    const rows = cls ? this.getRelatedRows(cls.id) : [];
+    return (
+      <React.Fragment>
+        <div className={styles.relatedHeader}>
+          {this.relatedClasses.map((c) => (
+            <button
+              key={c.id}
+              className={`${styles.relatedTab} ${
+                c.id === this.state.relatedActiveTab ? styles.relatedTabActive : ''
+              }`}
+              title={c.label}
+              onClick={() => this.handleRelatedTabChange(c.id)}
+            >
+              {c.icon ? <i className={c.icon}></i> : null}
+              <span className={styles.relatedTabText}>{c.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.relatedFilters}>
+          <label className={styles.mapToggle}>
+            <input
+              type="checkbox"
+              checked={this.state.relatedSpatialFilter}
+              onChange={this.handleRelatedSpatialFilterChange}
+            />
+            <span className={styles.mapToggleTrack}></span>
+            <span>{this.props.spatialFilterLabel || 'Filter by zoom'}</span>
+          </label>
+          <label className={styles.mapToggle}>
+            <input
+              type="checkbox"
+              checked={this.state.relatedSyncWithTime}
+              onChange={this.handleRelatedSyncChange}
+            />
+            <span className={styles.mapToggleTrack}></span>
+            <span>{this.props.syncFilterLabel || 'Sync with time'}</span>
+          </label>
+        </div>
+
+        {!this.isRelatedZoomSufficient() && (
+          <div className={styles.relatedNotice}>Zoom in further to list related entities.</div>
+        )}
+        {this.isRelatedZoomSufficient() && this.state.relatedError && (
+          <div className={styles.relatedNotice}>{this.state.relatedError}</div>
+        )}
+        {this.isRelatedZoomSufficient() && this.state.relatedLoading && (
+          <div className={styles.relatedNotice}>Loading…</div>
+        )}
+        {this.isRelatedZoomSufficient() &&
+          !this.state.relatedLoading &&
+          !this.state.relatedError &&
+          rows.length === 0 && (
+            <div className={styles.relatedNotice}>Nothing here for the current view.</div>
+          )}
+
+        <div
+          className={styles.relatedFeed}
+          ref={this.relatedFeedRef}
+          style={{
+            paddingTop: this.getRelatedFeedPadding(),
+            paddingBottom: this.getRelatedFeedPadding(),
+          }}
+        >
+          {rows.map((row, index) => (
+            <div
+              key={row.entity + '|' + index}
+              className={styles.relatedRow}
+              style={{ height: RELATED_ROW_HEIGHT }}
+              onClick={() => this.setState({ relatedSelected: { entity: row.entity, classId: cls.id } })}
+            >
+              <span className={styles.relatedRowYear}>{row.year}</span>
+              <div className={styles.relatedRowBody}>
+                {cls && cls.rowTemplate ? (
+                  <TemplateScopeProvider markupTemplateScope={cls.templateScope}>
+                    <TemplateItem template={{ source: cls.rowTemplate, options: row.binding }} />
+                  </TemplateScopeProvider>
+                ) : (
+                  <span className={styles.relatedRowFallback}>{row.entity}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  private renderRelatedDetail() {
+    const selected = this.state.relatedSelected;
+    const cls = this.relatedClasses.find((c) => c.id === selected.classId);
+    const rows = cls ? this.getRelatedRows(cls.id) : [];
+    const row = rows.find((r) => r.entity === selected.entity);
+    return (
+      <React.Fragment>
+        <div className={styles.relatedDetailHeader}>
+          <button
+            className={styles.relatedBackButton}
+            onClick={() => this.setState({ relatedSelected: null }, () => this.scrollFeedToYear(false))}
+          >
+            <i className="fa fa-chevron-left" style={{ marginRight: '6px' }}></i>
+            {cls ? cls.label : 'Back'}
+          </button>
+        </div>
+        <div className={styles.relatedDetailBody}>
+          {cls && cls.detailTemplate ? (
+            <TemplateScopeProvider markupTemplateScope={cls.templateScope}>
+              <TemplateItem
+                template={{
+                  source: cls.detailTemplate,
+                  options: row ? row.binding : { entity: { value: selected.entity } },
+                }}
+              />
+            </TemplateScopeProvider>
+          ) : (
+            <div className={styles.relatedNotice}>
+              This class defines no &lt;template id='detail'&gt;.
+            </div>
+          )}
+        </div>
+      </React.Fragment>
+    );
+  }
+
   /**
    * Dots under the slider marking every year that has a historical map, plus the hover preview.
    *
@@ -3030,6 +3580,8 @@ export class SemanticMapControls extends Component<Props, State> {
       () => {
         this.triggerSendYear();
         this.applySyncWithTime();
+        // The year never refetches; it only moves the feed.
+        this.scrollFeedToYear(false);
       }
     );
   };
@@ -3065,6 +3617,7 @@ export class SemanticMapControls extends Component<Props, State> {
         this.setState({ year: current }, () => {
           this.triggerSendYear();
           this.applySyncWithTime();
+          this.scrollFeedToYear(false);
 
           // Add pulse animation to year label
           const yearLabel = document.querySelector(`.${styles.yearLabel}`) as HTMLElement;

@@ -220,22 +220,10 @@
   line-height: normal;
 }
 
+/* Inherits .mapToggle; only the smaller type of the timeline strip differs. */
 .timelineSnapToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin: 0;
   font-size: 11px;
-  font-weight: normal;
   color: #555;
-  cursor: pointer;
-}
-
-.timelineSnapCheckbox {
-  width: 12px;
-  height: 12px;
-  margin: 0;
-  cursor: pointer;
 }
 
 .timelineTrack {
@@ -1628,4 +1616,259 @@ html body .ol-zoom,
 :global(.source-ref) {
   font-size: 12px;
   color: #888;
+}
+
+/* ---------------------------------------------------------------------------
+   Related entities panel: class tabs, chronological feed, detail card.
+   --------------------------------------------------------------------------- */
+
+/* The shared panel scrolls as a block; the related-entities panel instead needs a column so the
+   feed can own the remaining height and scroll on its own. Applied via a modifier so the other
+   panels keep their current behaviour. */
+.mapControlsPanelFlex {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Shared switch used by every option in the sidebar, in place of the native checkbox.
+   The real input stays in the markup, only visually hidden, so the control keeps its keyboard
+   behaviour and its label association; the track and knob are drawn from it. */
+.mapToggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: normal;
+  cursor: pointer;
+  user-select: none;
+}
+
+.mapToggle input[type='checkbox'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mapToggleTrack {
+  position: relative;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 16px;
+  border-radius: 8px;
+  background: #c9ccd1;
+  transition: background-color 0.16s ease-out;
+}
+
+.mapToggleTrack::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.16s ease-out;
+}
+
+.mapToggle input[type='checkbox']:checked + .mapToggleTrack {
+  background: #2c3e50;
+}
+
+.mapToggle input[type='checkbox']:checked + .mapToggleTrack::after {
+  transform: translateX(14px);
+}
+
+/* Keyboard focus has to be drawn explicitly, since the input it would land on is hidden. */
+.mapToggle input[type='checkbox']:focus + .mapToggleTrack {
+  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.35);
+}
+
+.mapToggle:hover .mapToggleTrack {
+  background: #b4b8bf;
+}
+
+.mapToggle:hover input[type='checkbox']:checked + .mapToggleTrack {
+  background: #1f2d3a;
+}
+
+/* The panel's close button is absolutely placed at top:10px and is 30px tall, so its centre sits
+   25px below the panel edge. The panel's own 15px padding would put this row's centre at 30px, so
+   it is pulled up 5px to line the two up. If the tabs wrap, the row simply grows downwards. */
+.relatedHeader {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-height: 30px;
+  margin-top: -5px;
+  padding-right: 40px;
+  flex: 0 0 auto;
+}
+
+/* Only the active tab shows its label; the others are icon-only and widen on hover. That keeps
+   all four on one line while still telling you where you are without hovering anything — which
+   a hover-only label would not, least of all on a touch screen. */
+.relatedTab {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 26px;
+  padding: 0 9px;
+  font-size: 12px;
+  line-height: 1;
+  color: #444;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 13px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.relatedTab i {
+  font-size: 13px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.relatedTabText {
+  display: inline-block;
+  max-width: 0;
+  margin-left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition: max-width 0.18s ease-out, margin-left 0.18s ease-out, opacity 0.14s ease-out;
+}
+
+.relatedTabActive .relatedTabText,
+.relatedTab:hover .relatedTabText,
+.relatedTab:focus .relatedTabText {
+  max-width: 120px;
+  margin-left: 6px;
+  opacity: 1;
+}
+
+.relatedTab:hover {
+  border-color: rgba(0, 0, 0, 0.35);
+}
+
+.relatedTabActive {
+  color: #1a1a1a;
+  font-weight: 600;
+  border-color: #2c3e50;
+  box-shadow: 0 0 0 1px #2c3e50;
+}
+
+.relatedFilters {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+
+.relatedNotice {
+  flex: 0 0 auto;
+  padding: 10px 2px;
+  font-size: 12px;
+  color: #777;
+  font-style: italic;
+}
+
+/* The mask is what fades rows away from the centre. It also creates a containing block, so
+   nothing that needs to escape the feed (a popover, the detail card) may live inside it. */
+.relatedFeed {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin-top: 16px;
+  padding-left: 2px;
+  padding-right: 2px;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+}
+
+.relatedRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.relatedRow:hover {
+  background: rgba(241, 196, 15, 0.18);
+}
+
+.relatedRowYear {
+  flex: 0 0 auto;
+  width: 40px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.relatedRowBody {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+}
+
+.relatedRowFallback {
+  color: #666;
+  word-break: break-all;
+}
+
+/* Same alignment trick as .relatedHeader, so the back button sits on the close button's line. */
+.relatedDetailHeader {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 30px;
+  margin-top: -5px;
+  padding-right: 40px;
+}
+
+.relatedBackButton {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 11px;
+  font-size: 12px;
+  line-height: 1;
+  color: #444;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 13px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.relatedBackButton:hover {
+  border-color: rgba(0, 0, 0, 0.35);
+}
+
+.relatedDetailBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }

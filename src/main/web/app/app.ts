@@ -21,6 +21,7 @@ import '../styling/main.scss';
 
 import { initModuleRegistry } from './bootstrap';
 initModuleRegistry();
+//document.documentElement.setAttribute('data-rs-theme', 'themename');
 
 import { ModuleRegistry, ComponentsLoader } from 'platform/api/module-loader';
 import BrowserDetector from './BrowserDetector';
@@ -389,9 +390,9 @@ window.addEventListener('storage', (event) => {
   if (event.key === 'resourceConfigurations')
     initResourceConfig();
   
-  console.log('Key changed:',    event.key);
-  console.log('Old value:',      event.oldValue);
-  console.log('New value:',      event.newValue);
-  console.log('URL of change:',  event.url);
-  console.log('Storage area:',   event.storageArea); // localStorage or sessionStorage
+  //console.log('Key changed:',    event.key);
+  //console.log('Old value:',      event.oldValue);
+  //console.log('New value:',      event.newValue);
+  //console.log('URL of change:',  event.url);
+  //console.log('Storage area:',   event.storageArea); // localStorage or sessionStorage
 });

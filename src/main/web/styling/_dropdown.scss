@@ -133,21 +133,76 @@ table .dropdown-menu {
 }
 
 .dropdown-menu.resource-actions__dropdown-menu {
+    width: var(--rs-resource-menu-width, var(--rs-card-menu-width, 268px));
+    min-width: 0;
+    max-width: calc(100vw - 24px);
+    max-height: min(28rem, 70vh);
+    padding: 5px;
+    overflow: auto;
+    background-color: var(--rs-card-menu-surface, var(--rs-color-surface-raised, #{$color-white}));
+    border-color: var(--rs-card-border, var(--rs-color-border, #{$color-border}));
+    color: var(--rs-card-menu-text, var(--rs-color-text-secondary, #{$color-secondary}));
+    box-shadow: var(--rs-card-menu-shadow, 0 4px 12px #{$color-box-shadow});
 
-    min-width: 165px;
-
-    & > li > a {
+    > li > a,
+    > div > li > a {
         align-items: flex-start;
+        min-height: 38px;
+        padding: 8px 10px;
         font-size: 13.5px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        color: inherit;
 
         span {
-            white-space: pre-wrap;
-            word-break: break-word;
+            min-width: 0;
+            white-space: normal;
+            word-break: normal;
         }
 
-        i {
-            font-size: 18px;
+        i { font-size: 18px; flex-shrink: 0; }
+
+        &:hover, &:focus {
+            background-color: var(--rs-card-menu-hover-surface, #{$color-lighter});
         }
+    }
+
+    hr { margin: 5px 8px; }
+}
+
+// Clipboard knowledge maps and folders use a different template from cards.
+// Give their menu the same quiet trigger while retaining a keyboard focus ring.
+.set-management__set-template .dropdown-toggle.btn.button-clipboard-folder-actions.btn-default {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--rs-card-row-menu-size, 32px);
+    min-height: var(--rs-card-row-menu-size, 32px);
+    padding: 4px;
+    border-color: transparent;
+    background-color: transparent;
+    color: var(--rs-card-action-text, #{$color-btn-default});
+
+    i { font-size: var(--rs-card-row-menu-icon-size, 16px); }
+
+    &:hover, &:focus, &:focus-within, &[aria-expanded='true'] {
+        border-color: transparent;
+        background-color: var(--rs-card-action-hover-surface, #{$color-btn-default-bg-hover});
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--rs-card-focus, var(--rs-color-focus, #{$color-action}));
+        outline-offset: 2px;
+    }
+}
+
+@media (any-pointer: coarse) {
+    .set-management__set-template .dropdown-toggle.btn.button-clipboard-folder-actions.btn-default {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .dropdown-menu.resource-actions__dropdown-menu {
+        > li > a, > div > li > a { min-height: 44px; }
     }
 }
 
@@ -260,4 +315,21 @@ table .dropdown-menu {
        }
     }
     
+}
+
+// Shared anchored menus size against the viewport, independent of trigger width.
+.rs-anchored-dropdown .dropdown-menu {
+    width: 280px;
+    min-width: 0;
+    max-width: calc(100vw - 16px);
+
+    [role="menuitem"] {
+        align-items: flex-start;
+        white-space: normal;
+        overflow-wrap: break-word;
+        word-break: normal;
+
+        > span { min-width: 0; }
+        .icon-left, i { flex: none; }
+    }
 }

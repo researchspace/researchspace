@@ -22,7 +22,11 @@ import * as Immutable from 'immutable';
 
 import { Rdf, vocabularies } from 'platform/api/rdf';
 
-import { _makeCellComparator, _makeCellFilterer } from 'platform/components/semantic/table/Table';
+import {
+  _makeCellComparator,
+  _makeCellFilterer,
+  _makeNullableLastComparator,
+} from 'platform/components/semantic/table/Table';
 
 const { xsd } = vocabularies;
 
@@ -80,6 +84,33 @@ describe('SemanticTable', () => {
         const expected = `[${sortedData.join(',\n')}]`;
         assert(false, `Sorting column values returned different result: ` + `${result} but expected ${expected}`);
       }
+    }
+  });
+
+  it('sorts large column data and places empty values last', () => {
+    const values: Array<Rdf.Literal | undefined> = [];
+    for (let i = 0; i < 200; i++) {
+      values.push(Rdf.literal(`Archive ${('00' + i).slice(-3)}`));
+    }
+    for (let i = 0; i < 20; i++) {
+      values.push(undefined);
+      values.push(Rdf.literal(''));
+    }
+    // deterministic shuffle
+    let seed = 42;
+    for (let i = values.length - 1; i > 0; i--) {
+      seed = (seed * 16807) % 2147483647;
+      const j = seed % (i + 1);
+      [values[i], values[j]] = [values[j], values[i]];
+    }
+
+    values.sort(_makeNullableLastComparator(_makeCellComparator({ getLabel: () => undefined })));
+
+    for (let i = 0; i < 200; i++) {
+      expect(values[i].value).to.equal(`Archive ${('00' + i).slice(-3)}`);
+    }
+    for (let i = 200; i < values.length; i++) {
+      expect(values[i] === undefined || values[i].value === '').to.equal(true);
     }
   });
 

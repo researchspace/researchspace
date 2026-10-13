@@ -1008,7 +1008,7 @@
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map')
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart')
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline'))}}table-without-checkbox{{else}}table-with-checkbox{{/if}}"
-                                            query='SELECT DISTINCT ?subject ?iri ?description WHERE {
+                                            query='SELECT DISTINCT ?subject ?iri ?description ?column2Sort ?column3Sort ?column4Sort WHERE {
                                                     BIND(?subject as ?iri) .
                                                     #?subject a ?type .
                                                     #?type rdfs:label ?typeLabel .
@@ -1021,6 +1021,37 @@
                                                       ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                       ?descriptionAppellation crm:P190_has_symbolic_content ?description .
                                                     }
+
+                                                    # sort keys of the custom columns, so that the table can order them;
+                                                    # empty labels are dropped and the remaining ones trimmed
+                                                    BIND(?subject AS ?item)
+                                                    {{#if bindings.0.columnContentSparqlPattern2.value}}
+                                                    OPTIONAL {
+                                                      SELECT ?item (MIN(?sortLabel) AS ?column2Sort) WHERE {
+                                                        {{bindings.0.columnContentSparqlPattern2.value}}
+                                                        BIND(REPLACE(STR(?label), "^[ ,]+| +$", "") AS ?sortLabel)
+                                                        FILTER(?sortLabel != "")
+                                                      } GROUP BY ?item
+                                                    }
+                                                    {{/if}}
+                                                    {{#if bindings.0.columnContentSparqlPattern3.value}}
+                                                    OPTIONAL {
+                                                      SELECT ?item (MIN(?sortLabel) AS ?column3Sort) WHERE {
+                                                        {{bindings.0.columnContentSparqlPattern3.value}}
+                                                        BIND(REPLACE(STR(?label), "^[ ,]+| +$", "") AS ?sortLabel)
+                                                        FILTER(?sortLabel != "")
+                                                      } GROUP BY ?item
+                                                    }
+                                                    {{/if}}
+                                                    {{#if bindings.0.columnContentSparqlPattern4.value}}
+                                                    OPTIONAL {
+                                                      SELECT ?item (MIN(?sortLabel) AS ?column4Sort) WHERE {
+                                                        {{bindings.0.columnContentSparqlPattern4.value}}
+                                                        BIND(REPLACE(STR(?label), "^[ ,]+| +$", "") AS ?sortLabel)
+                                                        FILTER(?sortLabel != "")
+                                                      } GROUP BY ?item
+                                                    }
+                                                    {{/if}}
                                                   } '
     
                                             options='{"showFilter":false, 
@@ -1031,9 +1062,9 @@
                                             column-configuration='[
                                                                     {"variableName": "subject", "displayName": "", "cellTemplate": "{{> selectionCheckbox}}" },
                                                                     {"variableName": "subject", "displayName": "{{#if bindings.0.columnTitle1.value}}{{bindings.0.columnTitle1.value}}{{else}}[[urlParam "resourcelabel" escape=false]] name{{/if}}", "cellTemplate": "{{> column1}}" },
-                                                                    {{#if bindings.0.columnTitle2.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle2.value}}", "cellTemplate": "{{> column2}}" },{{/if}}
-                                                                    {{#if bindings.0.columnTitle3.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle3.value}}", "cellTemplate": "{{> column3}}" },{{/if}}
-                                                                    {{#if bindings.0.columnTitle4.value}} {"variableName": "", "displayName": "{{bindings.0.columnTitle4.value}}", "cellTemplate": "{{> column4}}" },{{/if}}
+                                                                    {{#if bindings.0.columnTitle2.value}} {"variableName": "column2Sort", "displayName": "{{bindings.0.columnTitle2.value}}", "cellTemplate": "{{> column2}}" },{{/if}}
+                                                                    {{#if bindings.0.columnTitle3.value}} {"variableName": "column3Sort", "displayName": "{{bindings.0.columnTitle3.value}}", "cellTemplate": "{{> column3}}" },{{/if}}
+                                                                    {{#if bindings.0.columnTitle4.value}} {"variableName": "column4Sort", "displayName": "{{bindings.0.columnTitle4.value}}", "cellTemplate": "{{> column4}}" },{{/if}}
                                                                     {"variableName": "", "displayName": "", "cellTemplate": "{{> actions}}" }
                                                                   ]'   
                             >

@@ -411,6 +411,8 @@ export class Table extends Component<TableProps, State> {
           customComponent: this.makeCellComponentClass(columnConfig, renderingState),
           visible: true,
           order: i,
+          // template-only columns have no value in the data, so they can't be sorted
+          sortable: !_.isEmpty(columnConfig.variableName),
           customCompareFn: makeNullableLastComparator(makeCellComparator(renderingState)),
         };
       }
@@ -623,13 +625,31 @@ function makeCellComparator(state: { getLabel(resource: Rdf.Iri): string }) {
   };
 }
 
+/**
+ * Wraps a comparator so that empty values (null, undefined, empty strings or literals)
+ * are placed after the non-empty ones in ascending order.
+ */
 function makeNullableLastComparator(base: <T>(a: T, b: T) => number) {
   return (a: unknown, b: unknown) => {
-    const aNull = a === null || a === undefined;
-    const bNull = b === null || b === undefined;
-    return aNull && bNull ? 0 : aNull ? -1 : bNull ? 1 : base(a, b);
+    const aNull = isEmptyCellValue(a);
+    const bNull = isEmptyCellValue(b);
+    return aNull && bNull ? 0 : aNull ? 1 : bNull ? -1 : base(a, b);
   };
 }
+
+function isEmptyCellValue(value: unknown): boolean {
+  return (
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    (value instanceof Rdf.Node && value.isLiteral() && value.value === '')
+  );
+}
+
+/**
+ * **This function is exported for tests only**
+ */
+export const _makeNullableLastComparator = makeNullableLastComparator;
 
 /**
  * **This function is exported for tests only**

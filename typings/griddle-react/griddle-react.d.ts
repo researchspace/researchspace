@@ -40,6 +40,7 @@ declare module "griddle-react" {
       visible?: boolean;
       order?: number;
       customComponent?: ComponentClass<any>;
+      sortable?: boolean;
       customCompareFn?:
         ((item: any) => number) |
         ((item1: any, item2: any) => number);

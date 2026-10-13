@@ -1,7 +1,8 @@
 [[!-- Related media: underline navigation with More overflow; row cards by default.
   cardLayout="grid" starts in grid view (legacy "tile" is also accepted).
   lazyTabs=true (default) mounts a pane on first selection, then retains it.
-  lazyTabs=false mounts all panes. Initial form values still load for safe saving.
+  lazyTabs=false mounts all enabled panes. Excluded tabs do not mount bindings.
+  Enabled lazy panes have model bindings even before their editors are visited.
   verticalTabs=true optionally retains a side rail above 800px of sidebar width.
   Optional exclusions: hideImages, hideDocuments, hideVideos, hideAudio,
   hide3DModels, hideRepresentations, hideWebURL, hideMap, hideSignature.
@@ -11,18 +12,22 @@
   Requires rs-form-asset-navigation, rs-form-asset-view and the accompanying styles. --]]
 <div class="form-details-assets-container form-assets-sidebar">
   <div class="customFormHeader form-assets-sidebar__heading">Related media/resources</div>
-  [[!-- Keep model bindings mounted even when panes are excluded or lazyTabs=false. --]]
+  [[!-- Only enabled lazy panes need model-only bindings before first selection.
+        Excluded tabs register neither editors nor hidden field bindings here.
+        imagesOnly mounts its image editors immediately and needs no duplicate bindings. --]]
+  [[#unless imagesOnly]]
+  {{#ifCond "[[lookup lazyTabs]]" "!==" "false"}}
   <div class="form-asset-model-bindings" hidden>
-    <semantic-form-hidden-input for="entity_image_main_representation"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_image"></semantic-form-hidden-input>
-    [[#unless imagesOnly]]
-    <semantic-form-hidden-input for="entity_audio"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_document"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_3d_model"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_video"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_has_representation"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_web_URL"></semantic-form-hidden-input>
-    [[#if signature]]<semantic-form-hidden-input for="person_signature"></semantic-form-hidden-input>[[/if]]
+    [[#unless hideImages]]<semantic-form-hidden-input for="entity_image_main_representation"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideImages]]<semantic-form-hidden-input for="entity_image"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideAudio]]<semantic-form-hidden-input for="entity_audio"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideDocuments]]<semantic-form-hidden-input for="entity_document"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hide3DModels]]<semantic-form-hidden-input for="entity_3d_model"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideVideos]]<semantic-form-hidden-input for="entity_video"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideRepresentations]]<semantic-form-hidden-input for="entity_has_representation"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideWebURL]]<semantic-form-hidden-input for="entity_web_URL"></semantic-form-hidden-input>[[/unless]]
+    [[#if signature]][[#unless hideSignature]]<semantic-form-hidden-input for="person_signature"></semantic-form-hidden-input>[[/unless]][[/if]]
+    [[#unless hideRepresentations]]
     <semantic-form-composite-input for="entity_represents_range" render-header="false"
       new-subject-template="/PC138_represents/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
       fields='[[fieldDefinitions
@@ -37,6 +42,8 @@
     </semantic-form-composite-input>
     [[/unless]]
   </div>
+  {{/ifCond}}
+  [[/unless]]
   [[#if imagesOnly]]
   <div class="form-assets-sidebar__single">
     <rs-form-asset-view label="Images" default-layout="[[#if cardLayout]][[cardLayout]][[else]]row[[/if]]">

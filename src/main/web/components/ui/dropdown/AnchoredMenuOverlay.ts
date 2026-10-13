@@ -9,7 +9,8 @@ export interface AnchoredMenuOptions {
   align?: 'start' | 'end';
   viewportMargin?: number;
   gap?: number;
-  maxHeight?: number;
+  /** 'viewport' uses available space instead of inheriting a CSS height cap. */
+  maxHeight?: number | 'viewport';
   /** Pickers scroll their inner list while keeping search and action controls visible. */
   overflow?: 'auto' | 'hidden';
 }
@@ -24,7 +25,8 @@ export class AnchoredMenuOverlay {
   constructor(private readonly menu: HTMLElement, private readonly options: AnchoredMenuOptions = {}) {
     this.originalStyle = menu.getAttribute('style');
     this.originalPopover = menu.getAttribute('popover');
-    this.maximumHeight = options.maxHeight || parseFloat(getComputedStyle(menu).maxHeight) || 400;
+    this.maximumHeight = options.maxHeight === 'viewport' ? Infinity :
+      options.maxHeight || parseFloat(getComputedStyle(menu).maxHeight) || 400;
     this.nativePopover = typeof menu.showPopover === 'function';
     menu.style.margin = '0';
     menu.style.right = 'auto';

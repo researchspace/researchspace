@@ -1427,3 +1427,91 @@ $card-deck-margin: $card-group-margin !default;
         height: 100%;
     }
 }
+
+
+/* Medium remains a row; opt-in specificity overrides compact-row rules.
+ * No fixed height: long metadata wraps and menus remain outside the card.
+ * The thumbnail is hidden below 360px of card content width.
+ */
+.resource-card.resource-card--row.resource-card--row-medium {
+    --rs-card-thumbnail-size: 88px;
+    --rs-card-row-min-height: 112px;
+    --rs-card-row-padding: 12px;
+    --rs-card-row-gap: 12px;
+    --rs-card-image-fit: contain;
+    max-width: 100%;
+    align-items: start;
+
+    // Anchor the menu to the action toggle rather than the whole card.
+    .resource-card__header-actions {
+        position: relative;
+        align-self: start;
+    }
+    .resource-card__buttons-container > .dropdown {
+        position: relative;
+    }
+    .resource-actions__dropdown-menu.dropdown-menu {
+        top: calc(100% + 4px);
+        right: 0;
+        bottom: auto;
+        left: auto;
+        margin: 0;
+        width: var(--rs-resource-menu-width, var(--rs-card-menu-width, 268px));
+        max-width: calc(100vw - 24px);
+    }
+    .resource-card__media-container { display: none; }
+    .resource-card__footer {
+        grid-area: 1 / 1 / 2 / 3;
+        align-self: center;
+        gap: 4px;
+
+        .resource-card__footer-title,
+        .resource-card__footer-title .text-link {
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    .resource-card__metadata {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 14px;
+        margin: 4px 0 0;
+        min-width: 0;
+        font-size: var(--rs-font-size-sm, 12px);
+        line-height: 1.4;
+        color: var(--rs-card-muted, var(--rs-color-text-secondary));
+    }
+    .resource-card__metadata-field {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 2px 5px;
+        min-width: 0;
+        max-width: 100%;
+    }
+    .resource-card__metadata dt,
+    .resource-card__metadata dd {
+        float: none;
+        width: auto;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .resource-card__metadata dt {
+        font-weight: var(--rs-font-weight-medium, 500);
+        &::after { content: ':'; }
+    }
+}
+
+@container rs-resource-row (min-width: 360px) {
+    .resource-card.resource-card--row.resource-card--row-medium {
+        .resource-card__media-container { display: flex; }
+        .resource-card__footer { grid-area: 1 / 2 / 2 / 3; }
+        &.resource-card--no-media .resource-card__footer {
+            grid-column: 1 / 3;
+        }
+    }
+}

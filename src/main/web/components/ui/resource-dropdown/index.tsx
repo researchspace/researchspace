@@ -57,7 +57,8 @@ export class ResourceDropdown extends React.Component<Props, State> {
     const menu = root && root.querySelector<HTMLElement>('.resource-actions__dropdown-menu');
     if (!root || (menu && menu.classList.contains('resource-card__dropdown-km'))) return;
     if (this.needsMenuOverlay(root)) {
-      this.overlay = new DropdownOverlay(root, () => this.onToggle(false), {}, '.resource-actions__dropdown-menu');
+      this.overlay = new DropdownOverlay(root, () => this.onToggle(false),
+        { align: 'end', gap: 4, maxHeight: 'viewport' }, '.resource-actions__dropdown-menu');
       this.overlay.position();
       return;
     }
@@ -145,7 +146,10 @@ export class ResourceDropdown extends React.Component<Props, State> {
   }
 
   private needsMenuOverlay(root: HTMLElement): boolean {
-    return Boolean(root.closest('.DragAndDropInput--holder, .search-results-area .search-table-container'));
+    // All ordinary resource menus share toggle-based placement, including
+    // clipboard set/KM entries and cards inside scrollable semantic tables.
+    // Actual knowledge-map canvas menus retain their existing handling.
+    return !root.closest('.reactodia-workspace .reactodia-canvas, .reactodia-exported-canvas');
   }
 
   shouldComponentUpdate(nextProps: React.PropsWithChildren<Props>, nextState: State) {

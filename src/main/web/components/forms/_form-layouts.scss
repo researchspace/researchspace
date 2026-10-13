@@ -1,0 +1,481 @@
+/*
+ * Opt-in form composition; existing inputs, cards, tabs and header keep RS styles.
+ * The aside-wide default is 40/60 while both columns fit.
+ */
+.form-details-container.rs-form-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--rs-form-layout-gap, 20px);
+}
+.rs-form-layout > .rs-form-layout__main {
+  flex: var(--rs-form-main-grow, 2) 1 var(--rs-form-main-basis, 360px);
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+.rs-form-layout > .rs-form-layout__aside {
+  flex: var(--rs-form-aside-grow, 3) 1 var(--rs-form-aside-basis, 540px);
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+.rs-form-layout--equal {
+  --rs-form-main-grow: 1;
+  --rs-form-aside-grow: 1;
+  --rs-form-main-basis: 450px;
+  --rs-form-aside-basis: 450px;
+}
+.rs-form-layout--main-wide {
+  --rs-form-main-grow: 3;
+  --rs-form-aside-grow: 2;
+  --rs-form-main-basis: 540px;
+  --rs-form-aside-basis: 360px;
+}
+.rs-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-form-layout-gap, 20px);
+  min-width: 0;
+}
+.rs-form-stack > * {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.rs-form-panel {
+  --rs-asset-surface: var(--rs-color-surface);
+  --rs-asset-header-surface: var(--rs-asset-surface);
+  --rs-card-surface: var(--rs-color-surface);
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--rs-form-panel-padding, 14px);
+  background: var(--rs-asset-surface);
+  border: 1px solid var(--rs-color-border);
+  border-radius: var(--border-radius, 1.5px);
+}
+.rs-form-panel--subtle {
+  --rs-asset-surface: var(--rs-color-surface-subtle);
+}
+/* Explicit modifier: the panel supplies the enclosure around asset tabs. */
+.rs-form-panel--asset-tabs .form-assets-sidebar__tabs {
+  border: 0;
+}
+.rs-form-panel--asset-tabs .form-assets-sidebar__content {
+  padding: 12px 0 0;
+}
+.rs-form-panel.rs-form-records .rs-form-records__empty {
+  background: var(--rs-color-surface);
+}
+
+.rs-form-context-layout {
+  /* Layout settings only; colours and typography come from the RS theme. */
+  --rs-form-context-gap: 12px;
+  --rs-form-context-field-min: 200px;
+  --rs-form-context-media-width: 240px;
+  --rs-form-context-media-height: 176px;
+  --rs-form-context-viewer-height: 240px;
+
+  min-width: 0;
+  max-width: 100%;
+  container-name: rs-form-context-form;
+  container-type: inline-size;
+}
+
+/* Base card inherits the branch's .form-section border and border-radius. */
+.rs-form-context-layout > .form-section.rs-form-context {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 12px 14px;
+  color: var(--rs-color-text);
+  background-color: var(--rs-color-surface);
+  border-color: var(--rs-color-border);
+  font-family: var(--rs-font-family-body);
+}
+
+.rs-form-context .rs-form-context__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0 0 10px;
+}
+
+.rs-form-context .rs-form-context__title {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  color: var(--rs-color-text);
+  font-family: var(--rs-font-family-heading);
+  font-size: var(--rs-font-size-h6);
+  font-weight: var(--rs-font-weight-semibold);
+  line-height: 1.35;
+}
+
+.rs-form-context .rs-form-context__hint,
+.rs-form-context .rs-form-context__caption {
+  margin: 0;
+  color: var(--rs-color-text-secondary);
+  font-size: var(--rs-font-size-xs);
+  font-weight: var(--rs-font-weight-normal);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* Flex wrapping is also the fallback when container queries are unavailable. */
+.rs-form-context .rs-form-context__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--rs-form-context-gap);
+  min-width: 0;
+}
+
+.rs-form-context .rs-form-context__fields {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(min(100%, var(--rs-form-context-field-min)), 1fr));
+  align-items: start;
+  gap: 10px var(--rs-form-context-gap);
+  flex: 1 1 320px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rs-form-context .rs-form-context__field {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rs-form-context .rs-form-context__field--wide {
+  grid-column: 1 / -1;
+}
+
+/* Remove the usual 20px label inset only for each top-level source input.
+ * Internal composite fields, validation and input controls retain RS styling.
+ */
+.rs-form-context .rs-form-context__field
+  > .semantic-form-input-decorator
+  > .semantic-form-input-decorator__header {
+  margin: 0 0 6px;
+}
+
+/* Optional read-only label/value presentation, alongside editable inputs. */
+.rs-form-context .rs-form-context__label {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--rs-color-text-secondary);
+  font-size: var(--rs-font-size-xs);
+  font-weight: var(--rs-font-weight-medium);
+  line-height: 1.4;
+}
+
+.rs-form-context .rs-form-context__value {
+  min-width: 0;
+  margin: 0;
+  color: var(--rs-color-text);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* IMAGE VARIANT: a bounded preview beside the source fields. */
+.rs-form-context--with-image .rs-form-context__media {
+  flex: 0 1 var(--rs-form-context-media-width);
+  width: var(--rs-form-context-media-width);
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+}
+
+.rs-form-context .rs-form-context__viewport {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--rs-form-context-media-height);
+  min-width: 0;
+  background-color: var(--rs-color-surface-subtle);
+  border: 1px solid var(--rs-color-border);
+  border-radius: var(--border-radius, 1.5px);
+}
+
+/* Opt in for a real viewer; its own toolbars and behaviour remain untouched.
+ * ImageRegionEditor renders its root at width/height 100%, so the containing
+ * viewport must have a definite height. Keep the component directly inside it.
+ */
+.rs-form-context .rs-form-context__viewport--viewer {
+  height: var(--rs-form-context-viewer-height);
+}
+
+/* Use only for a plain image/thumbnail, never on the Mirador viewport. */
+.rs-form-context .rs-form-context__viewport--thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rs-form-context .rs-form-context__viewport--thumbnail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.rs-form-context .rs-form-context__caption {
+  margin-top: 5px;
+}
+
+/* TEXT-ONLY VARIANT: use the full width, with no empty image column. */
+.rs-form-context--no-image .rs-form-context__fields {
+  flex-basis: 100%;
+}
+
+.rs-form-context--no-image .rs-form-context__media {
+  display: none;
+}
+
+/* Optional compact provenance line, kept separate from editable input values. */
+.rs-form-context .rs-form-context__provenance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 0;
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--rs-color-border);
+  color: var(--rs-color-text-secondary);
+  font-size: var(--rs-font-size-xs);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* The remaining fields use their normal ResearchSpace form presentation. */
+.rs-form-context-layout > .detail-input-container {
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 16px;
+}
+
+/* Avoid a second top gap when the first detail is an ordinary semantic input. */
+.rs-form-context-layout > .detail-input-container
+  > .semantic-form-input-decorator:first-child
+  > .semantic-form-input-decorator__header {
+  margin-top: 0;
+}
+
+/* Explicit placement helper if the wrapper sits directly in a scroll area.
+ * Tabbed forms normally already have their own gutters; omit it there.
+ */
+.rs-form-context-layout.rs-form-context-layout--inset {
+  padding: 16px 20px 0;
+}
+
+@supports (container-type: inline-size) {
+  .rs-form-context--with-image .rs-form-context__body {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr) minmax(0, var(--rs-form-context-media-width));
+  }
+
+  .rs-form-context--with-image .rs-form-context__media {
+    width: 100%;
+  }
+
+  @container rs-form-context-form (max-width: 620px) {
+    .rs-form-context--with-image .rs-form-context__body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rs-form-context--with-image .rs-form-context__media {
+      width: 100%;
+      max-width: var(--rs-form-context-media-width);
+    }
+  }
+}
+
+/* Two ordinary fields, followed by one full-width resource field.
+ * Flex wrapping responds to the actual field column, including with-image mode.
+ */
+.rs-form-context--compact .rs-form-context__fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px var(--rs-form-context-gap, 12px);
+}
+
+.rs-form-context--compact .rs-form-context__fields
+  > .rs-form-context__field {
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rs-form-context--compact .rs-form-context__fields
+  > .rs-form-context__field--wide,
+.rs-form-context--compact .rs-form-context__fields
+  > .rs-form-context__field--resources {
+  flex-basis: 100%;
+}
+
+/* Row mode: one full-width resource card per row. No fixed card height. */
+.rs-form-context--compact .rs-form-context__field--resources
+  .DragAndDropInput--itemArea {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px;
+  border-color: var(--rs-color-border);
+  background-color: var(--rs-color-surface);
+}
+
+/* Grid mode: retain RS's standard 150px tiles; don't stretch a lone card.
+ * Both this class and card-layout are set by the same cardLayout binding.
+ */
+.rs-form-context--compact .rs-form-context__field--resources.rs-form-context__resources--grid
+  .DragAndDropInput--itemArea {
+  grid-template-columns: repeat(auto-fill, min(100%, 150px));
+  justify-content: start;
+}
+
+.rs-form-context--compact .rs-form-context__field--resources
+  .DragAndDropInput--itemArea > div {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* The add/drop prompt spans all columns even when some cards already exist.
+ * Handle both a direct template root and a TemplateItem wrapper.
+ */
+.rs-form-context--compact .rs-form-context__field--resources
+  .DragAndDropInput--itemArea > .placeholder-item,
+.rs-form-context--compact .rs-form-context__field--resources
+  .DragAndDropInput--itemArea > div:has(.placeholder-item) {
+  grid-column: 1 / -1;
+}
+
+/* Compact horizontal prompt. The matching markup removes the old inline
+ * margin-bottom styles and stacked text divs.
+ */
+.rs-form-context--compact .rs-form-context__field--resources
+  .DragAndDropInput--itemArea .placeholder-item {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 10px;
+  color: var(--rs-color-text-secondary);
+  font-size: var(--rs-font-size-sm);
+  line-height: 1.4;
+  text-align: left;
+}
+
+.rs-form-context--compact .rs-form-context__field--resources
+  .DragAndDropInput--itemArea .placeholder-item .upload_icon {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  font-size: 20px;
+  color: inherit;
+}
+
+.rs-form-context--compact .rs-form-context__drop-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The stock drag overlay has a 150px minimum; allow the compact target.
+ * RS continues to control its enabled, invalid and hover states.
+ */
+.rs-form-context--compact .rs-form-context__field--resources
+  .DragAndDropInput--holder .DropArea--dropMessage {
+  min-height: 0;
+}
+
+
+.rs-form-records {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rs-form-records .rs-form-records__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.rs-form-records .rs-form-records__hint,
+.rs-form-records .rs-form-records__date-label {
+  color: var(--rs-color-text-secondary);
+  font-size: var(--rs-font-size-sm);
+}
+
+.rs-form-records .rs-form-records__table,
+.rs-form-records .rs-form-records__table .researchspace-table-widget-holder,
+.rs-form-records .rs-form-records__table .griddle-custom-row {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rs-form-records .rs-form-records__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 10px;
+}
+
+.rs-form-records .rs-form-records__record {
+  flex: 1 1 280px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rs-form-records .rs-form-records__date {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 0 1 170px;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--rs-color-text);
+  font-size: var(--rs-font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.rs-form-records .rs-form-records__empty {
+  padding: 14px;
+  border: 1px solid var(--rs-color-border);
+  background: var(--rs-color-surface-subtle);
+  color: var(--rs-color-text-secondary);
+}

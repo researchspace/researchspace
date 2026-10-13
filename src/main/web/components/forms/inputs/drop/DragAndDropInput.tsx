@@ -76,6 +76,9 @@ export interface DragAndDropInputProps extends MultipleValuesProps {
    */
   placeholderItemTemplate?: string;
 
+  /** Optional non-interactive empty state for a readonly input. */
+  readonlyEmptyMessage?: string;
+
   /**
    * Template for value item card.
    *
@@ -265,6 +268,11 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
   }
 
   private renderItems(canCreateNew: boolean, cardLayout?: string) {
+    if (this.props.readonly && this.props.readonlyEmptyMessage &&
+        this.props.values.every(v => FieldValue.isEmpty(v))) {
+      return <div role="status">{this.props.readonlyEmptyMessage}</div>;
+    }
+
     const className =
       this.props.renderHeader === false ?
       `${styles.itemArea} ${styles['itemArea--no-header']}` : styles.itemArea ;

@@ -169,6 +169,48 @@ These components communicate through a custom event system, allowing them to be 
 | `snapYearToMarkers()` | Magnetic snap of a dragged year onto a nearby marker |
 | `renderYearMarkers()` | Draws the marker dots and the hover preview |
 
+## 3D tilesets on the timeline
+
+`<tileset-3d-source>` (`Tileset3dSource.ts`) is a render-null configuration child, recognised with
+`componentHasType` and read in `loadTileset3dSources()` the first time OLCesium is created. The
+rules live in `Tileset3dModel.ts`, which imports nothing — no Cesium, no OpenLayers, no platform —
+so they can be compiled and tested on their own:
+
+| Function | Purpose |
+|----------|---------|
+| `readManifest()` | Normalised `{items}` manifests as they are; any other shape through the field mapping |
+| `mergeItems()` | One item per id, years unioned, URL of the earliest observation |
+| `matchGroup()` | Exact id first, then hierarchical prefixes under `identifier-separator` |
+| `buildModel()` | Query rows into intervals, by group or, when unmatched, by identifier |
+| `selectAt()` | What every group shows at a year: an item, a placeholder, or nothing |
+
+Lifecycle in `SemanticMapAdvanced`:
+
+- **Loading.** Manifests are fetched in parallel, failures skipped. The temporal query runs through
+  `SparqlClient.select` in the page's semantic context, on `this.cancelation`. Before any tileset
+  loads, `apply3dTilesetTemporalFiltering()` runs once, so each tileset is *created* already shown
+  or hidden — there is nothing to correct when it arrives. Tilesets load six at a time
+  (`TILESET_LOAD_CONCURRENCY`) and are registered at creation, so a year change mid-load reaches
+  them too.
+- **Hidden tilesets** use `preloadWhenHidden`: without it a hidden tileset loads nothing, and pops in
+  late the first time the timeline asks for it. Toggling `show` is free — Cesium skips hidden
+  tilesets entirely — so no memory management is attempted.
+- **Placeholders** are `Primitive`s of extruded `PolygonGeometry`, built lazily the first time a
+  footprint is needed, synchronously (a few polygons, and no dependency on Cesium's worker
+  scripts), then only shown and hidden. A footprint that cannot be read is remembered as `null`.
+  The olcs `VectorSynchronizer` is deliberately not used: the 3D view does not mirror 2D features.
+- **Height offset** is a `modelMatrix` translation along the geodetic normal at the tileset centre,
+  applied after `readyPromise` because `boundingSphere` throws before it. `modelMatrix` multiplies
+  the root transform from the left, so the translation is in ECEF.
+- **One shared `CustomShader`** (`getTilesetShader()`) flat-shades IFC-converted geometry without
+  normals, for Ion, URL and manifest tilesets alike.
+- **Teardown.** `componentWillUnmount` bumps `tilesetGeneration`, removes every primitive and
+  disables OLCesium. Every async step re-checks the generation, so a load still in flight never
+  writes into a scene that is gone. A tileset whose `readyPromise` rejects is removed from the scene.
+
+`cesium-asset-urls` loads only direct tileset.json URLs, always shown; `cesium-asset-temporal` is
+ignored.
+
 ## Event System
 
 The components communicate through a custom event system defined in `SemanticMapEvents.ts` and `SemanticMapControlsEvents.ts`. Key events include:

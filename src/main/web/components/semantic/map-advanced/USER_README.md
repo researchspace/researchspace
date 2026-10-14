@@ -422,6 +422,119 @@ only scrolls it, so panning is the only thing that refetches. Rows sit at consta
 regardless of how far apart their years are; rows away from the centre fade out. The binding is
 one-way: scrolling the feed by hand never moves the timeline.
 
+## 3D Tilesets on the Timeline
+
+The 3D view (the cube button) can show 3D Tiles that appear, change and disappear as the timeline
+moves. Declare them with one `<tileset-3d-source>` child of `<semantic-map-advanced>`; the map
+reads it once, the first time the 3D view is opened.
+
+### The model
+
+- An **item** is one loadable geometry: a `tileset.json` URL.
+- A **group** is the thing whose appearance changes over time — an object, a building, a site.
+  Each item belongs to one group.
+- Each item has the **years it was observed in**. At year Y a group shows the item observed most
+  recently, not after Y.
+
+Items sharing an id are treated as **the same geometry**: it is loaded once and keeps all its
+years. This is a contract the manifest producer must honour — the platform cannot compare bytes —
+and it is what lets a manifest list a geometry once per year it was observed without the map
+loading it again each time. When the listings differ, the URL of the earliest one is loaded.
+
+### Manifests
+
+One element covers any number of manifests: list them in `manifest-url` (comma-separated), or let
+`manifest-query` return one `?url` per manifest — that is how a template enumerates manifests from
+its own data. URLs may be host-relative (`/proxy/...`); a manifest that fails to load is skipped
+and logged, the others still load.
+
+The **normalised** shape needs no configuration:
+
+```json
+{ "items": [ { "id": "tower.v2", "group": "tower", "url": "tower/1900/tileset.json", "year": 1900 } ] }
+```
+
+`group` defaults to the id, relative URLs resolve against the manifest. Any **other** shape is read
+through a field mapping:
+
+| Attribute | Default | Meaning |
+|-----------|---------|---------|
+| `sections` | every top-level array | Which collections to read, comma-separated |
+| `id-field` | `id` | The geometry id |
+| `group-field` | `group` | The group; absent means the id itself |
+| `year-field` | `year` | The year the geometry was observed |
+| `url-field` | `url` | The tileset URL |
+| `url-template` | — | Builds the URL from item fields, e.g. `{base}{path}/tileset.json` |
+| `base-url` | — | Value of `{base}` in `url-template` |
+
+### Existence over time: `temporal-query`
+
+A manifest only knows when geometries were *observed*. When the application knows when objects
+actually *existed*, `temporal-query` supplies it, and the group is shown only inside those
+intervals:
+
+| Binding | Required | Meaning |
+|---------|----------|---------|
+| `?identifier` | yes | A group id — or a descendant of one, see `identifier-separator` |
+| `?start`, `?end` | no | Dates or years; unbound means open on that side |
+| `?footprint` | no | WKT outline in `footprint-crs`, used for placeholders |
+| `?tileset` | no | An item id to show for that interval, overriding the observed years |
+
+At year Y, for each group:
+
+1. If the query has intervals for the group and none contains Y, the group is **hidden**.
+2. If the containing interval names a `?tileset` of that group, **that item** is shown.
+3. Otherwise the item observed most recently, not after Y, is shown (`selection="snapshot"`;
+   `exact` shows only an item observed in Y itself).
+4. If the group exists but nothing has been observed yet, `before-first-observation` decides:
+   `placeholder` extrudes the interval's `?footprint`, `earliest` shows the earliest geometry,
+   `none` (default) shows nothing.
+5. A group with no intervals at all follows the manifest alone.
+6. With time filtering off (`year-filtering="false"`), every group shows its latest geometry.
+   Showing all of them would stack every version of an object in the same place.
+
+`identifier-separator` matches hierarchical identifiers. With `.`, an identifier with no group of
+exactly that id is given to the group named by its longest prefix ending before a `.`:
+`site_4.2` goes to `site_4` — but if `site_4.2` is itself a group, it stays there. The exact id
+always wins, so an application can model some sub-phases as groups of their own. Without the
+attribute only exact ids match. Normalising identifiers beyond that is the query's job.
+
+`unmatched-identifiers="placeholder"` also extrudes the footprints of intervals that match no
+group at all — objects the application knows existed but that were never modelled in 3D — so the
+3D view shows everything the 2D one does.
+
+Placeholders are translucent extrusions, `placeholder-height` metres tall (default 8) in
+`placeholder-color`. `footprint-crs` (default `EPSG:4326`) is the CRS of the WKT. One placeholder
+is drawn per identifier, even if the data lists overlapping intervals for it.
+
+### Height
+
+`height-offset` raises every tileset along the local vertical, in metres; `height-offset-field`
+reads it from a top-level manifest field instead. The default is 0. A manifest may carry a geoid
+correction, but apply it only if the rest of the scene shares that vertical datum: the 3D view has
+no terrain and drapes its imagery on the ellipsoid at height 0, so a datum correction lifts the
+models off the imagery they belong on.
+
+### Example
+
+```html
+<semantic-map-advanced id="map" year-filtering="true" ...>
+  <tileset-3d-source
+      manifest-url="/proxy/models/site/manifest.json"
+      sections="objects"
+      id-field="code" group-field="object" year-field="surveyed"
+      base-url="/proxy/models/" url-template="{base}{path}/tileset.json"
+      identifier-separator="."
+      before-first-observation="placeholder"
+      footprint-crs="EPSG:3857"
+      temporal-query="SELECT ?identifier ?start ?end ?footprint WHERE { ... }">
+  </tileset-3d-source>
+</semantic-map-advanced>
+```
+
+`cesium-asset-urls` still loads plain `tileset.json` URLs, always shown; it no longer expands
+manifests, and `cesium-asset-temporal` is ignored.
+
 ## Feature Styling
 
 Features can be styled based on properties using the controls component:

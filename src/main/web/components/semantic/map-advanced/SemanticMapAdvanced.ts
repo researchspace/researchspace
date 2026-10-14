@@ -146,6 +146,15 @@ import { year } from 'platform/components/search/date/SimpleDateInput.scss';
 import { attachMapPerfMonitor, isMapPerfEnabled } from './MapPerfMonitor';
 import { AUXILIARY_LAYER, isFeatureLayer, isWebglSupported } from './FeatureLayerUtils';
 import { createStableWebGLVectorLayer } from './StableWebGLVectorLayer';
+import { isTileset3dSource, extractTileset3dSource, Tileset3dSourceModel } from './Tileset3dSource';
+import {
+  readManifest,
+  mergeItems,
+  buildModel,
+  selectAt,
+  parseYear,
+  Tileset3dModelState,
+} from './Tileset3dModel';
 import {
   CanvasStyleCache,
   ColorContext,
@@ -393,41 +402,21 @@ export interface SemanticMapAdvancedConfig {
   cesiumAssetIds?: string;
 
   /**
-   * Optional JSON object mapping manifest building paths to their temporal range
-   * (bob = begin of begin, eoe = end of end). Used to control which 3D models
-   * are shown/hidden when the timeline year changes in 3D mode.
-   *
-   * Keys are the `path` values from the manifest.json.
-   * Values are objects with `bob` and `eoe` year numbers.
-   *
-   * Example:
-   * ```html
-   * <semantic-map-advanced cesium-asset-temporal='{
-   *   "5": {"bob": 1737, "eoe": 2026}
-   * }' ...>
-   * ```
-   *
-   * If a manifest entry's path is not listed here, the tileset is always visible (bob=0, eoe=9999).
+   * @deprecated Ignored. Timeline-driven 3D content is declared with `<tileset-3d-source>`
+   * children, which take the existence of each object from a query instead of a hand-written map.
    */
   cesiumAssetTemporal?: string;
 
   /**
-   * Optional comma-separated list of URLs pointing to self-hosted 3D tilesets
-   * (e.g. tileset.json or manifest.json). These are loaded directly without
-   * going through Cesium Ion — no access token or proxy is needed.
+   * Optional comma-separated list of self-hosted tileset.json URLs, loaded without Cesium Ion and
+   * always shown. Can be combined with `cesium-asset-ids`.
    *
-   * Example (single URL):
-   * ```html
-   * <semantic-map-advanced cesium-asset-urls="http://myserver:9000/tiles/ifc/LZV/manifest.json" ...>
-   * ```
-   *
-   * Example (multiple URLs):
    * ```html
    * <semantic-map-advanced cesium-asset-urls="http://server/tiles/a/tileset.json,http://server/tiles/b/tileset.json" ...>
    * ```
    *
-   * Can be used alongside cesium-asset-ids; both Ion-based and URL-based
-   * tilesets will be loaded into the same 3D scene.
+   * Manifests listing many tilesets over time are not read here: declare a `<tileset-3d-source>`
+   * child, which groups them, follows the timeline and can draw footprints where no model exists.
    */
   cesiumAssetUrls?: string;
 }
@@ -449,6 +438,23 @@ interface SharedView {
  * overlays and styling are shared by `semantic-map-controls`.
  */
 const SHARED_STATE_VARS = ['view', 'basemap', 'selected', 'mode3d'];
+
+/** Concurrent tileset loads. Content requests are throttled by Cesium anyway; this bounds root fetches. */
+const TILESET_LOAD_CONCURRENCY = 6;
+
+/** What one `<tileset-3d-source>` has put into the 3D scene. */
+interface Tileset3dRuntime {
+  source: Tileset3dSourceModel;
+  model: Tileset3dModelState;
+  /** Loaded (or loading) tilesets, by item id. */
+  tilesets: { [itemId: string]: any };
+  /** Extruded footprints, built lazily the first time they are needed, by placeholder key. */
+  placeholders: { [key: string]: any };
+  /** Items the current year shows; read by tilesets created after the last selection. */
+  shownItems: { [itemId: string]: true };
+  /** Height offset of each item, taken from the manifest it came from. */
+  offsets: { [itemId: string]: number };
+}
 const DEFAULT_TRANSITION_DURATION = 1500;
 
 interface MapState {
@@ -535,8 +541,13 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
 
   // OLCesium 3D view properties (lazily loaded)
   private ol3d: any = null;
-  private cesium3dTileset: any = null;
-  private cesiumUrlTilesets: Array<{ tileset: any; bob: number; eoe: number; path: string }> = [];
+  /** Tilesets from `cesium-asset-urls`: direct tileset.json URLs, always shown. */
+  private cesiumUrlTilesets: any[] = [];
+  private tileset3dRuntimes: Tileset3dRuntime[] = [];
+  /** Bumped on unmount, so a tileset finishing its load afterwards never touches the scene. */
+  private tilesetGeneration = 0;
+  /** One shader for every tileset; Cesium caches programs by source, so sharing costs nothing. */
+  private tilesetShader: any = null;
   private is3dEnabled: boolean = false;
   private cesiumLib: any = null;
   private readonly tilesetMinAmbient: number = 0.18;
@@ -1468,6 +1479,19 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
     if (this.debouncedUpdateVisibleFeatures) {
       this.debouncedUpdateVisibleFeatures.cancel();
     }
+    // The 3D view holds tilesets, placeholders and a WebGL context that outlive the component unless
+    // released here; bumping the generation stops loads still in flight from touching the scene.
+    this.tilesetGeneration++;
+    if (this.ol3d) {
+      try {
+        this.ol3d.getCesiumScene().primitives.removeAll();
+        this.ol3d.setEnabled(false);
+      } catch (err) {
+        console.warn('[Cesium] 3D teardown failed:', err);
+      }
+    }
+    this.tileset3dRuntimes = [];
+    this.cesiumUrlTilesets = [];
     // WebGL layers hold a GPU context that is only released by an explicit dispose.
     if (this.map) {
       this.map.setTarget(undefined);
@@ -1980,36 +2004,109 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
   }
 
   /**
-   * Shows or hides Cesium 3D tilesets based on the currently selected year.
-   * Each tileset loaded from a manifest has bob (begin of begin) and eoe (end of end)
-   * metadata. A tileset is shown if bob <= selectedYear <= eoe.
-   * If no year is set, all tilesets are shown.
+   * Shows, for every group of every `<tileset-3d-source>`, the geometry the timeline year calls
+   * for, plus the extruded footprints that stand in for groups with no geometry at that year.
+   * Tilesets from `cesium-asset-urls` carry no time and are left alone.
    */
   private apply3dTilesetTemporalFiltering(): void {
-    if (this.cesiumUrlTilesets.length === 0) return;
-
-    const yearStr = this.state.year;
-    const selectedYear = yearStr ? parseInt(String(yearStr).split('-')[0], 10) : NaN;
-
-    console.log(`[Cesium 3D] Applying temporal filter: year=${selectedYear}, ${this.cesiumUrlTilesets.length} tilesets tracked`);
-
-    for (const entry of this.cesiumUrlTilesets) {
-      if (Number.isNaN(selectedYear)) {
-        // No year selected — show everything
-        entry.tileset.show = true;
-      } else {
-        const visible = entry.bob <= selectedYear && selectedYear <= entry.eoe;
-        entry.tileset.show = visible;
-        if (!visible) {
-          console.log(`[Cesium 3D] HIDDEN: ${entry.path} (bob=${entry.bob}, eoe=${entry.eoe}, year=${selectedYear})`);
-        }
-      }
+    if (this.tileset3dRuntimes.length === 0) {
+      return;
     }
+    const year = this.state.yearFiltering ? parseYear(this.state.year) : null;
+    this.tileset3dRuntimes.forEach((runtime) => {
+      const result = selectAt(year, runtime.model, runtime.source.rules);
+      const shownItems: { [itemId: string]: true } = {};
+      const shownPlaceholders: { [key: string]: string } = {};
+      const collect = (selection) => {
+        if (selection.kind === 'tileset') {
+          shownItems[selection.itemId] = true;
+        } else {
+          shownPlaceholders[selection.key] = selection.footprint;
+        }
+      };
+      Object.keys(result.groups).forEach((group) => collect(result.groups[group]));
+      result.unmatched.forEach(collect);
 
-    // Request a Cesium render to reflect the changes
+      runtime.shownItems = shownItems;
+      Object.keys(runtime.tilesets).forEach((itemId) => {
+        runtime.tilesets[itemId].show = Boolean(shownItems[itemId]);
+      });
+      Object.keys(shownPlaceholders).forEach((key) => {
+        if (!(key in runtime.placeholders) && this.cesiumLib && this.ol3d) {
+          runtime.placeholders[key] = this.createFootprintPlaceholder(this.cesiumLib, runtime, shownPlaceholders[key]);
+        }
+      });
+      Object.keys(runtime.placeholders).forEach((key) => {
+        const primitive = runtime.placeholders[key];
+        if (primitive) {
+          primitive.show = Boolean(shownPlaceholders[key]);
+        }
+      });
+    });
     const scene = this.getCesiumSceneSafely();
     if (scene && scene.requestRender) {
       scene.requestRender();
+    }
+  }
+
+  /**
+   * An extruded, translucent footprint for a group that existed at the timeline year but has no 3D
+   * geometry for it. Built once and then only shown or hidden. Returns null when the footprint
+   * cannot be read, and that null is remembered so a bad WKT is not re-parsed every tick.
+   */
+  private createFootprintPlaceholder(Cesium: any, runtime: Tileset3dRuntime, wkt: string): any {
+    try {
+      const geometry: any = new WKT().readGeometry(wkt, {
+        dataProjection: runtime.source.footprintCrs,
+        featureProjection: 'EPSG:4326',
+      });
+      const type = geometry.getType();
+      const polygons: number[][][][] =
+        type === 'Polygon' ? [geometry.getCoordinates()] : type === 'MultiPolygon' ? geometry.getCoordinates() : [];
+      // Cesium removes repeated positions itself, but a ring closed on its first point is cleaner without it.
+      const toPositions = (ring: number[][]) => {
+        const last = ring.length - 1;
+        const closed = last > 0 && ring[0][0] === ring[last][0] && ring[0][1] === ring[last][1];
+        const flat: number[] = [];
+        for (let i = 0; i < (closed ? last : ring.length); i++) {
+          flat.push(ring[i][0], ring[i][1]);
+        }
+        return Cesium.Cartesian3.fromDegreesArray(flat);
+      };
+      const color =
+        Cesium.Color.fromCssColorString(runtime.source.placeholderColor) || Cesium.Color.GRAY.withAlpha(0.35);
+      const instances = polygons
+        .filter((rings) => rings.length > 0 && rings[0].length >= 4)
+        .map(
+          (rings) =>
+            new Cesium.GeometryInstance({
+              geometry: new Cesium.PolygonGeometry({
+                polygonHierarchy: new Cesium.PolygonHierarchy(
+                  toPositions(rings[0]),
+                  rings.slice(1).map((hole) => new Cesium.PolygonHierarchy(toPositions(hole)))
+                ),
+                height: 0,
+                extrudedHeight: runtime.source.placeholderHeight,
+                vertexFormat: Cesium.PerInstanceColorAppearance.FLAT_VERTEX_FORMAT,
+              }),
+              attributes: { color: Cesium.ColorGeometryInstanceAttribute.fromColor(color) },
+            })
+        );
+      if (!instances.length) {
+        return null;
+      }
+      const primitive = new Cesium.Primitive({
+        geometryInstances: instances,
+        appearance: new Cesium.PerInstanceColorAppearance({ flat: true, translucent: color.alpha < 1, closed: true }),
+        // a few polygons: built on the main thread, without depending on Cesium's worker scripts
+        asynchronous: false,
+        show: false,
+      });
+      this.ol3d.getCesiumScene().primitives.add(primitive);
+      return primitive;
+    } catch (err) {
+      console.warn('[Cesium] Could not build a footprint placeholder:', err);
+      return null;
     }
   }
 
@@ -4153,6 +4250,8 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
         await this.load3DTileset(Cesium);
         // Load 3D Tilesets from direct URLs (cesium-asset-urls prop)
         await this.loadUrlTilesets(Cesium);
+        // Load timeline-driven tilesets declared as <tileset-3d-source> children
+        await this.loadTileset3dSources(Cesium);
       })().catch((err) => console.error('Failed to load 3D tilesets:', err));
     } catch (err) {
       console.error('Failed to initialize OLCesium:', err);
@@ -4231,26 +4330,10 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
         tileset.shadows = Cesium.ShadowMode.DISABLED;
 
         // Custom shader for IFC-converted tilesets that lack vertex normals
-        if (Cesium.CustomShader && Cesium.LightingModel) {
-          tileset.customShader = new Cesium.CustomShader({
-            mode: Cesium.CustomShaderMode ? Cesium.CustomShaderMode.MODIFY_MATERIAL : undefined,
-            lightingModel: Cesium.LightingModel.UNLIT,
-            fragmentShaderText: `
-              void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material)
-              {
-                vec3 dpdx = dFdx(fsInput.attributes.positionEC);
-                vec3 dpdy = dFdy(fsInput.attributes.positionEC);
-                vec3 n = normalize(cross(dpdx, dpdy));
-                float ndotl = max(dot(n, czm_lightDirectionEC), 0.0);
-                float lit = 0.15 + 0.85 * ndotl;
-                material.diffuse *= lit;
-              }
-            `,
-          });
+        const shader = this.getTilesetShader(Cesium);
+        if (shader) {
+          tileset.customShader = shader;
         }
-
-        // Store reference (last loaded tileset wins for single-tileset compat)
-        this.cesium3dTileset = tileset;
 
         // Apply sun lighting immediately
         this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
@@ -4263,188 +4346,261 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
   }
 
   /**
-   * Load 3D Tilesets from direct URLs (self-hosted, no Cesium Ion).
-   * Iterates over every URL specified in the `cesium-asset-urls` prop.
-   *
-   * Supports two URL types:
-   * 1. Direct tileset.json URL → loaded as-is into Cesium.
-   * 2. Custom manifest.json URL → fetched first; every `path` entry in the
-   *    manifest is resolved to `{baseUrl}/{path}/tileset.json` and each
-   *    building is loaded as a separate Cesium3DTileset.
-   *
-   * Manifest detection: if the fetched JSON has no `asset` property (which
-   * every valid 3D Tiles tileset.json MUST have), it is treated as a manifest.
+   * Loads `cesium-asset-urls`: direct tileset.json URLs, always shown. Manifests are not expanded
+   * here any more — they carry time and grouping this attribute cannot describe — and are skipped
+   * with a pointer to `<tileset-3d-source>`.
    */
   private async loadUrlTilesets(Cesium: any): Promise<void> {
     const urls = this.parseCesiumAssetUrls();
-    if (urls.length === 0) {
-      console.log('[Cesium] No cesium-asset-urls specified — skipping URL-based tileset loading');
-      return;
-    }
-
-    const scene = this.ol3d.getCesiumScene();
-
-    for (const tilesetUrl of urls) {
+    const generation = this.tilesetGeneration;
+    for (const url of urls) {
       try {
-        console.log(`[Cesium] Loading URL-based 3D tileset: ${tilesetUrl}`);
-
-        // Resolve the list of actual tileset.json URLs to load.
-        // If the URL points to a manifest (custom index), we expand it;
-        // otherwise we treat it as a single direct tileset.json.
-        const resolvedUrls = await this.resolveUrlTilesetEntries(tilesetUrl);
-        console.log(`[Cesium] Resolved ${resolvedUrls.length} tileset(s) from: ${tilesetUrl}`);
-
-        for (const entry of resolvedUrls) {
-          try {
-            console.log(`[Cesium] Loading tileset: ${entry.url} (bob=${entry.bob}, eoe=${entry.eoe})`);
-
-            // Cesium 1.90-compatible: use the constructor with a plain URL string.
-            const tileset = new Cesium.Cesium3DTileset({
-              url: entry.url,
-              enableModelExperimental: true,
-            });
-
-            scene.primitives.add(tileset);
-            await tileset.readyPromise;
-
-            // Disable cast/receive shadows
-            tileset.shadows = Cesium.ShadowMode.DISABLED;
-
-            // Custom shader for IFC-converted tilesets that lack vertex normals
-            if (Cesium.CustomShader && Cesium.LightingModel) {
-              tileset.customShader = new Cesium.CustomShader({
-                mode: Cesium.CustomShaderMode ? Cesium.CustomShaderMode.MODIFY_MATERIAL : undefined,
-                lightingModel: Cesium.LightingModel.UNLIT,
-                fragmentShaderText: `
-                  void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material)
-                  {
-                    vec3 dpdx = dFdx(fsInput.attributes.positionEC);
-                    vec3 dpdy = dFdy(fsInput.attributes.positionEC);
-                    vec3 n = normalize(cross(dpdx, dpdy));
-                    float ndotl = max(dot(n, czm_lightDirectionEC), 0.0);
-                    float lit = 0.15 + 0.85 * ndotl;
-                    material.diffuse *= lit;
-                  }
-                `,
-              });
-            }
-
-            // Store reference with temporal metadata for timeline filtering
-            this.cesium3dTileset = tileset;
-            this.cesiumUrlTilesets.push({ tileset, bob: entry.bob, eoe: entry.eoe, path: entry.path });
-
-            // Apply sun lighting immediately
-            this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
-
-            console.log(`[Cesium] 3D Tileset loaded successfully: ${entry.url}`);
-          } catch (innerErr) {
-            console.error(`[Cesium] Failed to load tileset ${entry.url}:`, innerErr);
-          }
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const json = await response.json();
+        if (!json || !json.asset) {
+          console.warn(
+            `[Cesium] ${url} is not a tileset.json. cesium-asset-urls no longer expands manifests; ` +
+              'declare a <tileset-3d-source> for it.'
+          );
+          continue;
+        }
+        const tileset = await this.addTileset(Cesium, url, true, 0, generation);
+        if (tileset) {
+          this.cesiumUrlTilesets.push(tileset);
         }
       } catch (err) {
-        console.error(`[Cesium] Failed to process URL ${tilesetUrl}:`, err);
+        console.error(`[Cesium] Failed to load tileset ${url}:`, err);
       }
     }
   }
 
   /**
-   * Resolves a URL to one or more actual tileset.json URLs.
-   *
-   * If the URL points to a valid 3D Tiles tileset (has an `asset` property),
-   * the URL is returned as-is in a single-element array.
-   *
-   * If the URL points to a custom manifest (no `asset` property), it extracts
-   * all `path` entries from every array value in the JSON, and builds
-   * tileset.json URLs using the manifest's base URL:
-   *   {scheme}://{host}:{port}/tiles/{path}/tileset.json
-   *
-   * @param url The URL to resolve (can be tileset.json or manifest.json)
-   * @returns Array of tileset.json URLs
+   * Adds one tileset to the scene and resolves once it is ready — or with null if it failed, or the
+   * component went away meanwhile. A failed tileset is removed again: left in the scene it would
+   * stay there, dead, for the life of the view.
    */
-  private async resolveUrlTilesetEntries(url: string): Promise<Array<{ url: string; bob: number; eoe: number; path: string }>> {
-    // Fetch the JSON to inspect its structure
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} fetching ${url}`);
+  private async addTileset(
+    Cesium: any,
+    url: string,
+    show: boolean,
+    heightOffset: number,
+    generation: number,
+    onCreated?: (tileset: any) => void
+  ): Promise<any> {
+    const scene = this.ol3d.getCesiumScene();
+    const tileset = new Cesium.Cesium3DTileset({
+      url,
+      show,
+      enableModelExperimental: true,
+      // A hidden tileset otherwise loads nothing, and would pop in late the first time the
+      // timeline asks for it — visible as holes during autoplay.
+      preloadWhenHidden: true,
+    });
+    scene.primitives.add(tileset);
+    if (onCreated) {
+      onCreated(tileset);
     }
-    const json = await response.json();
-
-    // If it has an `asset` property, it's a valid 3D Tiles tileset — use as-is
-    // (no temporal metadata available for direct tileset URLs)
-    if (json.asset) {
-      console.log('[Cesium] URL is a direct 3D Tiles tileset.json');
-      return [{ url, bob: 0, eoe: 9999, path: url }];
+    try {
+      await tileset.readyPromise;
+    } catch (err) {
+      if (generation === this.tilesetGeneration && !tileset.isDestroyed()) {
+        scene.primitives.remove(tileset);
+      }
+      console.error(`[Cesium] Failed to load tileset ${url}:`, err);
+      return null;
     }
+    if (generation !== this.tilesetGeneration || tileset.isDestroyed()) {
+      return null;
+    }
+    tileset.shadows = Cesium.ShadowMode.DISABLED;
+    const shader = this.getTilesetShader(Cesium);
+    if (shader) {
+      tileset.customShader = shader;
+    }
+    if (heightOffset) {
+      // modelMatrix multiplies the root transform from the left, i.e. it acts in ECEF: translate
+      // along the geodetic normal at the tileset's centre. boundingSphere only exists once ready.
+      const up = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(tileset.boundingSphere.center, new Cesium.Cartesian3());
+      tileset.modelMatrix = Cesium.Matrix4.fromTranslation(Cesium.Cartesian3.multiplyByScalar(up, heightOffset, up));
+    }
+    return tileset;
+  }
 
-    // Otherwise, treat as a manifest. Extract entries with temporal metadata.
-    console.log('[Cesium] URL is a manifest — extracting building paths with temporal data');
-
-    // Collect all entries from all array values in the manifest
-    const allEntries: Array<{ phase: number; phase_year: string; code: string; building_id: string; path: string; demolished_phase?: number }> = [];
-    for (const key of Object.keys(json)) {
-      const value = json[key];
-      if (Array.isArray(value)) {
-        for (const entry of value) {
-          if (entry && typeof entry.path === 'string') {
-            allEntries.push(entry);
+  /** One shader for every tileset: flat-shades IFC-converted geometry that has no vertex normals. */
+  private getTilesetShader(Cesium: any): any {
+    if (!this.tilesetShader && Cesium.CustomShader && Cesium.LightingModel) {
+      this.tilesetShader = new Cesium.CustomShader({
+        mode: Cesium.CustomShaderMode ? Cesium.CustomShaderMode.MODIFY_MATERIAL : undefined,
+        lightingModel: Cesium.LightingModel.UNLIT,
+        fragmentShaderText: `
+          void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material)
+          {
+            vec3 dpdx = dFdx(fsInput.attributes.positionEC);
+            vec3 dpdy = dFdy(fsInput.attributes.positionEC);
+            vec3 n = normalize(cross(dpdx, dpdy));
+            float ndotl = max(dot(n, czm_lightDirectionEC), 0.0);
+            float lit = 0.15 + 0.85 * ndotl;
+            material.diffuse *= lit;
           }
+        `,
+      });
+    }
+    return this.tilesetShader;
+  }
+
+  /**
+   * Loads every `<tileset-3d-source>` child: resolves its manifests, merges their items, runs its
+   * temporal query, then loads the tilesets already carrying the visibility the current year
+   * implies, so nothing needs correcting once they arrive.
+   */
+  private async loadTileset3dSources(Cesium: any): Promise<void> {
+    const sources: Tileset3dSourceModel[] = [];
+    React.Children.forEach(this.props.children, (child) => {
+      if (isTileset3dSource(child)) {
+        try {
+          sources.push(extractTileset3dSource(child));
+        } catch (err) {
+          console.error('[Cesium] ' + (err && err.message ? err.message : err));
         }
       }
-    }
-
-    if (allEntries.length === 0) {
-      console.warn('[Cesium] Manifest has no building paths — nothing to load');
-      return [];
-    }
-
-    // Collect all unique phase years across the manifest (sorted ascending)
-    const phaseYears = Array.from(new Set(allEntries.map(e => parseInt(e.phase_year, 10)))).filter(y => !Number.isNaN(y)).sort((a, b) => a - b);
-    // Map from phase number to phase_year for demolished_phase lookup
-    const phaseToYear: { [phase: number]: number } = {};
-    allEntries.forEach(e => {
-      const y = parseInt(e.phase_year, 10);
-      if (!Number.isNaN(y)) {
-        phaseToYear[e.phase] = y;
-      }
     });
-
-    const currentYear = new Date().getFullYear();
-
-    // Derive the base URL from the manifest URL.
-    const urlObj = new URL(url);
-    const tilesIdx = urlObj.pathname.indexOf('/tiles/');
-    const basePath = tilesIdx !== -1
-      ? urlObj.pathname.substring(0, tilesIdx + '/tiles/'.length)
-      : urlObj.pathname.substring(0, urlObj.pathname.lastIndexOf('/') + 1);
-    const baseUrl = `${urlObj.origin}${basePath}`;
-
-    // Parse the manual temporal mapping from the cesiumAssetTemporal prop (if provided).
-    // Format: { "path": { "bob": 1737, "eoe": 1869 }, ... }
-    let temporalMap: { [path: string]: { bob: number; eoe: number } } = {};
-    if (this.props.cesiumAssetTemporal) {
+    const generation = this.tilesetGeneration;
+    for (const source of sources) {
       try {
-        temporalMap = JSON.parse(this.props.cesiumAssetTemporal);
-        console.log('[Cesium] Parsed cesium-asset-temporal prop:', Object.keys(temporalMap).length, 'entries');
-      } catch (e) {
-        console.error('[Cesium] Failed to parse cesium-asset-temporal JSON:', e);
+        const runtime = await this.prepareTileset3dSource(source);
+        if (generation !== this.tilesetGeneration) {
+          return;
+        }
+        if (!runtime) {
+          continue;
+        }
+        this.tileset3dRuntimes.push(runtime);
+        // Decides what is visible, and draws placeholders, before a single tileset has loaded.
+        this.apply3dTilesetTemporalFiltering();
+        await this.loadTileset3dItems(Cesium, runtime, generation);
+      } catch (err) {
+        console.error('[Cesium] Failed to load a <tileset-3d-source>:', err);
+      }
+    }
+    if (generation === this.tilesetGeneration && this.tileset3dRuntimes.length) {
+      this.apply3dTilesetTemporalFiltering();
+      this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
+    }
+  }
+
+  private async prepareTileset3dSource(source: Tileset3dSourceModel): Promise<Tileset3dRuntime | null> {
+    const listed = source.manifestUrls.length
+      ? source.manifestUrls
+      : (await this.selectBindings(source.manifestQuery))
+          .map((binding) => (binding.url ? binding.url.value : null))
+          .filter((url) => Boolean(url));
+    // Resolved against the page, so a template can use host-relative URLs (e.g. a proxy path) that
+    // work on whichever server renders it, and item URLs can in turn be relative to the manifest.
+    const manifestUrls = listed.map((url) => new URL(url, window.location.href).toString());
+
+    const raw = [];
+    const offsetByUrl: { [url: string]: number } = {};
+    // A manifest that cannot be read is skipped, not fatal: one missing set of models must not
+    // take the others down with it.
+    await Promise.all(
+      manifestUrls.map(async (manifestUrl) => {
+        try {
+          const response = await fetch(manifestUrl);
+          if (!response.ok) {
+            console.warn(`[Cesium] Manifest ${manifestUrl}: HTTP ${response.status}, skipped`);
+            return;
+          }
+          const json = await response.json();
+          const entries = readManifest(json, source.mapping, manifestUrl);
+          const fieldOffset = source.heightOffsetField ? json[source.heightOffsetField] : undefined;
+          const offset = typeof fieldOffset === 'number' ? fieldOffset : source.heightOffset;
+          entries.forEach((entry) => (offsetByUrl[entry.url] = offset));
+          raw.push(...entries);
+        } catch (err) {
+          console.warn(`[Cesium] Manifest ${manifestUrl} could not be read, skipped:`, err);
+        }
+      })
+    );
+    const items = mergeItems(raw);
+    if (!items.length) {
+      console.warn('[Cesium] <tileset-3d-source> found no tilesets in', manifestUrls);
+      return null;
+    }
+
+    let rows = [];
+    if (source.temporalQuery) {
+      try {
+        rows = (await this.selectBindings(source.temporalQuery)).map((binding) => ({
+          identifier: binding.identifier ? binding.identifier.value : null,
+          start: binding.start ? binding.start.value : undefined,
+          end: binding.end ? binding.end.value : undefined,
+          footprint: binding.footprint ? binding.footprint.value : undefined,
+          tileset: binding.tileset ? binding.tileset.value : undefined,
+        }));
+      } catch (err) {
+        // Without existence intervals every group falls back to the manifest alone.
+        console.error('[Cesium] temporal-query failed; showing the manifest alone:', err);
       }
     }
 
-    // Build result with bob/eoe for each entry — use manual prop if available, else always-visible defaults
-    const results: Array<{ url: string; bob: number; eoe: number; path: string }> = [];
-    for (const entry of allEntries) {
-      const manual = temporalMap[entry.code];
-      const bob = manual ? manual.bob : 0;
-      const eoe = manual ? manual.eoe : 9999;
-
-      const tilesetUrl = `${baseUrl}${entry.path}/tileset.json`;
-      results.push({ url: tilesetUrl, bob, eoe, path: entry.path });
-      console.log(`[Cesium] Manifest entry: ${entry.code} phase ${entry.phase} → bob=${bob}, eoe=${eoe}${manual ? ' (from prop)' : ' (default — not in cesium-asset-temporal)'}, url=${tilesetUrl}`);
-    }
-
-    console.log(`[Cesium] Manifest resolved ${results.length} tileset entries with temporal data`);
-    return results;
+    const offsets: { [itemId: string]: number } = {};
+    items.forEach((item) => (offsets[item.id] = offsetByUrl[item.url] || 0));
+    console.log(
+      `[Cesium] <tileset-3d-source>: ${raw.length} manifest entries, ${items.length} tilesets, ` +
+        `${rows.length} temporal rows`
+    );
+    return {
+      source,
+      model: buildModel(items, rows, source.rules),
+      tilesets: {},
+      placeholders: {},
+      shownItems: {},
+      offsets,
+    };
   }
+
+  /** Loads a source's tilesets a few at a time, each created already shown or hidden as the year requires. */
+  private async loadTileset3dItems(Cesium: any, runtime: Tileset3dRuntime, generation: number): Promise<void> {
+    const queue = runtime.model.items.slice();
+    const worker = async () => {
+      while (queue.length && generation === this.tilesetGeneration) {
+        const item = queue.shift();
+        const tileset = await this.addTileset(
+          Cesium,
+          item.url,
+          Boolean(runtime.shownItems[item.id]),
+          runtime.offsets[item.id] || 0,
+          generation,
+          // registered at once, so a year change during the load already reaches it
+          (created) => (runtime.tilesets[item.id] = created)
+        );
+        if (!tileset && runtime.tilesets[item.id]) {
+          delete runtime.tilesets[item.id];
+        }
+      }
+    };
+    const workers = [];
+    for (let i = 0; i < Math.min(TILESET_LOAD_CONCURRENCY, queue.length); i++) {
+      workers.push(worker());
+    }
+    await Promise.all(workers);
+  }
+
+  /** Runs a SELECT in the page's semantic context, resolving with its bindings. */
+  private selectBindings(query: string): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      this.cancelation
+        .map(SparqlClient.select(query, { context: this.context.semanticContext }))
+        .observe({
+          value: (result) => resolve(result.results.bindings),
+          error: (error) => reject(error),
+        });
+    });
+  }
+
 
   /**
    * Toggle 3D view using OLCesium

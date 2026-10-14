@@ -172,7 +172,7 @@ These components communicate through a custom event system, allowing them to be 
 ## 3D tilesets on the timeline
 
 `<tileset-3d-source>` (`Tileset3dSource.ts`) is a render-null configuration child, recognised with
-`componentHasType` and read in `loadTileset3dSources()` the first time OLCesium is created. The
+`componentHasType` and read in `initTileset3dSources()` the first time OLCesium is created. The
 rules live in `Tileset3dModel.ts`, which imports nothing — no Cesium, no OpenLayers, no platform —
 so they can be compiled and tested on their own:
 
@@ -186,26 +186,44 @@ so they can be compiled and tested on their own:
 
 Lifecycle in `SemanticMapAdvanced`:
 
-- **Loading.** Manifests are fetched in parallel, failures skipped. The temporal query runs through
+- **Scope.** Each source is a `Tileset3dRuntime` with a `status` (`idle` → `preparing` → `ready`, or
+  `failed`). `updateTileset3dScope()` runs when 3D is switched on and, debounced, on the Cesium
+  camera's `moveEnd`. It reads the zoom from the OL view, which olcs keeps in step with the camera,
+  and the visible area from `camera.computeViewRectangle()` (the OL extent when the camera sees no
+  globe). Below `min-zoom` the runtime is out of zoom: nothing is prepared, everything is hidden and
+  `preloadWhenHidden` is turned off. The first time the zoom is reached the source is prepared;
+  then every manifest whose extent (union of its groups' footprints, padded) intersects the view
+  is loaded, once.
+- **Preparing.** Manifests are fetched in parallel, failures skipped. The temporal query runs through
   `SparqlClient.select` in the page's semantic context, on `this.cancelation`. Before any tileset
   loads, `apply3dTilesetTemporalFiltering()` runs once, so each tileset is *created* already shown
-  or hidden — there is nothing to correct when it arrives. Tilesets load six at a time
-  (`TILESET_LOAD_CONCURRENCY`) and are registered at creation, so a year change mid-load reaches
-  them too.
+  or hidden — there is nothing to correct when it arrives.
+- **Loading a manifest.** The items the current year shows are created first. The others wait
+  until those report `tilesLoaded` (or `TILESET_SHOWN_FIRST_MAX_WAIT`), so the first view of an
+  area is not held up by geometries it does not show. Tilesets load six at a time
+  (`TILESET_LOAD_CONCURRENCY`), the worker always taking an item the year shows *now* first, and
+  are registered at creation, so a year change mid-load reaches them too. `queued` keeps an item
+  listed by two manifests from loading twice.
 - **Hidden tilesets** use `preloadWhenHidden`: without it a hidden tileset loads nothing, and pops in
   late the first time the timeline asks for it. Toggling `show` is free — Cesium skips hidden
   tilesets entirely — so no memory management is attempted.
-- **Placeholders** are `Primitive`s of extruded `PolygonGeometry`, built lazily the first time a
-  footprint is needed, synchronously (a few polygons, and no dependency on Cesium's worker
-  scripts), then only shown and hidden. A footprint that cannot be read is remembered as `null`.
-  The olcs `VectorSynchronizer` is deliberately not used: the 3D view does not mirror 2D features.
+- **Placeholders** are `Primitive`s of walls only (`PolygonGeometry` with `closeTop` and
+  `closeBottom` off), built lazily the first time a footprint is needed, synchronously (a few
+  polygons, and no dependency on Cesium's worker scripts), then only shown and hidden. The upward
+  fade is a per-vertex `color` attribute added to the geometry from `createGeometry()`: alpha is
+  interpolated by each vertex's geodetic height. Wall texture coordinates cannot carry it — they
+  are a planar projection, equal at the foot and the top of a wall. With no per-instance `color`
+  attribute, `PerInstanceColorAppearance`'s `color` input is fed by the geometry, so no custom
+  shader is needed; `closed: false` keeps both sides of the walls. A footprint that cannot be read
+  is remembered as `null`. The olcs `VectorSynchronizer` is deliberately not used: the 3D view does
+  not mirror 2D features.
 - **Height offset** is a `modelMatrix` translation along the geodetic normal at the tileset centre,
   applied after `readyPromise` because `boundingSphere` throws before it. `modelMatrix` multiplies
   the root transform from the left, so the translation is in ECEF.
 - **One shared `CustomShader`** (`getTilesetShader()`) flat-shades IFC-converted geometry without
   normals, for Ion, URL and manifest tilesets alike.
-- **Teardown.** `componentWillUnmount` bumps `tilesetGeneration`, removes every primitive and
-  disables OLCesium. Every async step re-checks the generation, so a load still in flight never
+- **Teardown.** `componentWillUnmount` bumps `tilesetGeneration`, detaches the camera listener,
+  removes every primitive and disables OLCesium. Every async step re-checks the generation, so a load still in flight never
   writes into a scene that is gone. A tileset whose `readyPromise` rejects is removed from the scene.
 
 `cesium-asset-urls` loads only direct tileset.json URLs, always shown; `cesium-asset-temporal` is

@@ -54,7 +54,7 @@ import { unByKey } from 'ol/Observable';
 import Overlay from 'ol/Overlay';
 import { getLength } from 'ol/sphere';
 import { Draw, Modify, Snap } from 'ol/interaction';
-import { transform } from 'ol/proj';
+import { transform, transformExtent } from 'ol/proj';
 import { defaults as controlDefaults } from 'ol/control';
 import { Interaction } from 'ol/interaction';
 import { defaults as interactionDefaults } from 'ol/interaction';
@@ -153,7 +153,9 @@ import {
   buildModel,
   selectAt,
   parseYear,
+  Tileset3dItem,
   Tileset3dModelState,
+  Tileset3dRawItem,
 } from './Tileset3dModel';
 import {
   CanvasStyleCache,
@@ -441,17 +443,57 @@ const SHARED_STATE_VARS = ['view', 'basemap', 'selected', 'mode3d'];
 
 /** Concurrent tileset loads. Content requests are throttled by Cesium anyway; this bounds root fetches. */
 const TILESET_LOAD_CONCURRENCY = 6;
+/** How long the models shown at the current year may take before the hidden ones start loading anyway. */
+const TILESET_SHOWN_FIRST_MAX_WAIT = 10000;
+/** Delay after the 3D camera stops before deciding what is in view, so a drag is evaluated once. */
+const TILESET_SCOPE_DEBOUNCE = 200;
+
+/**
+ * Whether a manifest's extent touches the view, both [west, south, east, north] in degrees. The
+ * extent is padded by a quarter of its size (at least ~100 m), so an island starts loading as it
+ * enters the frame rather than once it is already in the middle. Unknown extents always match.
+ */
+function extentsIntersect(extent: number[] | null, view: number[] | null): boolean {
+  if (!extent || !view) {
+    return true;
+  }
+  const pad = Math.max(0.001, 0.25 * Math.max(extent[2] - extent[0], extent[3] - extent[1]));
+  return (
+    extent[0] - pad <= view[2] && extent[2] + pad >= view[0] && extent[1] - pad <= view[3] && extent[3] + pad >= view[1]
+  );
+}
+
+/** One manifest of a `<tileset-3d-source>`: its tilesets load once its extent comes into view. */
+interface Tileset3dManifestScope {
+  url: string;
+  itemIds: string[];
+  /** [west, south, east, north] in degrees, from the footprints of its groups; null loads on zoom alone. */
+  extent: number[] | null;
+  /** Its tilesets have been queued; they stay in the scene afterwards. */
+  loaded: boolean;
+}
 
 /** What one `<tileset-3d-source>` has put into the 3D scene. */
 interface Tileset3dRuntime {
   source: Tileset3dSourceModel;
+  /**
+   * `idle` until the view first reaches the source's `min-zoom`: until then nothing is fetched.
+   * `preparing` while manifests and temporal query load, then `ready` (or `failed`, for good).
+   */
+  status: 'idle' | 'preparing' | 'ready' | 'failed';
+  /** Empty until the source is ready. */
   model: Tileset3dModelState;
+  manifests: Tileset3dManifestScope[];
+  /** Whether the view is at or above `min-zoom`. Below it the source shows nothing. */
+  inZoom: boolean;
   /** Loaded (or loading) tilesets, by item id. */
   tilesets: { [itemId: string]: any };
-  /** Extruded footprints, built lazily the first time they are needed, by placeholder key. */
+  /** Ghost footprints, built lazily the first time they are needed, by placeholder key. */
   placeholders: { [key: string]: any };
   /** Items the current year shows; read by tilesets created after the last selection. */
   shownItems: { [itemId: string]: true };
+  /** Items already queued for loading, so a geometry listed by two manifests loads once. */
+  queued: { [itemId: string]: true };
   /** Height offset of each item, taken from the manifest it came from. */
   offsets: { [itemId: string]: number };
 }
@@ -546,6 +588,8 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
   private tileset3dRuntimes: Tileset3dRuntime[] = [];
   /** Bumped on unmount, so a tileset finishing its load afterwards never touches the scene. */
   private tilesetGeneration = 0;
+  private tilesetScopeTimer: number | undefined;
+  private detachTilesetScopeListener: (() => void) | null = null;
   /** One shader for every tileset; Cesium caches programs by source, so sharing costs nothing. */
   private tilesetShader: any = null;
   private is3dEnabled: boolean = false;
@@ -1482,6 +1526,11 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
     // The 3D view holds tilesets, placeholders and a WebGL context that outlive the component unless
     // released here; bumping the generation stops loads still in flight from touching the scene.
     this.tilesetGeneration++;
+    window.clearTimeout(this.tilesetScopeTimer);
+    if (this.detachTilesetScopeListener) {
+      this.detachTilesetScopeListener();
+      this.detachTilesetScopeListener = null;
+    }
     if (this.ol3d) {
       try {
         this.ol3d.getCesiumScene().primitives.removeAll();
@@ -2006,7 +2055,8 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
   /**
    * Shows, for every group of every `<tileset-3d-source>`, the geometry the timeline year calls
    * for, plus the extruded footprints that stand in for groups with no geometry at that year.
-   * Tilesets from `cesium-asset-urls` carry no time and are left alone.
+   * Tilesets from `cesium-asset-urls` carry no time and are left alone. A source whose `min-zoom`
+   * the view is below shows nothing, and its hidden tilesets stop preloading.
    */
   private apply3dTilesetTemporalFiltering(): void {
     if (this.tileset3dRuntimes.length === 0) {
@@ -2014,6 +2064,18 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
     }
     const year = this.state.yearFiltering ? parseYear(this.state.year) : null;
     this.tileset3dRuntimes.forEach((runtime) => {
+      if (!runtime.inZoom) {
+        Object.keys(runtime.tilesets).forEach((itemId) => {
+          runtime.tilesets[itemId].show = false;
+          runtime.tilesets[itemId].preloadWhenHidden = false;
+        });
+        Object.keys(runtime.placeholders).forEach((key) => {
+          if (runtime.placeholders[key]) {
+            runtime.placeholders[key].show = false;
+          }
+        });
+        return;
+      }
       const result = selectAt(year, runtime.model, runtime.source.rules);
       const shownItems: { [itemId: string]: true } = {};
       const shownPlaceholders: { [key: string]: string } = {};
@@ -2029,7 +2091,11 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
 
       runtime.shownItems = shownItems;
       Object.keys(runtime.tilesets).forEach((itemId) => {
-        runtime.tilesets[itemId].show = Boolean(shownItems[itemId]);
+        const tileset = runtime.tilesets[itemId];
+        tileset.show = Boolean(shownItems[itemId]);
+        // Hidden geometries preload, so the timeline never waits on the network (restored after a
+        // zoom-out turned it off).
+        tileset.preloadWhenHidden = true;
       });
       Object.keys(shownPlaceholders).forEach((key) => {
         if (!(key in runtime.placeholders) && this.cesiumLib && this.ol3d) {
@@ -2049,20 +2115,27 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
     }
   }
 
+  /** Polygons of a footprint WKT, in lon/lat degrees. */
+  private readFootprintPolygons(wkt: string, footprintCrs: string): number[][][][] {
+    const geometry: any = new WKT().readGeometry(wkt, {
+      dataProjection: footprintCrs,
+      featureProjection: 'EPSG:4326',
+    });
+    const type = geometry.getType();
+    return type === 'Polygon' ? [geometry.getCoordinates()] : type === 'MultiPolygon' ? geometry.getCoordinates() : [];
+  }
+
   /**
-   * An extruded, translucent footprint for a group that existed at the timeline year but has no 3D
-   * geometry for it. Built once and then only shown or hidden. Returns null when the footprint
-   * cannot be read, and that null is remembered so a bad WKT is not re-parsed every tick.
+   * A "ghost" of the footprint of a group that existed at the timeline year but has no 3D geometry
+   * for it: open walls, no roof, whose opacity fades from `placeholder-color` at the ground to
+   * `placeholder-top-opacity` at `placeholder-height`. The height is unknown, so the shape should
+   * read as a presence rather than as a volume. Built once and then only shown or hidden. Returns
+   * null when the footprint cannot be read, and that null is remembered so a bad WKT is not
+   * re-parsed every tick.
    */
   private createFootprintPlaceholder(Cesium: any, runtime: Tileset3dRuntime, wkt: string): any {
     try {
-      const geometry: any = new WKT().readGeometry(wkt, {
-        dataProjection: runtime.source.footprintCrs,
-        featureProjection: 'EPSG:4326',
-      });
-      const type = geometry.getType();
-      const polygons: number[][][][] =
-        type === 'Polygon' ? [geometry.getCoordinates()] : type === 'MultiPolygon' ? geometry.getCoordinates() : [];
+      const polygons = this.readFootprintPolygons(wkt, runtime.source.footprintCrs);
       // Cesium removes repeated positions itself, but a ring closed on its first point is cleaner without it.
       const toPositions = (ring: number[][]) => {
         const last = ring.length - 1;
@@ -2074,30 +2147,65 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
         return Cesium.Cartesian3.fromDegreesArray(flat);
       };
       const color =
-        Cesium.Color.fromCssColorString(runtime.source.placeholderColor) || Cesium.Color.GRAY.withAlpha(0.35);
-      const instances = polygons
+        Cesium.Color.fromCssColorString(runtime.source.placeholderColor) || Cesium.Color.GRAY.withAlpha(0.5);
+      const height = runtime.source.placeholderHeight;
+      const topAlpha = runtime.source.placeholderTopOpacity;
+      const rgb = [color.red, color.green, color.blue].map((c) => Cesium.Color.floatToByte(c));
+      const position = new Cesium.Cartesian3();
+      const cartographic = new Cesium.Cartographic();
+      const instances = [];
+      polygons
         .filter((rings) => rings.length > 0 && rings[0].length >= 4)
-        .map(
-          (rings) =>
-            new Cesium.GeometryInstance({
-              geometry: new Cesium.PolygonGeometry({
-                polygonHierarchy: new Cesium.PolygonHierarchy(
-                  toPositions(rings[0]),
-                  rings.slice(1).map((hole) => new Cesium.PolygonHierarchy(toPositions(hole)))
-                ),
-                height: 0,
-                extrudedHeight: runtime.source.placeholderHeight,
-                vertexFormat: Cesium.PerInstanceColorAppearance.FLAT_VERTEX_FORMAT,
-              }),
-              attributes: { color: Cesium.ColorGeometryInstanceAttribute.fromColor(color) },
+        .forEach((rings) => {
+          // Walls only: a roof would claim a height nobody recorded.
+          const geometry = Cesium.PolygonGeometry.createGeometry(
+            new Cesium.PolygonGeometry({
+              polygonHierarchy: new Cesium.PolygonHierarchy(
+                toPositions(rings[0]),
+                rings.slice(1).map((hole) => new Cesium.PolygonHierarchy(toPositions(hole)))
+              ),
+              height: 0,
+              extrudedHeight: height,
+              closeTop: false,
+              closeBottom: false,
+              vertexFormat: Cesium.PerInstanceColorAppearance.FLAT_VERTEX_FORMAT,
             })
-        );
+          );
+          if (!geometry) {
+            return;
+          }
+          // The fade is a per-vertex colour: wall texture coordinates are a planar projection, the
+          // same at the foot and the top of a wall, so the height is read off each vertex instead.
+          // Without a per-instance colour the appearance's `color` attribute comes from here.
+          const values = geometry.attributes.position.values;
+          const count = values.length / 3;
+          const colors = new Uint8Array(count * 4);
+          for (let i = 0; i < count; i++) {
+            position.x = values[3 * i];
+            position.y = values[3 * i + 1];
+            position.z = values[3 * i + 2];
+            const carto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(position, cartographic);
+            const t = carto && height > 0 ? Math.min(1, Math.max(0, carto.height / height)) : 0;
+            colors[4 * i] = rgb[0];
+            colors[4 * i + 1] = rgb[1];
+            colors[4 * i + 2] = rgb[2];
+            colors[4 * i + 3] = Cesium.Color.floatToByte(color.alpha + (topAlpha - color.alpha) * t);
+          }
+          geometry.attributes.color = new Cesium.GeometryAttribute({
+            componentDatatype: Cesium.ComponentDatatype.UNSIGNED_BYTE,
+            componentsPerAttribute: 4,
+            normalize: true,
+            values: colors,
+          });
+          instances.push(new Cesium.GeometryInstance({ geometry }));
+        });
       if (!instances.length) {
         return null;
       }
       const primitive = new Cesium.Primitive({
         geometryInstances: instances,
-        appearance: new Cesium.PerInstanceColorAppearance({ flat: true, translucent: color.alpha < 1, closed: true }),
+        // Open walls are seen from both sides, so no back-face culling (`closed: false`).
+        appearance: new Cesium.PerInstanceColorAppearance({ flat: true, translucent: true, closed: false }),
         // a few polygons: built on the main thread, without depending on Cesium's worker scripts
         asynchronous: false,
         show: false,
@@ -4244,14 +4352,16 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
       
       console.log('Cesium scene configured with lighting');
 
+      // Timeline-driven tilesets (<tileset-3d-source> children): read now, but nothing is fetched
+      // until the camera reaches them — see updateTileset3dScope.
+      this.initTileset3dSources(scene);
+
       // Load 3D Tilesets in the background: the scene can be shown meanwhile.
       (async () => {
         // Load 3D Tilesets from Cesium Ion (cesium-asset-ids prop)
         await this.load3DTileset(Cesium);
         // Load 3D Tilesets from direct URLs (cesium-asset-urls prop)
         await this.loadUrlTilesets(Cesium);
-        // Load timeline-driven tilesets declared as <tileset-3d-source> children
-        await this.loadTileset3dSources(Cesium);
       })().catch((err) => console.error('Failed to load 3D tilesets:', err));
     } catch (err) {
       console.error('Failed to initialize OLCesium:', err);
@@ -4388,7 +4498,8 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
     show: boolean,
     heightOffset: number,
     generation: number,
-    onCreated?: (tileset: any) => void
+    onCreated?: (tileset: any) => void,
+    preloadWhenHidden = true
   ): Promise<any> {
     const scene = this.ol3d.getCesiumScene();
     const tileset = new Cesium.Cesium3DTileset({
@@ -4397,7 +4508,7 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
       enableModelExperimental: true,
       // A hidden tileset otherwise loads nothing, and would pop in late the first time the
       // timeline asks for it — visible as holes during autoplay.
-      preloadWhenHidden: true,
+      preloadWhenHidden,
     });
     scene.primitives.add(tileset);
     if (onCreated) {
@@ -4452,132 +4563,306 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
   }
 
   /**
-   * Loads every `<tileset-3d-source>` child: resolves its manifests, merges their items, runs its
-   * temporal query, then loads the tilesets already carrying the visibility the current year
-   * implies, so nothing needs correcting once they arrive.
+   * Reads the `<tileset-3d-source>` children when the 3D view is created. Nothing is fetched here:
+   * each source is prepared the first time the view reaches its `min-zoom`, and each of its
+   * manifests loads once its extent comes into view (updateTileset3dScope), re-evaluated whenever
+   * the 3D camera stops moving.
    */
-  private async loadTileset3dSources(Cesium: any): Promise<void> {
-    const sources: Tileset3dSourceModel[] = [];
+  private initTileset3dSources(scene: any): void {
     React.Children.forEach(this.props.children, (child) => {
-      if (isTileset3dSource(child)) {
-        try {
-          sources.push(extractTileset3dSource(child));
-        } catch (err) {
-          console.error('[Cesium] ' + (err && err.message ? err.message : err));
-        }
+      if (!isTileset3dSource(child)) {
+        return;
+      }
+      try {
+        this.tileset3dRuntimes.push({
+          source: extractTileset3dSource(child),
+          status: 'idle',
+          model: { items: [], intervalsByGroup: {}, unmatchedByIdentifier: {} },
+          manifests: [],
+          inZoom: false,
+          tilesets: {},
+          placeholders: {},
+          shownItems: {},
+          queued: {},
+          offsets: {},
+        });
+      } catch (err) {
+        console.error('[Cesium] ' + (err && err.message ? err.message : err));
       }
     });
-    const generation = this.tilesetGeneration;
-    for (const source of sources) {
-      try {
-        const runtime = await this.prepareTileset3dSource(source);
-        if (generation !== this.tilesetGeneration) {
-          return;
-        }
-        if (!runtime) {
-          continue;
-        }
-        this.tileset3dRuntimes.push(runtime);
-        // Decides what is visible, and draws placeholders, before a single tileset has loaded.
-        this.apply3dTilesetTemporalFiltering();
-        await this.loadTileset3dItems(Cesium, runtime, generation);
-      } catch (err) {
-        console.error('[Cesium] Failed to load a <tileset-3d-source>:', err);
-      }
-    }
-    if (generation === this.tilesetGeneration && this.tileset3dRuntimes.length) {
-      this.apply3dTilesetTemporalFiltering();
-      this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
+    if (this.tileset3dRuntimes.length && scene.camera && scene.camera.moveEnd) {
+      this.detachTilesetScopeListener = scene.camera.moveEnd.addEventListener(this.scheduleTileset3dScope);
     }
   }
 
-  private async prepareTileset3dSource(source: Tileset3dSourceModel): Promise<Tileset3dRuntime | null> {
-    const listed = source.manifestUrls.length
-      ? source.manifestUrls
-      : (await this.selectBindings(source.manifestQuery))
-          .map((binding) => (binding.url ? binding.url.value : null))
-          .filter((url) => Boolean(url));
-    // Resolved against the page, so a template can use host-relative URLs (e.g. a proxy path) that
-    // work on whichever server renders it, and item URLs can in turn be relative to the manifest.
-    const manifestUrls = listed.map((url) => new URL(url, window.location.href).toString());
+  private scheduleTileset3dScope = () => {
+    window.clearTimeout(this.tilesetScopeTimer);
+    this.tilesetScopeTimer = window.setTimeout(() => this.updateTileset3dScope(), TILESET_SCOPE_DEBOUNCE);
+  };
 
-    const raw = [];
-    const offsetByUrl: { [url: string]: number } = {};
-    // A manifest that cannot be read is skipped, not fatal: one missing set of models must not
-    // take the others down with it.
-    await Promise.all(
-      manifestUrls.map(async (manifestUrl) => {
-        try {
-          const response = await fetch(manifestUrl);
-          if (!response.ok) {
-            console.warn(`[Cesium] Manifest ${manifestUrl}: HTTP ${response.status}, skipped`);
-            return;
+  /**
+   * Decides, for the current 3D camera, what each `<tileset-3d-source>` may fetch and show:
+   * below `min-zoom` nothing (and what was loaded is hidden); at or above it the source is
+   * prepared once, and every manifest whose extent intersects the view loads its tilesets.
+   * The OL view follows the Cesium camera, so its zoom is the same scale the 2D map uses.
+   */
+  private updateTileset3dScope(): void {
+    if (!this.ol3d || !this.is3dEnabled || !this.cesiumLib || !this.map || !this.tileset3dRuntimes.length) {
+      return;
+    }
+    const zoom = this.map.getView().getZoom();
+    const viewExtent = this.getTileset3dViewExtent();
+    const generation = this.tilesetGeneration;
+    let zoomChanged = false;
+    this.tileset3dRuntimes.forEach((runtime) => {
+      const minZoom = runtime.source.minZoom;
+      const inZoom = minZoom === null || (typeof zoom === 'number' && zoom >= minZoom);
+      if (inZoom !== runtime.inZoom) {
+        runtime.inZoom = inZoom;
+        zoomChanged = true;
+      }
+      if (!inZoom) {
+        return;
+      }
+      if (runtime.status === 'idle') {
+        runtime.status = 'preparing';
+        this.prepareTileset3dSource(runtime).then(() => {
+          if (generation === this.tilesetGeneration && runtime.status === 'ready') {
+            // Draws the placeholders and fixes what each tileset will be created as, then loads
+            // the manifests in view.
+            this.apply3dTilesetTemporalFiltering();
+            this.updateTileset3dScope();
           }
-          const json = await response.json();
-          const entries = readManifest(json, source.mapping, manifestUrl);
-          const fieldOffset = source.heightOffsetField ? json[source.heightOffsetField] : undefined;
-          const offset = typeof fieldOffset === 'number' ? fieldOffset : source.heightOffset;
-          entries.forEach((entry) => (offsetByUrl[entry.url] = offset));
-          raw.push(...entries);
+        });
+        return;
+      }
+      if (runtime.status !== 'ready') {
+        return;
+      }
+      runtime.manifests.forEach((manifest) => {
+        if (manifest.loaded || !extentsIntersect(manifest.extent, viewExtent)) {
+          return;
+        }
+        manifest.loaded = true;
+        this.loadTileset3dItems(this.cesiumLib, runtime, manifest, generation)
+          .then(() => {
+            if (generation === this.tilesetGeneration) {
+              this.applySunLighting(this.sunHeightDeg, this.sunDirectionDeg);
+            }
+          })
+          .catch((err) => console.error(`[Cesium] Failed to load the tilesets of ${manifest.url}:`, err));
+      });
+    });
+    if (zoomChanged) {
+      this.apply3dTilesetTemporalFiltering();
+    }
+  }
+
+  /**
+   * The part of the globe the 3D camera sees, as [west, south, east, north] in degrees, or null if
+   * unknown (then every manifest counts as in view). Falls back on the OL view, which follows the
+   * camera, when the camera sees no globe (e.g. pointed at the sky).
+   */
+  private getTileset3dViewExtent(): number[] | null {
+    const Cesium = this.cesiumLib;
+    try {
+      const scene = this.ol3d.getCesiumScene();
+      const rectangle = scene.camera.computeViewRectangle(scene.globe.ellipsoid);
+      if (rectangle) {
+        const deg = Cesium.Math.toDegrees;
+        return rectangle.west <= rectangle.east
+          ? [deg(rectangle.west), deg(rectangle.south), deg(rectangle.east), deg(rectangle.north)]
+          : [-180, deg(rectangle.south), 180, deg(rectangle.north)];
+      }
+    } catch (err) {
+      // fall through to the 2D view
+    }
+    const size = this.map.getSize();
+    if (!size) {
+      return null;
+    }
+    const view = this.map.getView();
+    return transformExtent(view.calculateExtent(size), view.getProjection(), 'EPSG:4326');
+  }
+
+  /**
+   * Fetches a source's manifests and runs its temporal query, then builds the model and the
+   * extent of each manifest. Only reached once the view is at or above the source's `min-zoom`.
+   */
+  private async prepareTileset3dSource(runtime: Tileset3dRuntime): Promise<void> {
+    const source = runtime.source;
+    try {
+      const listed = source.manifestUrls.length
+        ? source.manifestUrls
+        : (await this.selectBindings(source.manifestQuery))
+            .map((binding) => (binding.url ? binding.url.value : null))
+            .filter((url) => Boolean(url));
+      // Resolved against the page, so a template can use host-relative URLs (e.g. a proxy path) that
+      // work on whichever server renders it, and item URLs can in turn be relative to the manifest.
+      const manifestUrls = listed.map((url) => new URL(url, window.location.href).toString());
+
+      const manifests: Array<{ url: string; entries: Tileset3dRawItem[] }> = [];
+      const offsetByUrl: { [url: string]: number } = {};
+      // A manifest that cannot be read is skipped, not fatal: one missing set of models must not
+      // take the others down with it.
+      await Promise.all(
+        manifestUrls.map(async (manifestUrl) => {
+          try {
+            const response = await fetch(manifestUrl);
+            if (!response.ok) {
+              console.warn(`[Cesium] Manifest ${manifestUrl}: HTTP ${response.status}, skipped`);
+              return;
+            }
+            const json = await response.json();
+            const entries = readManifest(json, source.mapping, manifestUrl);
+            const fieldOffset = source.heightOffsetField ? json[source.heightOffsetField] : undefined;
+            const offset = typeof fieldOffset === 'number' ? fieldOffset : source.heightOffset;
+            entries.forEach((entry) => (offsetByUrl[entry.url] = offset));
+            manifests.push({ url: manifestUrl, entries });
+          } catch (err) {
+            console.warn(`[Cesium] Manifest ${manifestUrl} could not be read, skipped:`, err);
+          }
+        })
+      );
+      const raw: Tileset3dRawItem[] = [];
+      manifests.forEach((manifest) => raw.push(...manifest.entries));
+      const items = mergeItems(raw);
+      if (!items.length) {
+        console.warn('[Cesium] <tileset-3d-source> found no tilesets in', manifestUrls);
+        runtime.status = 'failed';
+        return;
+      }
+
+      let rows = [];
+      if (source.temporalQuery) {
+        try {
+          rows = (await this.selectBindings(source.temporalQuery)).map((binding) => ({
+            identifier: binding.identifier ? binding.identifier.value : null,
+            start: binding.start ? binding.start.value : undefined,
+            end: binding.end ? binding.end.value : undefined,
+            footprint: binding.footprint ? binding.footprint.value : undefined,
+            tileset: binding.tileset ? binding.tileset.value : undefined,
+          }));
         } catch (err) {
-          console.warn(`[Cesium] Manifest ${manifestUrl} could not be read, skipped:`, err);
+          // Without existence intervals every group falls back to the manifest alone.
+          console.error('[Cesium] temporal-query failed; showing the manifest alone:', err);
+        }
+      }
+
+      const offsets: { [itemId: string]: number } = {};
+      items.forEach((item) => (offsets[item.id] = offsetByUrl[item.url] || 0));
+      runtime.model = buildModel(items, rows, source.rules);
+      runtime.offsets = offsets;
+      runtime.manifests = manifests.map((manifest) =>
+        this.scopeTileset3dManifest(manifest.url, manifest.entries, runtime)
+      );
+      runtime.status = 'ready';
+      console.log(
+        `[Cesium] <tileset-3d-source>: ${raw.length} manifest entries, ${items.length} tilesets, ` +
+          `${rows.length} temporal rows, ${manifests.length} manifest(s)`
+      );
+    } catch (err) {
+      runtime.status = 'failed';
+      console.error('[Cesium] Failed to prepare a <tileset-3d-source>:', err);
+    }
+  }
+
+  /**
+   * The items of one manifest and its extent: the union of the footprints the temporal query gives
+   * for its groups. With no footprint at all the extent is unknown, and the manifest loads as soon
+   * as the zoom allows.
+   */
+  private scopeTileset3dManifest(url: string, entries: Tileset3dRawItem[], runtime: Tileset3dRuntime) {
+    const itemIds: string[] = [];
+    const groups: { [group: string]: true } = {};
+    entries.forEach((entry) => {
+      if (itemIds.indexOf(entry.id) === -1) {
+        itemIds.push(entry.id);
+      }
+      groups[entry.group] = true;
+    });
+    let extent: number[] | null = null;
+    Object.keys(groups).forEach((group) =>
+      (runtime.model.intervalsByGroup[group] || []).forEach((interval) => {
+        if (!interval.footprint) {
+          return;
+        }
+        try {
+          this.readFootprintPolygons(interval.footprint, runtime.source.footprintCrs).forEach((rings) =>
+            (rings[0] || []).forEach((point) => {
+              extent = extent
+                ? [
+                    Math.min(extent[0], point[0]),
+                    Math.min(extent[1], point[1]),
+                    Math.max(extent[2], point[0]),
+                    Math.max(extent[3], point[1]),
+                  ]
+                : [point[0], point[1], point[0], point[1]];
+            })
+          );
+        } catch (err) {
+          // an unreadable footprint only narrows nothing; createFootprintPlaceholder reports it
         }
       })
     );
-    const items = mergeItems(raw);
-    if (!items.length) {
-      console.warn('[Cesium] <tileset-3d-source> found no tilesets in', manifestUrls);
-      return null;
-    }
-
-    let rows = [];
-    if (source.temporalQuery) {
-      try {
-        rows = (await this.selectBindings(source.temporalQuery)).map((binding) => ({
-          identifier: binding.identifier ? binding.identifier.value : null,
-          start: binding.start ? binding.start.value : undefined,
-          end: binding.end ? binding.end.value : undefined,
-          footprint: binding.footprint ? binding.footprint.value : undefined,
-          tileset: binding.tileset ? binding.tileset.value : undefined,
-        }));
-      } catch (err) {
-        // Without existence intervals every group falls back to the manifest alone.
-        console.error('[Cesium] temporal-query failed; showing the manifest alone:', err);
-      }
-    }
-
-    const offsets: { [itemId: string]: number } = {};
-    items.forEach((item) => (offsets[item.id] = offsetByUrl[item.url] || 0));
-    console.log(
-      `[Cesium] <tileset-3d-source>: ${raw.length} manifest entries, ${items.length} tilesets, ` +
-        `${rows.length} temporal rows`
-    );
-    return {
-      source,
-      model: buildModel(items, rows, source.rules),
-      tilesets: {},
-      placeholders: {},
-      shownItems: {},
-      offsets,
-    };
+    return { url, itemIds, extent, loaded: false };
   }
 
-  /** Loads a source's tilesets a few at a time, each created already shown or hidden as the year requires. */
-  private async loadTileset3dItems(Cesium: any, runtime: Tileset3dRuntime, generation: number): Promise<void> {
-    const queue = runtime.model.items.slice();
+  /**
+   * Loads one manifest's tilesets. The ones the current year shows come first, and the hidden ones
+   * — which preload, so the timeline never waits on the network — are only created once those are
+   * on screen (or after a few seconds): the first view of an island is not held up by geometries
+   * it does not show.
+   */
+  private async loadTileset3dItems(
+    Cesium: any,
+    runtime: Tileset3dRuntime,
+    manifest: Tileset3dManifestScope,
+    generation: number
+  ): Promise<void> {
+    const byId: { [itemId: string]: Tileset3dItem } = {};
+    runtime.model.items.forEach((item) => (byId[item.id] = item));
+    const items = manifest.itemIds
+      .filter((itemId) => byId[itemId] && !runtime.queued[itemId])
+      .map((itemId) => byId[itemId]);
+    items.forEach((item) => (runtime.queued[item.id] = true));
+
+    const first = items.filter((item) => runtime.shownItems[item.id]);
+    const later = items.filter((item) => !runtime.shownItems[item.id]);
+    const shown = await this.addTileset3dItems(Cesium, runtime, first, generation);
+    await this.whenTilesetsLoaded(shown, generation);
+    if (generation === this.tilesetGeneration) {
+      await this.addTileset3dItems(Cesium, runtime, later, generation);
+    }
+  }
+
+  /** Adds tilesets a few at a time, each created already shown or hidden as the year requires. */
+  private async addTileset3dItems(
+    Cesium: any,
+    runtime: Tileset3dRuntime,
+    items: Tileset3dItem[],
+    generation: number
+  ): Promise<any[]> {
+    const queue = items.slice();
+    const added: any[] = [];
     const worker = async () => {
       while (queue.length && generation === this.tilesetGeneration) {
-        const item = queue.shift();
+        // The year may have moved since the queue was built: what it shows now goes first.
+        const next = queue.findIndex((candidate) => Boolean(runtime.shownItems[candidate.id]));
+        const item = queue.splice(Math.max(0, next), 1)[0];
         const tileset = await this.addTileset(
           Cesium,
           item.url,
-          Boolean(runtime.shownItems[item.id]),
+          runtime.inZoom && Boolean(runtime.shownItems[item.id]),
           runtime.offsets[item.id] || 0,
           generation,
           // registered at once, so a year change during the load already reaches it
-          (created) => (runtime.tilesets[item.id] = created)
+          (created) => (runtime.tilesets[item.id] = created),
+          runtime.inZoom
         );
-        if (!tileset && runtime.tilesets[item.id]) {
+        if (tileset) {
+          added.push(tileset);
+        } else if (runtime.tilesets[item.id]) {
           delete runtime.tilesets[item.id];
         }
       }
@@ -4587,6 +4872,26 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
       workers.push(worker());
     }
     await Promise.all(workers);
+    return added;
+  }
+
+  /** Resolves once every shown tileset has the tiles the current view needs, or after a timeout. */
+  private whenTilesetsLoaded(tilesets: any[], generation: number): Promise<void> {
+    const started = Date.now();
+    return new Promise((resolve) => {
+      const check = () => {
+        const done =
+          generation !== this.tilesetGeneration ||
+          Date.now() - started > TILESET_SHOWN_FIRST_MAX_WAIT ||
+          tilesets.every((tileset) => tileset.isDestroyed() || !tileset.show || tileset.tilesLoaded);
+        if (done) {
+          resolve();
+        } else {
+          window.setTimeout(check, 300);
+        }
+      };
+      check();
+    });
   }
 
   /** Runs a SELECT in the page's semantic context, resolving with its bindings. */
@@ -4637,6 +4942,10 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
     }
     this.ol3d.setEnabled(enabled);
     this.is3dEnabled = this.ol3d.getEnabled();
+    if (this.is3dEnabled) {
+      // The camera may already be over a source's area: no camera move would tell us.
+      this.scheduleTileset3dScope();
+    }
 
     if (this.is3dEnabled) {
       if (this.state.overlayVisualization === 'measure') {

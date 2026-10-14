@@ -31,7 +31,8 @@ import { Tileset3dFieldMapping, Tileset3dRules } from './Tileset3dModel';
  * appearance changes over time) and carries the years in which it was observed; the map shows,
  * per group, the geometry observed most recently before the timeline year. An optional
  * `temporal-query` supplies the authoritative existence of each group, which can extend before the
- * first observation (drawn as an extruded footprint) and end after the last.
+ * first observation (drawn as a ghost of its footprint) and end after the last. Nothing is fetched
+ * before the view reaches `min-zoom` and the area of a manifest.
  */
 export interface Tileset3dSourceConfig {
   /** One or more manifest URLs, comma-separated. Use this or `manifest-query`. */
@@ -83,10 +84,24 @@ export interface Tileset3dSourceConfig {
   /** Separator of hierarchical identifiers, e.g. `.`. Empty (default) matches exact ids only. */
   identifierSeparator?: string;
 
-  /** Height of the extruded footprint placeholders, in metres. Default 8. */
+  /**
+   * Smallest map zoom at which anything is loaded. Below it the source fetches nothing — no
+   * manifest, no query, no tileset — and hides whatever it already loaded. Each manifest is then
+   * loaded only once its extent (from the footprints of its groups) comes into view, so a
+   * zoomed-out or far-away view costs nothing. Omitted, everything loads on the first 3D switch.
+   */
+  minZoom?: number;
+
+  /** Height of the footprint placeholders, in metres. Default 8. */
   placeholderHeight?: number;
-  /** CSS colour of the placeholders. Default a translucent grey. */
+  /**
+   * CSS colour of the placeholders at their base; its alpha is the opacity there. Placeholders are
+   * drawn as open walls whose opacity fades upward to `placeholder-top-opacity`: their real height
+   * is unknown, so they should read as a presence rather than as a volume.
+   */
   placeholderColor?: string;
+  /** Opacity at the top of the placeholders. Default 0.15. */
+  placeholderTopOpacity?: number;
   /** CRS of the `?footprint` WKT. Default `EPSG:4326`. */
   footprintCrs?: string;
 }
@@ -108,8 +123,10 @@ export interface Tileset3dSourceModel {
   heightOffset: number;
   heightOffsetField?: string;
   temporalQuery?: string;
+  minZoom: number | null;
   placeholderHeight: number;
   placeholderColor: string;
+  placeholderTopOpacity: number;
   footprintCrs: string;
 }
 
@@ -177,8 +194,10 @@ export function extractTileset3dSource(child: React.ReactNode): Tileset3dSourceM
     heightOffset: number(props.heightOffset, 0),
     heightOffsetField: props.heightOffsetField || undefined,
     temporalQuery: props.temporalQuery || undefined,
+    minZoom: Number.isFinite(number(props.minZoom, NaN)) ? number(props.minZoom, NaN) : null,
     placeholderHeight: number(props.placeholderHeight, 8),
-    placeholderColor: props.placeholderColor || 'rgba(128, 128, 128, 0.35)',
+    placeholderColor: props.placeholderColor || 'rgba(150, 160, 175, 0.5)',
+    placeholderTopOpacity: Math.min(1, Math.max(0, number(props.placeholderTopOpacity, 0.15))),
     footprintCrs: props.footprintCrs || 'EPSG:4326',
   };
 }

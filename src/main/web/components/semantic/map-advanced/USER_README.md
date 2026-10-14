@@ -428,6 +428,23 @@ The 3D view (the cube button) can show 3D Tiles that appear, change and disappea
 moves. Declare them with one `<tileset-3d-source>` child of `<semantic-map-advanced>`; the map
 reads it once, the first time the 3D view is opened.
 
+### When it loads: `min-zoom` and the view
+
+Nothing is fetched until the 3D view needs it, so opening 3D over a wide area stays light:
+
+- Below `min-zoom` (the same zoom scale as the 2D map; in 3D it follows the camera) the source
+  fetches nothing — no manifest, no query, no tileset — and hides whatever it loaded earlier.
+  Without `min-zoom` it is read on the first switch to 3D, at any zoom.
+- At or above it, the manifests are read and the temporal query runs, once. Each manifest then
+  loads its tilesets only when its **extent** — the union of the footprints the query gives for
+  its groups — comes into the frame, so with one manifest per area only the area being looked at
+  is loaded. A manifest with no footprints loads on zoom alone.
+- Within a manifest, the geometries the current year shows load first. The hidden ones are added
+  once those are on screen (or after a few seconds), and then preload in the background, so moving
+  along the timeline does not wait on the network.
+
+Loaded tilesets stay in the scene for the life of the view; moving away only stops rendering them.
+
 ### The model
 
 - An **item** is one loadable geometry: a `tileset.json` URL.
@@ -487,7 +504,7 @@ At year Y, for each group:
 3. Otherwise the item observed most recently, not after Y, is shown (`selection="snapshot"`;
    `exact` shows only an item observed in Y itself).
 4. If the group exists but nothing has been observed yet, `before-first-observation` decides:
-   `placeholder` extrudes the interval's `?footprint`, `earliest` shows the earliest geometry,
+   `placeholder` draws the interval's `?footprint` as a ghost (below), `earliest` shows the earliest geometry,
    `none` (default) shows nothing.
 5. A group with no intervals at all follows the manifest alone.
 6. With time filtering off (`year-filtering="false"`), every group shows its latest geometry.
@@ -499,13 +516,16 @@ exactly that id is given to the group named by its longest prefix ending before 
 always wins, so an application can model some sub-phases as groups of their own. Without the
 attribute only exact ids match. Normalising identifiers beyond that is the query's job.
 
-`unmatched-identifiers="placeholder"` also extrudes the footprints of intervals that match no
+`unmatched-identifiers="placeholder"` also draws the footprints of intervals that match no
 group at all — objects the application knows existed but that were never modelled in 3D — so the
 3D view shows everything the 2D one does.
 
-Placeholders are translucent extrusions, `placeholder-height` metres tall (default 8) in
-`placeholder-color`. `footprint-crs` (default `EPSG:4326`) is the CRS of the WKT. One placeholder
-is drawn per identifier, even if the data lists overlapping intervals for it.
+Placeholders are "ghosts" of the footprint: open walls with no roof, `placeholder-height` metres
+tall (default 8), in `placeholder-color` at the ground (its alpha is the opacity there; default
+`rgba(150, 160, 175, 0.5)`) fading upward to `placeholder-top-opacity` (default 0.15). The real
+height is unknown, so they are drawn to read as a presence rather than as a volume. `footprint-crs`
+(default `EPSG:4326`) is the CRS of the WKT. One placeholder is drawn per identifier, even if the
+data lists overlapping intervals for it. They are cheap: a hundred cost a few milliseconds.
 
 ### Height
 
@@ -526,6 +546,7 @@ models off the imagery they belong on.
       base-url="/proxy/models/" url-template="{base}{path}/tileset.json"
       identifier-separator="."
       before-first-observation="placeholder"
+      min-zoom="15"
       footprint-crs="EPSG:3857"
       temporal-query="SELECT ?identifier ?start ?end ?footprint WHERE { ... }">
   </tileset-3d-source>

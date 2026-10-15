@@ -118,7 +118,9 @@ public class MProxyServlet extends ProxyServlet {
         String loginBase64 = getConfigParam("loginBase64");
         String permission = Permissions.PROXY.PREFIX + key;
         String encodedAuth = null;
-        String accessToken = getConfigParam("access_token");
+        // query parameter name the target expects the token in, e.g. access_token (Mapbox) or key (Carto)
+        String tokenQueryName = StringUtils.defaultIfEmpty(getConfigParam("tokenQueryName"), "access_token");
+        String tokenQueryValue = getConfigParam("tokenQueryValue");
 
         this.setXForwardedFor(servletRequest, proxyRequest);
 
@@ -149,7 +151,9 @@ public class MProxyServlet extends ProxyServlet {
 
         try {
             URIBuilder builder = new URIBuilder(proxyRequest.getRequestLine().getUri());
-            builder.setParameter("access_token", accessToken);
+            if (!StringUtils.isEmpty(tokenQueryValue)) {
+                builder.setParameter(tokenQueryName, tokenQueryValue);
+            }
             httpget = new HttpGet(builder.build());
         } catch (URISyntaxException e) {
             logger.debug("Connection to target system could not be established: ", e);

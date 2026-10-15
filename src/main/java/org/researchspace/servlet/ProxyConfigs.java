@@ -202,7 +202,8 @@ public class ProxyConfigs {
                         SecretsHelper.resolveSecretOrFallback(secretResolver, proxyConfig.loginPassword));
                 pmap.put("loginBase64", SecretsHelper.resolveSecretOrFallback(secretResolver, proxyConfig.loginBase64));
                 pmap.put("log", "true");
-                pmap.put(proxyConfig.tokenQueryName, proxyConfig.tokenQueryValue);
+                pmap.put("tokenQueryName", proxyConfig.tokenQueryName);
+                pmap.put("tokenQueryValue", proxyConfig.tokenQueryValue);
 
                 pmap.put(ProxyServlet.P_PRESERVEHOST, proxyConfig.preserveHost);
                 pmap.put(ProxyServlet.P_PRESERVECOOKIES, proxyConfig.preserveCookies);

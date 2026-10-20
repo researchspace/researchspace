@@ -351,7 +351,12 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
    * Viewport-driven re-sync. `moveend` is not debounced on the map side, so panning would
    * otherwise flip overlay visibility (and start tile fetches) on every step of the pan.
    */
-  private applySyncWithTimeDebounced = _.debounce(() => this.applySyncWithTime(), 200);
+  private applySyncWithTimeDebounced = _.debounce(() => this.applySyncWithTime({ keepManualChoices: true }), 200);
+  /**
+   * Visibility "Sync with time" last asked for, per overlay layer object. Lets a viewport change
+   * touch only the overlays whose target it changed, so maps toggled by hand stay as they are.
+   */
+  private syncTargets = new WeakMap<any, boolean>();
   private timelineTrackRef = React.createRef<HTMLDivElement>();
   /**
    * Related-entities classes declared as children, and their rows. The rows deliberately live
@@ -1385,10 +1390,14 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
         // Newly (re)loaded overlays start hidden, so apply the sync straight away — this is also
         // what makes `sync-filter-default="true"` take effect on page load. That path never went
         // through the checkbox, so take the restore baseline here if it is still missing.
+        // The map also re-sends layers it already had (e.g. on a basemap change): those keep
+        // their visibility, new layer objects are new to the sync and get its target.
         if (this.state.syncWithTime && !this.state.syncPreviousVisibility) {
-          this.setState({ syncPreviousVisibility: this.captureSyncBaseline() }, () => this.applySyncWithTime());
+          this.setState({ syncPreviousVisibility: this.captureSyncBaseline() }, () =>
+            this.applySyncWithTime({ keepManualChoices: true })
+          );
         } else {
-          this.applySyncWithTime();
+          this.applySyncWithTime({ keepManualChoices: true });
         }
         if (this.props.featuresTaxonomies) {
           this.setFeaturesColorTaxonomy();
@@ -1448,7 +1457,9 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
   private handleFilterByZoomChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // Toggling only re-filters the sidebar list (via render); it never changes map display by
     // itself, but it does narrow the set "Sync with time" keeps visible.
-    this.setState({ filterByZoom: event.target.checked }, () => this.applySyncWithTime());
+    this.setState({ filterByZoom: event.target.checked }, () =>
+      this.applySyncWithTime({ keepManualChoices: true })
+    );
   };
 
   private handleFilterByTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1575,15 +1586,25 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
    * No-ops when the resulting visibility is already correct — this is what keeps timeline
    * auto-play (a tick every 500ms) and `moveend` bursts cheap, since in `snapshot` mode the set
    * only changes when the year crosses a source's date.
+   *
+   * With `keepManualChoices` (viewport changes, layers re-sent by the map) an overlay is only
+   * switched when the sync now wants something else for it than last time: a map turned on or
+   * off by hand stays so while panning and zooming, and the next year change takes it back.
    */
-  private applySyncWithTime() {
+  private applySyncWithTime(options: { keepManualChoices?: boolean } = {}) {
     if (!this.state.syncWithTime) {
       return;
     }
     const shouldBeVisible = new Set(this.getSyncedOverlayLayers());
-    const changed = this.applyOverlayVisibility((layer) =>
-      layer.get('filterYear') == null ? null : shouldBeVisible.has(layer)
-    );
+    const changed = this.applyOverlayVisibility((layer) => {
+      if (layer.get('filterYear') == null) {
+        return null;
+      }
+      const target = shouldBeVisible.has(layer);
+      const previousTarget = this.syncTargets.get(layer);
+      this.syncTargets.set(layer, target);
+      return options.keepManualChoices && previousTarget === target ? null : target;
+    });
     if (changed) {
       this.commitOverlayVisibilityChange();
     }

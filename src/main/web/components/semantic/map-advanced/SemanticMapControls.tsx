@@ -310,6 +310,10 @@ interface Props extends SharedStateProps {
 const MARKER_THUMB_WIDTH = 20;
 /** Smallest gap in px between two year dots before they stop being separately clickable. */
 const MARKER_MIN_SEPARATION = 12;
+/** Approximate width in px of one digit of a 12px year label under the bar. */
+const LABEL_CHAR_WIDTH = 7;
+/** Smallest gap in px between two year labels under the bar. */
+const LABEL_MIN_GAP = 6;
 
 /**
  * Hands a subtree the template scope of the element that declared it, so each class renders with
@@ -2968,57 +2972,36 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
                 {/* Wrapper so the year markers can be positioned against the slider itself,
                     rather than against the padded container around it. */}
                 <div className={styles.timelineTrack} ref={this.timelineTrackRef}>
-                  {this.isSteppedTimeline() ? (
-                    <input
-                      type={'range'}
-                      className={styles.timelineSlider}
-                      min={0}
-                      max={this.getSnapStops().length - 1}
-                      step={1}
-                      value={this.getNearestStopIndex(this.state.year, this.getSnapStops())}
-                      onChange={this.handleSteppedTimelineChange}
-                      disabled={this.props.timeline.locked}
-                    />
-                  ) : (
-                    <input
-                      type={'range'}
-                      className={styles.timelineSlider}
-                      min={this.props.timeline.min}
-                      max={this.getTimelineMax()}
-                      step={1}
-                      value={this.state.year}
-                      onChange={this.handleTimelineChange}
-                      disabled={this.props.timeline.locked}
-                    />
-                  )}
+                  <input
+                    type={'range'}
+                    className={styles.timelineSlider}
+                    min={this.props.timeline.min}
+                    max={this.getTimelineMax()}
+                    step={1}
+                    value={this.state.year}
+                    onChange={this.handleTimelineChange}
+                    onKeyDown={this.handleTimelineKeyDown}
+                    disabled={this.props.timeline.locked}
+                  />
                   {this.areYearMarkersVisible() && this.renderYearMarkers()}
                 </div>
                 <div className={styles.yearLabel}>{this.state.year}</div>
 
-                {/* Tick marks: the snap points on a stepped timeline, centuries otherwise */}
-                {this.isSteppedTimeline() ? (
-                  <div className={styles.timelineStopLabels}>
-                    {this.getSnapStops().map((year) => (
-                      <div
-                        key={year}
-                        className={`${styles.timelineStopLabel} ${
-                          year === this.state.year ? styles.timelineStopLabelActive : ''
-                        }`}
-                        style={{ left: this.getMarkerOffset(year) }}
-                      >
-                        {year}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={styles['timeline-ticks']}>
-                    {this.generateTickMarks().map((year) => (
-                      <div key={year} style={{ fontSize: '12px', color: '#666' }}>
-                        {year}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* Year labels at their place in time: the snap points on a stepped timeline,
+                    round years otherwise */}
+                <div className={styles.timelineStopLabels}>
+                  {this.getTimelineLabelLayout().map(({ year, left }) => (
+                    <div
+                      key={year}
+                      className={`${styles.timelineStopLabel} ${
+                        this.isSteppedTimeline() && year === this.state.year ? styles.timelineStopLabelActive : ''
+                      }`}
+                      style={{ left }}
+                    >
+                      {year}
+                    </div>
+                  ))}
+                </div>
               </React.Fragment>
             )}
           </div>
@@ -3578,7 +3561,22 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
   }
 
   /**
-   * Screen position of every year marker: one dot per year, never merged.
+   * Screen position of every year marker: one dot per year, never merged (see
+   * `layoutYearPositions`). Until the track has been measured the offsets fall back to the exact
+   * CSS calc.
+   */
+  private getMarkerLayout(): Array<{ year: number; layers: any[]; left: string }> {
+    const markers = this.getTimelineMarkers();
+    const positions = this.layoutYearPositions(markers.map((marker) => marker.year));
+    return markers.map(({ year, layers }, i) => ({
+      year,
+      layers,
+      left: positions ? `${positions[i]}px` : this.getMarkerOffset(year),
+    }));
+  }
+
+  /**
+   * Px positions on the track of ascending years, each at its place in time.
    *
    * Several years genuinely fall within a pixel or two of each other — 1800 and 1801 land ~1px
    * apart on a 1500-2026 bar — so drawing them at their exact offsets would stack them and make
@@ -3587,22 +3585,17 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
    * accuracy only where they would otherwise be indistinguishable. A backward pass then keeps the
    * run inside the track, so nothing is pushed off the right end.
    *
-   * Until the track has been measured there is nothing to detect collisions against, so the
-   * offsets fall back to the exact CSS calc.
+   * Returns null until the track has been measured: there is nothing to detect collisions against.
    */
-  private getMarkerLayout(): Array<{ year: number; layers: any[]; left: string }> {
-    const markers = this.getTimelineMarkers();
+  private layoutYearPositions(years: number[]): number[] | null {
     const usable = this.state.trackWidth - MARKER_THUMB_WIDTH;
-    if (!markers.length || usable <= 0) {
-      return markers.map(({ year, layers }) => ({ year, layers, left: this.getMarkerOffset(year) }));
+    if (!years.length || usable <= 0) {
+      return null;
     }
 
-    const min = this.props.timeline.min;
-    const span = this.getTimelineMax() - min;
     const half = MARKER_THUMB_WIDTH / 2;
-    const positions = markers.map(({ year }) => {
-      return half + this.getYearFraction(year) * usable;
-    });
+    const exact = years.map((year) => half + this.getYearFraction(year) * usable);
+    const positions = exact.slice();
 
     // Forward: never closer than MARKER_MIN_SEPARATION.
     let previous = -Infinity;
@@ -3623,7 +3616,7 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
         let rawSum = 0;
         let laidSum = 0;
         for (let i = start; i <= end; i++) {
-          rawSum += half + this.getYearFraction(markers[i].year) * usable;
+          rawSum += exact[i];
           laidSum += positions[i];
         }
         const delta = rawSum / count - laidSum / count;
@@ -3646,7 +3639,40 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
       lower = positions[i] + MARKER_MIN_SEPARATION;
     }
 
-    return markers.map(({ year, layers }, i) => ({ year, layers, left: `${positions[i]}px` }));
+    return positions;
+  }
+
+  /**
+   * Year labels under the bar, each at its place in time (under its dot): the snap points on a
+   * stepped timeline, round years otherwise.
+   *
+   * Snap points close in time (1835/1850, 2023/2026) would print on top of each other, so a label
+   * is left out when it would overlap one already placed. The current year and the two ends are
+   * placed first, so they always show; a dot without a label still names its year on hover.
+   */
+  private getTimelineLabelLayout(): Array<{ year: number; left: string }> {
+    const stepped = this.isSteppedTimeline();
+    const years = stepped ? this.getSnapStops() : this.generateTickMarks();
+    const positions = this.layoutYearPositions(years);
+    if (!positions) {
+      return years.map((year) => ({ year, left: this.getMarkerOffset(year) }));
+    }
+
+    const width = (i: number) => String(years[i]).length * LABEL_CHAR_WIDTH;
+    const priority = (i: number) =>
+      stepped && years[i] === this.state.year ? 0 : i === 0 || i === years.length - 1 ? 1 : 2;
+    const order = years.map((_, i) => i).sort((a, b) => priority(a) - priority(b) || a - b);
+
+    const placed: number[] = [];
+    order.forEach((i) => {
+      const fits = placed.every(
+        (j) => Math.abs(positions[i] - positions[j]) >= (width(i) + width(j)) / 2 + LABEL_MIN_GAP
+      );
+      if (fits) {
+        placed.push(i);
+      }
+    });
+    return placed.sort((a, b) => a - b).map((i) => ({ year: years[i], left: `${positions[i]}px` }));
   }
 
   /**
@@ -3673,15 +3699,8 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
     return `calc(${MARKER_THUMB_WIDTH / 2}px + ${fraction} * (100% - ${MARKER_THUMB_WIDTH}px))`;
   }
 
-  /**
-   * Position of a year along the slider (0..1): proportional to time, or, on a stepped timeline,
-   * the index of its snap point, so that the points are evenly spaced.
-   */
+  /** Position of a year along the slider (0 at `min`, 1 at `max`), proportional to time. */
   private getYearFraction(year: number): number {
-    if (this.isSteppedTimeline()) {
-      const stops = this.getSnapStops();
-      return this.getNearestStopIndex(year, stops) / (stops.length - 1);
-    }
     const min = this.props.timeline.min;
     const span = this.getTimelineMax() - min;
     return span > 0 ? Math.min(1, Math.max(0, (year - min) / span)) : 0;
@@ -3692,33 +3711,48 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
     return this.getTimelineMarkers().map((marker) => marker.year);
   }
 
-  private getNearestStopIndex(year: number, stops: number[]): number {
-    let best = 0;
-    stops.forEach((stop, i) => {
-      if (Math.abs(stop - year) < Math.abs(stops[best] - year)) {
-        best = i;
-      }
-    });
-    return best;
-  }
-
   /**
-   * With `timeline.snapOnly` the slider moves between the snap points only, so it is drawn as
-   * evenly spaced steps: points close in time stay apart, and the native slider drags smoothly
-   * from one step to the next.
+   * With `timeline.snapOnly` the slider moves between the snap points only. The points sit at
+   * their place in time and are labelled with their years; dragging jumps to the nearest one.
    */
   private isSteppedTimeline(): boolean {
     return this.isSnapOnly() && this.getSnapStops().length >= 2;
   }
 
-  private handleSteppedTimelineChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (this.props.timeline && this.props.timeline.locked) {
+  /**
+   * On a stepped timeline the keys move to the previous / next snap point: the native one-year
+   * step would snap straight back to the point the slider is already on.
+   */
+  private handleTimelineKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!this.isSteppedTimeline() || this.props.timeline.locked) {
       return;
     }
     const stops = this.getSnapStops();
-    const index = Math.min(stops.length - 1, Math.max(0, parseInt(event.target.value, 10) || 0));
-    if (stops[index] !== this.state.year) {
-      this.commitTimelineYear(stops[index]);
+    const year = this.state.year;
+    let target: number | undefined;
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowUp':
+      case 'PageUp':
+        target = stops.find((stop) => stop > year);
+        break;
+      case 'ArrowLeft':
+      case 'ArrowDown':
+      case 'PageDown':
+        target = stops.slice().reverse().find((stop) => stop < year);
+        break;
+      case 'Home':
+        target = stops[0];
+        break;
+      case 'End':
+        target = stops[stops.length - 1];
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    if (target !== undefined && target !== year) {
+      this.commitTimelineYear(target);
     }
   };
 
@@ -4073,7 +4107,11 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
     }
 
     const input = event.target as HTMLInputElement;
-    this.commitTimelineYear(this.snapYearToMarkers(parseInt(input.value)));
+    const year = this.snapYearToMarkers(parseInt(input.value));
+    // Dragging between two snap points keeps snapping back to the same one: nothing to send.
+    if (year !== this.state.year) {
+      this.commitTimelineYear(year);
+    }
   };
 
   /** Sets the timeline year and sends it to the map. */

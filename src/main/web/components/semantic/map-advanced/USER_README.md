@@ -287,7 +287,7 @@ Timeline configuration options:
 | `locked` | boolean | Whether timeline is locked (default: false) |
 | `tour` | boolean | Whether tour mode is enabled (default: false) |
 | `snapYears` | number[] | Extra snap points besides the years of the historical maps (e.g. the epochs of the features). Drawn as dots on the timeline, without a map preview |
-| `snapOnly` | boolean | When true the slider can only rest on the snap points (map years and `snapYears`): the timeline is drawn as evenly spaced steps labelled with their years (the native slider drags from step to step), the snap button is hidden and auto-play steps from one point to the next (default: false) |
+| `snapOnly` | boolean | When true the slider can only rest on the snap points (map years and `snapYears`): each point sits at its place in time and is labelled with its year (labels that would overlap are left out, the current year and the two ends always show), dragging jumps to the nearest point and the arrow keys step from one point to the next, the snap button is hidden and auto-play steps from one point to the next (default: false) |
 
 ## Historical Map Filters
 

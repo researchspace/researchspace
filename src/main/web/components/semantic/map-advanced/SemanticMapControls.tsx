@@ -173,6 +173,11 @@ interface Props extends SharedStateProps {
   timeline: Timeline;
   featuresColorsPalette?: string;
   /**
+   * Display names of the taxonomies in "Label by" and "Color by", as a JSON object
+   * (e.g. `{"specie_pro": "Property type (1835)"}`). Taxonomies without one show their name.
+   */
+  featuresTaxonomiesLabels?: string | { [taxonomy: string]: string };
+  /**
    * When true, disables timeline interaction
    */
   locked?: boolean;
@@ -919,10 +924,10 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
 
   public componentWillMount() {
     if (this.props.featuresTaxonomies) {
-      this.featuresTaxonomies = this.props.featuresTaxonomies.split(',');
+      this.featuresTaxonomies = splitTaxonomies(this.props.featuresTaxonomies);
     }
     if (this.props.featuresColorTaxonomies) {
-      this.featuresColorTaxonomies = this.props.featuresColorTaxonomies.split(',');
+      this.featuresColorTaxonomies = splitTaxonomies(this.props.featuresColorTaxonomies);
     }
   }
 
@@ -2863,7 +2868,7 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
                               checked={this.state.selectedFeaturesLabel === taxonomy}
                               onChange={this.handleSelectedLabelChange}
                             />
-                            <span>{this.capitalizeFirstLetter(taxonomy)}</span>
+                            <span>{this.getTaxonomyLabel(taxonomy)}</span>
                           </label>
                         ))}
                       </div>
@@ -2892,7 +2897,7 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
                               checked={this.state.featuresColorTaxonomy === taxonomy}
                               onChange={this.handleColorTaxonomyChange}
                             />
-                            <span>{this.capitalizeFirstLetter(taxonomy)}</span>
+                            <span>{this.getTaxonomyLabel(taxonomy)}</span>
                           </label>
                         ))}
                       </div>
@@ -3385,6 +3390,19 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
 
   private capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  /** Name of a taxonomy in "Label by" / "Color by": `features-taxonomies-labels`, or its own name. */
+  private getTaxonomyLabel(taxonomy: string): string {
+    let labels = this.props.featuresTaxonomiesLabels as any;
+    if (typeof labels === 'string') {
+      try {
+        labels = JSON.parse(labels);
+      } catch (e) {
+        labels = {};
+      }
+    }
+    return (labels && labels[taxonomy]) || this.capitalizeFirstLetter(taxonomy);
   }
 
   private getRgbaString(group: string, preview: boolean = false) {
@@ -4213,6 +4231,14 @@ export class SemanticMapControls extends SharedStateComponent<Props, State> {
       this.setState({ isPlaying: true, animationInterval: interval });
     }
   };
+}
+
+/** Comma-separated taxonomy names; tolerates spaces after the commas (`"macro, specie_pro"`). */
+function splitTaxonomies(value: string): string[] {
+  return value
+    .split(',')
+    .map((taxonomy) => taxonomy.trim())
+    .filter((taxonomy) => taxonomy.length > 0);
 }
 
 /**

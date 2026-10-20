@@ -65,6 +65,7 @@ To integrate the SemanticMapAdvanced component into your HTML page, you need to 
 | `target-map-id` | string | Yes | ID of the target map component |
 | `features-taxonomies` | string | No | Comma-separated list of taxonomies for features |
 | `features-color-taxonomies` | string | No | Comma-separated list of taxonomies for coloring |
+| `features-taxonomies-labels` | JSON Object | No | Display names of the taxonomies in "Label by" and "Color by", e.g. `{"specie_pro":"Property type (1835)"}`; others show their own name |
 | `features-options-enabled` | boolean | No | Whether feature options are enabled (default: false) |
 | `filters-initialization` | JSON Object | No | Initial filter state |
 | `show-filters` | boolean | No | Whether to show filters (default: false) |

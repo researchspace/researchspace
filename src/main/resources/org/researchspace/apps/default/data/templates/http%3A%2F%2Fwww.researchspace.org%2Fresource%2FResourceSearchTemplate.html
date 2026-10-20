@@ -1,4 +1,14 @@
-<mp-event-target-template-render id="[[urlParam 'resourceconfig' escape=false]]-resourceSearch-frame" template='{{> template}}'>
+[[!-- Preserve configuration-wide refresh notifications from forms and collection
+      browsers. Each instance forwards once to its own target; keep this proxy
+      outside the subtree that it refreshes. --]]
+<mp-event-proxy id="[[urlParam 'viewid' escape=false]]-configuration-refresh-proxy"
+                on-event-type="Component.TemplateUpdate"
+                on-event-target="[[urlParam 'resourceconfig' escape=false]]-resourceSearch-frame"
+                proxy-event-type="Component.TemplateUpdate"
+                proxy-targets='["[[urlParam "viewid" escape=false]]-resourceSearch-frame"]'>
+</mp-event-proxy>
+
+<mp-event-target-template-render id="[[urlParam 'viewid' escape=false]]-resourceSearch-frame" template='{{> template}}'>
   <template id='template'>
     [[!-- WARNING: any KPs used for search has to have a domain matching the resource ontology class --]]
     [[#if (urlParam "searchkpcategory")]]
@@ -199,7 +209,7 @@
               <mp-event-proxy id='[[urlParam "viewid" escape=false]]-authorityDocument-importSuccess-refreshSearch-proxy' 
                               on-event-type='RdfUpload.Success'
                               proxy-event-type='Component.TemplateUpdate' 
-                              proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'>
+                              proxy-targets='["[[urlParam "viewid" escape=false]]-resourceSearch-frame"]'>
               ></mp-event-proxy>
             {{/ifCond}}
 
@@ -372,7 +382,7 @@
 
                           <bs-dropdown-menu>
                             {{#each bindings}}
-                              <mp-event-trigger id='{{../bindings.0.viewid.value}}-view-type-trigger' 
+                              <mp-event-trigger id='{{../bindings.0.viewid.value}}-view-type-trigger-{{@index}}'
                                                 type='Component.TemplateUpdate' 
                                                 data='{"viewTypeIndex": "{{@index}}",
                                                       "searchViewType": "{{searchViewType.value}}"}' 
@@ -402,7 +412,7 @@
             [[!-- Refresh button --]]
             <mp-event-trigger id="[[urlParam 'viewid' escape=false]]-search-refresh-trigger" 
                                   type='Component.TemplateUpdate' 
-                                  targets='["[[urlParam "resourceconfig" escape=false]]-resourceSearch-frame"]'
+                                  targets='["[[urlParam "viewid" escape=false]]-resourceSearch-frame"]'
                                   >
               <button class="btn btn-default btn-textAndIcon search-refresh-button" title="Refresh results" aria-label="Refresh results">
                 <rs-icon icon-type="rounded" icon-name="refresh" title="Refresh results" symbol="true"></rs-icon>
@@ -475,7 +485,7 @@
                 <mp-anonymous-hidden><hr></mp-anonymous-hidden>
          --]]       
                 <semantic-search-result> 
-                  <mp-sparql-download id='csv-result' 
+                  <mp-sparql-download id='[[urlParam "viewid" escape=false]]-csv-result'
                                       query='SELECT ?resourceName ?resourceType ?resourceDescription WHERE { 
                                               BIND("[[urlParam "resourcelabel" escape=false]]" as ?resourceType)
 
@@ -559,7 +569,7 @@
                 </semantic-search-result>
                   
                 <semantic-search-result>
-                  <mp-sparql-download id='json-result' 
+                  <mp-sparql-download id='[[urlParam "viewid" escape=false]]-json-result'
                                       query='SELECT ?resourceName ?resourceType ?resourceDescription WHERE { 
                                               BIND("[[urlParam "resourcelabel" escape=false]]" as ?resourceType)
 
@@ -695,7 +705,7 @@
         If persist-resize=true don't use id including 'viewId' as the same sidebar 
         will have different keys in local storage, creating problems  
   --]]
-        <mp-splitpane id='[[urlParam "resourcelabel" escape=false]]-search-filters-sidebar' 
+        <mp-splitpane id='[[urlParam "viewid" escape=false]]-search-filters-sidebar'
                       min-size=43 
                       default-size=297 
                       snap-threshold=150 
@@ -723,7 +733,7 @@
                     {{#if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/grid"))) }}
                     [[!-- grid view --]]
                       <semantic-search-result>
-                        <semantic-table id='semantic-search-result-grid'
+                        <semantic-table id='[[urlParam "viewid" escape=false]]-semantic-search-result-grid'
                                         class-name="semantic-search-result-grid"
                                         query='SELECT DISTINCT ?subject ?iri ?resourceOntologyClass WHERE {
                                                     BIND(?subject as ?iri) .
@@ -763,7 +773,7 @@
                     [[!-- timeline view: currently enabled only for crm:E21_Person and rdfs:subClassOf* crm:E2_Temporal_Entity  --]]
                       <div>
                         <semantic-search-result>
-                          <mp-sparql-result-counts id='timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
+                          <mp-sparql-result-counts id='[[urlParam "viewid" escape=false]]-timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
                                                       template='{{> template}}'
                           >
                               <template id='template'>
@@ -778,13 +788,13 @@
                         </semantic-search-result>
 
                         <semantic-search-result-context ranges='["http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span"]'>
-                          <semantic-search-result id='semantic-search-result-timeline'>
+                          <semantic-search-result id='[[urlParam "viewid" escape=false]]-semantic-search-result-timeline'>
                               <mp-component-toolbar>
                                 <mp-component-toolbar-actions>
                                     <mp-component-toolbar-action-save id='[[urlParam "viewid" escape=false]]-persist-component-action' add-to-default-set=false></mp-component-toolbar-action-save>
                                 </mp-component-toolbar-actions>
                                 <mp-component-toolbar-component>
-                                    <semantic-timeline  id='search-result-timeline'
+                                    <semantic-timeline  id='[[urlParam "viewid" escape=false]]-search-result-timeline'
                                                         query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
                                                                 SELECT DISTINCT ?item ?timespan ?start ?end ?birthTimespan ?deathTimespan WHERE {
                                                                   {
@@ -1027,7 +1037,7 @@
                       
                         <template id='custom-list-view'>
                           <semantic-search-result>
-                            <semantic-table id='semantic-search-result-list' separate-pagination=true
+                            <semantic-table id='[[urlParam "viewid" escape=false]]-semantic-search-result-list' separate-pagination=true
                                             class-name="table-fixed-header table-scrollable-content table-expanded search-table-container 
                                             {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map')
@@ -1396,7 +1406,7 @@
 
                         <template id='default-list-view'>
                           <semantic-search-result>
-                            <semantic-table id='semantic-search-result-list' separate-pagination=true
+                            <semantic-table id='[[urlParam "viewid" escape=false]]-semantic-search-result-list' separate-pagination=true
                                             class-name="table-fixed-header table-scrollable-content table-expanded search-table-container 
                                             {{#if (or (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Set')
                                                       (eq '[[urlParam 'resourceconfig' escape=false]]' 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map')
@@ -1637,7 +1647,7 @@
 
 [[#*inline "numberOfResults"]]
   <div class="semantic-search-num-results" role="status" aria-live="polite" aria-atomic="true">
-    <mp-sparql-result-counts  id='semantic-search-result-count' 
+    <mp-sparql-result-counts  id='[[urlParam "viewid" escape=false]]-semantic-search-result-count'
                               query="SELECT DISTINCT ?subject {}"
                               template='{{> template}}'
     >

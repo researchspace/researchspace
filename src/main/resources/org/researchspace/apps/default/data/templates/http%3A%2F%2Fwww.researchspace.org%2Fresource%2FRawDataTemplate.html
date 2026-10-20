@@ -1,0 +1,43 @@
+{{log "raw data" this iri}}
+[[!-- <div class="card-header resource-editView-panelHeader resource-editView-panelHeader--compact">
+    <div class="resource-editView-sectionHead">
+        <div class="resource-editView-sectionHead-main">
+        <i class="material-icons resource-editView-panelHeader-icon">info</i>
+        <span class="resource-editView-sectionHead-title">Details</span>
+        </div>
+    </div>
+</div> --]]
+<div class="resource-editView-detailsList">
+    <rs-tabs class="details-tabs">
+        [[!--
+        <bs-tab title='Summary' event-key='summary' mount-on-enter=true>
+            <div class="rs-resource-data-table table-responsive">
+                <table class="table table-hover">
+                [[#block "summary"]]
+                <tbody>
+                    <tr>
+                    <td>No further data available</td>
+                    <td></td>
+                    </tr>
+                </tbody>
+                [[/block]]
+                </table>
+            </div>
+        </bs-tab>
+        --]]
+        <rs-tab title='Raw data' event-key='raw-data' mount-on-enter=true class="rawdata-tab">
+           <mp-field-visualization subject='{{iri}}'
+                fields='[[
+                    fieldDefinitions
+                        
+                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                       
+                            entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
+                          
+                    ]]'
+                template='{{> template}}'>
+            <template id="template">{{> rsp:ResourceFieldBasedVisualization subject=this}}</template>
+            </mp-field-visualization>
+        </rs-tab>
+  </rs-tabs>
+</div> 

@@ -57,6 +57,12 @@ function checkCondition(v1, operator, v2) {
  * Generic helper functions for Handlebars templates.
  */
 export const GenericFunctions = {
+  /** Accept a sidebar suffix, full event key, or the legacy literal viewId key. */
+  assetTabMatches(requested: string, viewId: string, suffix: string) {
+    return requested === suffix || requested === viewId + '-resourceForm-' + suffix ||
+      requested === '{{viewId}}-resourceForm-' + suffix;
+  },
+
   /**
    * if operator for handlebars templates.
    */

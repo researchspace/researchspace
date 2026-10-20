@@ -19,7 +19,7 @@
 
 import { createFactory, Component, ReactElement, createElement } from 'react';
 import * as D from 'react-dom-factories';
-import { isEqual } from 'lodash';
+import { isEqual, uniqueId } from 'lodash';
 import * as maybe from 'data.maybe';
 import * as Kefir from 'kefir';
 
@@ -157,7 +157,10 @@ export class PageViewerComponent extends Component<Props, State> {
               <div>
                 ${page.templateHtml}
               </div>
-            `
+            `,
+            // A page load is a new component lifecycle, including refreshes.
+            // Preserve only explicitly keyed components across page loads.
+            { componentKeyPrefix: `${uniqueId('page-')}-` }
           ).then(
             (res) => (res as ReactElement<any>).props.children // get rid of artificial div
           )

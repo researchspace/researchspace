@@ -133054,6 +133054,7 @@ S2.define('jquery.select2',[
     'availableAnnotationModes': [
 
     ],
+    'annotationModeDebugShowIri': false,
 
     'availableAnnotationDrawingTools': [
        'Rectangle', 'Ellipse', 'Freehand', 'Polygon', 'Pin'
@@ -141500,6 +141501,12 @@ $.SimpleASEndpoint = function (options) {
         this.canvasControls.annotations.annotationCreation = false;
         this.annoEndpointAvailable = false;
         this.canvasControls.annotations.annotationState = 'off';
+      } else {
+        var rawAnnotationState = this.canvasControls.annotations.annotationState;
+        this.canvasControls.annotations.annotationState =
+          (rawAnnotationState === 'on' || rawAnnotationState === 'pointer' || rawAnnotationState === 'shape')
+            ? 'on'
+            : 'off';
       }
       _this.getAnnotations();
 
@@ -143436,6 +143443,9 @@ $.SimpleASEndpoint = function (options) {
       if (annotationProperties.annotationLayer && this.annoEndpointAvailable) {
         this.annotationElement = jQuery(this.annotationTemplate({
           tools : _this.availableAnnotationTools,
+          semanticModes: _this.getSemanticAnnotationModes(),
+          currentSemanticMode: _this.getCurrentSemanticAnnotationMode(),
+          showSemanticModes: annotationProperties.annotationCreation && _this.getSemanticAnnotationModes().length > 0,
           showEdit : annotationProperties.annotationCreation,
           showStrokeStyle: showStrokeStyle,
           showStrokeColor: showStrokeColor,
@@ -143466,7 +143476,128 @@ $.SimpleASEndpoint = function (options) {
         this.manipulationElement.hide();
       }
 
+      this.ensureSemanticModeStyles();
       this.bindEvents();
+    },
+
+
+    normalizeSemanticAnnotationMode: function(mode, index) {
+      var showIri = !!this.state.getStateProperty('annotationModeDebugShowIri');
+      var normalized;
+
+      if (typeof mode === 'string') {
+        normalized = {
+          id: mode,
+          label: mode,
+          iri: null,
+          iconClass: null
+        };
+      } else if (!mode) {
+        return null;
+      } else {
+        normalized = {
+          id: mode.id || mode.value || mode.name || ('mode-' + index),
+          label: mode.label || mode.name || mode.id || mode.value || ('Mode ' + (index + 1)),
+          iri: mode.iri || null,
+		  p2TypeIri: mode.p2TypeIri || null,
+          iconClass: mode.iconClass || null
+        };
+      }
+
+      normalized.displayLabel = showIri && normalized.iri ?
+        (normalized.label + ' [' + normalized.iri + ']') :
+        normalized.label;
+
+      return normalized;
+    },
+
+    getSemanticAnnotationModes: function() {
+      var _this = this;
+      var modes = this.state.getStateProperty('availableAnnotationModes') || [];
+      var current = this.currentSemanticAnnotationMode || null;
+
+      return jQuery.map(modes, function(mode, index) {
+        var normalized = _this.normalizeSemanticAnnotationMode(mode, index);
+
+        if (!normalized) {
+          return null;
+        }
+
+        normalized.active = !!(current && current.id === normalized.id);
+        return normalized;
+      });
+    },
+
+    getCurrentSemanticAnnotationMode: function() {
+      var modes = this.getSemanticAnnotationModes();
+
+      if (this.currentSemanticAnnotationMode) {
+        return this.currentSemanticAnnotationMode;
+      }
+
+      if (modes.length > 0) {
+        this.currentSemanticAnnotationMode = {
+          id: modes[0].id,
+          label: modes[0].label,
+          displayLabel: modes[0].displayLabel,
+          iri: modes[0].iri || null,
+          p2TypeIri: modes[0].p2TypeIri || null,
+          iconClass: modes[0].iconClass || null
+        };
+        return this.currentSemanticAnnotationMode;
+      }
+
+      return null;
+    },
+
+    setCurrentSemanticAnnotationModeById: function(modeId) {
+      var modes = this.getSemanticAnnotationModes();
+      var match = null;
+
+      jQuery.each(modes, function(_, mode) {
+        if (mode.id === modeId) {
+          match = {
+            id: mode.id,
+            label: mode.label,
+            displayLabel: mode.displayLabel,
+            iri: mode.iri || null,
+            p2TypeIri: mode.p2TypeIri || null,
+            iconClass: mode.iconClass || null
+          };
+          return false;
+        }
+      });
+
+      if (match) {
+        this.currentSemanticAnnotationMode = match;
+      }
+
+      return this.currentSemanticAnnotationMode;
+    },
+
+
+    ensureSemanticModeStyles: function() {
+      if (jQuery('#mirador-semantic-mode-styles').length) {
+        return;
+      }
+
+      jQuery('head').append([
+        '<style id="mirador-semantic-mode-styles">',
+        '.mirador-semantic-mode-selector{position:relative;display:inline-block;min-width:220px;vertical-align:middle;}',
+        '.mirador-semantic-mode-selector .semantic-mode-trigger{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600;height:26px;padding:0 12px;background:#fff;border:1px solid #cfd5dc;border-radius:4px;color:#4b4f57;cursor:pointer;text-align:left;box-sizing:border-box;padding-top: 2.5px;padding-right: 10px;padding-bottom:2.5px;}',
+        '.mirador-semantic-mode-selector .mirador-semantic-mode-icon{flex:0 0 auto;font-size:18px;line-height:1;color:#6a6f78;}',
+        '.mirador-semantic-mode-selector .semantic-mode-label{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+        '.mirador-semantic-mode-selector .dropdown-icon{flex:0 0 auto;color:#6a6f78;}',
+        '.mirador-semantic-mode-selector .semantic-mode-list{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:100%;max-width:420px;background:#fff;border:1px solid #cfd5dc;border-radius:4px;box-shadow:0 6px 12px rgba(0,0,0,0.12);z-index:1000;padding:6px 0;box-sizing:border-box;}',
+        '.mirador-semantic-mode-selector.is-open .semantic-mode-list{display:block;}',
+        '.mirador-semantic-mode-selector .semantic-mode-list li {list-style: none;padding: 10px 14px 10px 16px;position: relative;color: #4b4f57;cursor: pointer;border-left: 4px solid transparent;}',
+        '.mirador-semantic-mode-selector .semantic-mode-list li:hover {background: #f5f7fa;}',
+		'.mirador-semantic-mode-selector .semantic-mode-list li.selected {background: #eef3f8;font-weight: 600;border-left-color: #4b6ea8;padding-left: 12px;}',
+		'.mirador-semantic-mode-selector .semantic-mode-list li.selected::before {content: none;}',
+		'.mirador-semantic-mode-selector .semantic-mode-item-label{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+        '.mirador-semantic-mode-selector button{font:inherit;}',
+        '</style>'
+      ].join(''));
     },
 
     setQtips: function(element) {
@@ -143636,6 +143767,72 @@ $.SimpleASEndpoint = function (options) {
         _this.setBackground[className](_this.container.find('.mirador-line-type .border-type-image'));
         _this.eventEmitter.publish('toggleBorderType.' + _this.windowId, className);
       });
+
+      var $semanticSelector = this.container.find('.mirador-semantic-mode-selector');
+      var $semanticList = $semanticSelector.find('.semantic-mode-list');
+
+      $semanticSelector.off('mouseenter mouseleave');
+      $semanticSelector.find('ul li').off('click');
+      $semanticSelector.find('.semantic-mode-trigger').off('click');
+
+      $semanticSelector.on('click', '.semantic-mode-trigger', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var $root = jQuery(this).closest('.mirador-semantic-mode-selector');
+        if ($root.hasClass('hud-disabled')) {
+          return false;
+        }
+
+        var isOpen = $root.hasClass('is-open');
+
+        _this.container.find('.mirador-semantic-mode-selector').removeClass('is-open');
+        _this.container.find('.semantic-mode-list').hide();
+
+        if (!isOpen) {
+          $root.addClass('is-open');
+          $root.find('.semantic-mode-list').show();
+        }
+      });
+
+      $semanticSelector.on('click', 'ul li', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var $item = jQuery(this);
+        if ($item.hasClass('hud-disabled')) {
+          return false;
+        }
+
+        var modeId = $item.data('mode-id');
+        var mode = _this.setCurrentSemanticAnnotationModeById(modeId);
+
+        $semanticSelector.find('.semantic-mode-list li').removeClass('selected');
+        $item.addClass('selected');
+
+        if (mode) {
+          $semanticSelector.find('.semantic-mode-label').text(mode.displayLabel || mode.label);
+          $semanticSelector.find('.semantic-mode-trigger').attr('title', mode.displayLabel || mode.label);
+          _this.eventEmitter.publish('semanticAnnotationModeChanged.' + _this.windowId, {
+            id: mode.id,
+            label: mode.label,
+            iri: mode.iri || null,
+			p2TypeIri: mode.p2TypeIri || null,
+            iconClass: mode.iconClass || null,
+            displayLabel: mode.displayLabel || mode.label,
+            windowId: _this.windowId
+          });
+        }
+
+        $semanticSelector.removeClass('is-open');
+        $semanticSelector.find('.semantic-mode-list').hide();
+      });
+
+      jQuery(document).off('click.miradorSemanticMode.' + _this.windowId);
+      jQuery(document).on('click.miradorSemanticMode.' + _this.windowId, function() {
+        _this.container.find('.mirador-semantic-mode-selector').removeClass('is-open');
+        _this.container.find('.semantic-mode-list').hide();
+      });
     },
 
     annotationTemplate: $.Handlebars.compile([
@@ -143643,6 +143840,23 @@ $.SimpleASEndpoint = function (options) {
                                    '<a class="mirador-osd-pointer-mode hud-control selected" title="{{t "pointerTooltip"}}">',
                                    '<i class="fa fa-mouse-pointer"></i>',
                                    '</a>',
+                                   '{{#if showSemanticModes}}',
+                                   '<div class="hud-control hud-dropdown mirador-semantic-mode-selector" aria-label="Semantic annotation mode" title="Semantic annotation mode">',
+                                   '<button type="button" class="semantic-mode-trigger" title="{{currentSemanticMode.displayLabel}}">',
+                                   '<i class="material-icons mirador-semantic-mode-icon" style="font-size:12px;">create</i>',
+                                   '<span class="semantic-mode-label">{{currentSemanticMode.displayLabel}}</span>',
+                                   '<i class="fa fa-caret-down dropdown-icon"></i>',
+                                   '</button>',
+                                   '<ul class="dropdown semantic-mode-list" style="display:none;">',
+                                   '{{#each semanticModes}}',
+                                   '<li data-mode-id="{{this.id}}" class="{{#if this.active}}selected{{/if}}" title="{{#if this.iri}}{{this.iri}}{{else}}{{this.label}}{{/if}}">',
+                                   '{{#if this.iconClass}}<i class="{{this.iconClass}}"></i>{{/if}}',
+                                   '<span class="semantic-mode-item-label">Create as: {{this.displayLabel}}</span>',
+                                   '</li>',
+                                   '{{/each}}',
+                                   '</ul>',
+                                   '</div>',
+                                   '{{/if}}',
                                    '{{#each tools}}',
                                    '<a class="mirador-osd-{{this.logoClass}}-mode hud-control mirador-osd-edit-mode" title="{{t this.tooltip}}">',
                                    '<i class="material-icons">{{this.logoClass}}</i>',
@@ -143831,6 +144045,17 @@ $.SimpleASEndpoint = function (options) {
       var _this = this,
       duration = "200";
 
+      function persistedAnnotationState(state) {
+        return state === 'off' ? 'off' : 'on';
+      }
+
+      function publishAnnotationState() {
+        _this.eventEmitter.publish(('windowUpdated'), {
+          id: _this.windowId,
+          annotationState: persistedAnnotationState(_this.annoState.current)
+        });
+      }
+
       //add more to these as AnnoState becomes more complex
       //initial state is 'none'
       this.annoState = StateMachine.create({
@@ -143846,10 +144071,7 @@ $.SimpleASEndpoint = function (options) {
         ],
         callbacks: {
           onstartup: function(event, from, to) {
-            _this.eventEmitter.publish(('windowUpdated'), {
-              id: _this.windowId,
-              annotationState: to
-            });
+            publishAnnotationState();
           },
           ondisplayOn: function(event, from, to) {
             _this.eventEmitter.publish('HUD_ADD_CLASS.'+_this.windowId, ['.mirador-osd-annotations-layer', 'selected']);
@@ -143861,10 +144083,7 @@ $.SimpleASEndpoint = function (options) {
             _this.eventEmitter.publish('HUD_ADD_CLASS.'+_this.windowId, ['.hud-dropdown', 'hud-disabled']);
             _this.eventEmitter.publish('DISABLE_TOOLTIPS_BY_CLASS.'+_this.windowId, '.hud-dropdown');
             _this.eventEmitter.publish('DEFAULT_CURSOR.' + _this.windowId);
-            _this.eventEmitter.publish(('windowUpdated'), {
-              id: _this.windowId,
-              annotationState: to
-            });
+            publishAnnotationState();
           },
           ondisplayOff: function(event, from, to) {
             if (_this.annoEndpointAvailable) {
@@ -143875,10 +144094,7 @@ $.SimpleASEndpoint = function (options) {
             }
             _this.eventEmitter.publish('HUD_REMOVE_CLASS.'+_this.windowId, ['.mirador-osd-annotations-layer', 'selected']);
             _this.eventEmitter.publish('modeChange.' + _this.windowId, 'default');
-            _this.eventEmitter.publish(('windowUpdated'), {
-              id: _this.windowId,
-              annotationState: to
-            });
+            publishAnnotationState();
           },
           onchoosePointer: function(event, from, to) {
             _this.eventEmitter.publish('HUD_REMOVE_CLASS.'+_this.windowId, ['.mirador-osd-edit-mode', 'selected']);
@@ -143887,10 +144103,7 @@ $.SimpleASEndpoint = function (options) {
             _this.eventEmitter.publish('DISABLE_TOOLTIPS_BY_CLASS.'+_this.windowId, '.hud-dropdown');
             _this.eventEmitter.publish('modeChange.' + _this.windowId, 'displayAnnotations');
             _this.eventEmitter.publish('DEFAULT_CURSOR.' + _this.windowId);
-            _this.eventEmitter.publish(('windowUpdated'), {
-              id: _this.windowId,
-              annotationState: to
-            });
+            publishAnnotationState();
           },
           onchooseShape: function(event, from, to, shape) {
             _this.eventEmitter.publish('HUD_REMOVE_CLASS.'+_this.windowId, ['.mirador-osd-pointer-mode', 'selected']);
@@ -143902,10 +144115,7 @@ $.SimpleASEndpoint = function (options) {
             _this.eventEmitter.publish('CROSSHAIR_CURSOR.' + _this.windowId);
             _this.eventEmitter.publish('toggleDrawingTool.'+_this.windowId, shape);
 
-            _this.eventEmitter.publish(('windowUpdated'), {
-              id: _this.windowId,
-              annotationState: to
-            });
+            publishAnnotationState();
           },
           onchangeShape: function(event, from, to, shape) {
             _this.eventEmitter.publish('HUD_REMOVE_CLASS.'+_this.windowId, ['.mirador-osd-pointer-mode', 'selected']);
@@ -143917,10 +144127,7 @@ $.SimpleASEndpoint = function (options) {
             //don't need to trigger a mode change, just change tool
             _this.eventEmitter.publish('toggleDrawingTool.'+_this.windowId, shape);
 
-            _this.eventEmitter.publish(('windowUpdated'), {
-              id: _this.windowId,
-              annotationState: to
-            });
+            publishAnnotationState();
           },
           onrefresh: function(event, from, to) {
             //TODO
@@ -144210,12 +144417,10 @@ $.SimpleASEndpoint = function (options) {
         }
         if (_this.hud.annoState.current === 'off') {
           _this.hud.annoState.displayOn(this);
-          _this.annotationState = 'on';
         } else {
           //make sure to force the controls back to auto fade
           _this.forceShowControls = false;
           _this.hud.annoState.displayOff(this);
-          _this.annotationState = 'off';
         }
       });
 
@@ -144770,28 +144975,28 @@ $.SimpleASEndpoint = function (options) {
         _this.setBounds();
       }
 
-      // get the state before resetting it so we can get back to that state
-      var originalState = _this.hud.annoState.current;
-      var selected = _this.element.find('.mirador-osd-edit-mode.selected');
-      var shape = null;
-      if (selected) {
-        shape = selected.find('.material-icons').html();
-      }
-      if (originalState === 'none') {
+      // Re-apply annotation layer visibility deterministically.
+      // Persisted state is only 'on' or 'off'. We always restore to pointer mode when on.
+      var desiredAnnotationState =
+        (_this.canvasControls &&
+         _this.canvasControls.annotations &&
+         _this.canvasControls.annotations.annotationState === 'on')
+          ? 'on'
+          : 'off';
+
+      if (_this.hud.annoState.current === 'none') {
         _this.hud.annoState.startup();
-      } else if (originalState === 'off' || _this.annotationState === 'off') {
-        //original state is off, so don't need to do anything
-      } else {
-        _this.hud.annoState.displayOff();
       }
 
-      if (originalState === 'pointer' || _this.annotationState === 'on') {
+      if (desiredAnnotationState === 'on') {
+        if (_this.hud.annoState.current !== 'off') {
+          _this.hud.annoState.displayOff();
+        }
         _this.hud.annoState.displayOn();
-      } else if (originalState === 'shape') {
-        _this.hud.annoState.displayOn();
-        _this.hud.annoState.chooseShape(shape);
       } else {
-        //original state is off, so don't need to do anything
+        if (_this.hud.annoState.current !== 'off') {
+          _this.hud.annoState.displayOff();
+        }
       }
 
       _this.osd.addHandler('zoom', $.debounce(function() {
@@ -148311,3 +148516,501 @@ $.SearchWithinResults.prototype = {
   };
 
 }(Mirador));
+
+
+
+/* --------------------------------------------------------------------------
+ * ResearchSpace patch: persistent annotation text labels (non-tooltip)
+ * -------------------------------------------------------------------------- */
+(function($) {
+  if (!$ || !$.OsdRegionDrawTool) { return; }
+
+  if ($.DEFAULT_SETTINGS) {
+    $.DEFAULT_SETTINGS.showAnnotationTextLabels = false;
+    $.DEFAULT_SETTINGS.annotationTextLabelClassName = 'mirador-annotation-text-label';
+    $.DEFAULT_SETTINGS.annotationTextLabelMaxLength = 80;
+    $.DEFAULT_SETTINGS.annotationTextLabelPinOffsetX = 10;
+    $.DEFAULT_SETTINGS.annotationTextLabelPinOffsetY = -8;
+  }
+
+  function getStatePropertySafe(instance, key, fallback) {
+    try {
+      if (instance && instance.state && typeof instance.state.getStateProperty === 'function') {
+        var value = instance.state.getStateProperty(key);
+        return value === undefined ? fallback : value;
+      }
+    } catch (e) {}
+    return fallback;
+  }
+
+  function extractAnnotationText(annotation) {
+    if (!annotation || !annotation.resource) { return ''; }
+
+    var annoText = '';
+    var resource = annotation.resource;
+
+    if (jQuery.isArray(resource)) {
+      jQuery.each(resource, function(index, value) {
+        if (!value) { return; }
+        if (value['@type'] === 'oa:Tag') { return; }
+        if (!annoText && value.chars) {
+          annoText = value.chars;
+        }
+      });
+    } else if (resource.chars) {
+      annoText = resource.chars;
+    }
+
+    if (annoText == null) { return ''; }
+    annoText = String(annoText).replace(/\s+/g, ' ').trim();
+    return annoText;
+  }
+
+  function truncateText(text, maxLength) {
+    if (!text) { return ''; }
+    if (!maxLength || text.length <= maxLength) { return text; }
+    return text.slice(0, Math.max(1, maxLength - 1)).trim() + '…';
+  }
+
+  function getUnionBounds(shapeArray) {
+    var union = null;
+    if (!shapeArray || !shapeArray.length) { return null; }
+
+    for (var i = 0; i < shapeArray.length; i++) {
+      var item = shapeArray[i];
+      if (!item || !item.bounds) { continue; }
+      var bounds = item.bounds;
+      var left = bounds.x;
+      var top = bounds.y;
+      var right = bounds.x + bounds.width;
+      var bottom = bounds.y + bounds.height;
+
+      if (!union) {
+        union = { left: left, top: top, right: right, bottom: bottom };
+      } else {
+        union.left = Math.min(union.left, left);
+        union.top = Math.min(union.top, top);
+        union.right = Math.max(union.right, right);
+        union.bottom = Math.max(union.bottom, bottom);
+      }
+    }
+
+    return union;
+  }
+
+  function getShapeName(shape) {
+    if (!shape) { return ''; }
+    return (shape._name || shape.name || '').toString();
+  }
+
+  function isPinShape(shape) {
+    return getShapeName(shape).indexOf('pin_') !== -1;
+  }
+
+  function isPinAnnotation(shapeArray) {
+    if (!shapeArray || !shapeArray.length) { return false; }
+    for (var i = 0; i < shapeArray.length; i++) {
+      if (isPinShape(shapeArray[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function getPinAnchor(shapeArray) {
+    if (!shapeArray || !shapeArray.length) { return null; }
+    var shape = shapeArray[0];
+    if (shape && shape.segments && shape.segments.length && shape.segments[0].point) {
+      return {
+        x: shape.segments[0].point.x,
+        y: shape.segments[0].point.y
+      };
+    }
+
+    var union = getUnionBounds(shapeArray);
+    if (!union) { return null; }
+    return {
+      x: union.left,
+      y: union.bottom
+    };
+  }
+
+  function getLabelAnchor(shapeArray) {
+    if (isPinAnnotation(shapeArray)) {
+      return getPinAnchor(shapeArray);
+    }
+
+    var union = getUnionBounds(shapeArray);
+    if (!union) { return null; }
+    return {
+      x: (union.left + union.right) / 2,
+      y: (union.top + union.bottom) / 2
+    };
+  }
+
+  function imageToViewerElementPoint(osdViewer, point) {
+    if (!osdViewer || !osdViewer.viewport || !point) { return null; }
+    var viewportPoint = osdViewer.viewport.imageToViewportCoordinates(point.x, point.y);
+    return osdViewer.viewport.pixelFromPoint(viewportPoint, true);
+  }
+
+  function isShapeVisible(shape) {
+    if (!shape) { return false; }
+
+    if (shape.visible === false || shape._visible === false) {
+      return false;
+    }
+
+    if (shape.opacity === 0 || shape._opacity === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function isShapeArrayVisible(shapeArray) {
+    if (!shapeArray || !shapeArray.length) { return false; }
+
+    for (var i = 0; i < shapeArray.length; i++) {
+      if (isShapeVisible(shapeArray[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  var proto = $.OsdRegionDrawTool.prototype;
+
+  proto.shouldShowAnnotationTextLabels = function() {
+    return !!getStatePropertySafe(this, 'showAnnotationTextLabels', false);
+  };
+
+  proto.getAnnotationTextLabelClassName = function() {
+    return getStatePropertySafe(this, 'annotationTextLabelClassName', 'mirador-annotation-text-label');
+  };
+
+  proto.getAnnotationTextLabelMaxLength = function() {
+    return getStatePropertySafe(this, 'annotationTextLabelMaxLength', 80);
+  };
+
+  proto.getAnnotationTextLabelPinOffsetX = function() {
+    return getStatePropertySafe(this, 'annotationTextLabelPinOffsetX', 10);
+  };
+
+  proto.getAnnotationTextLabelPinOffsetY = function() {
+    return getStatePropertySafe(this, 'annotationTextLabelPinOffsetY', -8);
+  };
+
+  proto.isAnnotationOverlayVisible = function() {
+    if (!this.svgOverlay || !this.svgOverlay.canvas) { return false; }
+    return this.svgOverlay.canvas.style.display !== 'none';
+  };
+
+  proto.shouldRenderAnnotationTextLabelsNow = function() {
+    if (!this.shouldShowAnnotationTextLabels()) { return false; }
+    if (!this.isAnnotationOverlayVisible()) { return false; }
+    return true;
+  };
+
+  proto.ensureAnnotationTextLabelsContainer = function() {
+    if (this.annotationTextLabelsContainer && this.annotationTextLabelsContainer.length) {
+      return this.annotationTextLabelsContainer;
+    }
+
+    var $target = jQuery(this.osdViewer && this.osdViewer.element ? this.osdViewer.element : null);
+    if (!$target.length) { return null; }
+
+    if ($target.css('position') === 'static') {
+      $target.css('position', 'relative');
+    }
+
+    var existing = $target.children('.mirador-annotation-text-labels-layer');
+    if (existing.length) {
+      this.annotationTextLabelsContainer = existing.first();
+      return this.annotationTextLabelsContainer;
+    }
+
+    this.annotationTextLabelsContainer = jQuery('<div class="mirador-annotation-text-labels-layer"></div>').css({
+      position: 'absolute',
+      inset: '0',
+      pointerEvents: 'none',
+      overflow: 'hidden',
+      zIndex: 40
+    });
+
+    $target.append(this.annotationTextLabelsContainer);
+    return this.annotationTextLabelsContainer;
+  };
+
+  proto.clearAnnotationTextLabels = function() {
+    if (this.annotationTextLabelsContainer && this.annotationTextLabelsContainer.length) {
+      this.annotationTextLabelsContainer.empty().hide();
+    }
+    this.annotationTextLabelsMap = {};
+  };
+
+  proto.removeAnnotationTextLabels = function() {
+    if (this.annotationTextLabelsContainer && this.annotationTextLabelsContainer.length) {
+      this.annotationTextLabelsContainer.remove();
+    }
+    this.annotationTextLabelsContainer = null;
+    this.annotationTextLabelsMap = {};
+  };
+
+  proto.buildAnnotationTextLabel = function(annotationId, annotation, shapeArray) {
+    var text = truncateText(extractAnnotationText(annotation), this.getAnnotationTextLabelMaxLength());
+    if (!text) { return null; }
+
+    var labelType = isPinAnnotation(shapeArray) ? 'pin' : 'region';
+    var className = this.getAnnotationTextLabelClassName();
+
+    return jQuery('<div></div>')
+      .addClass(className)
+      .attr('data-annotation-id', annotationId)
+      .attr('data-label-type', labelType)
+      .css({
+        position: 'absolute',
+        left: '0px',
+        top: '0px',
+        transform: labelType === 'pin' ? 'translate(0, -100%)' : 'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        whiteSpace: 'nowrap',
+        maxWidth: '220px',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '12px',
+        fontWeight: '500',
+        lineHeight: '1.2',
+        color: 'rgba(17, 17, 17, 0.78)',
+        background: 'rgba(255, 255, 255, 0.46)',
+        //border: '1px solid rgba(255, 255, 255, 0.55)',
+        borderRadius: '4px',
+        padding: '1px 6px',
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.08)'
+      })
+      .text(text);
+  };
+
+  proto.renderAnnotationTextLabels = function() {
+    if (!this.shouldShowAnnotationTextLabels()) {
+      this.clearAnnotationTextLabels();
+      return;
+    }
+
+    var container = this.ensureAnnotationTextLabelsContainer();
+    if (!container) { return; }
+
+    this.annotationTextLabelsMap = {};
+    container.empty();
+
+    if (!this.shouldRenderAnnotationTextLabelsNow()) {
+      container.hide();
+      return;
+    }
+
+    var _this = this;
+    var visibleCount = 0;
+
+    for (var annotationId in this.annotationsToShapesMap) {
+      if (!this.annotationsToShapesMap.hasOwnProperty(annotationId)) { continue; }
+
+      var shapeArray = this.annotationsToShapesMap[annotationId];
+      if (!shapeArray || !shapeArray.length || !isShapeArrayVisible(shapeArray)) { continue; }
+
+      var annotation = shapeArray[0].data && shapeArray[0].data.annotation ? shapeArray[0].data.annotation : null;
+      var label = this.buildAnnotationTextLabel(annotationId, annotation, shapeArray);
+      if (!label) { continue; }
+
+      container.append(label);
+      _this.annotationTextLabelsMap[annotationId] = label;
+      visibleCount += 1;
+    }
+
+    if (visibleCount > 0) {
+      container.show();
+      this.updateAnnotationTextLabelsPosition();
+    } else {
+      container.hide();
+    }
+  };
+
+  proto.updateAnnotationTextLabelsPosition = function() {
+    if (!this.shouldShowAnnotationTextLabels()) { return; }
+    if (!this.annotationTextLabelsContainer || !this.annotationTextLabelsContainer.length) { return; }
+
+    if (!this.shouldRenderAnnotationTextLabelsNow()) {
+      this.annotationTextLabelsContainer.hide();
+      return;
+    }
+
+    var visibleCount = 0;
+    for (var annotationId in this.annotationTextLabelsMap) {
+      if (!this.annotationTextLabelsMap.hasOwnProperty(annotationId)) { continue; }
+
+      var label = this.annotationTextLabelsMap[annotationId];
+      var shapeArray = this.annotationsToShapesMap[annotationId];
+      var anchor = getLabelAnchor(shapeArray);
+
+      if (!label || !shapeArray || !anchor || !isShapeArrayVisible(shapeArray)) {
+        if (label && label.hide) { label.hide(); }
+        continue;
+      }
+
+      var pixel = imageToViewerElementPoint(this.osdViewer, anchor);
+      if (!pixel) {
+        label.hide();
+        continue;
+      }
+
+      var labelType = label.attr('data-label-type');
+      var css = {
+        left: pixel.x + 'px',
+        top: pixel.y + 'px'
+      };
+
+      if (labelType === 'pin') {
+        css.left = (pixel.x + this.getAnnotationTextLabelPinOffsetX()) + 'px';
+        css.top = (pixel.y + this.getAnnotationTextLabelPinOffsetY()) + 'px';
+      }
+
+      label.css(css).show();
+      visibleCount += 1;
+    }
+
+    if (visibleCount > 0) {
+      this.annotationTextLabelsContainer.show();
+    } else {
+      this.annotationTextLabelsContainer.hide();
+    }
+  };
+
+  proto.syncAnnotationTextLabels = function() {
+    if (!this.shouldShowAnnotationTextLabels()) {
+      this.clearAnnotationTextLabels();
+      return;
+    }
+
+    if (!this.shouldRenderAnnotationTextLabelsNow()) {
+      if (this.annotationTextLabelsContainer && this.annotationTextLabelsContainer.length) {
+        this.annotationTextLabelsContainer.hide();
+      }
+      return;
+    }
+
+    if (!this.annotationTextLabelsMap || !Object.keys(this.annotationTextLabelsMap).length) {
+      this.renderAnnotationTextLabels();
+      return;
+    }
+
+    this.updateAnnotationTextLabelsPosition();
+  };
+
+  var originalInit = proto.init;
+  proto.init = function() {
+    originalInit.apply(this, arguments);
+
+    this.annotationTextLabelsMap = {};
+    this.annotationTextLabelsContainer = null;
+
+    if (this._annotationTextLabelsHandlersInstalled) { return; }
+    this._annotationTextLabelsHandlersInstalled = true;
+
+    var _this = this;
+    this._updateAnnotationTextLabelsBound = function() {
+      _this.syncAnnotationTextLabels();
+    };
+
+    if (this.osdViewer && typeof this.osdViewer.addHandler === 'function') {
+      this.osdViewer.addHandler('zoom', this._updateAnnotationTextLabelsBound);
+      this.osdViewer.addHandler('pan', this._updateAnnotationTextLabelsBound);
+      this.osdViewer.addHandler('resize', this._updateAnnotationTextLabelsBound);
+      this.osdViewer.addHandler('animation', this._updateAnnotationTextLabelsBound);
+      this.osdViewer.addHandler('open', this._updateAnnotationTextLabelsBound);
+    }
+  };
+
+  var originalRender = proto.render;
+  proto.render = function() {
+    originalRender.apply(this, arguments);
+    this.renderAnnotationTextLabels();
+  };
+
+  var originalEnterCreateAnnotation = proto.enterCreateAnnotation;
+  proto.enterCreateAnnotation = function() {
+    var result = originalEnterCreateAnnotation.apply(this, arguments);
+    this.syncAnnotationTextLabels();
+    return result;
+  };
+
+  var originalEnterCreateShape = proto.enterCreateShape;
+  proto.enterCreateShape = function() {
+    var result = originalEnterCreateShape.apply(this, arguments);
+    this.syncAnnotationTextLabels();
+    return result;
+  };
+
+  var originalEnterEditAnnotation = proto.enterEditAnnotation;
+  proto.enterEditAnnotation = function() {
+    var result = originalEnterEditAnnotation.apply(this, arguments);
+    this.syncAnnotationTextLabels();
+    return result;
+  };
+
+  var originalEnterDefault = proto.enterDefault;
+  proto.enterDefault = function() {
+    var result = originalEnterDefault.apply(this, arguments);
+    this.syncAnnotationTextLabels();
+    return result;
+  };
+
+  var originalExitEditMode = proto.exitEditMode;
+  proto.exitEditMode = function(showAnnotations) {
+    var result = originalExitEditMode.apply(this, arguments);
+    if (showAnnotations) {
+      this.renderAnnotationTextLabels();
+    } else {
+      this.syncAnnotationTextLabels();
+    }
+    return result;
+  };
+
+  var originalDestroy = proto.destroy;
+  if (typeof originalDestroy === 'function') {
+    proto.destroy = function() {
+      this.removeAnnotationTextLabels();
+      return originalDestroy.apply(this, arguments);
+    };
+  }
+
+  var originalUpdateRenderer = $.AnnotationsLayer.prototype.updateRenderer;
+  $.AnnotationsLayer.prototype.updateRenderer = function() {
+    var result = originalUpdateRenderer.apply(this, arguments);
+    if (this.drawTool) {
+      this.drawTool.annotationsToShapesMap = {};
+
+      if (typeof this.drawTool.clearAnnotationTextLabels === 'function') {
+        this.drawTool.clearAnnotationTextLabels();
+      }
+
+      if (this.mode === $.AnnotationsLayer.DISPLAY_ANNOTATIONS &&
+          this.layerState &&
+          this.layerState.current === 'display' &&
+          typeof this.drawTool.render === 'function') {
+        this.drawTool.render();
+      }
+    }
+    return result;
+  };
+
+  var originalModeSwitch = $.AnnotationsLayer.prototype.modeSwitch;
+  $.AnnotationsLayer.prototype.modeSwitch = function() {
+    var result = originalModeSwitch.apply(this, arguments);
+    if (this.drawTool) {
+      this.drawTool.syncAnnotationTextLabels();
+    }
+    return result;
+  };
+
+})(Mirador);
+

@@ -174,11 +174,15 @@ export class SideBySideComparison extends Component<Props, State> {
           canvasControls: {
             annotations: {
               annotationState: 'on',
-              annotationCreation: true,
+              annotationCreation: false,
             },
           },
         })
       ),
+      showAnnotationTextLabels: true,
+      annotationTextLabelMaxLength: 120,
+      annotationTextLabelPinOffsetX: -15,
+      annotationTextLabelPinOffsetY: -20,
       annotationBodyEditor: {
         module: 'researchspaceAnnotationBodyEditor',
         options: {},

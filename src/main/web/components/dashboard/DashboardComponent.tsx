@@ -928,5 +928,4 @@ export class DashboardComponent extends Component<Props, State> {
     );
   }
 }
-
 export default DashboardComponent;

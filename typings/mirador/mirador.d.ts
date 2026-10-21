@@ -43,13 +43,32 @@ declare global {
       editorTemplate: any;
     }
 
+    interface AnnotationSemanticMode {
+      id: string;
+      label: string;
+      iri: string;
+      p2TypeIri?: string;
+      iconClass?: string | null;
+    }
+
+    interface SemanticAnnotationModeChangedPayload extends AnnotationSemanticMode {
+      displayLabel?: string;
+      windowId?: string;
+    }
+
     interface Options {
       id: string;
 
       // these are ResearchSpace specific option, it is not actually used by mirador,
       // see Mirador.ts for usage
       useDetailsSidebar?: boolean;
+      
       annotationViewTooltipTemplate?: string;
+      showAnnotationTextLabels?: boolean;
+      annotationTextLabelClassName?: string;
+      annotationTextLabelMaxLength?: number;
+      annotationTextLabelPinOffsetX?: number;
+      annotationTextLabelPinOffsetY?: number;
 
       // end of ResearchSpace specific options
 
@@ -75,7 +94,8 @@ declare global {
       fadeDuration?: number;
       timeoutDuration?: number;
 
-      availableAnnotationModes?: any[];
+      availableAnnotationModes?: AnnotationSemanticMode[];
+      annotationModeDebugShowIri?: boolean;
       availableAnnotationDrawingTools?: AnnotationDrawingTool[];
       availableAnnotationStylePickers?: AnnotationStylePicker[];
 
@@ -145,6 +165,11 @@ declare global {
         annotations?: {
           annotationLayer?: boolean;
           annotationCreation?: boolean;
+          /**
+           * Persisted annotation-layer visibility state.
+           * Must be only 'on' or 'off'; transient HUD submodes such as pointer/shape
+           * must not be persisted here.
+           */
           annotationState?: 'on' | 'off';
           annotationRefresh?: boolean;
         };
@@ -240,6 +265,37 @@ declare global {
       layoutAddress: string
     }
 
+    interface PaperScopeLike {
+      view?: {
+        draw(): void;
+      };
+    }
+
+    interface AnnotationShapePoint {
+      x: number;
+      y: number;
+    }
+
+    interface AnnotationShapeSegment {
+      point?: AnnotationShapePoint;
+    }
+
+    interface AnnotationShape {
+      visible?: boolean;
+      _visible?: boolean;
+      opacity?: number;
+      _opacity?: number;
+      bounds?: Bounds;
+      data?: any;
+      segments?: AnnotationShapeSegment[];
+      _name?: string;
+      name?: string;
+    }
+
+    interface AnnotationShapesMap {
+      [annotationId: string]: AnnotationShape[];
+    }
+
     /* implementation details */
     interface ImageViewModule {
       // hud: ImageViewHud;
@@ -249,12 +305,20 @@ declare global {
 
     /* implementation details */
     interface AnnotationsLayer {
-      drawTool: OsdRegionDrawTool;
+      drawTool?: OsdRegionDrawTool;
+      annotationsToShapesMap?: AnnotationShapesMap;
+      svgOverlay?: Overlay;
+      paperScope?: PaperScopeLike;
     }
 
     /* implementation details */
     interface OsdRegionDrawTool {
       svgOverlay: Overlay;
+      annotationsToShapesMap?: AnnotationShapesMap;
+      paperScope?: PaperScopeLike;
+      annotationTextLabelsMap?: { [annotationId: string]: any };
+      syncAnnotationTextLabels?(): void;
+      renderAnnotationTextLabels?(): void;
     }
 
     /* implementation details */
@@ -263,6 +327,8 @@ declare global {
       hitOptions: {
         tolerance: number;
       };
+      canvas?: HTMLElement;
+      paperScope?: PaperScopeLike;
     }
 
     /* implementation details */

@@ -53,10 +53,15 @@ export interface State {
 /**
  * @example
  * <rs-iiif-viewer-panel-system [[> rsp:IIIFConfig]]
- *    query="SELECT ?image WHERE { ?subject crm:P138i_has_representation ?image }">
+ *    query="SELECT ?image WHERE { ?subject crm:P138i_has_representation ?image }"
+ *    semantic-annotation-mode='[{"id":"annotateImage","label":"Image Region","iri":"http://www.researchspace.org/ontology/EX_Digital_Image_Region"},{"id":"digitalSample","label":"Sampling Site","iri":"http://www.cidoc-crm.org/cidoc-crm/E26_Physical_Feature","p2TypeIri":"http://www.researchspace.org/resource/system/vocab/resource_type/sampling_site"}]'>
  * </rs-iiif-viewer-panel-system>
  */
 export class IIIFViewerPanel extends Component<IIIFViewerPanelProps, State> {
+  static readonly propTypes: { [K in keyof IIIFViewerPanelProps]?: any } = {
+    ...ImageRegionEditorComponentMirador.propTypes,
+  };
+
   private readonly cancellation = new Cancellation();
   private queryingCancellation = this.cancellation.derive();
 

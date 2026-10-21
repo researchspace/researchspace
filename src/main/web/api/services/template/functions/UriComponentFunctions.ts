@@ -34,4 +34,15 @@ export const UriComponentFunctions = {
   decodeUriComponent: function (uri: string) {
     return decodeURIComponent(uri);
   },
+  /**
+   * Converts a URI wrapped in angle brackets to a normal string by removing the brackets.
+   * @example
+   * {{uriToString '<http://example.com>'}}
+   */
+  uriToString: function (uri: string) {
+    if (typeof uri === 'string' && uri.startsWith('<') && uri.endsWith('>')) {
+      return uri.substring(1, uri.length - 1);
+    }
+    return String(uri);
+  },
 };

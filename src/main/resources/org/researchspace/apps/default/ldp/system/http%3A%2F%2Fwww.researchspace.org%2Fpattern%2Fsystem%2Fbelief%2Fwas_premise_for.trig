@@ -1,0 +1,80 @@
+
+<http://www.researchspace.org/pattern/system/belief/was_premise_for/context> {
+  <http://www.researchspace.org/pattern/system/belief/was_premise_for> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-36df496cc77f4dd6a6fba15786f5c1ed-3xw4oq;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/extensions/crminf/I5_Inference_Making>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-36df496cc77f4dd6a6fba15786f5c1ed-0r1g;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/belief_search>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-36df496cc77f4dd6a6fba15786f5c1ed-p6sk1v;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Was premise for";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-36df496cc77f4dd6a6fba15786f5c1ed-0ycl0f;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-36df496cc77f4dd6a6fba15786f5c1ed-ud7gsab;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/extensions/crminf/I2_Belief>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2025-11-27T11:49:18.314Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-36df496cc77f4dd6a6fba15786f5c1ed-3xw4oq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  	$subject crminf:J1i_was_premise_for $value . 
+    $value crminf:J1_used_as_premise $subject .
+} WHERE {
+  	$subject crminf:J1i_was_premise_for $value . 
+    $value crminf:J1_used_as_premise $subject .
+      
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I5_Inference_Making .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-36df496cc77f4dd6a6fba15786f5c1ed-p6sk1v a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crminf:J1i_was_premise_for $value . 
+    
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I5_Inference_Making .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-36df496cc77f4dd6a6fba15786f5c1ed-ud7gsab a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  	$subject crminf:J1i_was_premise_for $value . 
+    $value crminf:J1_used_as_premise $subject .
+} WHERE {}""" .
+  
+  _:genid-36df496cc77f4dd6a6fba15786f5c1ed-0r1g a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I5_Inference_Making .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-36df496cc77f4dd6a6fba15786f5c1ed-0ycl0f a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crminf:I5_Inference_Making .
+      
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+      
+  MINUS { ?value crm:P71i_is_listed_in|skos:inScheme ?systemAuthority . ?systemAuthority crm:P2_has_type Platform:System_Resource . }
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/belief/was_premise_for> .
+}

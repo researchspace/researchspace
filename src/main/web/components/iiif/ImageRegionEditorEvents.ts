@@ -26,6 +26,18 @@ export interface IiifManifestResource {
    * List of images associated with the resource
    */
   images?: string[];
+
+  regions?: {"regionIri":string, visibility:boolean} []
+}
+
+export interface RegionTarget {
+  imageIri: string;
+  regionIri: string;
+}
+
+export interface RegionVisibilityChangedPayload extends RegionTarget {
+  resourceIri?: string;
+  visible: boolean;
 }
 
 export interface ImageRegionEditorEventData {
@@ -38,9 +50,15 @@ export interface ImageRegionEditorEventData {
 
   'IIIFViewer.RegionUpdated': {resourceIri: string, imageIri: string, regionIri: string, regionLabel: string}
 
+  'IIIFViewer.RegionVisibilityChanged': RegionVisibilityChangedPayload
+
   // listen
-  'IIIFViewer.ZoomToRegion': {imageIri: string, regionIri: string}
+  'IIIFViewer.ZoomToRegion': RegionTarget
   'IIIFViewer.HighlightRegion': {regionIri: string}
+  'IIIFViewer.ShowRegion': RegionTarget
+  'IIIFViewer.HideRegion': RegionTarget
+  'IIIFViewer.ToggleRegion': RegionTarget
+  'IIIFViewer.ToggleRegions': {regionIris: string[]}
 
   // TODO, implement RemoveRegion
   'IIIFViewer.RemoveRegion': { resourceIri: string, imageIri: string, regionIri: string }
@@ -55,9 +73,14 @@ export const ManifestUpdatedEvent = event('IIIFViewer.ManifestUpdated');
 export const RegionCreatedEvent = event('IIIFViewer.RegionCreated');
 export const RegionUpdatedEvent = event('IIIFViewer.RegionUpdated');
 export const RegionRemovedEvent = event('IIIFViewer.RegionRemoved');
+export const RegionVisibilityChangedEvent = event('IIIFViewer.RegionVisibilityChanged');
 
 export const ZoomToRegionEvent = event('IIIFViewer.ZoomToRegion');
 export const HighlightRegion = event('IIIFViewer.HighlightRegion');
+export const ShowRegionEvent = event('IIIFViewer.ShowRegion');
+export const HideRegionEvent = event('IIIFViewer.HideRegion');
+export const ToggleRegionEvent = event('IIIFViewer.ToggleRegion');
+export const ToggleRegionsEvent = event('IIIFViewer.ToggleRegions');
 export const RemoveRegion = event('IIIFViewer.RemoveRegion');
 export const AddResourceImagesEvent = event('IIIFViewer.AddResourceImages');
 export const AddImagesForResourceEvent = event('IIIFViewer.AddImagesForResource');

@@ -79,8 +79,8 @@ type ThumbnailRequest = {
   region?: ExplicitRegion
 };
 
-const REGION_OVERLAY_MARGIN_FRACTION = 0.05;
-const REGION_OVERLAY_STROKE_WIDTH = '2%';
+const REGION_OVERLAY_MARGIN_FRACTION = 2.25;
+const REGION_OVERLAY_STROKE_WIDTH = '5%';
 
 /**
  * Displays thumbnail of rs:EX_Digital_Image or rs:EX_Digital_Image_Region.

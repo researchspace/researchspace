@@ -33,6 +33,14 @@
                                   FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
                                   BIND(<{{iri}}> as ?resource) .
                                 } UNION {
+                                  <{{iri}}> crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/sampling_activity> . 
+                                  <{{iri}}> <http://www.cidoc-crm.org/cidoc-crm/P16_used_specific_object> ?object .
+                                  ?object crm:P138i_has_representation|rs:PX_has_main_representation ?image .
+                                  ?image a ?type .
+                                  FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
+                                  BIND(?object as ?resource) .
+                                 }
+                                	UNION {
                                   <{{iri}}> a ?ontologyClass . 
                                   FILTER(?ontologyClass in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
                                   BIND(<{{iri}}> as ?resource) .
@@ -84,15 +92,15 @@
                       </div>
               
                       <div> 
-                        <div class="warning-documentation-section-title">Add image to <mp-label iri='{{iri}}'></mp-label>.</div>
+                        <div class="warning-documentation-section-title">Add image of <mp-label iri='{{iri}}'></mp-label>.</div>
                         <div class="warning-documentation-section-content">
-                          <div>Adding one or more images it will be possible to open the image viewer and draw image annotations.</div>
+                          <div>If <mp-label iri='{{iri}}'></mp-label> has images, you can draw annotations to link them to the measurement site.</div>
                         </div>
                       </div>
                     </div>
                     <semantic-form-autocomplete-input   for='entity_image_main_representation' 
                                                         label="Main image"
-                                                        placeholder="Select main image" 
+                                                        placeholder="Select or create main image" 
                                                         nested-form-templates='[ 
                                                             {
                                                                 "label": "Image",
@@ -157,7 +165,7 @@
 
                     <semantic-form-autocomplete-input   for='entity_image' 
                                                         label="More images"
-                                                        placeholder="Select image" 
+                                                        placeholder="Select or create image" 
                                                         nested-form-templates='[ 
                                                             {
                                                                 "label": "Image",
@@ -275,6 +283,7 @@
                                                                         font-weight: 600;
                                                                         cursor: pointer;
                                                                         color: #525156">{{{annoText}}}</div>
+                                                            <div class="color-secondary-light text-font-size__xsmall text-truncate-line1">Image annotation</div>
                                                         </semantic-link-container>
                                                       </mp-draggable>
                                                     </mp-template-item>
@@ -289,8 +298,9 @@
                                                       {{{{raw}}}}
                                                         <template id="template">
                                                             <div>
-                                                              <p style="font-size: 13px;">Is image of:</p>  
-                                                              <ul style="padding-inline-start: 20px; margin: 5px 0;">
+                                                            
+                                                              <p style="font-size: 13px;line-height:1.2">This region is used as the visual representation for resource(s):</p>
+                                                              <ul style="padding-inline-start: 15px; margin: 5px 0;">
                                                                 {{#each bindings}}
                                                                   <li>
                                                                     <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
@@ -302,7 +312,7 @@
                                                                                     text-overflow: ellipsis;
                                                                                     text-decoration: underline;
                                                                                     cursor: pointer;
-                                                                                    color: #525156">
+                                                                                    color: #df83e6">
                                                                         <div style="margin-bottom: 5px;"><mp-label iri="{{resourceHasAnnotationRepresentation.value}}"></mp-label></div>
                                                                     </semantic-link>
                                                                   </li>
@@ -329,4 +339,3 @@
     </template>
   </mp-event-target-template-render>
 </div>
-

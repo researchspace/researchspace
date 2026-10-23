@@ -7,6 +7,7 @@ module.exports = function(config) {
     reporters: ['mocha'],
     files: [
       defaults.TEST + '/components/semantic/table/SearchTable.test.ts',
+      defaults.TEST + '/api/services/template/InstanceIdHelper.test.ts',
       ...base.files,
     ],
   }));

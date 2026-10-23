@@ -13,71 +13,34 @@
 {{/if}}
 
 [[#*inline "resourceCardQuery"]]
- [[!-- One configuration-resolution query per card (knowledge-map nodes render one
-      card each). Keep this two-group form: a single-pattern rewrite with
-      FILTER(!BOUND(?configType) || ?configType = ?p2Type) resolved no
-      configuration on Blazegraph (all cards fell back to the generic icon). --]]
- <semantic-query query='SELECT ?iri ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon ?resourceVisualisationTemplate WHERE {
-                          BIND(<{{iri}}> as ?iri)
-                          OPTIONAL {
-                            ?iri rdf:type ?resourceOntologyClass.
-                            ?resourceOntologyClass rdf:type ?resourceOntologyClassType.
-                            FILTER(?resourceOntologyClassType IN(rdfs:Class, owl:Class))
-                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
-                              rdf:type Platform:resource_configuration.
-                            ?iri crm:P2_has_type ?resourceType.
-                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithP2Label.
-                            OPTIONAL { ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithP2Icon. }
-                            OPTIONAL { ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplate. }
-                        
-                          }
-                          OPTIONAL {
-                            ?iri rdf:type ?resourceOntologyClass.
-                            ?resourceOntologyClass rdf:type ?resourceOntologyClassType.
-                            FILTER(?resourceOntologyClassType IN(rdfs:Class, owl:Class))
-                            ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
-                              rdf:type Platform:resource_configuration;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithoutP2Label.
-                            FILTER(NOT EXISTS { ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType. })
-                            OPTIONAL { ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithoutP2Icon. }
-                            OPTIONAL { ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplate. }
-                        
-                          }
-                          BIND((IF(BOUND(?resourceConfigWithP2), 
-                                  ?resourceConfigWithP2, IF(BOUND(?resourceConfigWithoutP2),?resourceConfigWithoutP2,""))) AS ?resourceConfig)
-                          BIND((IF(BOUND(?resourceConfigWithP2Label), 
-                                  ?resourceConfigWithP2Label, IF(BOUND(?resourceConfigWithoutP2Label),?resourceConfigWithoutP2Label,""))) AS ?resourceLabel)
-                          BIND((IF(BOUND(?resourceConfigWithP2Icon), 
-                                ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
-                      } LIMIT 1'
-      
-                template='{{> template}}'>
-
+ [[!-- Which configuration applies to this resource is resolved through the
+      batched configuration service (one request per tick for every card on
+      the page, cached on the server), not with a SPARQL query per card. The
+      configuration's label, icon, form and visualisation template come from
+      the configurations already loaded in the client. --]]
+ <rs-resource-configuration iri='{{iri}}' template='{{> template}}'>
     <template id='template'>
       <div>
-        {{#if bindings.0.resourceConfig.value}}
-           
-          {{> rsp:ResourceCardTemplate cardSize=cardSize cardDate=cardDate cardDateLabel=cardDateLabel cardTypes=cardTypes cardTypesLabel=cardTypesLabel cardFormats=cardFormats cardFormatsLabel=cardFormatsLabel  resourceConfig=bindings.0.resourceConfig.value
-                                        resourceOntologyClass=bindings.0.resourceOntologyClass.value
-                                        resourceLabel=bindings.0.resourceLabel.value
-                                        resourceIcon=bindings.0.resourceIcon.value
-                                        resourceDescription=(getResourceConfigurationValue bindings.0.resourceConfig.value "resourceDescription")
-                                        resourceFormIRI=(getResourceConfigurationValue bindings.0.resourceConfig.value "resourceFormIRI")
-                                        resourceVisualisationTemplateIRI=bindings.0.resourceVisualisationTemplate.value
-                                        resourceVisualisationTemplate=bindings.0.resourceVisualisationTemplate.value}}
+        {{#if resourceConfig}}
+          {{> rsp:ResourceCardTemplate cardSize=cardSize cardDate=cardDate cardDateLabel=cardDateLabel cardTypes=cardTypes cardTypesLabel=cardTypesLabel cardFormats=cardFormats cardFormatsLabel=cardFormatsLabel resourceConfig=resourceConfig
+                                        resourceOntologyClass=resourceOntologyClass
+                                        resourceLabel=resourceLabel
+                                        resourceIcon=resourceIcon
+                                        resourceDescription=resourceDescription
+                                        resourceFormIRI=resourceFormIRI
+                                        resourceVisualisationTemplateIRI=resourceVisualisationTemplateIRI
+                                        resourceVisualisationTemplate=resourceVisualisationTemplate}}
+        {{else if data.types}}
+          [[!-- knowledge-map nodes already carry their types: no lookup needed --]]
+          <div>{{> rsp:ResourceCardTemplate cardSize=cardSize cardDate=cardDate cardDateLabel=cardDateLabel cardTypes=cardTypes cardTypesLabel=cardTypesLabel cardFormats=cardFormats cardFormatsLabel=cardFormatsLabel resourceOntologyClass=data.types }}</div>
         {{else}}
           <semantic-query query='SELECT ?resourceOntologyClass WHERE {
                                       BIND(<{{iri}}> as ?iri)
-                                     {{#if data.types}}
-                                      ?iri a <{{data.types}}> . 
-                                     {{else}}
-                                       	?iri a ?resourceOntologyClass .
-                                     {{/if}}
+                                      ?iri a ?resourceOntologyClass .
                                   } LIMIT 1'
                         template='{{> template}}'
                         no-result-template='{{> noResults}}'>
-      
+
             <template id='template'>
               <div>{{> rsp:ResourceCardTemplate cardSize=cardSize cardDate=cardDate cardDateLabel=cardDateLabel cardTypes=cardTypes cardTypesLabel=cardTypesLabel cardFormats=cardFormats cardFormatsLabel=cardFormatsLabel resourceOntologyClass=bindings.0.resourceOntologyClass.value }}</div>
             </template>
@@ -89,7 +52,5 @@
         {{/if}}
       </div>
     </template>
-
-  </semantic-query>
-  
+ </rs-resource-configuration>
 [[/inline]]

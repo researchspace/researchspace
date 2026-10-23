@@ -23,6 +23,9 @@ import Basil from 'basil.js';
 import { Rdf } from 'platform/api/rdf';
 import * as request from 'platform/api/http';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
+import * as Kefir from 'kefir';
+import { QueryContext } from 'platform/api/sparql';
+import { BaseResourceService } from './BaseResourceService';
 
 export interface ResourceConfig {
   resourceLabel: string;
@@ -358,4 +361,29 @@ export function getResourceConfiguration(
       );
       throw error;
     });
+}
+
+/**
+ * Batched, in-memory cached resolution of the resource configuration that
+ * applies to each resource, through the server's bulk endpoint (which keeps
+ * its own ResourceConfigurationCache). Requests issued in the same tick are
+ * combined into one POST, exactly like labels: a knowledge map with 80 nodes
+ * resolves all of them with one request instead of one SPARQL query per card.
+ *
+ * The resolved value is the configuration IRI; use getResourceConfigurationValue
+ * for its label, icon, form, visualisation template etc.
+ */
+const RESOURCE_CONFIGURATIONS_SERVICE_URL = '/rest/data/rdf/utils/getResourceConfigurations';
+const resourceConfigurationService = new BaseResourceService(RESOURCE_CONFIGURATIONS_SERVICE_URL);
+
+export function getResourceConfigurationBatched(
+  iri: Rdf.Iri, options?: { context?: QueryContext }
+): Kefir.Property<string> {
+  return resourceConfigurationService.getResource(iri, options ? options.context : undefined);
+}
+
+export function getResourceConfigurationsBatched(
+  iris: ReadonlyArray<Rdf.Iri>, options?: { context?: QueryContext }
+) {
+  return resourceConfigurationService.getResources(iris, options ? options.context : undefined);
 }

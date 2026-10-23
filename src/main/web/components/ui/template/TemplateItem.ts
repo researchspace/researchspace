@@ -23,8 +23,8 @@ import { isEqual, isArray } from 'lodash';
 import * as classNames from 'classnames';
 import * as Maybe from 'data.maybe';
 
-import { Component, TemplateContext } from 'platform/api/components';
-import { CapturedContext } from 'platform/api/services/template';
+import { Component, ComponentProps, TemplateContext } from 'platform/api/components';
+import { CapturedContext, TemplateScope } from 'platform/api/services/template';
 import { ModuleRegistry } from 'platform/api/module-loader';
 
 import { ErrorNotification } from 'platform/components/ui/notification';
@@ -82,7 +82,14 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
   }
 
   componentWillReceiveProps(props, nextContext) {
-    if (!templateEqual(props.template, this.props.template)) {
+    // Local <template> partials live in the template scope, not in the source:
+    // when the surrounding markup is re-parsed (an API refresh of the same
+    // page) the scope changes while the source stays equal, so the partials
+    // must be recompiled or the previous page's content stays on screen.
+    const scopeChanged =
+      (props as ComponentProps).markupTemplateScope !== (this.props as ComponentProps).markupTemplateScope ||
+      (nextContext && nextContext.templateScope !== this.context.templateScope);
+    if (!templateEqual(props.template, this.props.template) || scopeChanged) {
       // use nextContext: this.context still holds the previous captured
       // context, but the new source may reference the incoming one's keys
       this.compileTemplate(props, nextContext);
@@ -169,7 +176,10 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     const version = ++this.compileVersion;
 
     const capturer = CapturedContext.inheritAndCapture(templateDataContext);
-    this.appliedTemplateScope
+    // resolve the scope from the context being applied (this.context still
+    // holds the previous one inside componentWillReceiveProps)
+    const scope = (props as ComponentProps).markupTemplateScope || context.templateScope || TemplateScope.default;
+    scope
       .compile(props.template.source)
       .then((template) => {
         const renderedHtml = template(props.template.options, { capturer, parentContext: templateDataContext });

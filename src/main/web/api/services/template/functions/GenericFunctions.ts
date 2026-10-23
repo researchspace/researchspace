@@ -172,5 +172,32 @@ export const GenericFunctions = {
    */
   uuid() {
     return uuidLib.v4();
-  }
+  },
+
+  /**
+   * Deterministic identifier derived from its arguments, for naming component
+   * instances in templates. Unlike `uuid`, the value is identical on every
+   * re-render of the same template with the same inputs, so components keyed or
+   * targeted by it keep their identity (and their loaded state) instead of being
+   * remounted and reloaded. Different inputs give different identifiers, so two
+   * inclusions of the same template on one page do not collide.
+   *
+   * Usage: `{{#bind viewId=(instanceId dashboardId config parentNode)}}`.
+   * Undefined/empty arguments are kept as empty positions so that argument
+   * order matters.
+   */
+  instanceId(...args: any[]) {
+    // the last argument is the Handlebars options object
+    const parts = args.slice(0, -1).map(part =>
+      part === undefined || part === null ? '' : String(part)
+    );
+    const input = parts.join('\u0001');
+    // FNV-1a 32-bit, rendered in base 36: short, stable and safe in HTML ids
+    let hash = 0x811c9dc5;
+    for (let i = 0; i < input.length; i++) {
+      hash ^= input.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    return hash.toString(36);
+  },
 };

@@ -144,3 +144,12 @@ jobs:
         with:
           name: zip-bundle
           path: build/output/researchspace-*
+
+      - name: Upload browser test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: karma-test-results
+          path: webpack/tests_out/junit/
+          if-no-files-found: ignore
+          retention-days: 14

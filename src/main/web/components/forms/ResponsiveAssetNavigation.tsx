@@ -5,7 +5,7 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
 import Icon from 'platform/components/ui/icon/Icon';
-import { FormMenuOverlay } from '../ui/resource-dropdown/FormMenuOverlay';
+import { AnchoredMenuOverlay } from '../ui/dropdown/AnchoredMenuOverlay';
 
 interface Props {
   /** Opt-in side rail; narrower panels always use the underline header. */
@@ -31,7 +31,7 @@ export default class ResponsiveAssetNavigation extends React.Component<Props, St
   private toggle = React.createRef<HTMLButtonElement>();
   private menu = React.createRef<HTMLUListElement>();
   private observer: ResizeObserver | undefined;
-  private overlay: FormMenuOverlay | undefined;
+  private overlay: AnchoredMenuOverlay | undefined;
   private mounted = false;
   private focusFrame: number | undefined;
 
@@ -56,7 +56,7 @@ export default class ResponsiveAssetNavigation extends React.Component<Props, St
   componentDidUpdate() {
     this.measure();
     if (this.state.open && this.menu.current && !this.overlay) {
-      this.overlay = new FormMenuOverlay(this.menu.current);
+      this.overlay = new AnchoredMenuOverlay(this.menu.current);
       this.positionMenu();
     } else if (!this.state.open && this.overlay) {
       this.overlay.dispose(); this.overlay = undefined;

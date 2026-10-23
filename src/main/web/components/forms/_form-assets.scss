@@ -39,7 +39,7 @@
     border: 0;
     background: transparent;
   }
-  .form-assets-sidebar__pane { min-width: 0; padding: 0; height: auto; }
+  .form-assets-sidebar__pane { min-width: 0; padding: 0 !important; height: auto; }
   .form-asset-navigation {
     position: relative;
     display: flex;
@@ -187,5 +187,127 @@
   @media (pointer: coarse) {
     .form-asset-view__layout .btn { min-width: 44px; min-height: 44px; }
     .form-asset-navigation__menu button { min-height: 44px; }
+  }
+}
+
+// Asset panes participate in the outer form's scroll flow. The general
+// .form-tabs rules otherwise create a second clipped/scrolled pane here.
+.form-tabs .form-assets-sidebar .form-assets-sidebar__content,
+.form-tabs .form-assets-sidebar .form-assets-sidebar__pane {
+  overflow: visible;
+  height: auto;
+  max-height: none;
+}
+
+.form-assets-sidebar {
+  .form-asset-relationships > summary {
+    display: list-item;
+    list-style: disclosure-closed inside;
+  }
+  .form-asset-relationships[open] > summary {
+    list-style-type: disclosure-open;
+  }
+  .form-asset-view__body > .dragAndDrop-input-container
+    .DragAndDropInput--holder > [role='status'] {
+    color: var(--rs-color-text-secondary);
+    font-size: var(--rs-font-size-sm);
+    padding-block: 4px;
+  }
+
+  .form-asset-relationships {
+    .cardinality-support__group-instance:has(.form-asset-relationship-fields) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 38px;
+      column-gap: 16px;
+      align-items: start;
+      padding: 12px;
+
+      // Keep relationship fields outside the dedicated remove-action column.
+      > :not(.cardinality-support__remove-value) {
+        grid-column: 1;
+        min-width: 0;
+        max-width: 100%;
+      }
+      > .cardinality-support__remove-value {
+        position: static;
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        align-self: start;
+        box-sizing: border-box;
+        width: 38px;
+        min-width: 38px;
+        height: 38px;
+        margin: 0;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        background: transparent;
+      }
+    }
+    .form-asset-relationship-fields {
+      gap: 12px 16px;
+      min-width: 0;
+      > .form-asset-relationship-field {
+        flex: 1 1 260px;
+        min-width: 0;
+        max-width: 100%;
+      }
+      .semantic-form-input-decorator__header { margin: 0 0 8px; }
+    }
+    .DragAndDropInput--holder,
+    .DropArea--dropArea,
+    .DragAndDropInput--itemArea,
+    .DragAndDropInput--itemArea > div {
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .DragAndDropInput--holder .DropArea--dropArea {
+      height: auto;
+      overflow: visible;
+    }
+    .DragAndDropInput--itemArea .placeholder-item {
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      min-height: 44px;
+      height: auto;
+      margin: 0;
+      padding: 8px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  // Local expansion rather than a floating/top-layer menu. Keep the picker
+  // DOM and event handling unchanged; the outer form scrolls to the results.
+  .SemanticTreeInput--holder > div:not(.SemanticTreeInput--inputAndButtons) {
+    position: static;
+    width: 100%;
+    min-width: 0;
+  }
+  .SemanticTreeInput--dropdown {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .semantic-form-tree-picker-input {
+    align-items: flex-start;
+  }
+  .semantic-form-tree-picker-input__picker,
+  .SemanticTreeInput--textInput {
+    min-width: 0;
+  }
+  .semantic-form-tree-picker-input__create-button.btn-default {
+    height: $input-height;
+    flex-shrink: 0;
+  }
+  .Select-menu-outer {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
   }
 }

@@ -1,25 +1,33 @@
 [[!-- Related media: underline navigation with More overflow; row cards by default.
   cardLayout="grid" starts in grid view (legacy "tile" is also accepted).
   lazyTabs=true (default) mounts a pane on first selection, then retains it.
-  lazyTabs=false mounts all panes. Initial form values still load for safe saving.
+  lazyTabs=false mounts all enabled panes. Excluded tabs do not mount bindings.
+  Enabled lazy panes have model bindings even before their editors are visited.
   verticalTabs=true optionally retains a side rail above 800px of sidebar width.
-  imagesOnly, map, signature and default-tab retain their existing meanings.
+  Optional exclusions: hideImages, hideDocuments, hideVideos, hideAudio,
+  hide3DModels, hideRepresentations, hideWebURL, hideMap, hideSignature.
+  Omitted flags retain existing visibility. imagesOnly takes precedence.
+  default-tab must name a visible full event key; otherwise the first visible tab
+  is selected. map/signature still require their existing opt-in flags.
   Requires rs-form-asset-navigation, rs-form-asset-view and the accompanying styles. --]]
 <div class="form-details-assets-container form-assets-sidebar">
   <div class="customFormHeader form-assets-sidebar__heading">Related media/resources</div>
-  [[!-- lookup safely serializes an omitted or boolean lazyTabs parameter; ifCond is client-side. --]]
+  [[!-- Only enabled lazy panes need model-only bindings before first selection.
+        Excluded tabs register neither editors nor hidden field bindings here.
+        imagesOnly mounts its image editors immediately and needs no duplicate bindings. --]]
+  [[#unless imagesOnly]]
   {{#ifCond "[[lookup lazyTabs]]" "!==" "false"}}
   <div class="form-asset-model-bindings" hidden>
-    <semantic-form-hidden-input for="entity_image_main_representation"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_image"></semantic-form-hidden-input>
-    [[#unless imagesOnly]]
-    <semantic-form-hidden-input for="entity_audio"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_document"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_3d_model"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_video"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_has_representation"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="entity_web_URL"></semantic-form-hidden-input>
-    [[#if signature]]<semantic-form-hidden-input for="person_signature"></semantic-form-hidden-input>[[/if]]
+    [[#unless hideImages]]<semantic-form-hidden-input for="entity_image_main_representation"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideImages]]<semantic-form-hidden-input for="entity_image"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideAudio]]<semantic-form-hidden-input for="entity_audio"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideDocuments]]<semantic-form-hidden-input for="entity_document"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hide3DModels]]<semantic-form-hidden-input for="entity_3d_model"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideVideos]]<semantic-form-hidden-input for="entity_video"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideRepresentations]]<semantic-form-hidden-input for="entity_has_representation"></semantic-form-hidden-input>[[/unless]]
+    [[#unless hideWebURL]]<semantic-form-hidden-input for="entity_web_URL"></semantic-form-hidden-input>[[/unless]]
+    [[#if signature]][[#unless hideSignature]]<semantic-form-hidden-input for="person_signature"></semantic-form-hidden-input>[[/unless]][[/if]]
+    [[#unless hideRepresentations]]
     <semantic-form-composite-input for="entity_represents_range" render-header="false"
       new-subject-template="/PC138_represents/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
       fields='[[fieldDefinitions
@@ -35,6 +43,7 @@
     [[/unless]]
   </div>
   {{/ifCond}}
+  [[/unless]]
   [[#if imagesOnly]]
   <div class="form-assets-sidebar__single">
     <rs-form-asset-view label="Images" default-layout="[[#if cardLayout]][[cardLayout]][[else]]row[[/if]]">
@@ -189,22 +198,22 @@
   </div>
   [[else]]
   <bs-tab-container id="{{viewId}}-formResourceAsset-tabs"
-    default-active-key="[[#if default-tab]][[default-tab]][[else]]{{viewId}}-resourceForm-images[[/if]]">
+    default-active-key="[[#unless hideImages]]{{#if (assetTabMatches '[[lookup default-tab]]' viewId 'images')}}{{viewId}}-resourceForm-images{{else}}[[/unless]][[#unless hideDocuments]]{{#if (assetTabMatches '[[lookup default-tab]]' viewId 'docs')}}{{viewId}}-resourceForm-docs{{else}}[[/unless]][[#unless hideVideos]]{{#if (assetTabMatches '[[lookup default-tab]]' viewId 'videos')}}{{viewId}}-resourceForm-videos{{else}}[[/unless]][[#unless hideAudio]]{{#if (assetTabMatches '[[lookup default-tab]]' viewId 'audio')}}{{viewId}}-resourceForm-audio{{else}}[[/unless]][[#unless hide3DModels]]{{#if (assetTabMatches '[[lookup default-tab]]' viewId '3d')}}{{viewId}}-resourceForm-3d{{else}}[[/unless]][[#if map]][[#unless hideMap]]{{#if (assetTabMatches '[[lookup default-tab]]' viewId 'map')}}{{viewId}}-resourceForm-map{{else}}[[/unless]][[/if]][[#if signature]][[#unless hideSignature]]{{#if (assetTabMatches '[[lookup default-tab]]' viewId 'signature')}}{{viewId}}-resourceForm-signature{{else}}[[/unless]][[/if]][[#unless hideRepresentations]]{{#if (assetTabMatches '[[lookup default-tab]]' viewId 'representations')}}{{viewId}}-resourceForm-representations{{else}}[[/unless]][[#unless hideWebURL]]{{#if (assetTabMatches '[[lookup default-tab]]' viewId 'URLlink')}}{{viewId}}-resourceForm-URLlink{{else}}[[/unless]][[#unless hideImages]]{{viewId}}-resourceForm-images[[else]][[#unless hideDocuments]]{{viewId}}-resourceForm-docs[[else]][[#unless hideVideos]]{{viewId}}-resourceForm-videos[[else]][[#unless hideAudio]]{{viewId}}-resourceForm-audio[[else]][[#unless hide3DModels]]{{viewId}}-resourceForm-3d[[else]][[#if map]][[#unless hideMap]]{{viewId}}-resourceForm-map[[else]][[#if signature]][[#unless hideSignature]]{{viewId}}-resourceForm-signature[[else]][[#unless hideRepresentations]]{{viewId}}-resourceForm-representations[[else]][[#unless hideWebURL]]{{viewId}}-resourceForm-URLlink[[else]][[/unless]][[/unless]][[/unless]][[else]][[#unless hideRepresentations]]{{viewId}}-resourceForm-representations[[else]][[#unless hideWebURL]]{{viewId}}-resourceForm-URLlink[[else]][[/unless]][[/unless]][[/if]][[/unless]][[else]][[#if signature]][[#unless hideSignature]]{{viewId}}-resourceForm-signature[[else]][[#unless hideRepresentations]]{{viewId}}-resourceForm-representations[[else]][[#unless hideWebURL]]{{viewId}}-resourceForm-URLlink[[else]][[/unless]][[/unless]][[/unless]][[else]][[#unless hideRepresentations]]{{viewId}}-resourceForm-representations[[else]][[#unless hideWebURL]]{{viewId}}-resourceForm-URLlink[[else]][[/unless]][[/unless]][[/if]][[/if]][[/unless]][[/unless]][[/unless]][[/unless]][[/unless]][[#unless hideWebURL]]{{/if}}[[/unless]][[#unless hideRepresentations]]{{/if}}[[/unless]][[#if signature]][[#unless hideSignature]]{{/if}}[[/unless]][[/if]][[#if map]][[#unless hideMap]]{{/if}}[[/unless]][[/if]][[#unless hide3DModels]]{{/if}}[[/unless]][[#unless hideAudio]]{{/if}}[[/unless]][[#unless hideVideos]]{{/if}}[[/unless]][[#unless hideDocuments]]{{/if}}[[/unless]][[#unless hideImages]]{{/if}}[[/unless]]">
     <div class="formResourceAsset-tabs form-assets-sidebar__tabs">
       <rs-form-asset-navigation vertical="[[#if verticalTabs]]true[[else]]false[[/if]]" horizontal-below="800">
-        <bs-nav-item event-key="{{viewId}}-resourceForm-images">Images</bs-nav-item>
-        <bs-nav-item event-key="{{viewId}}-resourceForm-docs">Documents</bs-nav-item>
-        <bs-nav-item event-key="{{viewId}}-resourceForm-videos">Videos</bs-nav-item>
-        <bs-nav-item event-key="{{viewId}}-resourceForm-audio">Audio</bs-nav-item>
-        <bs-nav-item event-key="{{viewId}}-resourceForm-3d">3D models</bs-nav-item>
-        [[#if map]]<bs-nav-item event-key="{{viewId}}-resourceForm-map">Map</bs-nav-item>[[/if]]
-        [[#if signature]]<bs-nav-item event-key="{{viewId}}-resourceForm-signature">Signature</bs-nav-item>[[/if]]
-        <bs-nav-item event-key="{{viewId}}-resourceForm-representations">Visual representation</bs-nav-item>
-        <bs-nav-item event-key="{{viewId}}-resourceForm-URLlink">Web URL link</bs-nav-item>
+        [[#unless hideImages]]<bs-nav-item event-key="{{viewId}}-resourceForm-images">Images</bs-nav-item>[[/unless]]
+        [[#unless hideDocuments]]<bs-nav-item event-key="{{viewId}}-resourceForm-docs">Documents</bs-nav-item>[[/unless]]
+        [[#unless hideVideos]]<bs-nav-item event-key="{{viewId}}-resourceForm-videos">Videos</bs-nav-item>[[/unless]]
+        [[#unless hideAudio]]<bs-nav-item event-key="{{viewId}}-resourceForm-audio">Audio</bs-nav-item>[[/unless]]
+        [[#unless hide3DModels]]<bs-nav-item event-key="{{viewId}}-resourceForm-3d">3D models</bs-nav-item>[[/unless]]
+        [[#if map]][[#unless hideMap]]<bs-nav-item event-key="{{viewId}}-resourceForm-map">Map</bs-nav-item>[[/unless]][[/if]]
+        [[#if signature]][[#unless hideSignature]]<bs-nav-item event-key="{{viewId}}-resourceForm-signature">Signature</bs-nav-item>[[/unless]][[/if]]
+        [[#unless hideRepresentations]]<bs-nav-item event-key="{{viewId}}-resourceForm-representations">Visual representation</bs-nav-item>[[/unless]]
+        [[#unless hideWebURL]]<bs-nav-item event-key="{{viewId}}-resourceForm-URLlink">Web URL link</bs-nav-item>[[/unless]]
       </rs-form-asset-navigation>
       <bs-tab-content class="form-assets-sidebar__content" animation="true"
         mount-on-enter="{{#ifCond '[[lookup lazyTabs]]' '===' 'false'}}false{{else}}true{{/ifCond}}" unmount-on-exit="false">
-        <bs-tab-pane event-key="{{viewId}}-resourceForm-images" class="form-assets-sidebar__pane">
+        [[#unless hideImages]]<bs-tab-pane event-key="{{viewId}}-resourceForm-images" class="form-assets-sidebar__pane">
           <rs-form-asset-view label="Images" default-layout="[[#if cardLayout]][[cardLayout]][[else]]row[[/if]]">
           <div class="form-asset-view__actions">
           {{#if node}}
@@ -354,8 +363,8 @@
           </div>
           </div>
           </rs-form-asset-view>
-        </bs-tab-pane>
-        <bs-tab-pane event-key="{{viewId}}-resourceForm-docs" class="form-assets-sidebar__pane">
+        </bs-tab-pane>[[/unless]]
+        [[#unless hideDocuments]]<bs-tab-pane event-key="{{viewId}}-resourceForm-docs" class="form-assets-sidebar__pane">
           <rs-form-asset-view label="Documents" default-layout="[[#if cardLayout]][[cardLayout]][[else]]row[[/if]]">
           <div class="form-asset-view__actions">
 
@@ -395,8 +404,8 @@
           </div>
           </div>
           </rs-form-asset-view>
-        </bs-tab-pane>
-        <bs-tab-pane event-key="{{viewId}}-resourceForm-videos" class="form-assets-sidebar__pane">
+        </bs-tab-pane>[[/unless]]
+        [[#unless hideVideos]]<bs-tab-pane event-key="{{viewId}}-resourceForm-videos" class="form-assets-sidebar__pane">
           <rs-form-asset-view label="Videos" default-layout="[[#if cardLayout]][[cardLayout]][[else]]row[[/if]]">
           <div class="form-asset-view__actions">
           {{#if node}}
@@ -469,8 +478,8 @@
           </div>
           </div>
           </rs-form-asset-view>
-        </bs-tab-pane>
-        <bs-tab-pane event-key="{{viewId}}-resourceForm-audio" class="form-assets-sidebar__pane">
+        </bs-tab-pane>[[/unless]]
+        [[#unless hideAudio]]<bs-tab-pane event-key="{{viewId}}-resourceForm-audio" class="form-assets-sidebar__pane">
           <rs-form-asset-view label="Audio" default-layout="[[#if cardLayout]][[cardLayout]][[else]]row[[/if]]">
           <div class="form-asset-view__actions">
 
@@ -510,8 +519,8 @@
           </div>
           </div>
           </rs-form-asset-view>
-        </bs-tab-pane>
-        <bs-tab-pane event-key="{{viewId}}-resourceForm-3d" class="form-assets-sidebar__pane">
+        </bs-tab-pane>[[/unless]]
+        [[#unless hide3DModels]]<bs-tab-pane event-key="{{viewId}}-resourceForm-3d" class="form-assets-sidebar__pane">
           <rs-form-asset-view label="3D models" default-layout="[[#if cardLayout]][[cardLayout]][[else]]row[[/if]]">
           <div class="form-asset-view__actions">
 
@@ -551,9 +560,9 @@
           </div>
           </div>
           </rs-form-asset-view>
-        </bs-tab-pane>
+        </bs-tab-pane>[[/unless]]
         [[#if map]]
-        <bs-tab-pane event-key="{{viewId}}-resourceForm-map" class="form-assets-sidebar__pane">
+        [[#unless hideMap]]<bs-tab-pane event-key="{{viewId}}-resourceForm-map" class="form-assets-sidebar__pane">
           {{#if node}}
               <semantic-query query='SELECT DISTINCT ?place ?placeName ?osmURI WHERE {
                                       BIND(<{{node}}> AS ?place)
@@ -696,10 +705,10 @@
                   </div>
               {{/if}}
           {{/if}}
-        </bs-tab-pane>
+        </bs-tab-pane>[[/unless]]
         [[/if]]
         [[#if signature]]
-        <bs-tab-pane event-key="{{viewId}}-resourceForm-signature" class="form-assets-sidebar__pane">
+        [[#unless hideSignature]]<bs-tab-pane event-key="{{viewId}}-resourceForm-signature" class="form-assets-sidebar__pane">
           <rs-form-asset-view label="Signature" default-layout="[[#if cardLayout]][[cardLayout]][[else]]row[[/if]]">
           <div class="form-asset-view__actions">
           {{#if node}}
@@ -811,9 +820,9 @@
           </div>
           </div>
           </rs-form-asset-view>
-        </bs-tab-pane>
+        </bs-tab-pane>[[/unless]]
         [[/if]]
-        <bs-tab-pane event-key="{{viewId}}-resourceForm-representations" class="form-assets-sidebar__pane">
+        [[#unless hideRepresentations]]<bs-tab-pane event-key="{{viewId}}-resourceForm-representations" class="form-assets-sidebar__pane">
           <rs-form-asset-view label="Visual representation" default-layout="[[#if cardLayout]][[cardLayout]][[else]]row[[/if]]">
           <div class="form-asset-view__actions">
 
@@ -823,6 +832,7 @@
           <semantic-form-drag-and-drop-input  for='entity_has_representation'
                                               item-template='{{> rsp:ResourceCard iri=iri viewId=inputId inputId=inputId dragAndDropInputCard=false cardLayout=cardLayout}}'
                                               label="Visual representations"
+                                              readonly-empty-message="No visual representations recorded."
                                               render-header=false
                                               readonly='true'
                                               placeholder-item-template="<div class='placeholder-item'>
@@ -831,7 +841,7 @@
                                                                           >
           </semantic-form-drag-and-drop-input>
           </div>
-          <details class="form-asset-relationships"><summary>Representation relationships</summary>
+          <details class="form-asset-relationships" open><summary>Representation relationships</summary>
           <semantic-form-composite-input  for="entity_represents_range"
                                                                                           label="Has visual representation"
                                                                                           render-header="false"
@@ -845,10 +855,10 @@
 
                                                           <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC138_represents'> </semantic-form-hidden-input>
 
-                                                          <div class="form-inline-inputs">
-                                                          <div style="flex: 1;">
+                                                          <div class="form-inline-inputs form-asset-relationship-fields">
+                                                          <div class="form-asset-relationship-field">
                                                               <semantic-form-drag-and-drop-input   for='represents_visualItem_domain'
-                                                                                                  render-header="false"
+                                                                                                  render-header="true"
                                                                                                   label="Visual item"
           item-template='{{> rsp:ResourceCard iri=iri viewId=inputId inputId=inputId dragAndDropInputCard=true cardLayout=cardLayout}}'
           placeholder-item-template="<div class='placeholder-item'>Drag a visual item here, or click to create one</div>"
@@ -856,9 +866,10 @@
                                                                                                   nested-form-templates='[[> Platform:NestedFormTemplates_visualItems]]'>
                                                               </semantic-form-drag-and-drop-input>
                                                           </div>
-                                                          <div style="flex: 1;">
+                                                          <div class="form-asset-relationship-field">
                                                               <semantic-form-tree-picker-input  for="mode_of_representation"
-                                                                                              render-header="false"
+                                                                                              label="Mode of representation"
+                                                                                              render-header="true"
                                                                                               placeholder="Select mode of representation"
                                                                                               close-dropdown-on-selection='true'
                                                                                               tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/mode_of_representation>",
@@ -885,10 +896,10 @@
           </details>
           </div>
           </rs-form-asset-view>
-        </bs-tab-pane>
-        <bs-tab-pane event-key="{{viewId}}-resourceForm-URLlink" class="form-assets-sidebar__pane">
+        </bs-tab-pane>[[/unless]]
+        [[#unless hideWebURL]]<bs-tab-pane event-key="{{viewId}}-resourceForm-URLlink" class="form-assets-sidebar__pane">
           <div class="form-asset-url"><semantic-form-text-input for="entity_web_URL" label="Web URL link" render-header="false" placeholder="Enter web URL link"></semantic-form-text-input></div>
-        </bs-tab-pane>
+        </bs-tab-pane>[[/unless]]
       </bs-tab-content>
     </div>
   </bs-tab-container>

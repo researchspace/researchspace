@@ -1,4 +1,4 @@
-<div  class="resource-card {{#if (or narrativeCard knowledgeMapCard knowledgeMapPreviewCard)}}resource-card__no-hover{{/if}}{{#if (or (eq cardLayout 'row') (eq cardLayout 'tile') (eq cardLayout 'search'))}} resource-card--layout resource-card--{{cardLayout}}{{/if}}{{#if hideMediaSection}} resource-card--no-media{{/if}}{{#if (eq cardLayout 'row')}}{{#if (or clipboardCard clipboardList)}} resource-card--clipboard-row{{/if}}{{/if}}"
+<div  class="resource-card {{#if (and (eq cardLayout 'row') (eq cardSize 'medium'))}}resource-card--row-medium {{/if}}{{#if (or narrativeCard knowledgeMapCard knowledgeMapPreviewCard)}}resource-card__no-hover{{/if}}{{#if (or (eq cardLayout 'row') (eq cardLayout 'tile') (eq cardLayout 'search'))}} resource-card--layout resource-card--{{cardLayout}}{{/if}}{{#if hideMediaSection}} resource-card--no-media{{/if}}{{#if (eq cardLayout 'row')}}{{#if (or clipboardCard clipboardList)}} resource-card--clipboard-row{{/if}}{{/if}}"
       style="{{#if (or (eq cardLayout 'row') (eq cardLayout 'tile') (eq cardLayout 'search'))}}{{#if cardMargin}}margin:{{cardMargin}}px;{{/if}}{{else if autosize}}{{else if clipboardList}}width:100%; height:{{#if height}}{{height}}{{else}}190{{/if}}px;
               {{else}}width:{{#if width}}{{width}}{{else}}150{{/if}}px; 
                       height:{{#if height}}{{height}}{{else}}190{{/if}}px; 
@@ -362,19 +362,57 @@
           </semantic-link-container>
         {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item")}}
           <mp-label iri='{{iri}}' class="text-link" style="text-decoration: none; cursor: initial;"></mp-label>
-        {{else}}
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
           <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                    urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                    urlqueryparam-view='semantic-narrative'
                                     urlqueryparam-resource='{{iri}}'>
+            
+              <div><mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label></div>
+            
+          </semantic-link-container>
+        {{else}} 
+          <mp-event-trigger id='{{viewId}}-{{iri}}-open-resource-visualisation-trigger' 
+                  type='Dashboard.AddFrame'
+                  data='{"viewId":"resource-detailed-visualisation", 
+                          "resourceIri": "{{iri}}",
+                          "resourceConfig": "{{resourceConfig}}",
+                          "resourceVisualisationTemplate": "{{#if resourceVisualisationTemplate}}{{resourceVisualisationTemplate}}{{else}}rsp:ResourceContent{{/if}}"
+                        }' 
+                  targets='["thinking-frames"]'>
             {{#if label}}
               [[!-- Label from KM props --]]
               <span class="text-link" title="{{label}}">{{label}}</span>
             {{else}}
               <div><mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "var(--rs-card-accent, var(--rs-color-action, var(--color-action, #396efe)))"}}'></mp-label></div>
             {{/if}}
-          </semantic-link-container>
+          </mp-event-trigger>
         {{/if}}
       </div>
+
+      {{#if (and (eq cardLayout 'row') (eq cardSize 'medium'))}}
+        {{#if (or cardDate cardTypes cardFormats)}}
+          <dl class="resource-card__metadata">
+            {{#if cardDate}}
+              <div class="resource-card__metadata-field">
+                <dt>{{#if cardDateLabel}}{{cardDateLabel}}{{else}}Date{{/if}}</dt>
+                <dd>{{cardDate}}</dd>
+              </div>
+            {{/if}}
+            {{#if cardTypes}}
+              <div class="resource-card__metadata-field">
+                <dt>{{#if cardTypesLabel}}{{cardTypesLabel}}{{else}}Type{{/if}}</dt>
+                <dd>{{cardTypes}}</dd>
+              </div>
+            {{/if}}
+            {{#if cardFormats}}
+              <div class="resource-card__metadata-field">
+                <dt>{{#if cardFormatsLabel}}{{cardFormatsLabel}}{{else}}Format{{/if}}</dt>
+                <dd>{{cardFormats}}</dd>
+              </div>
+            {{/if}}
+          </dl>
+        {{/if}}
+      {{/if}}
     [[/if]]
   </div>
 </div>

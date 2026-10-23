@@ -736,14 +736,20 @@
               <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-semantic-search-result-count' template='{{> resultCount}}'>
                 <template id='resultCount'>
                   {{#if hasResultsCount}}
-                    <div class="semantic-search-num-results" role="status" aria-live="polite" aria-atomic="true">
-                      <div class="num-results" title="Found {{numberOfResults}} results">
-                        <span class="sr-only">Found {{numberOfResults}} results</span>
-                        <span class="rs-search-count-prefix" aria-hidden="true">Found</span>
-                        <span class="num-results-color" aria-hidden="true">{{numberOfResults}}</span>
-                        <span class="rs-search-count-suffix" aria-hidden="true">results</span>
+                    {{#if isTruncated}}
+                      [[!-- The table holds only the first LIMIT rows (search default 1000),
+                            so its count is a lower bound: only then run the COUNT query. --]]
+                      <semantic-search-result>[[> numberOfResults]]</semantic-search-result>
+                    {{else}}
+                      <div class="semantic-search-num-results" role="status" aria-live="polite" aria-atomic="true">
+                        <div class="num-results" title="Found {{numberOfResults}} results">
+                          <span class="sr-only">Found {{numberOfResults}} results</span>
+                          <span class="rs-search-count-prefix" aria-hidden="true">Found</span>
+                          <span class="num-results-color" aria-hidden="true">{{numberOfResults}}</span>
+                          <span class="rs-search-count-suffix" aria-hidden="true">results</span>
+                        </div>
                       </div>
-                    </div>
+                    {{/if}}
                   {{/if}}
                 </template>
               </mp-event-target-template-render>

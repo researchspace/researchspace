@@ -27,6 +27,7 @@ import * as Either from 'data.either';
 import * as maybe from 'data.maybe';
 
 import { Cancellation } from 'platform/api/async';
+import * as SparqlJs from 'sparqljs';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { Component, ComponentProps, ComponentContext } from 'platform/api/components';
 import { BuiltInEvents, trigger } from 'platform/api/events';
@@ -53,9 +54,25 @@ export interface SemanticTableResultsLoadedData {
   numberOfResults: number;
   variable: string | undefined;
   hasResultsCount: true;
+  /** LIMIT of the executed query, when it has one (search results default to 1000). */
+  limit?: number;
+  /**
+   * True when the row count reached the query LIMIT, i.e. the table holds a
+   * truncated result set and `numberOfResults` is a lower bound, not the total.
+   */
+  isTruncated: boolean;
 }
 
-function countResults(result: SparqlClient.SparqlSelectResult): SemanticTableResultsLoadedData {
+function queryLimit(query: string): number | undefined {
+  try {
+    const parsed = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(query);
+    return typeof parsed.limit === 'number' ? parsed.limit : undefined;
+  } catch (e) {
+    return undefined;
+  }
+}
+
+function countResults(result: SparqlClient.SparqlSelectResult, query: string): SemanticTableResultsLoadedData {
   const variable = result.head.vars[0];
   const distinct = new Set<string>();
   if (variable) {
@@ -64,11 +81,15 @@ function countResults(result: SparqlClient.SparqlSelectResult): SemanticTableRes
       distinct.add(value ? `${value.termType}:${value.value}` : '');
     }
   }
+  const numberOfRows = result.results.bindings.length;
+  const limit = queryLimit(query);
   return {
-    numberOfRows: result.results.bindings.length,
-    numberOfResults: variable ? distinct.size : result.results.bindings.length,
+    numberOfRows,
+    numberOfResults: variable ? distinct.size : numberOfRows,
     variable,
     hasResultsCount: true,
+    limit,
+    isTruncated: limit !== undefined && numberOfRows >= limit,
   };
 }
 
@@ -306,7 +327,7 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
       .onValue((res) => {
         this.setState({ data: res, isLoading: false });
         if (this.props.id) {
-          trigger({ eventType: SemanticTableResultsLoaded, source: this.props.id, data: countResults(res) });
+          trigger({ eventType: SemanticTableResultsLoaded, source: this.props.id, data: countResults(res, props.query) });
         }
       })
       .onError((error) => this.setState({ isLoading: false, error }))

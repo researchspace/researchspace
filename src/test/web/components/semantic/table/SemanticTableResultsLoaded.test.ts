@@ -61,6 +61,26 @@ describe('semantic-table results count event', () => {
     expect(received[0].numberOfRows).to.equal(3);
     expect(received[0].variable).to.equal('subject');
     expect(received[0].hasResultsCount).to.equal(true);
+    expect(received[0].limit).to.equal(undefined);
+    expect(received[0].isTruncated).to.equal(false);
     expect(queries).to.equal(1);
+  });
+
+  it('flags a result set that filled the query LIMIT as truncated', async () => {
+    const received: SemanticTableResultsLoadedData[] = [];
+    const subscription = listen({ eventType: SemanticTableResultsLoaded, source: 'limited-table' })
+      .observe({ value: event => received.push(event.data as SemanticTableResultsLoadedData) });
+    wrapper = mount(createElement(SemanticTable, {
+      id: 'limited-table', query: 'SELECT ?subject ?description WHERE { ?subject ?p ?description } LIMIT 3',
+      columnConfiguration: [{ variableName: 'subject', displayName: 'Subject' }],
+    } as any));
+    for (let i = 0; i < 200 && received.length === 0; i++) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    subscription.unsubscribe();
+    expect(received).to.have.length(1);
+    expect(received[0].limit).to.equal(3);
+    expect(received[0].numberOfRows).to.equal(3);
+    expect(received[0].isTruncated).to.equal(true);
   });
 });

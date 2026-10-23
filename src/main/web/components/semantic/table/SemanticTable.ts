@@ -72,20 +72,36 @@ function queryLimit(query: string): number | undefined {
   }
 }
 
-function countResults(result: SparqlClient.SparqlSelectResult, query: string): SemanticTableResultsLoadedData {
-  const variable = result.head.vars[0];
-  const distinct = new Set<string>();
+/** Variable whose distinct values are counted: ?subject (the search convention) when projected. */
+export const DEFAULT_COUNT_VARIABLE = 'subject';
+
+function countResults(
+  result: SparqlClient.SparqlSelectResult, query: string, countVariable?: string
+): SemanticTableResultsLoadedData {
+  const vars = result.head.vars || [];
+  const bindings = result.results.bindings;
+  const numberOfRows = bindings.length;
+  const isBound = (name: string) => bindings.some(b => b[name] !== undefined);
+  // the requested variable, else ?subject, else the first variable that is
+  // actually bound in the data (a leading expression/optional variable that
+  // is unbound everywhere must not collapse the count to 1)
+  const candidates = [countVariable, DEFAULT_COUNT_VARIABLE, ...vars].filter(
+    (name, i, all): name is string => Boolean(name) && vars.indexOf(name) >= 0 && all.indexOf(name) === i
+  );
+  const variable = candidates.find(isBound);
+  let numberOfResults = numberOfRows;
   if (variable) {
-    for (const binding of result.results.bindings) {
+    const distinct = new Set<string>();
+    for (const binding of bindings) {
       const value = binding[variable];
-      distinct.add(value ? `${value.termType}:${value.value}` : '');
+      if (value) { distinct.add(`${value.termType}:${value.value}`); }
     }
+    numberOfResults = distinct.size;
   }
-  const numberOfRows = result.results.bindings.length;
   const limit = queryLimit(query);
   return {
     numberOfRows,
-    numberOfResults: variable ? distinct.size : numberOfRows,
+    numberOfResults,
     variable,
     hasResultsCount: true,
     limit,
@@ -140,6 +156,13 @@ interface BaseConfig extends ControlledProps {
    * SPARQL Select query.
    */
   query: string;
+
+  /**
+   * Variable whose distinct values are reported as `numberOfResults` in the
+   * Components.SemanticTable.ResultsLoaded event. Defaults to `subject` when
+   * the query projects it, otherwise the first variable bound in the results.
+   */
+  countVariable?: string;
 
   className?: string;
 
@@ -327,7 +350,7 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
       .onValue((res) => {
         this.setState({ data: res, isLoading: false });
         if (this.props.id) {
-          trigger({ eventType: SemanticTableResultsLoaded, source: this.props.id, data: countResults(res, props.query) });
+          trigger({ eventType: SemanticTableResultsLoaded, source: this.props.id, data: countResults(res, props.query, props.countVariable) });
         }
       })
       .onError((error) => this.setState({ isLoading: false, error }))

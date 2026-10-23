@@ -25,7 +25,15 @@
     border-bottom: 1px solid $color-border;
 
     & > li {
-        padding: 9px 15px;
+        padding: 8px 14px;
+        
+        &.pr-0 {
+            padding-right: 0;
+        }
+
+        &.pl-0 {
+            padding-left: 0;
+        }
 
         &:first-of-type {
 
@@ -44,7 +52,7 @@
                 font-weight: bold;
                 color: $color-action;
                 border: none;
-            }
+            }            
 
         }
 
@@ -56,7 +64,7 @@
 
         & > a {
             color: $color-secondary;
-            font-size: $font-size-base;
+            font-size: 14px;
             border: none;
             padding: 0;
 
@@ -71,6 +79,29 @@
 
         float: right;
     }
+}
+
+// Resource tabs use the existing active underline. Keyboard focus adds a
+// dotted text underline, avoiding a rectangular ring around the tab label.
+.resource-editView-form-container .nav.nav-tabs > li > a[role="tab"] {
+  &:focus {
+    outline: none !important;
+  }
+
+  &:focus-visible {
+    text-decoration-line: underline !important;
+    text-decoration-style: dotted !important;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+  }
+}
+
+// The selected tab already has a full-width underline; do not add a second
+// underline under its label when it receives focus.
+.resource-editView-form-container .nav.nav-tabs > li.active > a[role="tab"] {
+  &:focus, &:focus-visible {
+    text-decoration: none !important;
+  }
 }
 
 .nav.icon-tabs {
@@ -250,4 +281,311 @@
 
         
     }
+}
+
+.rs-tab-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.rs-tab-title__icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.rs-tab-title__label {
+  line-height: 1;
+}
+
+.rs-secondary-tabs {
+  margin: 28px 0 22px;
+}
+
+/*
+ * React-Bootstrap 0.33 / Bootstrap 3 generates:
+ *
+ * <ul class="nav nav-tabs">
+ *   <li class="active"><a>...</a></li>
+ * </ul>
+ */
+.rs-secondary-tabs .nav.nav-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start !important;
+  align-items: center;
+
+  column-gap: 10px;
+  row-gap: 10px;
+
+  border-bottom: 1px solid $rs-color-border;
+  margin: 0;
+  padding: 0 0 16px;
+
+  list-style: none;
+}
+
+/*
+ * Bootstrap's clearfix pseudo-elements can become unwanted flex items.
+ * Remove them inside this secondary tab row.
+ */
+.rs-secondary-tabs .nav.nav-tabs::before,
+.rs-secondary-tabs .nav.nav-tabs::after {
+  display: none !important;
+  content: none !important;
+}
+
+/*
+ * Bootstrap 3 floats tab <li>s by default.
+ * Disable float and prevent local CSS from stretching the items.
+ */
+.rs-secondary-tabs .nav.nav-tabs > li {
+  float: none !important;
+  display: block;
+  margin: 0 !important;
+  padding: 0;
+
+  flex: 0 0 auto;
+  width: auto;
+
+  border: 0 !important;
+  background: transparent !important;
+}
+
+/*
+ * Remove any primary-tab underline treatment applied to active <li>s.
+ */
+.rs-secondary-tabs .nav.nav-tabs > li.active,
+.rs-secondary-tabs .nav.nav-tabs > li:hover,
+.rs-secondary-tabs .nav.nav-tabs > li:focus {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+/*
+ * Default secondary tab.
+ */
+.rs-secondary-tabs .nav.nav-tabs > li > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 38px;
+  margin: 0 !important;
+  padding: 8px 16px;
+
+  border: 1px solid $rs-color-border !important;
+  border-radius: 5px !important;
+
+  background: $rs-color-surface !important;
+  color: $rs-color-text-secondary !important;
+
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+
+/*
+ * Hover/focus state.
+ */
+.rs-secondary-tabs .nav.nav-tabs > li > a:hover,
+.rs-secondary-tabs .nav.nav-tabs > li > a:focus {
+  background: $rs-color-surface !important;
+  color: $rs-color-action !important;
+  text-decoration: none !important;
+}
+
+/*
+ * Active state.
+ * This deliberately uses a contained state rather than an underline.
+ */
+.rs-secondary-tabs .nav.nav-tabs > li.active > a,
+.rs-secondary-tabs .nav.nav-tabs > li.active > a:hover,
+.rs-secondary-tabs .nav.nav-tabs > li.active > a:focus {
+  background: $rs-color-surface !important;
+  color: $rs-color-action !important;
+
+  font-weight: 600;
+  cursor: default;
+
+  box-shadow: inset 0 -3px 0 $rs-color-action !important;
+}
+
+/*
+ * Optional: disabled tabs, if React-Bootstrap emits them.
+ */
+.rs-secondary-tabs .nav.nav-tabs > li.disabled > a,
+.rs-secondary-tabs .nav.nav-tabs > li.disabled > a:hover,
+.rs-secondary-tabs .nav.nav-tabs > li.disabled > a:focus {
+  border-color: $rs-color-border !important;
+  background: $rs-color-surface-subtle !important;
+  color: $rs-color-text-muted !important;
+  cursor: not-allowed;
+}
+
+.rs-visualisation-workspace {
+  margin: 18px 0 28px;
+
+  border-radius: 3px;
+
+  background: $rs-color-surface;
+  overflow: hidden;
+}
+
+/*
+ * Outer workspace tab row only.
+ * Keep this selector direct so it does not affect nested tabs inside Mirador
+ * or the image annotation panel.
+ */
+.rs-tabs-workspace > div > .nav.nav-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-start !important;
+
+  margin: 0 !important;
+  padding: 6px 3px 0;
+
+  border: 0 !important;
+  border-bottom: 1px solid $rs-color-border !important;
+
+  background: $rs-color-surface-subtle;
+  list-style: none;
+}
+
+.rs-tabs-workspace > div > .nav.nav-tabs::before,
+.rs-tabs-workspace > div > .nav.nav-tabs::after {
+  display: none !important;
+  content: none !important;
+}
+
+.rs-tabs-workspace > div > .nav.nav-tabs > li {
+  float: none !important;
+  display: block;
+
+  margin: 0 2px 0 0 !important;
+  padding: 0 !important;
+
+  flex: 0 0 auto;
+
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/*
+ * Inactive workspace tabs.
+ * These are deliberately not boxed.
+ */
+.rs-tabs-workspace > div > .nav.nav-tabs > li > a {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  min-height: 34px;
+  margin: 0 !important;
+  padding: 7px 12px 8px;
+
+  border: 1px solid transparent !important;
+  border-bottom: 0 !important;
+  border-radius: 3px 3px 0 0 !important;
+
+  background: transparent !important;
+  color: $rs-color-text-secondary !important;
+
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+
+/*
+ * Icon sizing inside tab labels.
+ */
+.rs-tabs-workspace > div > .nav.nav-tabs > li > a i,
+.rs-tabs-workspace > div > .nav.nav-tabs > li > a .rs-tab-title__icon {
+  font-size: 16px;
+  line-height: 1;
+  color: $rs-color-text-secondary !important;
+  opacity: 0.9;
+}
+
+/*
+ * Hover/focus.
+ * Give feedback without turning every tab into a box.
+ */
+.rs-tabs-workspace > div > .nav.nav-tabs > li > a:hover,
+.rs-tabs-workspace > div > .nav.nav-tabs > li > a:focus {
+  background: $rs-color-border !important;
+  color: $rs-color-action !important;
+
+  border-color: transparent !important;
+
+  text-decoration: none !important;
+}
+
+.rs-tabs-workspace > div > .nav.nav-tabs > li > a:hover i,
+.rs-tabs-workspace > div > .nav.nav-tabs > li > a:focus i,
+.rs-tabs-workspace > div > .nav.nav-tabs > li > a:hover .rs-tab-title__icon,
+.rs-tabs-workspace > div > .nav.nav-tabs > li > a:focus .rs-tab-title__icon {
+  color: $rs-color-action !important;
+  opacity: 1;
+}
+
+/*
+ * Active workspace tab.
+ * This is the only tab that gets a real boundary.
+ * It visually joins the white workspace below.
+ */
+.rs-tabs-workspace > div > .nav.nav-tabs > li.active > a,
+.rs-tabs-workspace > div > .nav.nav-tabs > li.active > a:hover,
+.rs-tabs-workspace > div > .nav.nav-tabs > li.active > a:focus {
+  margin-bottom: -1px !important;
+
+  border: 1px solid $rs-color-border !important;
+  border-bottom-color: $rs-color-surface !important;
+
+  background: $rs-color-surface !important;
+  color:$rs-color-action !important;
+
+  font-weight: 700;
+
+  box-shadow: inset 0 2px 0 $rs-color-action !important;
+  cursor: default;
+}
+
+.rs-tabs-workspace > div > .nav.nav-tabs > li.active > a i,
+.rs-tabs-workspace > div > .nav.nav-tabs > li.active > a .rs-tab-title__icon {
+  color: $rs-color-action !important;
+  opacity: 1;
+}
+
+/*
+ * Remove any previous active underline rule.
+ */
+.rs-tabs-workspace > div > .nav.nav-tabs > li.active > a::after {
+  display: none !important;
+  content: none !important;
+}
+
+/*
+ * Workspace content.
+ */
+.rs-tabs-workspace > div > .tab-content {
+  background: $rs-color-surface;
+}
+
+.rs-tabs-workspace > div > .tab-content > .tab-pane {
+  padding: 0 !important;
+  margin: 0 !important;
 }

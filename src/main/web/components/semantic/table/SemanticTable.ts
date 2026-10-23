@@ -38,6 +38,40 @@ import { ErrorNotification } from 'platform/components/ui/notification';
 
 import { ColumnConfiguration, Table, TableConfig, TableLayout } from './Table';
 
+/**
+ * Triggered by a semantic-table with an `id` after its query has returned,
+ * with the counts the table already has in hand, so that a page can show
+ * "Found N results" without re-running the query:
+ * `{ numberOfRows, numberOfResults, variable, hasResultsCount: true }` where
+ * `numberOfResults` is the number of distinct values of the first projected
+ * variable (`?subject` in search tables) and `numberOfRows` the raw row count.
+ */
+export const SemanticTableResultsLoaded = 'Components.SemanticTable.ResultsLoaded';
+
+export interface SemanticTableResultsLoadedData {
+  numberOfRows: number;
+  numberOfResults: number;
+  variable: string | undefined;
+  hasResultsCount: true;
+}
+
+function countResults(result: SparqlClient.SparqlSelectResult): SemanticTableResultsLoadedData {
+  const variable = result.head.vars[0];
+  const distinct = new Set<string>();
+  if (variable) {
+    for (const binding of result.results.bindings) {
+      const value = binding[variable];
+      distinct.add(value ? `${value.termType}:${value.value}` : '');
+    }
+  }
+  return {
+    numberOfRows: result.results.bindings.length,
+    numberOfResults: variable ? distinct.size : result.results.bindings.length,
+    variable,
+    hasResultsCount: true,
+  };
+}
+
 interface ControlledProps {
   /**
    * In controlled mode sets current page in the table;
@@ -269,7 +303,12 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
     this.querying = this.cancellation.deriveAndCancel(this.querying);
     const loading = this.querying
       .map(SparqlClient.select(props.query, { context: context.semanticContext }))
-      .onValue((res) => this.setState({ data: res, isLoading: false }))
+      .onValue((res) => {
+        this.setState({ data: res, isLoading: false });
+        if (this.props.id) {
+          trigger({ eventType: SemanticTableResultsLoaded, source: this.props.id, data: countResults(res) });
+        }
+      })
       .onError((error) => this.setState({ isLoading: false, error }))
       .onEnd(() => {
         if (this.props.id) {

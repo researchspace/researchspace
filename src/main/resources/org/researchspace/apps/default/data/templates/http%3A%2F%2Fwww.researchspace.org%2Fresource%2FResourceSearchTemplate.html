@@ -718,9 +718,35 @@
           <div class="search-results-area page__section-container">
             <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
             <div class="search-results-summary">
-              <semantic-search-result>
-                [[> numberOfResults]]
-              </semantic-search-result>
+              [[!-- "Found N results" comes from the counts the result table
+                    already computed (Components.SemanticTable.ResultsLoaded),
+                    not from a second execution of the search as a COUNT query.
+                    Views without a table (timeline, chart, map) render the
+                    query-based count inside their own area instead. --]]
+              <mp-event-proxy id='[[urlParam "viewid" escape=false]]-result-count-from-grid'
+                              on-event-type='Components.SemanticTable.ResultsLoaded'
+                              on-event-source='[[urlParam "viewid" escape=false]]-semantic-search-result-grid'
+                              proxy-event-type='Component.TemplateUpdate'
+                              proxy-targets='["[[urlParam "viewid" escape=false]]-semantic-search-result-count"]'></mp-event-proxy>
+              <mp-event-proxy id='[[urlParam "viewid" escape=false]]-result-count-from-list'
+                              on-event-type='Components.SemanticTable.ResultsLoaded'
+                              on-event-source='[[urlParam "viewid" escape=false]]-semantic-search-result-list'
+                              proxy-event-type='Component.TemplateUpdate'
+                              proxy-targets='["[[urlParam "viewid" escape=false]]-semantic-search-result-count"]'></mp-event-proxy>
+              <mp-event-target-template-render id='[[urlParam "viewid" escape=false]]-semantic-search-result-count' template='{{> resultCount}}'>
+                <template id='resultCount'>
+                  {{#if hasResultsCount}}
+                    <div class="semantic-search-num-results" role="status" aria-live="polite" aria-atomic="true">
+                      <div class="num-results" title="Found {{numberOfResults}} results">
+                        <span class="sr-only">Found {{numberOfResults}} results</span>
+                        <span class="rs-search-count-prefix" aria-hidden="true">Found</span>
+                        <span class="num-results-color" aria-hidden="true">{{numberOfResults}}</span>
+                        <span class="rs-search-count-suffix" aria-hidden="true">results</span>
+                      </div>
+                    </div>
+                  {{/if}}
+                </template>
+              </mp-event-target-template-render>
             </div>
 
             <div class="search-results-views">
@@ -767,6 +793,7 @@
                       </semantic-search-result>
                     
                     {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/map")))}}
+                      <semantic-search-result>[[> numberOfResults]]</semantic-search-result>
                       <div>no map results</div>
                     {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/timeline")))}}
                     
@@ -967,6 +994,7 @@
                     {{else if (or (eq searchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart") (and isSearchViewTypeNotSet (eq defaultSearchViewType "http://www.researchspace.org/resource/system/vocab/search_view_type/chart")))}}
 
                       [[!-- chart view --]]
+                      <semantic-search-result>[[> numberOfResults]]</semantic-search-result>
                       <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept","http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
                         <semantic-search-result id='[[urlParam "viewid" escape=false]]-semantic-search-result-chart'>
 
@@ -1647,7 +1675,7 @@
 
 [[#*inline "numberOfResults"]]
   <div class="semantic-search-num-results" role="status" aria-live="polite" aria-atomic="true">
-    <mp-sparql-result-counts  id='[[urlParam "viewid" escape=false]]-semantic-search-result-count'
+    <mp-sparql-result-counts  id='[[urlParam "viewid" escape=false]]-semantic-search-result-count-query'
                               query="SELECT DISTINCT ?subject {}"
                               template='{{> template}}'
     >

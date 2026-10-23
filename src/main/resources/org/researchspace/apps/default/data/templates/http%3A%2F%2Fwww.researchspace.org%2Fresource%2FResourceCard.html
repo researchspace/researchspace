@@ -13,27 +13,44 @@
 {{/if}}
 
 [[#*inline "resourceCardQuery"]]
- [[!-- One configuration-resolution query per card (knowledge-map nodes render
-      one card each, so this runs once per node). A single pattern replaces the
-      former two OPTIONAL groups: a configuration matches when its ontology class
-      is a type of the resource and it either declares no resource_type or
-      declares one of the resource's P2 types; configurations with a matching
-      resource_type rank first, as before. --]]
+ [[!-- One configuration-resolution query per card (knowledge-map nodes render one
+      card each). Keep this two-group form: a single-pattern rewrite with
+      FILTER(!BOUND(?configType) || ?configType = ?p2Type) resolved no
+      configuration on Blazegraph (all cards fell back to the generic icon). --]]
  <semantic-query query='SELECT ?iri ?resourceOntologyClass ?resourceConfig ?resourceLabel ?resourceIcon ?resourceVisualisationTemplate WHERE {
                           BIND(<{{iri}}> as ?iri)
                           OPTIONAL {
-                            ?iri rdf:type ?resourceOntologyClass .
-                            ?resourceConfig rdf:type Platform:resource_configuration ;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass ;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
-                            OPTIONAL { ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?configResourceType . }
-                            OPTIONAL { ?iri crm:P2_has_type ?resourceType . }
-                            FILTER(!BOUND(?configResourceType) || ?configResourceType = ?resourceType)
-                            BIND(IF(BOUND(?configResourceType), 0, 1) AS ?configRank)
-                            OPTIONAL { ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon . }
-                            OPTIONAL { ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplate . }
+                            ?iri rdf:type ?resourceOntologyClass.
+                            ?resourceOntologyClass rdf:type ?resourceOntologyClassType.
+                            FILTER(?resourceOntologyClassType IN(rdfs:Class, owl:Class))
+                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
+                              rdf:type Platform:resource_configuration.
+                            ?iri crm:P2_has_type ?resourceType.
+                            ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType;
+                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithP2Label.
+                            OPTIONAL { ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithP2Icon. }
+                            OPTIONAL { ?resourceConfigWithP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplate. }
+                        
                           }
-                      } ORDER BY ?configRank LIMIT 1'
+                          OPTIONAL {
+                            ?iri rdf:type ?resourceOntologyClass.
+                            ?resourceOntologyClass rdf:type ?resourceOntologyClassType.
+                            FILTER(?resourceOntologyClassType IN(rdfs:Class, owl:Class))
+                            ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
+                              rdf:type Platform:resource_configuration;
+                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigWithoutP2Label.
+                            FILTER(NOT EXISTS { ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceType. })
+                            OPTIONAL { ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceConfigWithoutP2Icon. }
+                            OPTIONAL { ?resourceConfigWithoutP2 <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplate. }
+                        
+                          }
+                          BIND((IF(BOUND(?resourceConfigWithP2), 
+                                  ?resourceConfigWithP2, IF(BOUND(?resourceConfigWithoutP2),?resourceConfigWithoutP2,""))) AS ?resourceConfig)
+                          BIND((IF(BOUND(?resourceConfigWithP2Label), 
+                                  ?resourceConfigWithP2Label, IF(BOUND(?resourceConfigWithoutP2Label),?resourceConfigWithoutP2Label,""))) AS ?resourceLabel)
+                          BIND((IF(BOUND(?resourceConfigWithP2Icon), 
+                                ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
+                      } LIMIT 1'
       
                 template='{{> template}}'>
 

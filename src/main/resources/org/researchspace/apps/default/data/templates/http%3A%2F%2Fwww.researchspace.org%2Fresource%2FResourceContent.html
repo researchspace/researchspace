@@ -39,62 +39,87 @@
             </div>   
           </rs-tab>
           <rs-tab event-key="research" title="Research Outputs" icon="library_books" icon-type="round">
-            <div class="tab-panel__header">
-            <span class="muted">Access authored narratives, maps, sets, timelines, and other research artefacts related to this resource.</span>
-            </div>
-            [[!-- One related-resources search, switched by category, instead of one
-                  embedded search page per category. Category buttons carry only a
-                  count query; the full search page is mounted once per selected
-                  category inside the results container below. To add a category,
-                  add a row to the VALUES block: configuration IRI, label, icon and
-                  the SPARQL pattern relating ?subject to this resource. --]]
             <div class="resource-relatedResourcesView-content">
-              <semantic-query query='SELECT ?config ?label ?icon ?restriction WHERE {
-                                       VALUES (?config ?label ?icon ?restriction ?order) {
-                                         (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map> "Knowledge maps" "account_tree" "?subject ontodia:layoutData/ontodia:hasElement/ontodia:resource <[[> iri]]> ." 1)
-                                         (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative> "Semantic narratives" "description" "?subject crm:P67_refers_to <[[> iri]]> ." 2)
-                                         (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set> "Sets" "topic" "?subject <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> <[[> iri]]> ." 3)
+            [[!-- Related research outputs as tabs (rs-tabs mount-on-enter): ONE query counts every
+                  category, each tab shows its count, and a category's search page is
+                  mounted the first time its tab is opened and kept afterwards. The first
+                  category with results opens by default. To add a category, add one VALUES
+                  row (configuration IRI, label, icon, pattern relating ?subject to this
+                  resource, noun for the empty state) and one matching count branch. --]]
+            <semantic-query query='SELECT ?config ?label ?icon ?restriction ?noun ?count WHERE {
+                                     VALUES (?config ?label ?icon ?restriction ?noun ?order) {
+                                     (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map> "Knowledge maps" "account_tree" "?subject ontodia:layoutData/ontodia:hasElement/ontodia:resource <[[> iri]]> ." "knowledge maps" 1)
+                                     (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative> "Semantic narratives" "description" "?subject crm:P67_refers_to <[[> iri]]> ." "semantic narratives" 2)
+                                     (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set> "Sets" "topic" "?subject <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> <[[> iri]]> ." "sets" 3)
+                                     }
+                                     OPTIONAL {
+                                       {
+                                     {
+                                       { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+                                           ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "resourceOntologyClass"}}> .
+                                           {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "p2HasType"}}> .{{/if}}
+                                           ?subject ontodia:layoutData/ontodia:hasElement/ontodia:resource <[[> iri]]> .
+                                       } }
+                                       BIND("http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" AS ?configKey)
+                                     }
+                                     UNION
+                                     {
+                                       { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+                                           ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "resourceOntologyClass"}}> .
+                                           {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "p2HasType"}}> .{{/if}}
+                                           ?subject crm:P67_refers_to <[[> iri]]> .
+                                       } }
+                                       BIND("http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" AS ?configKey)
+                                     }
+                                     UNION
+                                     {
+                                       { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+                                           ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "resourceOntologyClass"}}> .
+                                           {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "p2HasType"}}> .{{/if}}
+                                           ?subject <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> <[[> iri]]> .
+                                       } }
+                                       BIND("http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" AS ?configKey)
+                                     }
                                        }
-                                     } ORDER BY ?order'
-                              template='{{> categories}}'>
-                <template id='categories'>
-                  <div class="resource-relatedResourcesView-categories btn-group" role="group" aria-label="Related research outputs">
-                    {{#each bindings}}
-                      <mp-event-trigger id='[[> iri]]-related-resources-category-{{@index}}-trigger'
-                                        type='Component.TemplateUpdate'
-                                        targets='["[[> iri]]-related-resources-results"]'
-                                        data='{"config": "{{config.value}}",
-                                               "parentNode": "[[> iri]]",
-                                               "searchRestrictions": "{{restriction.value}}"}'>
-                        <button type="button" class="btn btn-default btn-textAndIcon">
-                          <rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol="true"></rs-icon>
-                          <span>{{label.value}}</span>
-                          <span class="badge">
-                            <semantic-query query='SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
-                                                     ?subject a <{{getResourceConfigurationValue config.value "resourceOntologyClass"}}> .
-                                                     {{#if (getResourceConfigurationValue config.value "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue config.value "p2HasType"}}> .{{/if}}
-                                                     {{restriction.value}}
-                                                   }'
-                                            template='{{bindings.0.count.value}}'></semantic-query>
-                          </span>
-                        </button>
-                      </mp-event-trigger>
-                    {{/each}}
-                  </div>
-                </template>
-              </semantic-query>
-
-              <mp-event-target-template-render id='[[> iri]]-related-resources-results' template='{{> results}}'>
-                <template id='results'>
-                  {{#if config}}
-                    <div class='search-page-container'>
-                      [[> rsp:ResourceSearchContent config='{{config}}' parentNode='{{parentNode}}' searchRestrictions='{{searchRestrictions}}']]
-                    </div>
-                  {{else}}
-                    <div class="muted resource-relatedResourcesView-placeholder">Select a category above to list the research outputs related to this resource.</div>
-                  {{/if}}
-                </template>
-              </mp-event-target-template-render>
+                                       FILTER(STR(?config) = ?configKey)
+                                     }
+                                   } ORDER BY ?order'
+                            template='{{> relatedTabs}}'
+                            no-result-template='<div class="muted">No related research outputs configured.</div>'>
+              <template id='relatedTabs'>
+                {{#bind defaultKey=(findFirst bindings "count.value" ">" 0 "config.value")}}
+                <rs-tabs id='[[> iri]]-research-outputs-tabs' class="rs-secondary-tabs rs-related-tabs" mount-on-enter="true"
+                         default-active-key='{{#if defaultKey}}{{defaultKey}}{{else}}{{bindings.0.config.value}}{{/if}}'>
+                  {{#each bindings}}
+                    <rs-tab event-key='{{config.value}}' title='{{label.value}}' icon='{{icon.value}}' icon-type="outlined" symbol="true"
+                            badge='{{#if count.value}}{{count.value}}{{else}}0{{/if}}'
+                            {{#ifCond count.value ">" 0}}{{else}}muted="true"{{/ifCond}}>
+                      {{#ifCond count.value ">" 0}}
+                        {{#bind config=config.value parentNode="[[> iri]]" searchRestrictions=restriction.value}}
+                          <div class='search-page-container'>
+                            [[> rsp:ResourceSearchContent config='{{config}}' parentNode='{{parentNode}}' searchRestrictions='{{searchRestrictions}}']]
+                          </div>
+                        {{/bind}}
+                      {{else}}
+                        <div class="rs-related-tabs__empty">
+                          <span class="muted">No {{noun.value}} {{#if (eq icon.value "account_tree")}}include{{else}}are linked to{{/if}} this resource yet.</span>
+                          <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                   urlqueryparam-view='resource-editor'
+                                                   urlqueryparam-entity-type-config='{{config.value}}'
+                                                   urlqueryparam-mode='new'>
+                            <button type="button" class="btn btn-default btn-textAndIcon">
+                              <rs-icon icon-type="rounded" icon-name="add" symbol="true"></rs-icon>
+                              <span>New {{getResourceConfigurationValue config.value "resourceLabel"}}</span>
+                            </button>
+                          </semantic-link-container>
+                        </div>
+                      {{/ifCond}}
+                    </rs-tab>
+                  {{/each}}
+                </rs-tabs>
+                {{/bind}}
+              </template>
+            </semantic-query>
             </div>
           </rs-tab>
 

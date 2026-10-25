@@ -175,6 +175,27 @@ export const GenericFunctions = {
   },
 
   /**
+   * First item of a list whose value at `path` satisfies `operator` against
+   * `value` (same operators as ifCond), returning its value at `returnPath`
+   * (or the item itself when `returnPath` is omitted). Numeric strings are
+   * compared as numbers. Returns undefined when nothing matches.
+   *
+   * Usage: `{{#bind firstKey=(findFirst bindings "count.value" ">" 0 "config.value")}}`
+   */
+  findFirst(list: any[], path: string, operator: string, value: any, returnPath?: any) {
+    if (!Array.isArray(list)) { return undefined; }
+    const get = (item: any, p: string) => p.split('.').reduce((acc, key) => acc == null ? undefined : acc[key], item);
+    const asNumber = (v: any) => (typeof v === 'string' && v.trim() !== '' && !isNaN(Number(v))) ? Number(v) : v;
+    const rp = typeof returnPath === 'string' ? returnPath : undefined;
+    for (const item of list) {
+      if (checkCondition(asNumber(get(item, path)), operator, asNumber(value))) {
+        return rp ? get(item, rp) : item;
+      }
+    }
+    return undefined;
+  },
+
+  /**
    * Deterministic identifier derived from its arguments, for naming component
    * instances in templates. Unlike `uuid`, the value is identical on every
    * re-render of the same template with the same inputs, so components keyed or

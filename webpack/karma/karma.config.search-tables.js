@@ -10,6 +10,7 @@ module.exports = function(config) {
       defaults.TEST + '/api/services/template/InstanceIdHelper.test.ts',
       defaults.TEST + '/components/semantic/table/SemanticTableResultsLoaded.test.ts',
       defaults.TEST + '/components/semantic/table/ResourceDropdownMenuTemplate.test.ts',
+      defaults.TEST + '/components/ui/TabsLazyBadge.test.ts',
       ...base.files,
     ],
   }));

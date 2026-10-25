@@ -72,6 +72,18 @@ export interface RsTabProps {
    * Optional class applied to the wrapper around icon and title.
    */
   titleClassName?: string;
+
+  /**
+   * Short text shown after the title as a count badge, e.g. the number of
+   * results behind the tab. Omit or leave empty for no badge.
+   */
+  badge?: string | number;
+
+  /**
+   * Render the title in a muted style, e.g. for a category with no results.
+   * The tab stays selectable.
+   */
+  muted?: boolean;
 }
 
 export class RsTab extends React.Component<RsTabProps, {}> {

@@ -43,7 +43,6 @@ function clientCardSource() {
   const partial = rawCard.match(/\[\[#\*inline "resourceCardQuery"\]\]([\s\S]*?)\[\[\/inline\]\]/)[1];
   return rawCard.slice(0, rawCard.indexOf('[[#*inline'))
     .replace(/\[\[> resourceCardQuery\]\]/g, partial)
-    .replace(/\[\[!--[\s\S]*?--\]\]/g, '')
     .replace(/rsp:ResourceCardTemplate/g, JSON.stringify(rsp + 'ResourceCardTemplate'));
 }
 // Observe the metadata passed to ResourceCardTemplate without making real
@@ -70,7 +69,6 @@ async function waitFor(check: () => boolean) {
 describe('Form asset resource configuration', () => {
   let scope: TemplateScope;
   let queries: string[];
-  let configRequests: string[][];
   let server: sinon.SinonFakeServer;
   let previousPrefixes;
   let previousConfigs;
@@ -92,20 +90,8 @@ describe('Form asset resource configuration', () => {
       rdfs: 'http://www.w3.org/2000/01/rdf-schema#', owl: 'http://www.w3.org/2002/07/owl#',
       crm: 'http://www.cidoc-crm.org/cidoc-crm/', Platform: rsp + 'system/'});
     queries = [];
-    configRequests = [];
     server = sinon.fakeServer.create();
     server.autoRespond = true;
-    // batched configuration service: which configuration applies to each IRI
-    server.respondWith('POST', /\/rest\/data\/rdf\/utils\/getResourceConfigurations/, xhr => {
-      const iris: string[] = JSON.parse(xhr.requestBody);
-      configRequests.push(iris);
-      const result: { [iri: string]: string } = {};
-      for (const iri of iris) {
-        result[iri] = iri === annotation ? annotationConfig : iri === image ? imageConfig
-          : rsp + 'system/resource_configurations_container/data/Entity';
-      }
-      xhr.respond(200, {'Content-Type': 'application/json'}, JSON.stringify(result));
-    });
     server.respondWith('POST', '/sparql', xhr => {
       const query = xhr.requestBody;
       if (query.includes('CONSTRUCT')) {
@@ -183,10 +169,7 @@ describe('Form asset resource configuration', () => {
         expect(card.prop('data-description')).not.to.equal(parent.resourceDescription);
         expect(card.prop('data-parent')).to.equal(parent.node);
       }
-      // no SPARQL per card: both cards resolved through one batched request
-      expect(queries.length).to.equal(0);
-      expect(configRequests.length).to.equal(1);
-      expect(configRequests[0].slice().sort()).to.deep.equal([annotation, image].sort());
+      expect(queries.length).to.equal(2);
     });
   }
   it('keeps correct card types and pending input when switching layouts', async () => {

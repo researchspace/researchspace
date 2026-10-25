@@ -24,7 +24,7 @@ import * as classNames from 'classnames';
 import * as Maybe from 'data.maybe';
 
 import { Component, ComponentProps, TemplateContext } from 'platform/api/components';
-import { CapturedContext, TemplateScope } from 'platform/api/services/template';
+import { CapturedContext } from 'platform/api/services/template';
 import { ModuleRegistry } from 'platform/api/module-loader';
 
 import { ErrorNotification } from 'platform/components/ui/notification';
@@ -82,13 +82,13 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
   }
 
   componentWillReceiveProps(props, nextContext) {
-    // Local <template> partials live in the template scope, not in the source:
-    // when the surrounding markup is re-parsed (an API refresh of the same
-    // page) the scope changes while the source stays equal, so the partials
-    // must be recompiled or the previous page's content stays on screen.
-    const scopeChanged =
-      (props as ComponentProps).markupTemplateScope !== (this.props as ComponentProps).markupTemplateScope ||
-      (nextContext && nextContext.templateScope !== this.context.templateScope);
+    // A component that passes its template scope explicitly (markupTemplateScope)
+    // asks to be recompiled when that scope changes: local <template> partials
+    // live in the scope, not in the source, so an equal source re-parsed from new
+    // markup would otherwise keep rendering the previous partials. Scope changes
+    // arriving through context alone are deliberately ignored.
+    const scopeChanged = (props as ComponentProps).markupTemplateScope !==
+      (this.props as ComponentProps).markupTemplateScope;
     if (!templateEqual(props.template, this.props.template) || scopeChanged) {
       // use nextContext: this.context still holds the previous captured
       // context, but the new source may reference the incoming one's keys
@@ -176,9 +176,9 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     const version = ++this.compileVersion;
 
     const capturer = CapturedContext.inheritAndCapture(templateDataContext);
-    // resolve the scope from the context being applied (this.context still
-    // holds the previous one inside componentWillReceiveProps)
-    const scope = (props as ComponentProps).markupTemplateScope || context.templateScope || TemplateScope.default;
+    // inside componentWillReceiveProps this.props and this.context still hold
+    // the previous scope, so resolve it from the props and context being applied
+    const scope = (props as ComponentProps).markupTemplateScope || context.templateScope || this.appliedTemplateScope;
     scope
       .compile(props.template.source)
       .then((template) => {

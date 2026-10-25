@@ -19,7 +19,7 @@
 
 import { createFactory, Component, ReactElement, createElement } from 'react';
 import * as D from 'react-dom-factories';
-import { isEqual, uniqueId } from 'lodash';
+import { isEqual } from 'lodash';
 import * as maybe from 'data.maybe';
 import * as Kefir from 'kefir';
 
@@ -123,33 +123,10 @@ export class PageViewerComponent extends Component<Props, State> {
     );
   }
 
-  /**
-   * Identity of the page currently loaded (iri, context, params) and the key
-   * prefix issued for it. A different page gets a fresh prefix so unkeyed
-   * components start from clean state; reloading the same page (an API
-   * refresh, or a re-render with equal props) keeps the prefix so the
-   * re-parsed template updates components in place instead of remounting
-   * every query, table and label on the page.
-   */
-  private loadedPage: { identity: string; componentKeyPrefix: string } | undefined;
-
-  private componentKeyPrefixFor(props: Props): string {
-    const identity = JSON.stringify([
-      props.iri.value, props.context ? props.context.value : null, props.params || {},
-    ]);
-    if (!this.loadedPage || this.loadedPage.identity !== identity) {
-      this.loadedPage = { identity, componentKeyPrefix: `${uniqueId('page-')}-` };
-    }
-    return this.loadedPage.componentKeyPrefix;
-  }
-
   private loadPage = (props: Props) => {
     this.setState({ errorMessage: maybe.Nothing<string>(), loading: true });
     this.loadingTemplate = this.cancellation.deriveAndCancel(this.loadingTemplate);
-    const componentKeyPrefix = this.componentKeyPrefixFor(props);
-    this.loadingTemplate.map(
-      this.loadAndParseTemplate(props.iri, props.context, props.params, componentKeyPrefix)
-    ).observe({
+    this.loadingTemplate.map(this.loadAndParseTemplate(props.iri, props.context, props.params)).observe({
       value: (pageContent) => {
         this.setState({ pageContent, loading: false });
       },
@@ -170,8 +147,7 @@ export class PageViewerComponent extends Component<Props, State> {
   private loadAndParseTemplate(
     pageIri: Rdf.Iri,
     pageContextIri?: Rdf.Iri,
-    params?: { [index: string]: string },
-    componentKeyPrefix?: string
+    params?: { [index: string]: string }
   ): Kefir.Property<ReactElement<any>[] | ReactElement<any>> {
     return PageService.PageService.loadRenderedTemplate(pageIri, pageContextIri, params)
       .flatMap((page) =>
@@ -181,10 +157,7 @@ export class PageViewerComponent extends Component<Props, State> {
               <div>
                 ${page.templateHtml}
               </div>
-            `,
-            // A different page is a new component lifecycle; the same page
-            // reloaded keeps its keys. Explicitly keyed components persist.
-            { componentKeyPrefix }
+            `
           ).then(
             (res) => (res as ReactElement<any>).props.children // get rid of artificial div
           )

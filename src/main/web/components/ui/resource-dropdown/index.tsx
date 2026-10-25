@@ -61,7 +61,14 @@ export class ResourceDropdown extends Component<Props, State> {
       () => { if (open) this.startPositioning(); });
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.id !== this.props.id || prevProps.menuTemplate !== this.props.menuTemplate) {
+      // a reused instance now stands for another resource or menu: the
+      // rendered menu belongs to the previous one
+      this.rendering = false;
+      this.setState({ menu: undefined, menuContext: undefined });
+      return;
+    }
     if (this.props.menuTemplate && this.state.customDropdownOpen && !this.state.menu && !this.rendering) {
       this.renderMenuTemplate();
     }

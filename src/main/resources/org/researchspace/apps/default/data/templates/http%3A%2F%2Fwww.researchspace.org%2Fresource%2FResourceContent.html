@@ -55,29 +55,41 @@
                                      OPTIONAL {
                                        {
                                      {
+                                       {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "resourceOntologyClass")}}
                                        { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
                                            ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "resourceOntologyClass"}}> .
                                            {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "p2HasType"}}> .{{/if}}
                                            ?subject ontodia:layoutData/ontodia:hasElement/ontodia:resource <[[> iri]]> .
                                        } }
+                                       {{else}}
+                                       BIND(0 AS ?count)
+                                       {{/if}}
                                        BIND("http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" AS ?configKey)
                                      }
                                      UNION
                                      {
+                                       {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "resourceOntologyClass")}}
                                        { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
                                            ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "resourceOntologyClass"}}> .
                                            {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "p2HasType"}}> .{{/if}}
                                            ?subject crm:P67_refers_to <[[> iri]]> .
                                        } }
+                                       {{else}}
+                                       BIND(0 AS ?count)
+                                       {{/if}}
                                        BIND("http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" AS ?configKey)
                                      }
                                      UNION
                                      {
+                                       {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "resourceOntologyClass")}}
                                        { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
                                            ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "resourceOntologyClass"}}> .
                                            {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "p2HasType"}}> .{{/if}}
                                            ?subject <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> <[[> iri]]> .
                                        } }
+                                       {{else}}
+                                       BIND(0 AS ?count)
+                                       {{/if}}
                                        BIND("http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" AS ?configKey)
                                      }
                                        }

@@ -58,8 +58,10 @@ describe('OntodiaDataProvider provider settings compatibility', () => {
   });
 
   it('enables blank nodes in Reactodia lookup queries', () => {
+    // acceptBlankNodes is read by the provider at runtime but absent from the
+    // fork's typings; Ontodia.tsx passes it with the same cast
     const provider = new Reactodia.SparqlDataProvider(
-      { endpointUrl: '', acceptBlankNodes: true },
+      { endpointUrl: '', acceptBlankNodes: true } as Reactodia.SparqlDataProviderOptions & { acceptBlankNodes: boolean },
       makeSettings('')
     );
     const query = (provider as any).createRefQueryPart({

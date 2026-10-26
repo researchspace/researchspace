@@ -122,7 +122,8 @@ describe('Form asset resource configuration', () => {
       } : {iri: uri(iri), resourceConfig: literal('')};
       // A SELECT with BIND/OPTIONAL still returns one binding for an unknown
       // resource; the subsequent type-only lookup can have no results.
-      const bindings = value || query.includes('?resourceConfigWithP2') ? [binding] : [];
+      const isConfigQuery = query.includes('resource_configuration/resource_ontology_class');
+      const bindings = value || isConfigQuery ? [binding] : [];
       xhr.respond(200, {'Content-Type': 'application/sparql-results+json'},
         JSON.stringify({head: {vars: ['iri', 'resourceConfig']}, results: {bindings}}));
     });

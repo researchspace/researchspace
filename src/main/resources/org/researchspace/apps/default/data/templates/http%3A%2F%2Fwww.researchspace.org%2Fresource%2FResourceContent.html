@@ -39,41 +39,102 @@
             </div>   
           </rs-tab>
           <rs-tab event-key="research" title="Research Outputs" icon="library_books" icon-type="round">
-            <div class="tab-panel__header">          
-            <span class="muted">Access authored narratives, maps, sets, timelines, and other research artefacts related to this resource.</span>
-            </div>  
-             <div class="resource-relatedResourcesView-content">
-
-            <mp-collapsible-div class='search-page-container' expanded='false'>
-            <mp-collapsible-div-trigger>
-              <div><b>Knowledge Maps </b>
-              <span> </span>
-              <span></span></div>
-            </mp-collapsible-div-trigger>
-            <mp-collapsible-div-content>
-             <inline-template template-iri="rsp:ResourceSearchContent" 
-                options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map",
-                          "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
-                          "searchRestrictions":"?subject ontodia:layoutData/ontodia:hasElement/ontodia:resource <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
-            </inline-template>
-            </mp-collapsible-div-content>
-          </mp-collapsible-div>
-            <mp-collapsible-div class='search-page-container' expanded='false'>
-            <mp-collapsible-div-trigger>
-              <div><b>Semantic Narratives </b>
-              <span> </span>
-              <span></span></div>
-            </mp-collapsible-div-trigger>
-            <mp-collapsible-div-content>
-             <inline-template template-iri="rsp:ResourceSearchContent" 
-                options='{"config":"http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative",
-                          "parentNode":"[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]",
-                          "searchRestrictions":"?subject crm:P67_refers_to <[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]> ."}'>
-            </inline-template>
-            </mp-collapsible-div-content>
-          </mp-collapsible-div>
-            </div>  
+            <div class="resource-relatedResourcesView-content">
+            [[!-- Related research outputs as tabs (rs-tabs mount-on-enter): ONE query counts every
+                  category, each tab shows its count, and a category's search page is
+                  mounted the first time its tab is opened and kept afterwards. The first
+                  category with results opens by default. To add a category, add one VALUES
+                  row (configuration IRI, label, icon, pattern relating ?subject to this
+                  resource, noun for the empty state) and one matching count branch. Each
+                  branch binds ?config itself and always yields one ?count row (COUNT over
+                  no matches is 0), so the join needs no OPTIONAL and no FILTER on an outer
+                  variable - Blazegraph does not evaluate the latter and returned no counts. --]]
+            <semantic-query query='SELECT ?config ?label ?icon ?restriction ?noun ?count WHERE {
+                                     VALUES (?config ?label ?icon ?restriction ?noun ?order) {
+                                     (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map> "Knowledge maps" "account_tree" "?subject ontodia:layoutData/ontodia:hasElement/ontodia:resource <[[> iri]]> ." "knowledge maps" 1)
+                                     (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative> "Semantic narratives" "description" "?subject crm:P67_refers_to <[[> iri]]> ." "semantic narratives" 2)
+                                     (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set> "Sets" "topic" "?subject <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> <[[> iri]]> ." "sets" 3)
+                                     }
+                                     {
+                                     {
+                                       VALUES ?config { <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map> }
+                                       {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "resourceOntologyClass")}}
+                                       { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+                                           ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "resourceOntologyClass"}}> .
+                                           {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "p2HasType"}}> .{{/if}}
+                                           ?subject ontodia:layoutData/ontodia:hasElement/ontodia:resource <[[> iri]]> .
+                                       } }
+                                       {{else}}
+                                       BIND(0 AS ?count)
+                                       {{/if}}
+                                     }
+                                     UNION
+                                     {
+                                       VALUES ?config { <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative> }
+                                       {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "resourceOntologyClass")}}
+                                       { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+                                           ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "resourceOntologyClass"}}> .
+                                           {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "p2HasType"}}> .{{/if}}
+                                           ?subject crm:P67_refers_to <[[> iri]]> .
+                                       } }
+                                       {{else}}
+                                       BIND(0 AS ?count)
+                                       {{/if}}
+                                     }
+                                     UNION
+                                     {
+                                       VALUES ?config { <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set> }
+                                       {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "resourceOntologyClass")}}
+                                       { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
+                                           ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "resourceOntologyClass"}}> .
+                                           {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "p2HasType")}}?subject crm:P2_has_type <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "p2HasType"}}> .{{/if}}
+                                           ?subject <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> <[[> iri]]> .
+                                       } }
+                                       {{else}}
+                                       BIND(0 AS ?count)
+                                       {{/if}}
+                                     }
+                                     }
+                                   } ORDER BY ?order'
+                            template='{{> relatedTabs}}'
+                            no-result-template='<div class="muted">No related research outputs configured.</div>'>
+              <template id='relatedTabs'>
+                {{#bind defaultKey=(findFirst bindings "count.value" ">" 0 "config.value")}}
+                <rs-tabs id='[[> iri]]-research-outputs-tabs' class="rs-secondary-tabs rs-related-tabs" mount-on-enter="true"
+                         default-active-key='{{#if defaultKey}}{{defaultKey}}{{else}}{{bindings.0.config.value}}{{/if}}'>
+                  {{#each bindings}}
+                    <rs-tab event-key='{{config.value}}' title='{{label.value}}' icon='{{icon.value}}' icon-type="outlined" symbol="true"
+                            badge='{{#if count.value}}{{count.value}}{{else}}0{{/if}}'
+                            muted='{{#ifCond count.value ">" 0}}false{{else}}true{{/ifCond}}'>
+                      {{#ifCond count.value ">" 0}}
+                        {{#bind config=config.value parentNode="[[> iri]]" searchRestrictions=restriction.value}}
+                          <div class='search-page-container'>
+                            [[> rsp:ResourceSearchContent config='{{config}}' parentNode='{{parentNode}}' searchRestrictions='{{searchRestrictions}}']]
+                          </div>
+                        {{/bind}}
+                      {{else}}
+                        <div class="rs-related-tabs__empty">
+                          <span class="muted">No {{noun.value}} {{#if (eq icon.value "account_tree")}}include{{else}}are linked to{{/if}} this resource yet.</span>
+                          <semantic-link-container uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                   urlqueryparam-view='resource-editor'
+                                                   urlqueryparam-entity-type-config='{{config.value}}'
+                                                   urlqueryparam-mode='new'>
+                            <button type="button" class="btn btn-default btn-textAndIcon">
+                              <rs-icon icon-type="rounded" icon-name="add" symbol="true"></rs-icon>
+                              <span>New {{getResourceConfigurationValue config.value "resourceLabel"}}</span>
+                            </button>
+                          </semantic-link-container>
+                        </div>
+                      {{/ifCond}}
+                    </rs-tab>
+                  {{/each}}
+                </rs-tabs>
+                {{/bind}}
+              </template>
+            </semantic-query>
+            </div>
           </rs-tab>
+
           <rs-tab event-key="connections" title="Connections" icon="account_tree" icon-type="round">
               <div class="tab-panel__header">          
             <span class="muted">Review the direct relationships this resource participates in.</span>
@@ -930,102 +991,4 @@
         
           </rs-tab>
     </rs-tabs>
-[[/inline]]
-
-[[#*inline "researchOutputs"]]
-<div class="resource-relatedResourcesView-content">
-  <mp-splitpane id="resource-config-sidebar" 
-            min-size=165 
-            default-size=220 
-            snap-threshold=20
-            default-open=true 
-            always-render=true 
-            persist-resize=false>
-
-      <div class="split-pane__sidebar split-pane__leftsidebar">
-
-          <mp-splitpane-toggle-on>
-              <button class="btn-toggle-on">
-                  <div class="btn-toggle-on-content">
-                      Research Outputs
-                      <rs-icon icon-type="rounded" icon-name="chevron_right" symbol="true"></rs-icon>
-                  </div>
-              </button>
-          </mp-splitpane-toggle-on>
-
-          <mp-splitpane-toggle-off>
-              <div class="split-pane__sidebar-header">
-                  <button class="btn-toggle-off">
-                      Related resources
-                      <rs-icon icon-type="rounded" icon-name="chevron_left" symbol="true"></rs-icon>
-                  </button>
-              </div>
-          </mp-splitpane-toggle-off>
-
-          <mp-splitpane-sidebar-open style="flex: 1;">
-              <div class="split-pane__sidebar-open">
-                  <mp-event-target-template-render id='[[#if (urlParam "uri" escape=true)]][[urlParam "uri" escape=true]][[else]][[urlParam "resourceIri" escape=true]][[/if]]-resource-relatedResourcesView-sidebar' template='{{> sidebar}}'>
-                      <template id='sidebar'>
-                          <div class="resource-relatedResourcesView-sidebar-container">
-                              <div class="resource-relatedResourcesView-sidebar-section resource-relatedResourcesView-sidebar-section-system-container">
-                                  <div class="resource-relatedResourcesView-sidebar-section-name">System</div>
-                                    <div class="resource-relatedResourcesView-sidebar-semantic-tree-container">
-                                      <semantic-tree query='SELECT ?node ?nodeLabel ?icon  WHERE {
-                                                                  VALUES (?node ?nodeLabel ?icon  ?order) { 
-                                                                      (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart> "Chart" "finance" "1")
-                                                                      (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map> "Knowledge map" "account_tree" "2")
-                                                                      (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative> "Semantic narrative" "description" "3")
-                                                                      (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set> "Set" "topic" "4")
-                                                                      (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline> "Timeline" "timeline" "5")
-                                                                  }
-                                                              }
-                                                              ORDER BY (?order) ASC(?nodeLabel)' 
-                                                      tuple-template='{{> nodeTemplate}}'
-                                                      no-result-template='{{> noResults}}'
-                                                      collapsed=true>
-                                                          
-                                          <template id='nodeTemplate'>
-                                              <mp-event-trigger   id='{{node.value}}-open-resource-search-page--trigger' 
-                                                                  type='Component.TemplateUpdate'
-                                                                  targets='["resource-relatedResourcesView-results-container"]'
-                                                                  data='{ "config":"{{node.value}}",
-                                                                          "treeItemSelected":"true"
-                                                                      }'>
-                                                  <div class="Tree--itemLink">
-                                                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}" symbol="true"></rs-icon>{{/if}}
-                                                      <div>{{nodeLabel.value}}</div> 
-                                                  </div>
-                                              </mp-event-trigger>
-                              
-                                          </template>  
-                              
-                                          <template id='noResults'>
-                                              <div class="text-font-size__xsmall">No resource available</div>
-                                          </template>
-                                      </semantic-tree>
-                                  </div>
-                              </div>
-
-                              
-
-                              
-                          </div>
-                      </template>
-                  </mp-event-target-template-render>
-              </div>
-          </mp-splitpane-sidebar-open>
-      </div>
-
-      <mp-event-target-template-render id='resource-relatedResourcesView-results-container' template='{{> resultsContent}}'>
-          <template id='resultsContent'>
-              
-                  <div class='search-page-container'>
-                      [[> rsp:ResourceSearchContent config='{{config}}']] 
-                  </div>  
-              
-          </template>
-      </mp-event-target-template-render>
-  </mp-splitpane>
-
-</div> 
 [[/inline]]

@@ -7,6 +7,10 @@ module.exports = function(config) {
     reporters: ['mocha'],
     files: [
       defaults.TEST + '/components/semantic/table/SearchTable.test.ts',
+      defaults.TEST + '/api/services/template/InstanceIdHelper.test.ts',
+      defaults.TEST + '/components/semantic/table/SemanticTableResultsLoaded.test.ts',
+      defaults.TEST + '/components/semantic/table/ResourceDropdownMenuTemplate.test.ts',
+      defaults.TEST + '/components/ui/TabsLazyBadge.test.ts',
       ...base.files,
     ],
   }));

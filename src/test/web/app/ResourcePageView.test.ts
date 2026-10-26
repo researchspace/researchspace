@@ -35,7 +35,7 @@ describe('Standalone resource page rendering', () => {
         expect(view.params.uri).to.equal(resource.value);
         expect(view.params.resourceIri).to.equal(resource.value);
         expect(view.params.context).to.equal(resource.value);
-        expect(view.params.frame).to.equal('');
+        expect(view.params.frame).to.equal('false');
         expect(view.params.repository).to.equal('assets');
         expect(view.params.resourceConfig).to.equal(config);
         // Do not mutate browser query parameters or toolbar data.
@@ -108,7 +108,7 @@ describe('PageComponent standalone view integration', () => {
     expect(viewer.props.iri.value).to.equal(template);
     expect(viewer.props.context.value).to.equal(resource.value);
     expect(viewer.props.params.uri).to.equal(resource.value);
-    expect(viewer.props.params.frame).to.equal('');
+    expect(viewer.props.params.frame).to.equal('false');
     expect(viewer.type).not.to.equal(ComponentsLoader.component);
   });
 

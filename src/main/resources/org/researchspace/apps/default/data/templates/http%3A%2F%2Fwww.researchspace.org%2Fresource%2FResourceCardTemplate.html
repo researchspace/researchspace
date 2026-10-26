@@ -22,16 +22,18 @@
             </mp-draggable>
           {{/if}}
           
-          <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none resource-card__button">
-            {{> rsp:ResourceDropdownActions viewId=viewId
-                                            iri=iri
-                                            resourceConfig=resourceConfig
-                                            resourceLabel=resourceLabel
-                                            resourceFormIRI=resourceFormIRI
-                                            resourceOntologyClass=resourceOntologyClass
-                                            clipboardRow=(and (eq cardLayout 'row') (or clipboardCard clipboardList))
-                                            isSetItem=isSetItem
-            }}
+          <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none resource-card__button" menu-template='{{> menu}}'>
+            <template id='menu'>
+              {{> rsp:ResourceDropdownActions viewId=viewId
+                                              iri=iri
+                                              resourceConfig=resourceConfig
+                                              resourceLabel=resourceLabel
+                                              resourceFormIRI=resourceFormIRI
+                                              resourceOntologyClass=resourceOntologyClass
+                                              clipboardRow=(and (eq cardLayout 'row') (or clipboardCard clipboardList))
+                                              isSetItem=isSetItem
+              }}
+          </template>
           </rs-resource-dropdown>
           {{#if (and (eq cardLayout 'row') (or clipboardCard clipboardList))}}
             {{#if isSetItem}}
@@ -66,16 +68,18 @@
           </mp-draggable>
         {{/if}}
         
-        <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none resource-card__button">
-          {{> rsp:ResourceDropdownActions viewId=viewId
-                                          iri=iri
-                                          resourceConfig=resourceConfig
-                                          resourceLabel=resourceLabel
-                                          resourceFormIRI=resourceFormIRI
-                                          resourceOntologyClass=resourceOntologyClass
-                                            clipboardRow=(and (eq cardLayout 'row') (or clipboardCard clipboardList))
-                                            isSetItem=isSetItem
-          }}
+        <rs-resource-dropdown id="{{viewId}}-{{iri}}-item-actions-dropdown" class-name="dropdown-no-caret" toggle-class-name="border-none resource-card__button" menu-template='{{> menu}}'>
+          <template id='menu'>
+            {{> rsp:ResourceDropdownActions viewId=viewId
+                                            iri=iri
+                                            resourceConfig=resourceConfig
+                                            resourceLabel=resourceLabel
+                                            resourceFormIRI=resourceFormIRI
+                                            resourceOntologyClass=resourceOntologyClass
+                                              clipboardRow=(and (eq cardLayout 'row') (or clipboardCard clipboardList))
+                                              isSetItem=isSetItem
+            }}
+        </template>
         </rs-resource-dropdown>
 
         {{#if (or clipboardCard clipboardList)}}
@@ -362,17 +366,30 @@
           </semantic-link-container>
         {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item")}}
           <mp-label iri='{{iri}}' class="text-link" style="text-decoration: none; cursor: initial;"></mp-label>
-        {{else}}
+        {{else if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}
           <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
-                                    urlqueryparam-view='{{#if (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative")}}semantic-narrative{{else}}resource-editor{{/if}}'
+                                    urlqueryparam-view='semantic-narrative'
                                     urlqueryparam-resource='{{iri}}'>
+            
+              <div><mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "#396EFE"}}'></mp-label></div>
+            
+          </semantic-link-container>
+        {{else}} 
+          <mp-event-trigger id='{{viewId}}-{{iri}}-open-resource-visualisation-trigger' 
+                  type='Dashboard.AddFrame'
+                  data='{"viewId":"resource-detailed-visualisation", 
+                          "resourceIri": "{{iri}}",
+                          "resourceConfig": "{{resourceConfig}}",
+                          "resourceVisualisationTemplate": "{{#if resourceVisualisationTemplate}}{{resourceVisualisationTemplate}}{{else}}rsp:ResourceContent{{/if}}"
+                        }' 
+                  targets='["thinking-frames"]'>
             {{#if label}}
               [[!-- Label from KM props --]]
               <span class="text-link" title="{{label}}">{{label}}</span>
             {{else}}
               <div><mp-label iri='{{iri}}' class="text-link" highlight='{{highlight}}' highlight-props='{"style": {"color": "var(--rs-card-accent, var(--rs-color-action, var(--color-action, #396efe)))"}}'></mp-label></div>
             {{/if}}
-          </semantic-link-container>
+          </mp-event-trigger>
         {{/if}}
       </div>
 

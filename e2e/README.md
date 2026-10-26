@@ -134,3 +134,18 @@ resource/editor headers at 320, 480 and 900px pane widths. They verify title
 wrapping, visible actions, matching page insets, underline-only tab focus,
 portrait/landscape thumbnail proportions, fact readability and theme overrides.
 They do not replace integration checks against server-rendered entity templates.
+
+## Phase 0 performance baseline (`perf-tests/`)
+
+`npm run test:perf` measures three scenarios against the local stack and writes
+request counts (SPARQL, label service, resource-configuration service, page
+template loads, thumbnails), SPARQL time and wall-clock time per step to
+`perf-results/<RS_PERF_LABEL>.json`:
+
+1. knowledge map: open a saved diagram (default `IGSN_Modelling`, 82 nodes), pan/zoom, open a node;
+2. interactive resource view: open the standalone view, open Research Outputs, select each category / toggle each section twice;
+3. search page: open a resource search, next page, refresh, switch to grid view.
+
+Run it once per checkout (`RS_PERF_LABEL=base-1e18b2b3`, `old-branch`, `rci-rework`)
+with the same dataset, then compare the JSON files. Override the inputs with
+`RS_PERF_DIAGRAM`, `RS_PERF_RESOURCE` and `RS_PERF_CONFIG`.

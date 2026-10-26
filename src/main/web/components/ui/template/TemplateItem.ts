@@ -23,7 +23,7 @@ import { isEqual, isArray } from 'lodash';
 import * as classNames from 'classnames';
 import * as Maybe from 'data.maybe';
 
-import { Component, TemplateContext } from 'platform/api/components';
+import { Component, ComponentProps, TemplateContext } from 'platform/api/components';
 import { CapturedContext } from 'platform/api/services/template';
 import { ModuleRegistry } from 'platform/api/module-loader';
 
@@ -82,7 +82,14 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
   }
 
   componentWillReceiveProps(props, nextContext) {
-    if (!templateEqual(props.template, this.props.template)) {
+    // A component that passes its template scope explicitly (markupTemplateScope)
+    // asks to be recompiled when that scope changes: local <template> partials
+    // live in the scope, not in the source, so an equal source re-parsed from new
+    // markup would otherwise keep rendering the previous partials. Scope changes
+    // arriving through context alone are deliberately ignored.
+    const scopeChanged = (props as ComponentProps).markupTemplateScope !==
+      (this.props as ComponentProps).markupTemplateScope;
+    if (!templateEqual(props.template, this.props.template) || scopeChanged) {
       // use nextContext: this.context still holds the previous captured
       // context, but the new source may reference the incoming one's keys
       this.compileTemplate(props, nextContext);
@@ -169,7 +176,10 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     const version = ++this.compileVersion;
 
     const capturer = CapturedContext.inheritAndCapture(templateDataContext);
-    this.appliedTemplateScope
+    // inside componentWillReceiveProps this.props and this.context still hold
+    // the previous scope, so resolve it from the props and context being applied
+    const scope = (props as ComponentProps).markupTemplateScope || context.templateScope || this.appliedTemplateScope;
+    scope
       .compile(props.template.source)
       .then((template) => {
         const renderedHtml = template(props.template.options, { capturer, parentContext: templateDataContext });

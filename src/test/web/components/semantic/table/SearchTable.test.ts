@@ -89,8 +89,12 @@ describe('Responsive search tables', () => {
               h('span', {}, 'New set with selection')))))));
   }
 
+  class SelectionCheckbox extends Component<CellRendererProps> {
+    render() { return h('div', {}, h('input', { type: 'checkbox', 'aria-label': 'Select row' })); }
+  }
+
   function draw(width = 340, columns = 2, count = 420, toolbar = false, compactFrame = false,
-      totalNumberOfResults?: number, newVariant = 2) {
+      totalNumberOfResults?: number, newVariant = 2, withCheckbox = false) {
     const data = Array.from({ length: count }, (_, i) => ({
       name: `Sample ${String(i + 1).padStart(3, '0')} — long descriptive name and identifier`,
       description: 'A long description of the paint layer', method: 'Microscopy', date: '2026-10-05', actions: '',
@@ -107,15 +111,19 @@ describe('Responsive search tables', () => {
               numberOfResults: count, totalNumberOfResults, hasLimit: totalNumberOfResults !== undefined,
             } } })),
           h('div', { className: 'search-results-views' },
-          h('div', { className: 'semantic-table-holder table-fixed-header table-scrollable-content table-expanded search-table-container' },
+          h('div', { className: 'semantic-table-holder table-fixed-header table-scrollable-content table-expanded search-table-container'
+              + (withCheckbox ? ' table-with-checkbox' : '') },
             h(Table, {
               separatePagination: true, numberOfDisplayedRows: Maybe.Just(30), data: Either.Left<any[], SparqlClient.SparqlSelectResult>(data),
               layout: Maybe.Just({ tupleTemplate: Maybe.Nothing<string>(), showLabels: false, prefetchLabels: false,
                 options: { showFilter: false, showSettings: false, useFixedHeader: true } }),
-              columnConfiguration: [...fields, 'actions'].map((field, i) => ({
-                variableName: field, displayName: field === 'actions' ? '' : field,
-                cellComponent: i === 0 ? Name : field === 'actions' ? Actions : undefined,
-              })),
+              columnConfiguration: [
+                ...(withCheckbox ? [{ variableName: 'select', displayName: '', cellComponent: SelectionCheckbox }] : []),
+                ...[...fields, 'actions'].map((field, i) => ({
+                  variableName: field, displayName: field === 'actions' ? '' : field,
+                  cellComponent: i === 0 ? Name : field === 'actions' ? Actions : undefined,
+                })),
+              ],
             })))), compactFrame ? h('div', { className: 'test-filter-rail',
               style: { flex: '0 0 43px' } }, h(Icon, { iconName: 'filter_alt', iconType: 'outlined' })) : null)))), host);
   }
@@ -404,5 +412,20 @@ describe('Responsive search tables', () => {
     render(h(Pagination, props), host);
     render(h(Pagination, { ...props, maxPage: 30, externalCurrentPage: 20 }), host);
     expect(pages).to.deep.equal([20]);
+  });
+
+  it('keeps a leading selection-checkbox column narrow and gives the name column the space', async () => {
+    draw(900, 2, 60, false, false, undefined, 2, true);
+    await tick();
+    const header = host.querySelectorAll<HTMLElement>('.table > thead > tr > *');
+    expect(header.length).to.equal(4);
+    const checkboxWidth = header[0].getBoundingClientRect().width;
+    const nameWidth = header[1].getBoundingClientRect().width;
+    expect(checkboxWidth).to.be.at.most(60);
+    expect(nameWidth).to.be.at.least(280);
+    const firstRow = host.querySelector<HTMLElement>('.table > tbody > tr.standard-row');
+    const cells = firstRow.querySelectorAll<HTMLElement>('td');
+    expect(cells[0].getBoundingClientRect().width).to.be.at.most(60);
+    expect(cells[1].getBoundingClientRect().left - cells[0].getBoundingClientRect().left).to.be.at.most(60);
   });
 });

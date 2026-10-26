@@ -61,8 +61,9 @@
   --rs-search-name-width: 280px;
   --rs-search-detail-width: 184px;
   --rs-search-actions-width: 96px;
+  --rs-search-select-width: 0px;
   --rs-search-extra-columns: 1;
-  --rs-search-min-width: calc(var(--rs-search-name-width) + var(--rs-search-extra-columns) * var(--rs-search-detail-width) + var(--rs-search-actions-width));
+  --rs-search-min-width: calc(var(--rs-search-select-width) + var(--rs-search-name-width) + var(--rs-search-extra-columns) * var(--rs-search-detail-width) + var(--rs-search-actions-width));
 
   min-width: 0;
 
@@ -70,6 +71,24 @@
   &:not(:has(thead > tr > :nth-child(3))) { --rs-search-extra-columns: 0; }
   &:has(thead > tr > :nth-child(4)) { --rs-search-extra-columns: 2; }
   &:has(thead > tr > :nth-child(5)) { --rs-search-extra-columns: 3; }
+
+  // Templates that keep a selection-checkbox column first (class
+  // table-with-checkbox) shift every column by one: the name column is the
+  // second cell, and the checkbox cell is narrow instead of taking the name width.
+  &.table-with-checkbox {
+    --rs-search-select-width: 48px;
+    &:not(:has(thead > tr > :nth-child(4))) { --rs-search-extra-columns: 0; }
+    &:has(thead > tr > :nth-child(4)) { --rs-search-extra-columns: 1; }
+    &:has(thead > tr > :nth-child(5)) { --rs-search-extra-columns: 2; }
+    &:has(thead > tr > :nth-child(6)) { --rs-search-extra-columns: 3; }
+
+    .table > thead > tr > :first-child,
+    .table > tbody > tr.standard-row > td:first-child {
+      width: var(--rs-search-select-width);
+      min-width: var(--rs-search-select-width);
+      padding: 0 0 0 15px;
+    }
+  }
 
   .separate-pagination {
     display: flex;
@@ -108,10 +127,12 @@
     }
   }
 
-  .table > thead > tr > :first-child,
-  .table > tbody > tr.standard-row > td:first-child {
+  &:not(.table-with-checkbox) .table > thead > tr > :first-child,
+  &:not(.table-with-checkbox) .table > tbody > tr.standard-row > td:first-child,
+  &.table-with-checkbox .table > thead > tr > :nth-child(2),
+  &.table-with-checkbox .table > tbody > tr.standard-row > td:nth-child(2) {
     width: var(--rs-search-name-width);
-    width: max(var(--rs-search-name-width), calc((100cqw - var(--rs-search-actions-width)) / (var(--rs-search-extra-columns) + 1)));
+    width: max(var(--rs-search-name-width), calc((100cqw - var(--rs-search-select-width) - var(--rs-search-actions-width)) / (var(--rs-search-extra-columns) + 1)));
   }
 
   .table > thead > tr > :last-child,

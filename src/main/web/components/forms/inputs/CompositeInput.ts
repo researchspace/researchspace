@@ -67,6 +67,18 @@ export interface CompositeInputProps extends SingleValueInputProps {
    * Optional to hide or show the subject link button.
    */
   showSubjectLink?: boolean;
+
+  /**
+   * Show one empty instance of the composite when the field has no values,
+   * even if the field's `minOccurs` is 0 — the nested form is open from the
+   * start instead of behind the "add" button. Loaded or default values take
+   * precedence; the instance can still be removed, and an instance left
+   * untouched behaves exactly as one added through the button. Has no
+   * effect when `maxOccurs` is 0.
+   *
+   * @default false
+   */
+  openByDefault?: boolean;
 }
 
 type ComponentProps = CompositeInputProps & Props<CompositeInput>;

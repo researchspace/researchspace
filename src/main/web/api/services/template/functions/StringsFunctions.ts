@@ -18,12 +18,6 @@
  */
 
 export const StringsFunctions = {
-  hasPrefix: function(url: string, prefix: string) {
-    if (typeof url !== 'string' || typeof prefix !== 'string') {
-      return false;
-    }
-    return url.startsWith(prefix);
-  },
   extractFilename: function(url) {
     if (typeof url === 'string') {
       // Using a regular expression to remove everything up to and including the last '/'

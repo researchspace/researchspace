@@ -156,6 +156,7 @@ export interface DashboardItemProps {
    */
   gridView?: boolean;
 
+  homePageIri?: string;
 }
 
 export interface State {
@@ -362,6 +363,14 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     );
   };
 
+  private renderHomePage = () => {
+    const { homePageIri } = this.props;
+
+    return (<PageLoaderComponent
+            iri={homePageIri}> 
+            </PageLoaderComponent>)
+  };
+
   private renderEmptySelectedComponent = () => {
     const { views, onSelect } = this.props;
     const view = views.find((v) => v.id === this.state.selectedView);
@@ -438,7 +447,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   };
 
   render() {
-    const { views, viewId, gridView } = this.props;
+    const { views, viewId, gridView, homePageIri } = this.props;
     const { selectedView } = this.state;
     if (views.length === 0) {
       return null;
@@ -450,7 +459,11 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
       return this.renderEmptySelectedComponent();
     }
     if (gridView) {
-      return this.renderGridViewDashboard();
+      if (homePageIri) {
+        return this.renderHomePage();
+      } else {
+          return this.renderGridViewDashboard();
+      }
     }
      return this.renderDefaultDashboard();
     // return this.renderGridViewDashboard();

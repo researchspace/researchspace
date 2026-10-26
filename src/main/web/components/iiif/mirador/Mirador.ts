@@ -140,11 +140,11 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
                             urlqueryparam-view="resource-editor"
                             urlqueryparam-resource-iri="{{id}}"
                               >
-                <div style="width: 100%;    
+                <div class="rs-mirador-annotation-text"
+                     style="width: 100%;
                             text-decoration: underline;
                             font-weight: 600;
-                            cursor: pointer;
-                            color: #525156">{{{annoText}}}</div>
+                            cursor: pointer">{{{annoText}}}</div>
               </semantic-link>
             </mp-template-item>
           {{/if}}
@@ -155,8 +155,8 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
   `
  );
 
-/*  Mirador Buttons in annotation popup */
-`<div>
+/*  Mirador Buttons in annotation popup 
+<div>
 {{#if showUpdate}}
   <a href="#edit" class="edit">
     <rs-icon icon-type="rounded" icon-name="edit" symbol="true"></rs-icon>
@@ -167,7 +167,7 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
   <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>
   </a>
 {{/if}}
-</div>`
+</div>  */
 
 Mirador.AnnotationTooltip.prototype.viewerTemplate = defaultAnnotationViewerTemplate;
 Mirador.AnnotationTooltip.prototype.editorTemplate = globalHandlebars.compile(

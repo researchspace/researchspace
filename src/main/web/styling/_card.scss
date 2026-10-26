@@ -17,15 +17,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//rs-card-default is the default card for Clipboard, Search and Knowledge Map */
+// Shared ResearchSpace cards: layout belongs here; palette overrides belong in themes.
+// No custom theme is required. Each --rs-card-* hook falls back to ResearchSpace
+// semantic tokens (when present), then to the existing Sass/legacy palette.
+// Keep fallbacks at their point of use: declaring aliases on :root would prevent
+// them from resolving against legacy colour overrides on a nearer ancestor.
+//
+// Public colour hooks:
+// --rs-card-surface, --rs-card-text, --rs-card-muted, --rs-card-border,
+// --rs-card-accent, --rs-card-focus, --rs-card-media-surface,
+// --rs-card-media-text, --rs-card-action-surface, --rs-card-action-text,
+// --rs-card-action-hover-surface, --rs-card-menu-surface, --rs-card-menu-text,
+// --rs-card-menu-hover-surface, --rs-card-menu-shadow.
+// Layout hooks and the opt-in row/tile/search modifiers are documented below.
 
 $compact-resource-card-height: 42px;
 
 @mixin compact-resource-card {
     height: $compact-resource-card-height;
-    border: 1.5px solid $color-border;
-    border-radius: $border-radius;
-    background-color: $color-white;
+    border: 1.5px solid var(--rs-card-border, var(--rs-color-border, #{$color-border}));
+    border-radius: var(--rs-card-radius, #{$border-radius});
+    background-color: var(--rs-card-surface, var(--rs-color-surface-raised, #{$color-white}));
 }
 
 @mixin compact-resource-card-label {
@@ -37,7 +49,7 @@ $compact-resource-card-height: 42px;
     text-overflow: ellipsis;
 }
 
-.set-management--list-view .resource-card,
+.set-management--list-view .resource-card:not(.resource-card--layout),
 .reactodia-standard-element--group[class] .reactodia-standard-element__item[class] {
     @include compact-resource-card;
     box-sizing: border-box;
@@ -45,7 +57,7 @@ $compact-resource-card-height: 42px;
     height: $compact-resource-card-height !important;
 }
 
-.set-management--list-view .resource-card {
+.set-management--list-view .resource-card:not(.resource-card--layout) {
     width: 100% !important;
     height: $compact-resource-card-height !important;
 
@@ -112,10 +124,10 @@ $compact-resource-card-height: 42px;
 
 .resource-card {
 
-    border-radius: $border-radius;
-    border: 1.5px solid $color-border;
-    border-radius: $border-radius;
-    background-color: $color-white;
+    border: 1.5px solid var(--rs-card-border, var(--rs-color-border, #{$color-border}));
+    border-radius: var(--rs-card-radius, #{$border-radius});
+    background-color: var(--rs-card-surface, var(--rs-color-surface-raised, #{$color-white}));
+    color: var(--rs-card-text, var(--rs-color-text, #{$color-dark}));
 
     position: relative;
 
@@ -126,7 +138,7 @@ $compact-resource-card-height: 42px;
     &:focus,
     &:focus-within {
 
-        border: 1.5px solid $color-action;
+        border-color: var(--rs-card-accent, var(--rs-color-action, #{$color-action}));
         cursor: grab;
 
         .resource-card__button {
@@ -134,6 +146,8 @@ $compact-resource-card-height: 42px;
         }
 
     }
+
+    &:focus-within { z-index: 2; }
 
     &.resource-card-small {
 
@@ -168,9 +182,9 @@ $compact-resource-card-height: 42px;
 
         .resource-actions__dropdown-menu.dropdown-menu {
 
-            left: -54px;
-            right: -39px;
-            min-width: unset;
+            left: 0;
+            right: auto;
+            min-width: 0;
             max-height: 130px;
 
             hr {
@@ -194,7 +208,7 @@ $compact-resource-card-height: 42px;
         &:focus,
         &:focus-within {
     
-            border: 1.5px solid $color-border;
+            border-color: var(--rs-card-border, var(--rs-color-border, #{$color-border}));
             cursor: pointer;
         }
     }
@@ -228,15 +242,49 @@ $compact-resource-card-height: 42px;
         padding: 5px;
         border: 1px solid $color-medium;
         opacity: 0;
+        color: var(--rs-card-action-text, #{$color-btn-default});
+        background-color: var(--rs-card-action-surface, #{$color-btn-default-bg});
+
+        &:hover,
+        &[aria-expanded='true'] {
+            background-color: var(--rs-card-action-hover-surface, #{$color-btn-default-bg-hover});
+        }
     }
 
     .resource-actions__dropdown-menu.dropdown-menu {
 
-        left: -118px;
-        right: -3px;
-        min-width: 155px;
+        left: 0;
+        right: auto;
+        width: var(--rs-resource-menu-width, var(--rs-card-menu-width, 268px));
+        min-width: 0;
+        max-width: calc(100vw - 24px);
+        overflow-x: hidden;
+        background-color: var(--rs-card-menu-surface, var(--rs-color-surface-raised, #{$color-white}));
+        border-color: var(--rs-card-border, var(--rs-color-border, #{$color-border}));
+        color: var(--rs-card-menu-text, var(--rs-color-text-secondary, #{$color-secondary}));
+
+        > li > a,
+        > div > li > a {
+            color: inherit;
+            white-space: normal;
+            overflow-wrap: anywhere;
+
+            i { flex-shrink: 0; }
+            span { min-width: 0; }
+
+            &:hover,
+            &:focus {
+                background-color: var(--rs-card-menu-hover-surface, #{$color-lighter});
+            }
+        }
 
         &.resource-card__dropdown-km {
+            // Keep the transformed canvas flyout's placement, with the shared
+            // menu width rather than the legacy 155px minimum.
+            width: var(--rs-resource-menu-width, var(--rs-card-menu-width, 268px));
+            min-width: 0;
+            max-width: calc(100vw - 24px);
+            right: -3px;
             left: 74px;
             top: -58px;
             box-shadow: none;
@@ -244,15 +292,15 @@ $compact-resource-card-height: 42px;
 
         &.resource-card__dropdown-multitle-actions {
 
-            left: -81px;
-            right: -39px;
-            min-width: unset;
+            left: 0;
+            right: auto;
+            min-width: 0;
         }
 
         &.resource-card__dropdown-dragAndDropInputCard {
 
-            left: -85px;
-            right: -38px;
+            left: 0;
+            right: auto;
             max-height: 155px;
         }
     }
@@ -263,8 +311,8 @@ $compact-resource-card-height: 42px;
         min-height: 135px;
         max-height:135px;
         width: 100%;
-        border-bottom: 1px solid $color-border;
-        background-color: $color-light;
+        border-bottom: 1px solid var(--rs-card-border, var(--rs-color-border, #{$color-border}));
+        background-color: var(--rs-card-media-surface, #{$color-light});
 
         display: flex;
         align-items: center;
@@ -307,7 +355,7 @@ $compact-resource-card-height: 42px;
         gap: 15px;
         align-items: center;
         justify-content: center;
-        color: $color-base;
+        color: var(--rs-card-media-text, #{$color-base});
         font-weight: 600;
         font-size: 14px;
         padding: 0 15px;
@@ -315,7 +363,7 @@ $compact-resource-card-height: 42px;
         overflow-wrap: anywhere;
 
         i {
-            color: $color-base;
+            color: inherit;
             font-size: 45px;
         }
 
@@ -342,6 +390,7 @@ $compact-resource-card-height: 42px;
 
         .resource-card__footer-type {
             letter-spacing: .2px;
+            color: var(--rs-card-muted, #{$color-secondary-light});
         }
 
         .resource-card__footer-class,
@@ -354,8 +403,377 @@ $compact-resource-card-height: 42px;
 
         .resource-card__footer-title {
             font-size: $font-size-small;
+
+            .text-link {
+                color: var(--rs-card-text, var(--rs-color-text-secondary, #{$color-secondary}));
+            }
         }
 
+    }
+}
+
+/* Context layouts, explicitly selected through cardLayout in ResourceCardTemplate.
+ * Existing cards keep their dimensions; no theme-specific selector is involved.
+ * A layout class requires the companion template change, which omits legacy
+ * inline width/height/footer values for these opt-in variants.
+ *
+ * Common sizing: --rs-card-width, --rs-card-radius, --rs-card-action-size,
+ * --rs-card-menu-width, --rs-card-title-size.
+ * Row: --rs-card-row-min-width, --rs-card-row-min-height, --rs-card-thumbnail-size,
+ * --rs-card-row-gap, --rs-card-row-action-gap, --rs-card-row-menu-size,
+ * --rs-card-row-menu-icon-size.
+ * Tile/search: --rs-card-media-height, --rs-card-image-fit.
+ * Grid: --rs-card-grid-min-width, --rs-card-grid-gap.
+ */
+.resource-card.resource-card--layout {
+    box-sizing: border-box;
+    display: grid;
+    min-width: 0;
+    max-width: 100%;
+    width: var(--rs-card-width, 100%);
+    height: auto;
+    overflow: visible; // Only media clips; dropdowns must escape the card itself.
+    cursor: default;
+
+    &:hover,
+    &:focus,
+    &:focus-within {
+        cursor: default;
+    }
+
+    &:focus-within,
+    &:has(.dropdown.open) {
+        z-index: 2;
+    }
+
+    .resource-card__header-actions {
+        grid-area: actions;
+        position: relative;
+        top: auto;
+        align-self: center;
+        width: auto;
+        padding: 0;
+        z-index: 1;
+    }
+
+    .resource-card__buttons-container {
+        width: auto;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 2px;
+
+        // Position the menu against the full action row, not the 36px toggle.
+        > .dropdown { position: static; }
+    }
+
+    .resource-card__button {
+        opacity: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: var(--rs-card-action-size, 36px);
+        min-height: var(--rs-card-action-size, 36px);
+        padding: 6px;
+        border-color: transparent;
+        cursor: pointer;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+        outline: 2px solid var(--rs-card-focus, var(--rs-color-focus, #{$color-action}));
+        outline-offset: 2px;
+    }
+
+    .resource-card__media-container {
+        grid-area: media;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+        max-height: none;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .image-thumbnail,
+    .resource-card__thumbnail,
+    .resource-card__icon-container {
+        min-height: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .image-thumbnail,
+    .resource-card__thumbnail {
+        object-fit: var(--rs-card-image-fit, contain);
+        object-position: center;
+    }
+
+    .resource-card__icon-container {
+        gap: 6px;
+        padding: 8px;
+        color: var(--rs-card-media-text, var(--rs-color-text-secondary, #{$color-secondary}));
+    }
+
+    .resource-card__footer {
+        grid-area: body;
+        width: auto;
+        min-width: 0;
+        height: auto;
+        overflow: visible;
+        padding: 0;
+        gap: 3px;
+        line-height: 1.4;
+
+        .resource-card__footer-type {
+            font-size: 12px;
+            color: var(--rs-card-muted, var(--rs-color-text-secondary, #{$color-secondary}));
+        }
+
+        .resource-card__footer-title {
+            font-size: var(--rs-card-title-size, #{$font-size-small});
+            color: var(--rs-card-text, var(--rs-color-text, #{$color-dark}));
+        }
+
+        .resource-card__footer-title,
+        .resource-card__footer-class,
+        .text-truncate-line1 {
+            display: block;
+            white-space: normal;
+            overflow: visible;
+            overflow-wrap: anywhere;
+            word-break: normal;
+            line-height: inherit;
+            max-height: none;
+            -webkit-line-clamp: unset;
+        }
+
+        .resource-card__footer-title .text-link {
+            color: inherit;
+
+            &:hover { color: var(--rs-card-accent, var(--rs-color-action, #{$color-action})); }
+        }
+    }
+
+    .resource-actions__dropdown-menu.dropdown-menu {
+        left: auto;
+        right: 0;
+        top: 100%;
+        width: var(--rs-resource-menu-width, var(--rs-card-menu-width, 268px));
+        min-width: 0;
+        max-width: calc(100vw - 24px);
+        max-height: min(28rem, 70vh);
+        overflow: auto;
+        padding: 5px;
+        box-shadow: var(--rs-card-menu-shadow, 0 4px 12px #{$color-box-shadow});
+
+        > li > a,
+        > div > li > a {
+            min-height: 38px;
+            padding: 8px 10px;
+            font-size: $font-size-small;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        hr { margin: 5px 8px; }
+    }
+}
+
+// Keep labels and actions on one line at every width. The thumbnail yields
+// its space on narrow rows; controls never overlay labels or create an extra
+// line. Hidden removal buttons retain their space to prevent hover shifts.
+.resource-card.resource-card--row {
+    container: rs-resource-row / inline-size;
+    min-width: var(--rs-card-row-min-width, 126px);
+    max-width: none;
+    flex-shrink: 0;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--rs-card-row-gap, 6px);
+    min-height: var(--rs-card-row-min-height, 56px);
+    padding: var(--rs-card-row-padding, 6px);
+
+    .resource-card__header-actions {
+        position: static;
+        grid-area: 1 / 3 / 2 / 4;
+        min-width: 0;
+        z-index: 1;
+    }
+    .resource-card__buttons-container {
+        flex-wrap: nowrap;
+        gap: var(--rs-card-row-action-gap, 2px);
+    }
+    .resource-card__footer {
+        grid-area: 1 / 1 / 2 / 3;
+        gap: 2px;
+
+        // Resolved mp-label output includes nested spans/divs. Truncate the
+        // actual text-bearing element too, rather than clipping a block child
+        // without displaying an ellipsis. The full label remains in the DOM.
+        .resource-card__footer-type,
+        .resource-card__footer-class,
+        .resource-card__footer-title,
+        .text-truncate-line1,
+        .resource-card__footer-title .text-link {
+            display: block;
+            min-width: 0;
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            overflow-wrap: normal;
+            word-break: normal;
+        }
+    }
+    &.resource-card--no-media .resource-card__footer { grid-column: 1 / 3; }
+
+    .resource-card__media-container {
+        display: none;
+        grid-area: 1 / 1 / 2 / 2;
+        width: var(--rs-card-thumbnail-size, 40px);
+        height: var(--rs-card-thumbnail-size, 40px);
+        border: 0;
+        border-radius: var(--rs-card-radius, #{$border-radius});
+    }
+
+    // Preserve the top of ordinary images when cropping the square preview.
+    // Use --rs-card-image-fit: contain to show the full image. IIIF annotation
+    // SVGs retain their own aspect-ratio and region rendering.
+    img.resource-card__thumbnail {
+        display: block;
+        margin: 0;
+        object-fit: var(--rs-card-image-fit, cover);
+        object-position: var(--rs-card-image-position, 50% 0%);
+    }
+
+    .resource-card__icon-container {
+        padding: 0;
+        i { font-size: 24px; }
+        > div, > span, > mp-label { display: none; }
+    }
+}
+
+// A row with 166px of content space (180px outer width at defaults) can
+// accommodate a thumbnail, abbreviated labels and two 32px desktop actions.
+// Without container queries, the safe text-and-actions fallback is retained.
+@container rs-resource-row (min-width: 166px) {
+    .resource-card.resource-card--row {
+        .resource-card__media-container { display: flex; }
+        .resource-card__footer { grid-area: 1 / 2 / 2 / 3; }
+        &.resource-card--no-media .resource-card__footer { grid-column: 1 / 3; }
+    }
+}
+
+.resource-card.resource-card--clipboard-row {
+    .resource-card__button {
+        min-width: var(--rs-card-row-menu-size, 32px);
+        min-height: var(--rs-card-row-menu-size, 32px);
+        padding: 4px;
+
+        i { font-size: var(--rs-card-row-menu-icon-size, 16px); }
+    }
+}
+
+// The context menu is always visible. Hide only the separate remove shortcut
+// on hover-capable fine pointers; opacity retains its space and keyboard tab
+// stop. Focus reveals it too. Coarse/touch inputs do not depend on hovering.
+@media (hover: hover) and (pointer: fine) and (not (any-pointer: coarse)) {
+    .resource-card.resource-card--clipboard-row {
+        .resource-card__button--remove {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        &:hover .resource-card__button--remove,
+        &:focus-within .resource-card__button--remove {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    }
+}
+
+// Touch targets need more space. Keep the image hidden a little longer and,
+// below 180px, use the existing menu removal action instead of a separate X.
+// The menu remains a 44px target and labels retain useful space at 126px.
+@media (any-pointer: coarse) {
+    @container rs-resource-row (max-width: 209px) {
+        .resource-card.resource-card--row {
+            .resource-card__media-container { display: none; }
+            .resource-card__footer { grid-area: 1 / 1 / 2 / 3; }
+        }
+    }
+
+    @container rs-resource-row (max-width: 165px) {
+        .resource-card.resource-card--clipboard-row .resource-card__button--remove {
+            display: none;
+        }
+    }
+}
+
+// The clipboard item list otherwise uses overflow-x:hidden, which would hide
+// the row's actions below the 126px minimum width. Other lists/forms can opt into
+// the same containment by adding resource-card-row-list to their list wrapper.
+// Keep this scoped to lists using the new row cards; legacy lists stay intact.
+.resource-card-row-list,
+.set-management--list-view .set-management__set-items:has(.resource-card--row) {
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.resource-card.resource-card--tile,
+.resource-card.resource-card--search {
+    grid-template-areas: 'actions' 'media' 'body';
+    grid-template-columns: minmax(0, 1fr);
+
+    &.resource-card--no-media { grid-template-areas: 'actions' 'body'; }
+
+    .resource-card__header-actions { padding: 3px 5px; }
+    .resource-card__footer { padding: 10px 12px; }
+    .resource-card__icon-container i { font-size: 30px; }
+}
+
+.resource-card.resource-card--tile {
+    width: var(--rs-card-width, 180px);
+    .resource-card__media-container { height: var(--rs-card-media-height, 96px); }
+}
+
+.resource-card.resource-card--search {
+    width: var(--rs-card-width, 260px);
+    .resource-card__media-container { height: var(--rs-card-media-height, 195px); }
+}
+
+// Native grid: put resource-card-grid on the direct result-wrapper parent.
+// semantic-table: add resource-card-results to its existing class-name instead.
+.resource-card-grid,
+.resource-card-results .griddle-custom-row,
+.search-page-container .search-results-area .resource-card-results.semantic-search-result-grid .griddle-custom-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--rs-card-grid-min-width, 260px)), 1fr));
+    align-items: start;
+    gap: var(--rs-card-grid-gap, 16px);
+
+    > * { min-width: 0; }
+    .resource-card--search { width: 100%; }
+}
+
+// Table.scss declares display:flex !important; only the explicit grid opt-in
+// may override it. Ordinary semantic-table layouts retain their flex display.
+.resource-card-results .griddle-custom-row,
+.griddle-custom-row.resource-card-grid {
+    display: grid !important;
+}
+
+@media (any-pointer: coarse) {
+    .resource-card.resource-card--layout {
+        .resource-card__button {
+            min-width: max(44px, var(--rs-card-action-size, 36px));
+            min-height: max(44px, var(--rs-card-action-size, 36px));
+        }
+
+        .resource-actions__dropdown-menu.dropdown-menu {
+            > li > a, > div > li > a { min-height: 44px; }
+        }
     }
 }
 

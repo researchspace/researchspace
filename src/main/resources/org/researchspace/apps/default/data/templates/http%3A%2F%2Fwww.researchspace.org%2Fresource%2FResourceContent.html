@@ -45,16 +45,19 @@
                   mounted the first time its tab is opened and kept afterwards. The first
                   category with results opens by default. To add a category, add one VALUES
                   row (configuration IRI, label, icon, pattern relating ?subject to this
-                  resource, noun for the empty state) and one matching count branch. --]]
+                  resource, noun for the empty state) and one matching count branch. Each
+                  branch binds ?config itself and always yields one ?count row (COUNT over
+                  no matches is 0), so the join needs no OPTIONAL and no FILTER on an outer
+                  variable - Blazegraph does not evaluate the latter and returned no counts. --]]
             <semantic-query query='SELECT ?config ?label ?icon ?restriction ?noun ?count WHERE {
                                      VALUES (?config ?label ?icon ?restriction ?noun ?order) {
                                      (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map> "Knowledge maps" "account_tree" "?subject ontodia:layoutData/ontodia:hasElement/ontodia:resource <[[> iri]]> ." "knowledge maps" 1)
                                      (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative> "Semantic narratives" "description" "?subject crm:P67_refers_to <[[> iri]]> ." "semantic narratives" 2)
                                      (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set> "Sets" "topic" "?subject <http://www.w3.org/ns/ldp#contains>/<http://www.researchspace.org/resource/system/setItem> <[[> iri]]> ." "sets" 3)
                                      }
-                                     OPTIONAL {
-                                       {
                                      {
+                                     {
+                                       VALUES ?config { <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map> }
                                        {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "resourceOntologyClass")}}
                                        { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
                                            ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" "resourceOntologyClass"}}> .
@@ -64,10 +67,10 @@
                                        {{else}}
                                        BIND(0 AS ?count)
                                        {{/if}}
-                                       BIND("http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map" AS ?configKey)
                                      }
                                      UNION
                                      {
+                                       VALUES ?config { <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative> }
                                        {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "resourceOntologyClass")}}
                                        { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
                                            ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" "resourceOntologyClass"}}> .
@@ -77,10 +80,10 @@
                                        {{else}}
                                        BIND(0 AS ?count)
                                        {{/if}}
-                                       BIND("http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative" AS ?configKey)
                                      }
                                      UNION
                                      {
+                                       VALUES ?config { <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set> }
                                        {{#if (getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "resourceOntologyClass")}}
                                        { SELECT (COUNT(DISTINCT ?subject) AS ?count) WHERE {
                                            ?subject a <{{getResourceConfigurationValue "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" "resourceOntologyClass"}}> .
@@ -90,10 +93,7 @@
                                        {{else}}
                                        BIND(0 AS ?count)
                                        {{/if}}
-                                       BIND("http://www.researchspace.org/resource/system/resource_configurations_container/data/Set" AS ?configKey)
                                      }
-                                       }
-                                       FILTER(STR(?config) = ?configKey)
                                      }
                                    } ORDER BY ?order'
                             template='{{> relatedTabs}}'

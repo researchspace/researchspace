@@ -4,17 +4,14 @@
     padding-top: 0;
   }
 </style>
-  [[#if (urlParam "resourceIri")]]
-    <div class="page page-local-overwrite">
-      [[> rsp:ResourceContent  iri=(urlParam "resourceIri") frameView=true]] 
-    </div>
-  [[/if]]
-
+{{#bind viewId=dashboardId}}
+<div class="page page-local-overwrite">
+    [[> rsp:ResourceContent iri=(urlParam "resourceIri") config="{{(getResourceConfigurationValue iri 'resourceconfig')}}" resourceLabel="{{(getResourceConfigurationValue iri 'resourcelabel')}}"]]
+</div>
+{{/bind}}
 [[else]]
-  [[#if (urlParam "uri")]]
-  [[!-- Resource Page --]]
-    <div class="page">
-    [[> rsp:ResourceContent iri=(urlParam "uri") frameView=false]]
-    </div>
-  [[/if]]
+[[!-- Resource Page --]]
+<div class="page">
+  [[> rsp:ResourceContent iri=(urlParam "uri") config="{{(getResourceConfigurationValue iri 'resourceconfig')}}" resourceLabel="{{(getResourceConfigurationValue iri 'resourcelabel')}}"]]
+</div>
 [[/if]]

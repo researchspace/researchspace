@@ -31,8 +31,6 @@ export interface ResourceConfig {
   resourceDescription?: string;
   restrictionPattern?: string;
   resourceFormIRI?: string;
-  resourceVisualisationTemplateIRI?: string;
-  resourceDefaultSearchViewType?: string;
   resourceMembershipProperty?: string;
   resourceBroaderProperty?: string;
   resourceOrderPattern?: string;
@@ -224,25 +222,13 @@ CONSTRUCT {
   }); 
 }
 
-export function getResourceConfigurationValue<K extends keyof ResourceConfig>(
-  iri: string,
-  key: K
-): ResourceConfig[K] | undefined;
-export function getResourceConfigurationValue(
-  iri: string,
-  key: string
-): string | undefined;
-export function getResourceConfigurationValue(
-  iri: string,
-  key: string
-): string | undefined {
-  const config = resourceConfigs && resourceConfigs[iri];
-
-  if (!config || !Object.prototype.hasOwnProperty.call(config, key)) {
+export function getResourceConfigurationValue(iri: string, key: string)  {
+    if (iri in resourceConfigs) { 
+      if (key in resourceConfigs[iri]) { 
+        return resourceConfigs[iri][key];
+      }
+    }
     return undefined;
-  }
-
-  return config[key as keyof ResourceConfig];
 }
 
 const RESOURCE_CONFIGURATION_SERVICE_URL = '/rest/data/rdf/utils/getResourceConfiguration';
@@ -259,103 +245,56 @@ interface CacheEntry {
 }
 
 function cacheSet(key: string, value: string): void {
-  const entry: CacheEntry = {
-    value,
-    timestamp: Date.now(),
-  };
-
+  const entry: CacheEntry = { value, timestamp: Date.now() };
   storage.set(key, JSON.stringify(entry));
 }
 
 function cacheGet(key: string, ttlMs: number): string | null {
   const raw = storage.get(key);
-
-  if (!raw) {
-    return null;
-  }
+  if (!raw) return null;
 
   try {
     const entry = JSON.parse(raw) as CacheEntry;
-
-    if (
-      typeof entry.value !== 'string' ||
-      typeof entry.timestamp !== 'number'
-    ) {
-      storage.remove(key);
-      console.warn(`Invalid resource configuration cache entry: ${key}`);
-      return null;
-    }
-
     if (Date.now() - entry.timestamp > ttlMs) {
       storage.remove(key);
+      //console.log(`Cache expired for key: ${key}`);
       return null;
     }
-
     return entry.value;
-  } catch (error) {
+  } catch {
     storage.remove(key);
-    console.warn(
-      `Could not parse resource configuration cache entry: ${key}`,
-      error
-    );
+    console.warn(`Invalid cache entry for key: ${key}, discarding`);
     return null;
   }
-}
-
-function normaliseRepository(repository?: string): string {
-  const repositoryId = repository ? repository.trim() : '';
-  return repositoryId || 'default';
-}
-
-function createResourceConfigurationCacheKey(
-  iri: Rdf.Iri,
-  repositoryId: string
-): string {
-  const repositoryHash = Rdf.hashString(repositoryId).toString();
-  const iriHash = Rdf.hashString(iri.value).toString();
-
-  // v2 separates these entries from the previous IRI-only cache keys.
-  return `v2:${repositoryHash}:${iriHash}`;
 }
 
 export function getResourceConfiguration(
   iri: Rdf.Iri,
-  repository?: string
-): Promise<string> {
-  const repositoryId = normaliseRepository(repository);
-  const cacheKey = createResourceConfigurationCacheKey(iri, repositoryId);
+  repository: string
+): string {
+  const hash = Rdf.hashString(iri.value);
+  const repositoryId = repository||"default";
 
-  const cached = cacheGet(cacheKey, TTL_MS);
+  // 1) Try TTL-checked cache
+  const cached = cacheGet(hash.toString(), TTL_MS);
   if (cached !== null) {
-    return Promise.resolve(cached);
+   //console.log('Returning cached configuration for', cached+" "+iri.value);
+   return cached;
   }
 
-  return request
-    .get(RESOURCE_CONFIGURATION_SERVICE_URL)
-    .query({
-      iri: iri.value,
-      repository: repositoryId,
-    })
-    .accept('text/plain')
-    .then(response => {
-      const value = response.text;
-
-      if (typeof value !== 'string') {
-        throw new Error(
-          `Resource configuration service returned a non-text response for ` +
-          `${iri.value} in repository ${repositoryId}`
-        );
+  // 2) Cache miss → fetch from server
+  try {
+    const res = request
+      .get(RESOURCE_CONFIGURATION_SERVICE_URL)
+      .query({ iri: iri.value, repository: repositoryId })
+      .accept('text/plain').then(response => {
+          const value = response.text;
+          cacheSet(hash.toString(), value);          
+          return value;
       }
-
-      cacheSet(cacheKey, value);
-      return value;
-    })
-    .catch(error => {
-      console.error(
-        `Failed to retrieve resource configuration for ${iri.value} ` +
-        `from repository ${repositoryId}`,
-        error
-      );
-      throw error;
-    });
+    );
+  } catch (err) {
+    console.error('Error fetching resource configuration for', iri.value, err);
+    throw err;
+  }
 }

@@ -21,8 +21,8 @@ export function getResourcePageView(resource: Rdf.Iri, params: { [key: string]: 
       uri: resource.value,
       resourceIri: resource.value,
       context: resource.value,
-      // The server's urlParam helper treats a nonempty "false" as truthy.
-      frame: '',
+      // A standalone page is never a frame, whatever the URL says.
+      frame: 'false',
     },
   };
 }

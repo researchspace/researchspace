@@ -218,7 +218,8 @@ export class DashboardComponent extends Component<Props, State> {
     this.itemLabelCount = this.itemLabelCount + 1;
 
     const viewDefaultConfig = this.props.views.find(({ id }) => id === this.props.defaultViewId);
-    const displayLabel = label ? label : viewDefaultConfig?.label;
+    // without a label and a default view the tab would otherwise be titled undefined
+    const displayLabel = label ? label : (viewDefaultConfig?.label ?? 'Frame');
     const displayCustomLabel = this.props.initialView?.data?.["customLabel"] && (this.state.items.length == 0) ?this.props.initialView.data["customLabel"]:displayLabel;
 
     return { 

@@ -39,8 +39,7 @@ module.exports = function (config) {
         included: true,
         served: true
 
-      },
-      ...karmaConfig.files
+      }
     ],
     mochaReporter: {
       showDiff: true

@@ -21,7 +21,6 @@ import '../styling/main.scss';
 
 import { initModuleRegistry } from './bootstrap';
 initModuleRegistry();
-//document.documentElement.setAttribute('data-rs-theme', 'themename');
 
 import { ModuleRegistry, ComponentsLoader } from 'platform/api/module-loader';
 import BrowserDetector from './BrowserDetector';

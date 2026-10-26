@@ -32,10 +32,9 @@ module.exports = function (config) {
       outputFile: 'test-results.xml'
     },
     singleRun: true,
-    reporters: ['mocha', 'junit'],
+    reporters: ['junit'],
     files: [
-        defaults.TEST + '/**/*.test.ts',
-        ...karmaConfig.files
+        defaults.TEST + '/**/*.test.ts'
     ],
   }));
 };

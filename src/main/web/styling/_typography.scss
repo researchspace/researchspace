@@ -132,6 +132,15 @@ a {
         cursor: pointer;
     }
 
+    // Replace Bootstrap's rectangular click outline with a text underline.
+    // The shared :focus-visible rule below still identifies keyboard focus.
+    &:focus {
+        outline: none;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.15em;
+    }
+
     &.text-muted {
         cursor: pointer;
         text-decoration: none;
@@ -149,22 +158,22 @@ a {
     user-select: none;
 } */
  
-a.active.focus,
-a.active:focus,
-a:active,
-a.active,
-a:active.focus,
-a:active:focus,
-a.focus,
-a:focus,
-a:focus-within,
-.btn.active.focus,
-.btn.active:focus,
-.btn.focus,
-.btn:active.focus,
-.btn:active:focus,
-.btn:focus {
+// Text links use one underline for pointer and keyboard interaction. Keep the
+// stronger rectangular indicator for buttons and controls without link text.
+a:not(.btn):not([role="button"]):focus-visible {
     outline: none !important;
+    box-shadow: none;
+    text-decoration: underline dotted !important;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.15em;
+}
+
+button:focus-visible,
+a[role="button"]:focus-visible,
+.btn:focus-visible,
+[role="tab"]:focus-visible {
+    outline: 2px solid $rs-color-focus !important;
+    outline-offset: 3px;
 }
 
 .fa, 

@@ -1,8 +1,16 @@
+[[!-- Each inclusion of this template needs its own event namespace (embedded
+      searches can share a dashboardId), but the namespace must be STABLE across
+      re-renders: it feeds every urlqueryparam of the mp-page-loader below, and a
+      changed parameter reloads the whole search page (tables, labels, facets).
+      `instanceId` is deterministic for the same frame + configuration + parent,
+      unlike `uuid`, which regenerated on every render and caused cascading
+      reloads. --]]
+{{#bind resourceSearchInstanceId=(instanceId dashboardId config data.iri parentNode selectedResource searchRestrictions)}}
 <semantic-query query='SELECT ?resourceConfig ?searchAllPage ?viewId ?resourceLabel ?resourceOntologyClass ?resourceType ?resourceIcon ?resourceFormIRI ?resourceRestrictionPattern ?resourceLabelPattern ?resourceSearchKPCategory
                        WHERE {    
-                            BIND(<[[config]]> as ?resourceConfig) .
+                            BIND(<{{#if config}}{{config}}{{else}}{{#if data.iri}}{{data.iri}}{{else}}[[#if selectedResource]][[#if config]][[config]][[/if]][[/if]]{{/if}}{{/if}}> as ?resourceConfig) .                          
                             [[#if selectedResource]]BIND(true as ?searchAllPage)[[else]]BIND("false" as ?searchAllPage)[[/if]] .
-                            BIND("{{dashboardId}}" as ?viewId)
+                            BIND("resource-search-{{resourceSearchInstanceId}}" as ?viewId)
 
                             #?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceLabel .
                             #?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
@@ -42,20 +50,20 @@
       <mp-event-proxy id='{{bindings.0.viewId.value}}-delete-searchPage-on-form-actions'
                       on-event-types='["Form.ResourceRemoved"]'      
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["{{bindings.0.resourceConfig.value}}-resourceSearch-frame"]'
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'
                       additional-data='{"resourceDeleted": true }'>
       ></mp-event-proxy>
 
       <mp-event-proxy id='{{bindings.0.viewId.value}}-update-searchPage-on-form-actions'
                       on-event-types='["Form.ResourceUpdated"]'      
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["{{bindings.0.resourceConfig.value}}-resourceSearch-frame"]'>
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'>
       ></mp-event-proxy>
 
       <mp-event-proxy id='{{bindings.0.viewId.value}}-update-searchPage-on-ontodia-data-changed'
                       on-event-type='Ontodia.DiagramDataPersisted'
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["{{bindings.0.resourceConfig.value}}-resourceSearch-frame"]'>
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'>
       </mp-event-proxy>
 
     {{#if (eq bindings.0.resourceConfig.value "http://www.researchspace.org/resource/system/resource_configurations_container/data/Set")}}
@@ -64,7 +72,7 @@
                                         "Components.SetManagement.SetRenamed",
                                         "Components.SetManagement.SetRemoved"]'
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Set-resourceSearch-frame"]'>
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'>
       </mp-event-proxy>
     {{/if}}
 
@@ -72,7 +80,7 @@
       <mp-event-proxy id='{{bindings.0.viewId.value}}-update-semanticChartSearch-on-chart-creation'
                       on-event-types='["Components.SetManagement.SetAdded"]'
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_chart-resourceSearch-frame"]'>
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'>
       </mp-event-proxy>
     {{/if}}
 
@@ -80,7 +88,7 @@
       <mp-event-proxy id='{{bindings.0.viewId.value}}-update-semanticTimelineSearch-on-timeline-creation'
                       on-event-types='["Components.SetManagement.SetAdded"]'
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_timeline-resourceSearch-frame"]'>
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'>
       </mp-event-proxy>
     {{/if}}
 
@@ -88,7 +96,7 @@
       <mp-event-proxy id='{{bindings.0.viewId.value}}-update-ImageSearch-on-OverlayComparison-created' 
                       on-event-types='["OverlayComparison.Created"]'
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image-resourceSearch-frame"]'
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'
                       additional-data='{"imageOverlayCreated": true }'>
       </mp-event-proxy>
     {{/if}}
@@ -97,7 +105,7 @@
       <mp-event-proxy id='{{bindings.0.viewId.value}}-update-ImageAnnotationSearch-on-IIIFViewer-modification' 
                       on-event-types='["IIIFViewer.RegionCreated", "IIIFViewer.RegionUpdated", "IIIFViewer.RegionRemoved"]'
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation-resourceSearch-frame"]'
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'
       ></mp-event-proxy>
     {{/if}}
 
@@ -105,7 +113,7 @@
       <mp-event-proxy id='{{bindings.0.viewId.value}}-update-KMSearch-on-diagram-saved'
                       on-event-type='Ontodia.DiagramSaved' 
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map-resourceSearch-frame"]'
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'
       ></mp-event-proxy>
     {{/if}}
 
@@ -113,7 +121,7 @@
       <mp-event-proxy id='{{bindings.0.viewId.value}}-update-SNSearch-on-narrative-created-or-updated'
                       on-event-types='["Narrative.Created", "Narrative.Updated"]'    
                       proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative-resourceSearch-frame"]'
+                      proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'
       ></mp-event-proxy>
     {{/if}}
   
@@ -122,12 +130,15 @@
         <mp-event-proxy id='{{bindings.0.viewId.value}}-update-AuthorityDocumentSearch-on-delete'
                         on-event-types='["GraphAction.Delete"]'    
                         proxy-event-type='Component.TemplateUpdate' 
-                        proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document-resourceSearch-frame"]'
+                        proxy-targets='["{{bindings.0.viewId.value}}-resourceSearch-frame"]'
         ></mp-event-proxy>
       {{/if}}
     --]]
 
       <mp-page-loader iri="http://www.researchspace.org/resource/ResourceSearchTemplate"
+                      urlqueryparam-searchrestrictions="{{#if searchRestrictions}}{{searchRestrictions}}{{/if}}"
+                      urlqueryparam-parentnode="{{#if parentNode}}{{parentNode}}{{/if}}"
+                      urlqueryparam-showresourcelabel="{{#if showResourceLabel}}{{showResourceLabel}}{{/if}}"
                       urlqueryparam-viewid="{{bindings.0.viewId.value}}"
                       urlqueryparam-resourceconfig="{{bindings.0.resourceConfig.value}}"
                       urlqueryparam-searchall="{{bindings.0.searchAllPage.value}}"
@@ -141,6 +152,7 @@
                       urlqueryparam-resourcelabelpattern="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceLabelPattern')}}{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceLabelPattern'}}{{/if}}"
                       urlqueryparam-searchkpcategory="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceSearchKPCategory')}}<{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceSearchKPCategory'}}>{{/if}}"
                       urlqueryparam-resourceicon="{{#if (getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceIcon')}}{{getResourceConfigurationValue bindings.0.resourceConfig.value 'resourceIcon'}}{{/if}}"
-      ></mp-page-loader>
+      ></mp-page-loader> 
     </template>
 </semantic-query>
+{{/bind}}

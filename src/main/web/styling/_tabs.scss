@@ -52,7 +52,7 @@
                 font-weight: bold;
                 color: $color-action;
                 border: none;
-            }
+            }            
 
         }
 
@@ -79,6 +79,29 @@
 
         float: right;
     }
+}
+
+// Resource tabs use the existing active underline. Keyboard focus adds a
+// dotted text underline, avoiding a rectangular ring around the tab label.
+.resource-editView-form-container .nav.nav-tabs > li > a[role="tab"] {
+  &:focus {
+    outline: none !important;
+  }
+
+  &:focus-visible {
+    text-decoration-line: underline !important;
+    text-decoration-style: dotted !important;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+  }
+}
+
+// The selected tab already has a full-width underline; do not add a second
+// underline under its label when it receives focus.
+.resource-editView-form-container .nav.nav-tabs > li.active > a[role="tab"] {
+  &:focus, &:focus-visible {
+    text-decoration: none !important;
+  }
 }
 
 .nav.icon-tabs {
@@ -276,6 +299,36 @@
   line-height: 1;
 }
 
+/* count badge after the title (rs-tab badge="…") */
+.rs-tab-title__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  color: $color-secondary-light;
+  background: $color-light;
+}
+
+.nav-tabs > li.active > a .rs-tab-title__badge {
+  color: #fff;
+  background: $color-action;
+}
+
+/* rs-tab muted=true: selectable, but visibly empty */
+.rs-tab-title--muted {
+  opacity: .55;
+}
+
+.nav-tabs > li.active > a .rs-tab-title--muted {
+  opacity: .85;
+}
+
 .rs-secondary-tabs {
   margin: 28px 0 22px;
 }
@@ -296,7 +349,7 @@
   column-gap: 10px;
   row-gap: 10px;
 
-  border-bottom: 1px solid #d7dee8;
+  border-bottom: 1px solid $rs-color-border;
   margin: 0;
   padding: 0 0 16px;
 
@@ -352,11 +405,11 @@
   margin: 0 !important;
   padding: 8px 16px;
 
-  border: 1px solid #cfd9e6 !important;
+  border: 1px solid $rs-color-border !important;
   border-radius: 5px !important;
 
-  background: #ffffff !important;
-  color: #5b626c !important;
+  background: $rs-color-surface !important;
+  color: $rs-color-text-secondary !important;
 
   font-size: 15px;
   font-weight: 500;
@@ -372,12 +425,9 @@
  */
 .rs-secondary-tabs .nav.nav-tabs > li > a:hover,
 .rs-secondary-tabs .nav.nav-tabs > li > a:focus {
-  border-color: #43ad89 !important;
-  background: #f4fbf8 !important;
-  color: #267b61 !important;
-
+  background: $rs-color-surface !important;
+  color: $rs-color-action !important;
   text-decoration: none !important;
-  outline: none;
 }
 
 /*
@@ -387,14 +437,13 @@
 .rs-secondary-tabs .nav.nav-tabs > li.active > a,
 .rs-secondary-tabs .nav.nav-tabs > li.active > a:hover,
 .rs-secondary-tabs .nav.nav-tabs > li.active > a:focus {
-  border-color: #43ad89 !important;
-  background: #eaf7f2 !important;
-  color: #238060 !important;
+  background: $rs-color-surface !important;
+  color: $rs-color-action !important;
 
   font-weight: 600;
   cursor: default;
 
-  box-shadow: inset 0 -1px 0 #43ad89 !important;
+  box-shadow: inset 0 -3px 0 $rs-color-action !important;
 }
 
 /*
@@ -403,19 +452,18 @@
 .rs-secondary-tabs .nav.nav-tabs > li.disabled > a,
 .rs-secondary-tabs .nav.nav-tabs > li.disabled > a:hover,
 .rs-secondary-tabs .nav.nav-tabs > li.disabled > a:focus {
-  border-color: #dde3eb !important;
-  background: #f7f8fa !important;
-  color: #9aa3ad !important;
+  border-color: $rs-color-border !important;
+  background: $rs-color-surface-subtle !important;
+  color: $rs-color-text-muted !important;
   cursor: not-allowed;
 }
 
 .rs-visualisation-workspace {
   margin: 18px 0 28px;
 
-  /*border: 1px solid #cfd9e6;*/
   border-radius: 3px;
 
-  background: #ffffff;
+  background: $rs-color-surface;
   overflow: hidden;
 }
 
@@ -434,9 +482,9 @@
   padding: 6px 3px 0;
 
   border: 0 !important;
-  border-bottom: 1px solid #cfd9e6 !important;
+  border-bottom: 1px solid $rs-color-border !important;
 
-  background: #f7f9fb;
+  background: $rs-color-surface-subtle;
   list-style: none;
 }
 
@@ -480,7 +528,7 @@
   border-radius: 3px 3px 0 0 !important;
 
   background: transparent !important;
-  color: #5f6772 !important;
+  color: $rs-color-text-secondary !important;
 
   font-size: 15px;
   font-weight: 500;
@@ -498,7 +546,7 @@
 .rs-tabs-workspace > div > .nav.nav-tabs > li > a .rs-tab-title__icon {
   font-size: 16px;
   line-height: 1;
-  color: #59616b !important;
+  color: $rs-color-text-secondary !important;
   opacity: 0.9;
 }
 
@@ -508,20 +556,19 @@
  */
 .rs-tabs-workspace > div > .nav.nav-tabs > li > a:hover,
 .rs-tabs-workspace > div > .nav.nav-tabs > li > a:focus {
-  background: #eef5f2 !important;
-  color: #267b61 !important;
+  background: $rs-color-border !important;
+  color: $rs-color-action !important;
 
   border-color: transparent !important;
 
   text-decoration: none !important;
-  outline: none;
 }
 
 .rs-tabs-workspace > div > .nav.nav-tabs > li > a:hover i,
 .rs-tabs-workspace > div > .nav.nav-tabs > li > a:focus i,
 .rs-tabs-workspace > div > .nav.nav-tabs > li > a:hover .rs-tab-title__icon,
 .rs-tabs-workspace > div > .nav.nav-tabs > li > a:focus .rs-tab-title__icon {
-  color: #267b61 !important;
+  color: $rs-color-action !important;
   opacity: 1;
 }
 
@@ -535,21 +582,21 @@
 .rs-tabs-workspace > div > .nav.nav-tabs > li.active > a:focus {
   margin-bottom: -1px !important;
 
-  border: 1px solid #cfd9e6 !important;
-  border-bottom-color: #ffffff !important;
+  border: 1px solid $rs-color-border !important;
+  border-bottom-color: $rs-color-surface !important;
 
-  background: #ffffff !important;
-  color: #238060 !important;
+  background: $rs-color-surface !important;
+  color:$rs-color-action !important;
 
   font-weight: 700;
 
-  box-shadow: inset 0 2px 0 #43ad89 !important;
+  box-shadow: inset 0 2px 0 $rs-color-action !important;
   cursor: default;
 }
 
 .rs-tabs-workspace > div > .nav.nav-tabs > li.active > a i,
 .rs-tabs-workspace > div > .nav.nav-tabs > li.active > a .rs-tab-title__icon {
-  color: #238060 !important;
+  color: $rs-color-action !important;
   opacity: 1;
 }
 
@@ -565,7 +612,7 @@
  * Workspace content.
  */
 .rs-tabs-workspace > div > .tab-content {
-  background: #ffffff;
+  background: $rs-color-surface;
 }
 
 .rs-tabs-workspace > div > .tab-content > .tab-pane {

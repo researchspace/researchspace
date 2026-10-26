@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { SemanticTable, type SemanticTableProps, type SemanticTableConfig } from './SemanticTable';
+export { SemanticTable, type SemanticTableProps, type SemanticTableConfig, SemanticTableResultsLoaded, type SemanticTableResultsLoadedData } from './SemanticTable';
 export {
   Table,
   type TableProps,

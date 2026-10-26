@@ -12,9 +12,21 @@ interface Props {
   id: string;
   defaultActiveKey?: string | number;
   className?: string;
+  /**
+   * Mount a tab's content the first time it is activated instead of mounting
+   * every pane up front; once mounted a pane stays mounted, so switching back
+   * does not reload it. Use for panes that load data (searches, tables, maps).
+   */
+  mountOnEnter?: boolean;
 }
 
-export class RsTabs extends React.Component<Props, { key: any }> {
+interface State {
+  key: any;
+  /** keys whose panes have been activated at least once (mountOnEnter) */
+  mounted: { [key: string]: true };
+}
+
+export class RsTabs extends React.Component<Props, State> {
   constructor(props, context) {
     super(props, context);
 
@@ -26,16 +38,15 @@ export class RsTabs extends React.Component<Props, { key: any }> {
       firstChildrenPropEventKey = props.children?.props?.eventKey;
     }
 
-    this.state = {
-      key: props.defaultActiveKey || firstChildrenPropEventKey,
-    };
+    const key = props.defaultActiveKey || firstChildrenPropEventKey;
+    this.state = { key, mounted: key === undefined || key === null ? {} : { [String(key)]: true } };
   }
 
   componentDidMount() {
     const defaultTabKey = localeStorageTabs.getTabKeyBySource(this.props.id);
 
     if (defaultTabKey) {
-      this.setState({ key: defaultTabKey });
+      this.setState(state => ({ key: defaultTabKey, mounted: { ...state.mounted, [String(defaultTabKey)]: true } }));
     }
   }
 
@@ -46,7 +57,7 @@ export class RsTabs extends React.Component<Props, { key: any }> {
       data: { key, source: this.props.id },
     });
 
-    this.setState({ key });
+    this.setState(state => ({ key, mounted: { ...state.mounted, [String(key)]: true } }));
   };
 
   private renderTabTitle = (childProps: RsTabProps): React.ReactNode => {
@@ -57,21 +68,27 @@ export class RsTabs extends React.Component<Props, { key: any }> {
       symbol = false,
       iconClassName,
       titleClassName,
+      badge,
+      muted,
     } = childProps;
 
-    if (!icon) {
+    const hasBadge = badge !== undefined && badge !== null && badge !== '';
+    if (!icon && !hasBadge && !muted) {
       return title;
     }
 
     return (
-      <span className={classnames('rs-tab-title', titleClassName)}>
-        <Icon
-          iconName={icon}
-          iconType={iconType}
-          symbol={symbol}
-          className={classnames('rs-tab-title__icon', iconClassName)}
-        />
+      <span className={classnames('rs-tab-title', titleClassName, { 'rs-tab-title--muted': muted })}>
+        {icon ? (
+          <Icon
+            iconName={icon}
+            iconType={iconType}
+            symbol={symbol}
+            className={classnames('rs-tab-title__icon', iconClassName)}
+          />
+        ) : null}
         <span className="rs-tab-title__label">{title}</span>
+        {hasBadge ? <span className="rs-tab-title__badge">{badge}</span> : null}
       </span>
     );
   };
@@ -85,13 +102,24 @@ export class RsTabs extends React.Component<Props, { key: any }> {
       const tabChild = child as React.ReactElement<RsTabProps>;
       const childProps = tabChild.props;
 
-      if (!childProps.icon) {
+      // With mountOnEnter a pane's content is rendered only once its tab has
+      // been activated; afterwards it stays rendered (no reload on switching
+      // back). Implemented here rather than through react-bootstrap's own
+      // mountOnEnter, which depends on the fade transition's exit handoff.
+      const lazyUnmounted = this.props.mountOnEnter && !this.state.mounted[String(childProps.eventKey)];
+
+      const hasBadge = childProps.badge !== undefined && childProps.badge !== null && childProps.badge !== '';
+      if (!childProps.icon && !hasBadge && !childProps.muted && !lazyUnmounted) {
         return tabChild;
       }
 
-      return React.cloneElement<RsTabProps>(tabChild, {
-        title: this.renderTabTitle(childProps),
-      } as Partial<RsTabProps>);
+      const overrides: Partial<RsTabProps> = {};
+      if (childProps.icon || hasBadge || childProps.muted) {
+        overrides.title = this.renderTabTitle(childProps);
+      }
+      return lazyUnmounted
+        ? React.cloneElement<RsTabProps>(tabChild, overrides as Partial<RsTabProps>, null)
+        : React.cloneElement<RsTabProps>(tabChild, overrides as Partial<RsTabProps>);
     });
   };
 

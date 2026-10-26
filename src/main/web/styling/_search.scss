@@ -544,32 +544,14 @@
       }
   }
 
+  // A search embedded in a form tab (authority entries, image annotations, ...)
+  // is a column in which only the results consume spare height. The shared
+  // search-page toolbar's flex growth otherwise spreads the toolbar and the
+  // table across the tab, leaving large gaps above and below the search bar.
   &.semantic-search-table-container-in-form {
-    .footer-container .pagination {
-      padding: 0;
-      background-color: $color-tf-dashboard-bg;
-    }
-  }
-}
-
-// The authority entries tab is a column: only results consume spare height.
-// The shared search-page toolbar's flex growth otherwise creates large gaps.
-.authority-entries {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  min-width: 0;
-  overflow: hidden;
-
-  > .customFormHeader,
-  > .select-text-field { flex: none; }
-
-  > .semantic-search-table-container {
-    flex: 1 1 0;
-    height: auto;
     min-height: 0;
     min-width: 0;
+    overflow: hidden;
 
     .search-container { min-height: 0; }
 
@@ -587,6 +569,29 @@
       height: auto;
       min-height: 0;
     }
+
+    .footer-container .pagination {
+      padding: 0;
+      background-color: $color-tf-dashboard-bg;
+    }
+  }
+}
+
+// The authority entries tab stacks a type selector above its embedded search.
+.authority-entries {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+
+  > .customFormHeader,
+  > .select-text-field { flex: none; }
+
+  > .semantic-search-table-container {
+    flex: 1 1 0;
+    height: auto;
   }
 }
 

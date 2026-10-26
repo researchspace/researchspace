@@ -8,6 +8,7 @@ declare namespace LazyTreeSelectorScssNamespace {
     itemExpanded: string;
     spinner: string;
     virtualizedList: string;
+    wrapped: string;
   }
 }
 

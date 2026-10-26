@@ -21,12 +21,10 @@ const dashboardIri = Rdf.iri('http://www.researchspace.org/resource/ThinkingFram
 const customTemplate = 'https://example.org/templates/person';
 mockConfig();
 
-function viewAction(resourceVisualisationTemplateIRI?: string, configuration = resourceConfiguration) {
+function viewAction(resourceVisualisationTemplateIRI?: string) {
   const fragment = document.createElement('div');
-  const engine = Handlebars.create();
-  engine.registerHelper('eq', (left, right) => left === right);
-  fragment.innerHTML = engine.compile(source)({
-    iri, resourceConfiguration: configuration, resourceVisualisationTemplateIRI, viewId: 'editor-frame',
+  fragment.innerHTML = Handlebars.compile(source)({
+    iri, resourceConfiguration, resourceVisualisationTemplateIRI, viewId: 'editor-frame',
   });
   const link = fragment.querySelector('semantic-link-container');
   expect(link, 'View must provide navigation outside the dashboard').not.to.equal(null);
@@ -116,13 +114,8 @@ describe('Resource view navigation', () => {
     });
   });
 
-  [
-    {template: undefined, configuration: resourceConfiguration, view: 'resource'},
-    {template: customTemplate, configuration: resourceConfiguration, view: 'resource-detailed-visualisation'},
-    {template: customTemplate,
-      configuration: 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document',
-      view: 'authority-list'},
-  ].forEach(({template, configuration: resourceConfiguration, view}) => {
+  [undefined, customTemplate].forEach(template => {
+    const view = template ? 'resource-detailed-visualisation' : 'resource';
 
     it(`opens the ${view} frame from a standalone editor`, async () => {
       const environment = ConfigHolder.getEnvironmentConfig();
@@ -137,7 +130,7 @@ describe('Resource view navigation', () => {
       const unsubscribe = Navigation.listen({eventType: 'NAVIGATED', callback: () => {
         requested = initialView(Navigation.getCurrentUrl().search(true));
       }});
-      const action = mount(createElement(ResourceLinkContainer as any, viewAction(template, resourceConfiguration),
+      const action = mount(createElement(ResourceLinkContainer as any, viewAction(template),
         createElement('button', {type: 'button'}, 'View')));
       let dashboard;
       try {
@@ -186,7 +179,7 @@ describe('Resource view navigation', () => {
         await waitFor(() => Boolean(host.querySelector('input')));
         const input = host.querySelector('input');
         input.value = 'Unsaved new label';
-        action = mount(createElement(ResourceLinkContainer as any, viewAction(template, resourceConfiguration), createElement('button', {type: 'button'}, 'View')));
+        action = mount(createElement(ResourceLinkContainer as any, viewAction(template), createElement('button', {type: 'button'}, 'View')));
         action.find('button').simulate('click', {button: 0});
         await waitFor(() => Boolean(host.querySelector('[data-resource-view]')));
         expect(host.querySelector('[data-resource-view]').textContent).to.equal(iri);

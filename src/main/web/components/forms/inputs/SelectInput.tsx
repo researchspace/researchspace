@@ -21,8 +21,6 @@
 import { createElement } from 'react';
 import * as D from 'react-dom-factories';
 import ReactSelect from 'react-select';
-import { openSelectMenu } from 'platform/components/ui/inputs/SelectMenuOverlay';
-import { InputMenuOverlay } from 'platform/components/ui/dropdown/InputMenuOverlay';
 import * as Immutable from 'immutable';
 import * as React from 'react';
 import { Button } from 'react-bootstrap';
@@ -139,8 +137,6 @@ const OPTION_CLASS = SELECT_TEXT_CLASS + 'option';
 export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private readonly cancellation = new Cancellation();
   private htmlElement = React.createRef<HTMLDivElement>();
-  private select = React.createRef<ReactSelect<any>>();
-  private menuOverlay: InputMenuOverlay;
 
   private isLoading = true;
 
@@ -217,20 +213,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   }
 
   componentWillUnmount() {
-    this.closeMenuOverlay();
     this.cancellation.cancelAll();
   }
-
-  private closeMenuOverlay = () => {
-    if (this.menuOverlay) this.menuOverlay.dispose();
-    this.menuOverlay = undefined;
-  };
-
-  private openMenuOverlay = () => {
-    this.closeMenuOverlay();
-    this.menuOverlay = openSelectMenu(this.select.current);
-    if (this.props.updateListOnOpen) this.initValueSet();
-  };
 
   private onValueChanged = (value?: SparqlBindingValue) => {
     if (value) {
@@ -385,7 +369,6 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     return (
       <div className={SELECT_TEXT_CLASS} ref={this.htmlElement}>
         <ReactSelect 
-          ref={this.select}
           name={definition.id}
           placeholder={placeholder}
           onChange={this.onValueChanged}
@@ -394,9 +377,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
           value={selectedValue}
           optionRenderer={this.optionRenderer}
           valueRenderer={this.valueRenderer}
-          onOpen={this.openMenuOverlay}
-          onClose={this.closeMenuOverlay}
-          scrollMenuIntoView={false}
+          onOpen={() => {this.props.updateListOnOpen && this.initValueSet()}}
         />
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
         { showCreateNewButton && (

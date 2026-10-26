@@ -140,11 +140,11 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
                             urlqueryparam-view="resource-editor"
                             urlqueryparam-resource-iri="{{id}}"
                               >
-                <div style="width: 100%;    
+                <div class="rs-mirador-annotation-text"
+                     style="width: 100%;
                             text-decoration: underline;
                             font-weight: 600;
-                            cursor: pointer;
-                            color: #525156">{{{annoText}}}</div>
+                            cursor: pointer">{{{annoText}}}</div>
               </semantic-link>
             </mp-template-item>
           {{/if}}

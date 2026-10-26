@@ -110,3 +110,42 @@ npm test
 Failure screenshots, videos, and traces are written under `e2e/test-results/`.
 In CI, the workflow also uploads the Playwright report and, when stack startup
 fails, the development-stack log.
+
+## Resource styling and navigation regression checks
+
+These checks do not require a backend or login. From the repository root:
+
+```sh
+npm ci
+npm run prod
+node node_modules/karma/bin/karma start webpack/karma/karma.config.resources.js
+npm --prefix e2e ci
+npm --prefix e2e run install-browsers
+npm --prefix e2e run test:resource-styles
+```
+
+Karma uses `CHROMIUM_BIN` when Chromium is not on the system path. Playwright
+uses `PLAYWRIGHT_CHROMIUM_EXECUTABLE` for an alternative browser executable.
+
+The component tests cover default/configured resource navigation, frame reuse,
+and retention of unsaved input when returning to Edit. The isolated browser
+checks load the production stylesheet and actual action markup in representative
+resource/editor headers at 320, 480 and 900px pane widths. They verify title
+wrapping, visible actions, matching page insets, underline-only tab focus,
+portrait/landscape thumbnail proportions, fact readability and theme overrides.
+They do not replace integration checks against server-rendered entity templates.
+
+## Phase 0 performance baseline (`perf-tests/`)
+
+`npm run test:perf` measures three scenarios against the local stack and writes
+request counts (SPARQL, label service, resource-configuration service, page
+template loads, thumbnails), SPARQL time and wall-clock time per step to
+`perf-results/<RS_PERF_LABEL>.json`:
+
+1. knowledge map: open a saved diagram (default `IGSN_Modelling`, 82 nodes), pan/zoom, open a node;
+2. interactive resource view: open the standalone view, open Research Outputs, select each category / toggle each section twice;
+3. search page: open a resource search, next page, refresh, switch to grid view.
+
+Run it once per checkout (`RS_PERF_LABEL=base-1e18b2b3`, `old-branch`, `rci-rework`)
+with the same dataset, then compare the JSON files. Override the inputs with
+`RS_PERF_DIAGRAM`, `RS_PERF_RESOURCE` and `RS_PERF_CONFIG`.

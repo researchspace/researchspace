@@ -58,8 +58,6 @@ CONSTRUCT {
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_description> ?resourceDescription .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
-  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplateIRI .
-  ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type> ?resourceDefaultSearchViewType .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
   ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?resourceOrderPattern .
@@ -91,14 +89,6 @@ CONSTRUCT {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
   }
   
-  OPTIONAL {
-    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?resourceVisualisationTemplateIRI .
-  }
-
-  OPTIONAL {
-    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type> ?resourceDefaultSearchViewType .
-  }
-
   OPTIONAL {
     ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
   }
@@ -166,12 +156,6 @@ CONSTRUCT {
         const resourceFormIRI =
           Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_form')], pg).map(l => l.value).getOrElse(undefined);
         
-        const resourceVisualisationTemplateIRI =
-          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation')], pg).map(l => l.value).getOrElse(undefined);
-
-        const resourceDefaultSearchViewType =
-          Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type')], pg).map(l => l.value).getOrElse(undefined);
-          
         const resourceMembershipProperty =
           Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property')], pg).map(l => l.value).getOrElse(undefined);
         
@@ -208,8 +192,7 @@ CONSTRUCT {
         return [
           configIri.value,
           {
-            resourceLabel, resourceOntologyClass, p2HasType, resourceDescription, restrictionPattern, 
-            resourceFormIRI, resourceVisualisationTemplateIRI, resourceDefaultSearchViewType,      
+            resourceLabel, resourceOntologyClass, p2HasType, resourceDescription, restrictionPattern, resourceFormIRI, 
             resourceMembershipProperty, resourceBroaderProperty, resourceOrderPattern, 
             resourceLabelPattern, resourceIcon, resourceSearchKPCategory, isSystemConfig, 
             listInAuthorityDocument, displayInFinder, hasResourceType, navigationMenuItem

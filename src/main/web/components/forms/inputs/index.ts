@@ -29,6 +29,8 @@ export { DatePickerInput, type DatePickerInputProps, type DatePickerMode } from 
 export { FormSwitch, type FormSwitchProps } from './FormSwitch';
 export { FormSwitchCase, type FormSwitchCaseProps } from './FormSwitchCase';
 export { HiddenInput, type HiddenInputProps } from './HiddenInput';
+export { HistoricalYearInput, type HistoricalYearInputProps } from './HistoricalYearInput';
+export { parseHistoricalYear, toGYearLexical, formatGYear } from './HistoricalYear';
 export { PlainTextInput, type PlainTextInputProps } from './PlainTextInput';
 export { SelectInput, type SelectInputProps } from './SelectInput';
 export { TreePickerInput, type TreePickerInputProps } from './TreePickerInput';

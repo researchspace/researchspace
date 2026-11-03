@@ -274,8 +274,11 @@ export function normalizeFieldDefinition(definitionProp: FieldDefinitionProp): F
     definition.defaultValues = [];
   }
 
-  // only a literal JSON true enables it (not "true" or other truthy values)
-  definition.allowDeleteInInsertPattern = definition.allowDeleteInInsertPattern === true;
+  // Only a literal JSON true enables it (not "true" or other truthy values). The key is
+  // dropped otherwise, so definitions that do not use it normalise exactly as before.
+  if (definition.allowDeleteInInsertPattern !== true) {
+    delete definition.allowDeleteInInsertPattern;
+  }
 
   if (typeof definition.testSubject === 'string') {
     definition.testSubject = Rdf.iri(definition.testSubject);

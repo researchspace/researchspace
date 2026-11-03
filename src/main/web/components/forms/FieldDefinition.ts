@@ -128,6 +128,17 @@ export interface FieldDefinition {
    */
   insertPattern?: string;
   /**
+   * Allows insertPattern to be a DELETE ... INSERT ... WHERE update, e.g. to move a
+   * single-valued marker from a previous resource to the inserted one in one update.
+   * Off by default: insert patterns may only insert.
+   *
+   * Only honoured when the field definition is written as inline JSON in a template
+   * (fields='[...]'). Field definitions stored as knowledge patterns are serialised by
+   * the server with a fixed set of keys, so this flag cannot be set through the
+   * knowledge pattern editor or [[fieldDefinitions]].
+   */
+  allowDeleteInInsertPattern?: boolean;
+  /**
    * SparQL SELECT query to generate a dynamic suggestion list based on
    * textindex or regex search.
    *
@@ -172,6 +183,7 @@ export interface FieldDefinitionProp {
   valueSetPattern?: string;
   deletePattern?: string;
   insertPattern?: string;
+  allowDeleteInInsertPattern?: boolean;
   autosuggestionPattern?: string;
   treePatterns?: TreeQueriesConfig;
   testSubject?: string | Rdf.Iri;
@@ -261,6 +273,9 @@ export function normalizeFieldDefinition(definitionProp: FieldDefinitionProp): F
   if (!definition.defaultValues) {
     definition.defaultValues = [];
   }
+
+  // only a literal JSON true enables it (not "true" or other truthy values)
+  definition.allowDeleteInInsertPattern = definition.allowDeleteInInsertPattern === true;
 
   if (typeof definition.testSubject === 'string') {
     definition.testSubject = Rdf.iri(definition.testSubject);

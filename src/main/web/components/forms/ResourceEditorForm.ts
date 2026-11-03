@@ -40,7 +40,7 @@ import { readyToSubmit } from './FormModel';
 import { SemanticForm, SemanticFormProps } from './SemanticForm';
 import { ValuePatch, computeValuePatch, applyValuePatch } from './Serialization';
 
-import { TriplestorePersistence, isTriplestorePersistence } from './persistence/TriplestorePersistence';
+import { TriplestorePersistence, isTriplestorePersistence, computeModelDiff } from './persistence/TriplestorePersistence';
 import { LdpPersistence } from './persistence/LdpPersistence';
 import { SparqlPersistence, SparqlPersistenceConfig } from './persistence/SparqlPersistence';
 import { RawSparqlPersistence } from './persistence/RawSparqlPersistence';
@@ -442,7 +442,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
             performFormPostAction({
               postAction: this.props.postAction,
               subject: finalModel.subject,
-              eventProps: { isNewSubject, sourceId: this.props.id },
+              eventProps: { isNewSubject, hasChanges: hasModelChanges(initialModel, finalModel), sourceId: this.props.id },
               queryParams: getPostActionUrlQueryParams(this.props),
               defaultTabKey: this.state.defaultTab,
               tabSource: this.state.tabSource,
@@ -745,6 +745,22 @@ function loadTextFileFromInput(file: File): Kefir.Stream<string> {
       }
     };
   });
+}
+
+/**
+ * True when saving `finalModel` over `initialModel` changes the persisted data.
+ * New subjects always count as a change. If the diff cannot be computed we
+ * assume a change, so listeners err on the side of running.
+ */
+function hasModelChanges(initialModel: CompositeValue | undefined, finalModel: CompositeValue): boolean {
+  if (!initialModel || CompositeValue.isPlaceholder(initialModel.subject)) {
+    return true;
+  }
+  try {
+    return computeModelDiff(initialModel, finalModel).length > 0;
+  } catch (e) {
+    return true;
+  }
 }
 
 export default ResourceEditorForm;

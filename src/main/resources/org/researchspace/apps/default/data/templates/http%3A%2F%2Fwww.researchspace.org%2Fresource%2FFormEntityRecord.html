@@ -1,13 +1,50 @@
-<div style="visibility:hidden; height:0;">
+<div class="semantic-form-hidden-fields" style="visibility:hidden; height:0; overflow:hidden;">
     <semantic-form-composite-input for="entity_formRecord"
                                     render-header=false 
                                     new-subject-template="/entity_form_record" 
-                                    fields='[[fieldDefinitions
-                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                            entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
-                                            entity_formRecord_creation="http://www.researchspace.org/pattern/system/entityFormRecord/formRecord_creation"
-                                            entity_formRecord_modification="http://www.researchspace.org/pattern/system/entityFormRecord/formRecord_modification"
-                                        ]]'
+                                    fields='[
+                                        {
+                                            "id": "classtype",
+                                            "iri": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                                            "label": "rdf type",
+                                            "xsdDatatype": "http://www.w3.org/2001/XMLSchema#anyURI",
+                                            "selectPattern": "SELECT DISTINCT ?value WHERE { $subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?value . }",
+                                            "insertPattern": "INSERT { $subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> $value } WHERE {}",
+                                            "deletePattern": "DELETE { $subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> $value } WHERE { $subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> $value }"
+                                        },
+                                        {
+                                            "id": "entity_resource_type",
+                                            "iri": "http://www.researchspace.org/pattern/system/entity/resource_type",
+                                            "label": "Resource type",
+                                            "xsdDatatype": "http://www.w3.org/2001/XMLSchema#anyURI",
+                                            "minOccurs": 0,
+                                            "maxOccurs": "unbound",
+                                            "selectPattern": "SELECT DISTINCT ?value WHERE { $subject crm:P2_has_type $value . ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> . }",
+                                            "insertPattern": "INSERT { $subject crm:P2_has_type $value . $value crm:P2i_is_type_of $subject . } WHERE {}",
+                                            "deletePattern": "DELETE { $subject crm:P2_has_type $value . $value crm:P2i_is_type_of $subject . } WHERE { $subject crm:P2_has_type $value . $value crm:P2i_is_type_of $subject . ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/resource_type> . }"
+                                        },
+                                        {
+                                            "id": "entity_formRecord_creation",
+                                            "iri": "http://www.researchspace.org/pattern/system/entityFormRecord/formRecord_creation",
+                                            "label": "Entity form record creation",
+                                            "xsdDatatype": "http://www.w3.org/2001/XMLSchema#anyURI",
+                                            "minOccurs": 1,
+                                            "maxOccurs": 1,
+                                            "selectPattern": "SELECT DISTINCT ?value WHERE { ?subject crmdig:L11i_was_output_of ?value . ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> . }",
+                                            "insertPattern": "INSERT { ?subject crmdig:L11i_was_output_of ?value . ?value crmdig:L11_had_output ?subject . } WHERE {}",
+                                            "deletePattern": "DELETE { ?subject crmdig:L11i_was_output_of ?value . ?value crmdig:L11_had_output ?subject . } WHERE { ?subject crmdig:L11i_was_output_of ?value . ?value crmdig:L11_had_output ?subject . ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> . }"
+                                        },
+                                        {
+                                            "id": "entity_formRecord_modification_history",
+                                            "label": "Entity form record modification history",
+                                            "xsdDatatype": "http://www.w3.org/2001/XMLSchema#anyURI",
+                                            "minOccurs": 0,
+                                            "maxOccurs": 1,
+                                            "selectPattern": "SELECT DISTINCT ?value WHERE { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . ?subject crmdig:L11i_was_output_of ?modification . ?modification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> . BIND(?subject AS ?value) }",
+                                            "insertPattern": "INSERT { ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . } WHERE {}",
+                                            "deletePattern": "DELETE { ?modification ?p ?o . ?s ?q ?modification . ?timespan ?tp ?to . ?ts ?tq ?timespan . } WHERE { ?subject crmdig:L11i_was_output_of ?modification . ?modification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> . { ?modification ?p ?o . } UNION { ?s ?q ?modification . } UNION { ?modification crm:P4_has_time-span ?timespan . ?timespan ?tp ?to . } UNION { ?modification crm:P4_has_time-span ?timespan . ?ts ?tq ?timespan . } }"
+                                        }
+                                    ]'
                                     >
                                     
         <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/extensions/crmdig/D1_Digital_Object"></semantic-form-hidden-input>
@@ -74,27 +111,10 @@
 
         </semantic-form-composite-input>
 
-       {{#if node}}
-            <semantic-form-composite-input  for="entity_formRecord_modification"
-                                            render-header=true
-                                            new-subject-template="{{node}}/entity_form_record/entity_formRecord_modification/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                            fields='[[
-                                                fieldDefinitions
-                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                                    modification_entity_resource_type="http://www.researchspace.org/pattern/system/entity/resource_type"
-                                                    modification_at_some_time_within="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
-                                                    modification_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
-                                                ]]'
-                                            >
-                                    
-                <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/extensions/crmdig/D7_Digital_Machine_Event"></semantic-form-hidden-input>
-                <semantic-form-hidden-input for="modification_entity_resource_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification'></semantic-form-hidden-input>
-                                    
-                <semantic-form-hidden-input for="modification_at_some_time_within"></semantic-form-hidden-input>
-                <semantic-form-hidden-input for="modification_carried_out_by"></semantic-form-hidden-input>
-
-            </semantic-form-composite-input>
-        {{/if}}
+        [[!-- Modification events are written by FormEntityRecordModification, not here.
+              This input exists only so that removing the entity also removes its
+              modification history, without loading every event into the form model. --]]
+        <semantic-form-hidden-input for="entity_formRecord_modification_history"></semantic-form-hidden-input>
 
     </semantic-form-composite-input>
 </div>

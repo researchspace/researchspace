@@ -34,6 +34,15 @@ export interface FormEventData {
   'Form.ResourceUpdated': { iri: string };
 
   /**
+   * If the post-action='event' for SemanticFormComponent.
+   * Fired in addition to Form.ResourceUpdated, but only when the save actually
+   * changed the persisted model (i.e. the diff between the loaded and the saved
+   * model is not empty). Use it for side effects that must not run on no-op saves,
+   * e.g. recording a modification event.
+   */
+  'Form.ResourceModified': { iri: string };
+
+  /**
    * semantic-form fires this event when resource is removing
    */
     'Form.ResourceRemoving': { iri: string };
@@ -64,6 +73,7 @@ const event: EventMaker<FormEventData> = EventMaker;
 
 export const FormResourceCreated = event('Form.ResourceCreated');
 export const FormResourceUpdated = event('Form.ResourceUpdated');
+export const FormResourceModified = event('Form.ResourceModified');
 export const FormResourceRemoving = event('Form.ResourceRemoving');
 export const FormResourceRemoved = event('Form.ResourceRemoved');
 export const FormDryRunResults = event('Form.DryRunResults');

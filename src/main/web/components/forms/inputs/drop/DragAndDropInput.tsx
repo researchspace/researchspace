@@ -85,6 +85,7 @@ export interface DragAndDropInputProps extends MultipleValuesProps {
    * Available variables:
    *  * iri - iri string of the current value
    *  * inputId - current input id, can be used to trigger events on the input
+   *  * readonly - whether values cannot be removed from this input
    */
   itemTemplate?: string
 
@@ -150,7 +151,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     itemTemplate: `
       {{> rsp:ResourceCard  iri=iri
                             viewId=inputId inputId=inputId
-                            dragAndDropInputCard=true cardLayout=cardLayout
+                            dragAndDropInputCard=true cardLayout=cardLayout readonly=readonly
       }}
     `
   }
@@ -298,6 +299,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
                         source: this.props.itemTemplate,
                         options: {
                           iri: v.value.value, inputId: this.state.id, cardLayout,
+                          readonly: !!this.props.readonly,
                           // The captured template context belongs to the enclosing
                           // form, not this selected value. Nulls deliberately shadow
                           // its card metadata so ResourceCard resolves the asset's
@@ -382,6 +384,8 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
   }
 
   private onRemoveItem = (iriString: string) => {
+    if (this.props.readonly) return;
+
     const iri = Rdf.iri(iriString);
     const itemIndex =
       this.props.values.findIndex(

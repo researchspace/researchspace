@@ -17,7 +17,9 @@ import * as DiagramService from './data/DiagramService';
 import {
   KnowledgeMapExportBackend,
   N3Bindings,
+  exportDataFileName,
   exportFileName,
+  exportKnowledgeMapDataTrig,
   exportKnowledgeMapTrig,
   rdfNodeToN3,
 } from './data/KnowledgeMapTrig';
@@ -28,7 +30,16 @@ export interface KnowledgeMapExportConfig {
    */
   iri: string;
   /**
-   * Also export the named graphs that describe the map and its resources
+   * What to download:
+   *   - `map`: the knowledge map with its layout, which can be imported again
+   *   - `data`: the data shown on the map without layout: the statements shown as links and
+   *     the rdf:type and crm:P2_has_type values of all resources on the map, in one named graph
+   *
+   * @default "map"
+   */
+  content?: 'map' | 'data';
+  /**
+   * With `content="map"`: also export the named graphs that describe the map and its resources
    * (authority documents, system configuration, ontologies and other knowledge
    * maps are not included). By default only the graph of the map itself is exported.
    *
@@ -55,6 +66,10 @@ interface State {
  *
  * <rs-knowledge-map-export iri='http://example.com/map' include-data=true>
  *   <span>Download file with data</span>
+ * </rs-knowledge-map-export>
+ *
+ * <rs-knowledge-map-export iri='http://example.com/map' content='data'>
+ *   <span>Download data</span>
  * </rs-knowledge-map-export>
  */
 export class KnowledgeMapExportComponent extends Component<KnowledgeMapExportProps, State> {
@@ -96,13 +111,25 @@ export class KnowledgeMapExportComponent extends Component<KnowledgeMapExportPro
     }
     this.setState({ exporting: true });
     try {
-      const result = await exportKnowledgeMapTrig(this.props.iri, this.makeBackend(), {
-        includeData: this.props.includeData === true || (this.props.includeData as unknown) === 'true',
-      });
+      const dataOnly = this.props.content === 'data';
+      const result = dataOnly
+        ? await exportKnowledgeMapDataTrig(this.props.iri, this.makeBackend())
+        : await exportKnowledgeMapTrig(this.props.iri, this.makeBackend(), {
+            includeData: this.props.includeData === true || (this.props.includeData as unknown) === 'true',
+          });
       const blob = new Blob([result.trig], { type: 'application/trig;charset=utf-8' });
-      fileSaver.saveAs(blob, exportFileName(result.label));
+      fileSaver.saveAs(blob, dataOnly ? exportDataFileName(result.label) : exportFileName(result.label));
     } catch (error) {
-      addNotification({ level: 'error', message: 'Failed to download the knowledge map' }, error);
+      addNotification(
+        {
+          level: 'error',
+          message:
+            this.props.content === 'data'
+              ? 'Failed to download the data of the knowledge map'
+              : 'Failed to download the knowledge map',
+        },
+        error
+      );
     } finally {
       if (!this.unmounted) {
         this.setState({ exporting: false });

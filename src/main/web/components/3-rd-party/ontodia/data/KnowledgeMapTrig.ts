@@ -40,6 +40,7 @@ const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
 const RDFS_LABEL = 'http://www.w3.org/2000/01/rdf-schema#label';
 const CRM_SYMBOLIC_CONTENT = 'http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content';
 const LDP_CONTAINS = 'http://www.w3.org/ns/ldp#contains';
+const CRM_HAS_TYPE = 'http://www.cidoc-crm.org/cidoc-crm/P2_has_type';
 
 const N3Util = N3.Util;
 
@@ -569,6 +570,100 @@ export async function exportKnowledgeMapTrig(
   };
 }
 
+/** A statement shown as a link on a knowledge map. */
+export interface DiagramStatement {
+  readonly subject: string;
+  readonly predicate: string;
+  readonly object: string;
+}
+
+/**
+ * Returns the statements shown as links on a diagram: the property of each link between
+ * the resources of its source and target elements (for grouped links, of each item).
+ */
+export function getDiagramStatements(diagram: Reactodia.SerializedDiagram): DiagramStatement[] {
+  const iriById = new Map<string, string>();
+  for (const element of (diagram.layoutData?.elements || []) as any[]) {
+    if (element && typeof element.iri === 'string') {
+      iriById.set(element['@id'], element.iri);
+    }
+  }
+  const statements = new Map<string, DiagramStatement>();
+  const add = (subject: string | undefined, predicate: string | undefined, object: string | undefined) => {
+    if (subject && predicate && object) {
+      statements.set(`${subject} ${predicate} ${object}`, { subject, predicate, object });
+    }
+  };
+  for (const link of (diagram.layoutData?.links || []) as any[]) {
+    if (!link || typeof link.property !== 'string') {
+      continue;
+    }
+    if (Array.isArray(link.items)) {
+      for (const item of link.items) {
+        add(item.sourceIri, link.property, item.targetIri);
+      }
+    } else {
+      add(iriById.get(link.source?.['@id']), link.property, iriById.get(link.target?.['@id']));
+    }
+  }
+  return Array.from(statements.values());
+}
+
+/** Named graph with the data of a knowledge map in a data download. */
+export function knowledgeMapDataGraph(mapIri: string): string {
+  return `${mapIri}/data`;
+}
+
+/** SPARQL query returning which of the given statements are in the database. */
+export function makeExistingStatementsQuery(statements: ReadonlyArray<DiagramStatement>): string {
+  const values = statements.map((st) => `(<${st.subject}> <${st.predicate}> <${st.object}>)`).join('\n    ');
+  return `SELECT DISTINCT ?s ?p ?o WHERE {
+  VALUES (?s ?p ?o) {
+    ${values}
+  }
+  ?s ?p ?o .
+}`;
+}
+
+/** SPARQL query returning the rdf:type and crm:P2_has_type values of the given resources. */
+export function makeResourceTypesQuery(resourceIris: ReadonlyArray<string>): string {
+  return `SELECT DISTINCT ?s ?p ?o WHERE {
+  VALUES ?s { ${resourceIris.map((iri) => `<${iri}>`).join(' ')} }
+  VALUES ?p { <${RDF_TYPE}> <${CRM_HAS_TYPE}> }
+  ?s ?p ?o .
+}`;
+}
+
+/**
+ * Exports the data shown on a knowledge map, without its layout: the statements shown as
+ * links (if they are in the database) and the rdf:type and crm:P2_has_type values of every
+ * resource on the map, including the types not shown on the map. Everything is written
+ * into one named graph, {@link knowledgeMapDataGraph}.
+ */
+export async function exportKnowledgeMapDataTrig(
+  mapIri: string,
+  backend: KnowledgeMapExportBackend
+): Promise<KnowledgeMapExport> {
+  const { label, diagram } = await backend.getDiagram(mapIri);
+  const graph = knowledgeMapDataGraph(mapIri);
+  const quads = new Map<string, Quad>();
+  const add = (row: N3Bindings) => {
+    const quad: Quad = { subject: row['s'], predicate: row['p'], object: row['o'], graph };
+    quads.set(`${quad.subject} ${quad.predicate} ${quad.object}`, quad);
+  };
+  for (const batch of chunk(getDiagramStatements(diagram), 100)) {
+    (await backend.selectData(makeExistingStatementsQuery(batch))).forEach(add);
+  }
+  for (const batch of chunk(getDiagramResourceIris(diagram), 100)) {
+    (await backend.selectData(makeResourceTypesQuery(batch))).forEach(add);
+  }
+  return {
+    label,
+    graphs: quads.size > 0 ? [graph] : [],
+    trig: await serializeTrig(Array.from(quads.values())),
+  };
+}
+
 /** File name for an exported knowledge map. */
 export function exportFileName(label: string): string {
   const base = (label || 'knowledge-map')
@@ -576,6 +671,11 @@ export function exportFileName(label: string): string {
     .replace(/[\s\\/:*?"<>|#%&{}$!'@+`=^~\[\]();,]+/g, '-')
     .replace(/^-+|-+$/g, '');
   return `${base || 'knowledge-map'}.trig`;
+}
+
+/** File name for the data of an exported knowledge map. */
+export function exportDataFileName(label: string): string {
+  return exportFileName(label).replace(/\.trig$/, '-data.trig');
 }
 
 export function chunk<T>(items: ReadonlyArray<T>, size: number): T[][] {

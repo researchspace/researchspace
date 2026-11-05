@@ -18,7 +18,9 @@ import {
   computeLayout,
   describeImportReport,
   ensureDiagramPositions,
+  exportDataFileName,
   exportFileName,
+  exportKnowledgeMapDataTrig,
   exportKnowledgeMapTrig,
   importKnowledgeMapTrig,
   knowledgeMapSlug,
@@ -408,6 +410,91 @@ describe('KnowledgeMapTrig', () => {
       const report = await importKnowledgeMapTrig(exported.trig, 'Roman-roads.trig', backend);
       expect(backend.saved).to.have.length(1);
       expect(report.ignoredGraphs).to.deep.equal([DATA_GRAPH]);
+    });
+
+    it('downloads the data shown on the map without layout, with the types of all resources', async () => {
+      const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
+      const database = (
+        await parseTrig(`<${DATA_GRAPH}> {
+          <${EX}rome> a <${CRM}E53_Place> ; <${CRM}P2_has_type> <${EX}type/city> ;
+            <http://www.w3.org/2000/01/rdf-schema#label> "Rome" ;
+            <${EX}connectedTo> <${EX}ostia> ; <${EX}notOnTheMap> <${EX}ostia> .
+          <${EX}ostia> a <${CRM}E53_Place> .
+          <${EX}via> a <${CRM}E53_Place> .
+        }`)
+      ).map((q) => ({ s: q.subject, p: q.predicate, o: q.object }));
+      const iris = (text: string) => (text.match(/<[^>]+>/g) || []).map((iri) => iri.slice(1, -1));
+      const queries: string[] = [];
+      const backend: KnowledgeMapExportBackend = {
+        getDiagram: () =>
+          Promise.resolve({
+            label: 'Roman roads',
+            diagram: {
+              '@context': Reactodia.DiagramContextV1,
+              '@type': 'Diagram',
+              layoutData: {
+                '@type': 'Layout',
+                elements: [
+                  { '@type': 'Element', '@id': 'e1', iri: `${EX}rome`, position: { x: 0, y: 0 } } as any,
+                  { '@type': 'Element', '@id': 'e2', iri: `${EX}ostia`, position: { x: 300, y: 120 } } as any,
+                  {
+                    '@type': 'ElementGroup',
+                    '@id': 'g1',
+                    position: { x: 10, y: 400 },
+                    items: [{ '@type': 'ElementItem', iri: `${EX}via` }],
+                  } as any,
+                ],
+                links: [
+                  {
+                    '@type': 'Link',
+                    '@id': 'l1',
+                    property: `${EX}connectedTo`,
+                    source: { '@id': 'e1' },
+                    target: { '@id': 'e2' },
+                  } as any,
+                  // shown on the map but not in the database: not exported
+                  {
+                    '@type': 'Link',
+                    '@id': 'l2',
+                    property: `${EX}stale`,
+                    source: { '@id': 'e2' },
+                    target: { '@id': 'e1' },
+                  } as any,
+                ],
+              },
+              linkTypeOptions: [],
+            },
+          }),
+        selectMaps: () => Promise.reject(new Error('the data download does not need the map graph')),
+        selectData: (query) => {
+          queries.push(query);
+          if (query.indexOf('VALUES (?s ?p ?o)') >= 0) {
+            const tuples = (query.match(/\(<[^)]*>\)/g) || []).map(iris);
+            return Promise.resolve(
+              database.filter((t) => tuples.some(([s, p, o]) => t.s === s && t.p === p && t.o === o))
+            );
+          }
+          const [subjects, predicates] = query
+            .split('VALUES')
+            .slice(1)
+            .map((part) => iris(part.substring(0, part.indexOf('}'))));
+          return Promise.resolve(database.filter((t) => subjects.indexOf(t.s) >= 0 && predicates.indexOf(t.p) >= 0));
+        },
+      };
+
+      const exported = await exportKnowledgeMapDataTrig(MAP, backend);
+      expect(exportDataFileName(exported.label)).to.equal('Roman-roads-data.trig');
+      expect(exported.graphs).to.deep.equal([`${MAP}/data`]);
+      const quads = await parseTrig(exported.trig);
+      expect(quads.every((q) => q.graph === `${MAP}/data`)).to.be.true;
+      expect(quads.map((q) => `${q.subject} ${q.predicate} ${q.object}`)).to.have.members([
+        `${EX}rome ${EX}connectedTo ${EX}ostia`,
+        `${EX}rome ${RDF_TYPE} ${CRM}E53_Place`,
+        `${EX}rome ${CRM}P2_has_type ${EX}type/city`,
+        `${EX}ostia ${RDF_TYPE} ${CRM}E53_Place`,
+        `${EX}via ${RDF_TYPE} ${CRM}E53_Place`,
+      ]);
+      expect(exported.trig).not.to.contain('ontodia');
     });
   });
 });

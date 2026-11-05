@@ -34,7 +34,7 @@ import { BrowserPersistence, isValidChild, componentHasType, universalChildren }
 import { ErrorNotification } from 'platform/components/ui/notification';
 import { listen, trigger } from 'platform/api/events';
 
-import { FieldDefinitionProp } from './FieldDefinition';
+import { FieldDefinitionProp, getPreferredLabel } from './FieldDefinition';
 import { DataState, FieldValue, FieldError, CompositeValue, ErrorKind } from './FieldValues';
 import { readyToSubmit } from './FormModel';
 import { SemanticForm, SemanticFormProps } from './SemanticForm';
@@ -46,7 +46,6 @@ import { SparqlPersistence, SparqlPersistenceConfig } from './persistence/Sparql
 import { RawSparqlPersistence } from './persistence/RawSparqlPersistence';
 import { SparqlPersistence as SparqlPersistenceClass } from './persistence/SparqlPersistence';
 import { RecoverNotification } from './static/RecoverNotification';
-import { CollectedError, collectErrors } from './static/FormErrors';
 
 import { CompositeInput } from './inputs/CompositeInput';
 import * as FormEvents from './FormEvents';
@@ -141,6 +140,8 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   private unmounted = false;
   /** Remove was requested before the data of the form was loaded. */
   private removeRequested = false;
+  /** Form.ResourceRemoving was already triggered for the requested removal. */
+  private removingAnnounced = false;
   private removing = false;
 
   constructor(props: ResourceEditorFormProps, context) {
@@ -175,6 +176,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               // the form is still loading the data to remove: remove as soon as it is loaded,
               // instead of failing (which made users press "Delete" a second time)
               this.removeRequested = true;
+              this.removingAnnounced = true;
               trigger({
                 eventType: FormEvents.FormResourceRemoving,
                 source: this.props.id,
@@ -222,9 +224,16 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       const invalidFieldsIds = uniqBy(invalidFields, 'id')
         .map(({ id }) => `"${id}"`)
         .join(', ');
-      this.setState({
-        error: `The fields [${invalidFieldsIds}] don't have INSERT or DELETE patterns`,
-      });
+      const error = `The fields [${invalidFieldsIds}] don't have INSERT or DELETE patterns`;
+      this.setState({ error });
+      // the form is not shown, so it will not report Form.Loaded
+      if (this.props.id) {
+        trigger({
+          eventType: FormEvents.FormLoadFailed,
+          source: this.props.id,
+          data: { iri: getSubject(this.props).value, message: error },
+        });
+      }
     }
   }
 
@@ -511,11 +520,14 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     }
     this.removing = true;
     const itemToRemove = this.initialState.model.subject;
-    trigger({
-      eventType: FormEvents.FormResourceRemoving,
-      source: this.props.id,
-      data: { iri: itemToRemove.value },
-    });
+    if (!this.removingAnnounced) {
+      trigger({
+        eventType: FormEvents.FormResourceRemoving,
+        source: this.props.id,
+        data: { iri: itemToRemove.value },
+      });
+    }
+    this.removingAnnounced = false;
 
     // The form data includes the rdf:type statements of the resource, so check what kind of
     // resource it is before removing the form data. An LDP resource (e.g. a knowledge map with
@@ -780,19 +792,37 @@ function getSubject(props: ResourceEditorFormProps): Rdf.Iri {
 }
 
 /**
- * Returns a description of the configuration and loading errors of a form model,
- * or `undefined` if the data of the resource was loaded completely.
+ * Returns a description of the errors that make the data of the resource incomplete, or
+ * `undefined` if it was loaded completely: errors in the configuration of a form (e.g. a
+ * missing field definition) and fields whose values could not be loaded (failing select
+ * pattern), also in nested forms. Other errors, e.g. a value set that failed to load or
+ * an invalid value, do not prevent removing the resource.
  */
 function getLoadingError(model: CompositeValue): string | undefined {
-  const errors: CollectedError[] = [];
-  collectErrors([], model, errors);
-  const fatal = errors.filter((e) => e.kind === ErrorKind.Configuration || e.kind === ErrorKind.Loading);
-  if (fatal.length === 0) {
+  const errors: string[] = [];
+  const visit = (composite: CompositeValue, path: string[]) => {
+    composite.errors
+      .filter((e) => e.kind === ErrorKind.Configuration || e.kind === ErrorKind.Loading)
+      .forEach((e) => errors.push(`${[...path, 'Form'].join(' / ')}: ${e.message}`));
+    composite.fields.forEach((state, fieldId) => {
+      const definition = composite.definitions.get(fieldId);
+      const fieldPath = [...path, (definition && getPreferredLabel(definition.label)) || fieldId];
+      state.errors
+        .filter((e) => e.kind === ErrorKind.Loading)
+        .forEach((e) => errors.push(`${fieldPath.join(' / ')}: ${e.message}`));
+      state.values.forEach((value) => {
+        if (FieldValue.isComposite(value)) {
+          visit(value, fieldPath);
+        }
+      });
+    });
+  };
+  visit(model, []);
+  if (errors.length === 0) {
     return undefined;
   }
-  const described = fatal.slice(0, 3).map((e) => `${e.path.join(' / ')}: ${e.message}`);
-  const more = fatal.length - described.length;
-  return described.join('; ') + (more > 0 ? ` (and ${more} more)` : '');
+  const more = errors.length - 3;
+  return errors.slice(0, 3).join('; ') + (more > 0 ? ` (and ${more} more)` : '');
 }
 
 function getInvalidFields(fields: ReadonlyArray<FieldDefinitionProp>) { 

@@ -27,6 +27,8 @@ import {
   ReportLevel,
   describeImportReport,
   importKnowledgeMapTrig,
+  iriRef,
+  isSafeIri,
   knowledgeMapSlug,
 } from './data/KnowledgeMapTrig';
 import * as KnowledgeMapImportEvents from './KnowledgeMapImportEvents';
@@ -238,7 +240,9 @@ export class KnowledgeMapImport extends Component<KnowledgeMapImportProps, State
     trigger({
       eventType: KnowledgeMapImportEvents.KnowledgeMapImportDone,
       source: this.props.id,
-      data: { resourceIris: this.createdMaps.slice() },
+      // a dialog closed during an import may have been opened again in the meantime: only an
+      // import finished in an open dialog may close it
+      data: { resourceIris: this.createdMaps.slice(), dialogOpen: !this.unmounted },
     });
     this.createdMaps = [];
     if (!this.unmounted) {
@@ -251,8 +255,8 @@ export class KnowledgeMapImport extends Component<KnowledgeMapImportProps, State
     return {
       knowledgeMapExists: (iri, graph) => {
         const patterns = [
-          iri ? `{ ?container <http://www.w3.org/ns/ldp#contains> <${iri}> }` : undefined,
-          graph ? `{ GRAPH <${graph}> { ?s ?p ?o } }` : undefined,
+          isSafeIri(iri) ? `{ ?container <http://www.w3.org/ns/ldp#contains> ${iriRef(iri)} }` : undefined,
+          isSafeIri(graph) ? `{ GRAPH ${iriRef(graph)} { ?s ?p ?o } }` : undefined,
         ].filter((pattern) => pattern);
         if (patterns.length === 0) {
           return Promise.resolve(false);

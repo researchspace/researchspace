@@ -8,6 +8,7 @@ import { expect } from 'chai';
 import * as Reactodia from '@reactodia/workspace';
 import * as jsonld from 'jsonld';
 
+import { SparqlUtil } from 'platform/api/sparql';
 import { OntodiaContextV1, addLegacyLayoutFields } from 'platform/components/3-rd-party/ontodia/data/DiagramService';
 import {
   ESTIMATED_NODE_SIZE,
@@ -23,7 +24,10 @@ import {
   exportKnowledgeMapDataTrig,
   exportKnowledgeMapTrig,
   importKnowledgeMapTrig,
+  iriRef,
+  isSafeIri,
   knowledgeMapSlug,
+  makeGraphKnowledgeMapQuery,
   parseTrig,
   planImport,
 } from 'platform/components/3-rd-party/ontodia/data/KnowledgeMapTrig';
@@ -115,6 +119,48 @@ describe('KnowledgeMapTrig', () => {
     });
   });
 
+  describe('separating maps and data', () => {
+    it('separates two knowledge maps in one graph and reports other data next to them', async () => {
+      const quads = await parseTrig(`
+        <${EX}maps> {
+          <${EX}m1> a <${O}Diagram> ; <${O}layoutData> _:l1 .
+          _:l1 <${O}hasElement> <${EX}e1> .
+          <${EX}e1> <${O}resource> <${EX}a> .
+          <${EX}m2> a <${O}Diagram> ; <${O}layoutData> _:l2 .
+          _:l2 <${O}hasElement> <${EX}e2> .
+          <${EX}e2> <${O}resource> <${EX}b> .
+          <${EX}a> <${EX}p> <${EX}b> .
+        }
+      `);
+      const plan = planImport(quads);
+      expect(plan.diagrams.map((d) => d.iri)).to.deep.equal([`${EX}m1`, `${EX}m2`]);
+      const subjects = (i: number) => Array.from(new Set(plan.diagrams[i].quads.map((q) => q.subject)));
+      expect(subjects(0)).to.have.members([`${EX}m1`, plan.diagrams[0].quads[1].object, `${EX}e1`]);
+      expect(subjects(1)).not.to.include(`${EX}m1`);
+      expect(subjects(1)).to.include(`${EX}e2`);
+      // <a> <p> <b> is not part of either map
+      expect(plan.otherGraphs).to.deep.equal([`${EX}maps`]);
+    });
+
+    it('accepts only plain absolute IRIs in queries', () => {
+      expect(isSafeIri('http://example.com/a?b=c#d')).to.be.true;
+      expect(isSafeIri('urn:uuid:123')).to.be.true;
+      for (const unsafe of [
+        'relative/iri',
+        'http://x> } SERVICE <http://evil/> {',
+        'http://a b',
+        'http://a"b',
+        '',
+        42,
+      ]) {
+        expect(isSafeIri(unsafe), String(unsafe)).to.be.false;
+      }
+      expect(() => iriRef('http://x> . ?s ?p ?o')).to.throw();
+      expect(() => makeGraphKnowledgeMapQuery('http://x> } }')).to.throw();
+      expect(() => SparqlUtil.parseQuery(makeGraphKnowledgeMapQuery(`${EX}graph`))).not.to.throw();
+    });
+  });
+
   describe('layout', () => {
     it('lays out nodes with finite, non-overlapping positions', async () => {
       const ids = ['a', 'b', 'c', 'd', 'e', 'f'];
@@ -156,8 +202,27 @@ describe('KnowledgeMapTrig', () => {
       };
       const result = await ensureDiagramPositions(diagram);
       expect(result.laidOut).to.be.true;
-      expect(entityElements(result.diagram).every((e) => e.position && isFinite(e.position.y))).to.be.true;
+      const [first, second] = entityElements(result.diagram);
+      // the position chosen by the user is kept, the new node is placed below it
+      expect(first.position).to.deep.equal({ x: 10, y: 10 });
+      expect(second.position.x).to.equal(10);
+      expect(second.position.y).to.be.at.least(10 + 2 * ESTIMATED_NODE_SIZE.height);
       expect((await ensureDiagramPositions(result.diagram)).laidOut).to.be.false;
+    });
+
+    it('lays out all nodes if none has a position', async () => {
+      const diagram: Reactodia.SerializedDiagram = {
+        '@context': Reactodia.DiagramContextV1,
+        '@type': 'Diagram',
+        layoutData: {
+          '@type': 'Layout',
+          elements: ['a', 'b', 'c'].map((id) => ({ '@type': 'Element', '@id': id, iri: `${EX}${id}` } as any)),
+          links: [],
+        },
+        linkTypeOptions: [],
+      };
+      const result = await ensureDiagramPositions(diagram);
+      expect(entityElements(result.diagram).every((e) => e.position && isFinite(e.position.x))).to.be.true;
     });
   });
 
@@ -178,6 +243,20 @@ describe('KnowledgeMapTrig', () => {
       expect(view.level).to.equal('success');
       expect(view.paragraphs).to.deep.equal(['Imported knowledge map "ESWC Series".']);
       expect(view.openableMaps).to.deep.equal([{ iri: `${EX}diagram`, label: 'ESWC Series', existing: false }]);
+    });
+
+    it('reads a language-tagged label of a knowledge map', async () => {
+      const backend = new FakeImportBackend();
+      await importKnowledgeMapTrig(
+        `<${EX}m/context> {
+          <${EX}m> a <${O}Diagram> ; <${CRM}P190_has_symbolic_content> "Roman roads"@en ; <${O}layoutData> _:l .
+          _:l a <${O}Layout> ; <${O}hasElement> <${EX}e1> .
+          <${EX}e1> a <${O}Element> ; <${O}resource> <${EX}a> ; <${O}position> [ <${O}xCoordValue> 1 ; <${O}yCoordValue> 2 ] .
+        }`,
+        'm.trig',
+        backend
+      );
+      expect(backend.saved[0].label).to.equal('Roman roads');
     });
 
     it('lays out a knowledge map with nodes without position', async () => {
@@ -346,6 +425,7 @@ describe('KnowledgeMapTrig', () => {
             },
           }),
         selectMaps: (query) => {
+          SparqlUtil.parseQuery(query);
           if (query.indexOf('VALUES ?type') >= 0) {
             return Promise.resolve([{ g: MAP_GRAPH }]);
           }
@@ -353,6 +433,7 @@ describe('KnowledgeMapTrig', () => {
           return Promise.resolve(rows(mapQuads.filter((q) => graphs.indexOf(q.graph) >= 0)));
         },
         selectData: (query) => {
+          SparqlUtil.parseQuery(query);
           dataQueries.push(query);
           if (query.indexOf('SELECT DISTINCT ?g') >= 0) {
             expect(query).to.contain(`<${EX}rome>`);
@@ -443,6 +524,13 @@ describe('KnowledgeMapTrig', () => {
                 elements: [
                   { '@type': 'Element', '@id': 'e1', iri: `${EX}rome`, position: { x: 0, y: 0 } } as any,
                   { '@type': 'Element', '@id': 'e2', iri: `${EX}ostia`, position: { x: 300, y: 120 } } as any,
+                  // not a plain IRI (e.g. from a crafted file): never written into a query
+                  {
+                    '@type': 'Element',
+                    '@id': 'bad',
+                    iri: 'http://x> } SERVICE <http://evil/> {',
+                    position: { x: 0, y: 0 },
+                  } as any,
                   {
                     '@type': 'ElementGroup',
                     '@id': 'g1',
@@ -473,6 +561,8 @@ describe('KnowledgeMapTrig', () => {
           }),
         selectMaps: () => Promise.reject(new Error('the data download does not need the map graph')),
         selectData: (query) => {
+          // the queries must be valid SPARQL, the rest of this fake only looks at their text
+          SparqlUtil.parseQuery(query);
           queries.push(query);
           if (query.indexOf('VALUES (?s ?p ?o)') >= 0) {
             const tuples = (query.match(/\(<[^)]*>\)/g) || []).map(iris);

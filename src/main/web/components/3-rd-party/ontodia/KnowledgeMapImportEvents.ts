@@ -9,7 +9,7 @@ import { EventMaker } from 'platform/api/events';
 export interface KnowledgeMapImportEventData {
   /**
    * Triggered after a file has been imported and at least one knowledge map
-   * or graph was added to the database.
+   * was added to the database.
    */
   'KnowledgeMapImport.Success': {
     /** IRIs of the created knowledge maps. */
@@ -23,6 +23,11 @@ export interface KnowledgeMapImportEventData {
   'KnowledgeMapImport.Done': {
     /** IRIs of the knowledge maps created during this import session. */
     resourceIris: string[];
+    /**
+     * `false` if the component was removed (e.g. its dialog closed) before the import
+     * finished: the dialog must not be closed then, it may have been opened again.
+     */
+    dialogOpen: boolean;
   };
 }
 const event: EventMaker<KnowledgeMapImportEventData> = EventMaker;

@@ -154,7 +154,8 @@ export function parseDiagramFromTurtle(
         });
       } else {
         return JsonLd.frame(json, JSONLD_DIAGRAM_FRAME, { documentLoader }).map((diagram) => ({
-          label: diagram['@graph'][0][crm.symbolic_content.value] as string,
+          // a language-tagged label is framed as {"@value", "@language"}
+          label: jsonLdLiteralValue(diagram['@graph'][0][crm.symbolic_content.value]),
           diagram: {
             linkTypeOptions: [],
             ...diagram['@graph'][0],

@@ -54,6 +54,25 @@ const APPELLATION_LABEL_PROPERTIES = [CRM_SYMBOLIC_CONTENT, RDFS_LABEL];
 
 const N3Util = N3.Util;
 
+/**
+ * `true` if the IRI can be written as `<iri>` into a SPARQL query or TriG file: absolute,
+ * without characters that are not allowed in IRI references (which could also end the IRI
+ * and inject query text).
+ */
+export function isSafeIri(iri: unknown): iri is string {
+  return typeof iri === 'string' && /^[A-Za-z][A-Za-z0-9+.-]*:[^\s<>"{}|^`\\]*$/.test(iri);
+}
+
+/** Writes an IRI as `<iri>` for a SPARQL query, refusing IRIs that are not safe, see {@link isSafeIri}. */
+export function iriRef(iri: string): string {
+  if (!isSafeIri(iri)) {
+    throw new Error(`Invalid IRI: ${JSON.stringify(iri)}`);
+  }
+  return `<${iri}>`;
+}
+
+const iriList = (iris: ReadonlyArray<string>) => iris.map(iriRef).join(' ');
+
 /** Quad in the N3.js string representation; `graph` is '' for the default graph. */
 export interface Quad {
   readonly subject: string;
@@ -132,7 +151,7 @@ export interface ImportedDiagram {
 export interface ImportPlan {
   /** Knowledge map diagrams found in the file. */
   readonly diagrams: ReadonlyArray<ImportedDiagram>;
-  /** Other graphs of the file, which are not imported ('' is the default graph). */
+  /** Graphs of the file with other data, which is not imported ('' is the default graph). */
   readonly otherGraphs: ReadonlyArray<string>;
 }
 
@@ -163,17 +182,58 @@ export function planImport(quads: ReadonlyArray<Quad>): ImportPlan {
   );
 
   const byGraph = groupByGraph(filtered);
-  const diagramGraphs = new Set(Array.from(diagramSubjects.values()));
   const diagrams: ImportedDiagram[] = [];
+  const usedQuads = new Set<Quad>();
   diagramSubjects.forEach((graph, subject) => {
-    diagrams.push({
-      iri: N3Util.isIRI(subject) ? subject : undefined,
-      graph,
-      quads: byGraph.get(graph) || [],
-    });
+    // the diagram, its layout, elements and links: everything reachable from the diagram
+    // resource in its graph, so that several diagrams (or other data) in one graph are separated
+    const graphQuads = byGraph.get(graph) || [];
+    const bySubject = new Map<string, Quad[]>();
+    for (const quad of graphQuads) {
+      const list = bySubject.get(quad.subject) || [];
+      list.push(quad);
+      bySubject.set(quad.subject, list);
+    }
+    const reached = new Set<string>([subject]);
+    const pending = [subject];
+    const diagramQuads: Quad[] = [];
+    while (pending.length > 0) {
+      for (const quad of bySubject.get(pending.pop()) || []) {
+        diagramQuads.push(quad);
+        usedQuads.add(quad);
+        if (!reached.has(quad.object) && bySubject.has(quad.object) && isLayoutLink(quad, diagramSubjects)) {
+          reached.add(quad.object);
+          pending.push(quad.object);
+        }
+      }
+    }
+    diagrams.push({ iri: isSafeIri(subject) ? subject : undefined, graph, quads: diagramQuads });
   });
-  const otherGraphs = Array.from(byGraph.keys()).filter((graph) => !diagramGraphs.has(graph));
+  const otherGraphs = Array.from(byGraph.keys()).filter((graph) =>
+    byGraph.get(graph).some((quad) => !usedQuads.has(quad))
+  );
   return { diagrams, otherGraphs };
+}
+
+const ONTODIA_NAMESPACE = 'http://ontodia.org/schema/v1#';
+/** Layout properties that refer to the data shown on the map, not to the layout. */
+const ONTODIA_DATA_REFERENCES = ['resource', 'sourceResource', 'targetResource', 'property'].map(
+  (name) => ONTODIA_NAMESPACE + name
+);
+
+/**
+ * `true` if the object of the quad is part of the layout of the diagram: blank nodes
+ * (positions, sizes, the layout itself) and elements and links of the layout, but neither
+ * the resources shown on the map nor other diagrams.
+ */
+function isLayoutLink(quad: Quad, diagramSubjects: ReadonlyMap<string, string>): boolean {
+  if (diagramSubjects.has(quad.object)) {
+    return false;
+  }
+  if (N3Util.isBlank(quad.object)) {
+    return true;
+  }
+  return quad.predicate.startsWith(ONTODIA_NAMESPACE) && ONTODIA_DATA_REFERENCES.indexOf(quad.predicate) < 0;
 }
 
 interface Size {
@@ -251,29 +311,44 @@ function hasPosition(element: Reactodia.SerializedElement): boolean {
 }
 
 /**
- * Applies the default layout to the whole diagram if any of its elements
- * has no position.
+ * Lays out the elements of a diagram that have no position: all elements if none has one,
+ * otherwise only the elements without position, which are placed below the others so
+ * that the positions chosen by the user are kept.
  */
 export async function ensureDiagramPositions(
   diagram: Reactodia.SerializedDiagram
 ): Promise<{ diagram: Reactodia.SerializedDiagram; laidOut: boolean }> {
   const elements = diagram.layoutData?.elements || [];
-  if (elements.every(hasPosition)) {
+  const missing = elements.filter((element) => !hasPosition(element));
+  if (missing.length === 0) {
     return { diagram, laidOut: false };
   }
-  const ids = elements.map((element) => element['@id']);
-  const sizes = new Map<string, Size>();
-  for (const element of elements) {
+  const sizeOf = (element: Reactodia.SerializedElement): Size => {
     const size = element.elementState?.[Reactodia.TemplateProperties.ElementSize] as Size | undefined;
-    if (size && typeof size.width === 'number' && typeof size.height === 'number') {
-      sizes.set(element['@id'], size);
-    }
-  }
+    return size && typeof size.width === 'number' && typeof size.height === 'number' ? size : ESTIMATED_NODE_SIZE;
+  };
+  const ids = missing.map((element) => element['@id']);
+  const sizes = new Map<string, Size>(missing.map((element) => [element['@id'], sizeOf(element)] as [string, Size]));
   const links = (diagram.layoutData.links || [])
     .map((link) => ({ source: link.source?.['@id'], target: link.target?.['@id'] }))
     .filter((link) => link.source && link.target);
   const positions = await computeLayout(ids, links, sizes);
-  const laidOutElements = elements.map((element) => ({ ...element, position: positions.get(element['@id']) }));
+
+  // below the elements that keep their position
+  let offset = { x: 0, y: 0 };
+  const placed = elements.filter(hasPosition);
+  if (placed.length > 0) {
+    const position = (element: Reactodia.SerializedElement) => (element as any).position as { x: number; y: number };
+    offset = {
+      x: Math.min(...placed.map((element) => position(element).x)),
+      y:
+        Math.max(...placed.map((element) => position(element).y + sizeOf(element).height)) + ESTIMATED_NODE_SIZE.height,
+    };
+  }
+  const laidOutElements = elements.map((element) => {
+    const position = positions.get(element['@id']);
+    return position ? { ...element, position: { x: position.x + offset.x, y: position.y + offset.y } } : element;
+  });
   return {
     diagram: { ...diagram, layoutData: { ...diagram.layoutData, elements: laidOutElements } },
     laidOut: true,
@@ -284,7 +359,7 @@ export async function ensureDiagramPositions(
 export function getDiagramResourceIris(diagram: Reactodia.SerializedDiagram): string[] {
   const iris = new Set<string>();
   const visit = (element: any) => {
-    if (element && typeof element.iri === 'string') {
+    if (element && isSafeIri(element.iri)) {
       iris.add(element.iri);
     }
     if (element && Array.isArray(element.items)) {
@@ -315,7 +390,7 @@ function findLabel(quads: ReadonlyArray<Quad>, subject: string | undefined): str
 export function knowledgeMapSlug(label: string): string | undefined {
   const slug = (label || '')
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^A-Za-z0-9_-]+/g, '_')
     .replace(/^_+|_+$/g, '');
   return slug || undefined;
@@ -482,14 +557,14 @@ export function describeImportReport(report: ImportReport): ReportView {
  * system configuration, ontologies and other knowledge maps (they have their own export).
  */
 export function makeExportGraphsQuery(mapIri: string, resourceIris: ReadonlyArray<string>, mapGraph: string): string {
-  const values = [mapIri, ...resourceIris].map((iri) => `<${iri}>`).join(' ');
+  const values = iriList([mapIri, ...resourceIris]);
   return `
 PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 SELECT DISTINCT ?g WHERE {
   VALUES ?subject { ${values} }
   GRAPH ?g { ?subject ?p ?o }
-  FILTER(?g != <${mapGraph}>)
+  FILTER(?g != ${iriRef(mapGraph)})
   FILTER(!STRSTARTS(STR(?g), "http://www.researchspace.org/resource/system/"))
   FILTER NOT EXISTS { ?g a crm:E32_Authority_Document }
   FILTER NOT EXISTS { GRAPH ?g { ?ontology a owl:Ontology } }
@@ -501,7 +576,7 @@ SELECT DISTINCT ?g WHERE {
 /** SPARQL query returning all quads of the given graphs. */
 export function makeGraphsContentQuery(graphs: ReadonlyArray<string>): string {
   return `SELECT ?g ?s ?p ?o WHERE {
-  VALUES ?g { ${graphs.map((g) => `<${g}>`).join(' ')} }
+  VALUES ?g { ${iriList(graphs)} }
   GRAPH ?g { ?s ?p ?o }
 }`;
 }
@@ -511,7 +586,7 @@ export function makeDiagramGraphQuery(mapIri: string): string {
   const types = KNOWLEDGE_MAP_DIAGRAM_TYPES.map((type) => `<${type}>`).join(' ');
   return `SELECT DISTINCT ?g WHERE {
   VALUES ?type { ${types} }
-  GRAPH ?g { <${mapIri}> a ?type }
+  GRAPH ?g { ${iriRef(mapIri)} a ?type }
 }`;
 }
 
@@ -600,7 +675,8 @@ export function getDiagramStatements(diagram: Reactodia.SerializedDiagram): Diag
   }
   const statements = new Map<string, DiagramStatement>();
   const add = (subject: string | undefined, predicate: string | undefined, object: string | undefined) => {
-    if (subject && predicate && object) {
+    // IRIs come from a stored diagram: skip anything that is not a plain IRI
+    if (isSafeIri(subject) && isSafeIri(predicate) && isSafeIri(object)) {
       statements.set(`${subject} ${predicate} ${object}`, { subject, predicate, object });
     }
   };
@@ -619,6 +695,14 @@ export function getDiagramStatements(diagram: Reactodia.SerializedDiagram): Diag
   return Array.from(statements.values());
 }
 
+/**
+ * SPARQL query with the content of a named graph for a knowledge map: all statements
+ * except rdf:type (types are shown on the nodes, not as nodes).
+ */
+export function makeGraphKnowledgeMapQuery(graph: string): string {
+  return `CONSTRUCT { ?s ?p ?o } WHERE { GRAPH ${iriRef(graph)} { ?s ?p ?o . FILTER(?p != <${RDF_TYPE}>) } }`;
+}
+
 /** Named graph with the data of a knowledge map in a data download. */
 export function knowledgeMapDataGraph(mapIri: string): string {
   return `${mapIri}/data`;
@@ -626,7 +710,9 @@ export function knowledgeMapDataGraph(mapIri: string): string {
 
 /** SPARQL query returning which of the given statements are in the database. */
 export function makeExistingStatementsQuery(statements: ReadonlyArray<DiagramStatement>): string {
-  const values = statements.map((st) => `(<${st.subject}> <${st.predicate}> <${st.object}>)`).join('\n    ');
+  const values = statements
+    .map((st) => `(${iriRef(st.subject)} ${iriRef(st.predicate)} ${iriRef(st.object)})`)
+    .join('\n    ');
   return `SELECT DISTINCT ?s ?p ?o WHERE {
   VALUES (?s ?p ?o) {
     ${values}
@@ -634,8 +720,6 @@ export function makeExistingStatementsQuery(statements: ReadonlyArray<DiagramSta
   ?s ?p ?o .
 }`;
 }
-
-const iriList = (iris: ReadonlyArray<string>) => iris.map((iri) => `<${iri}>`).join(' ');
 
 /**
  * SPARQL query returning the rdf:type and crm:P2_has_type values and the labels
@@ -719,7 +803,7 @@ export async function exportKnowledgeMapDataTrig(
 
 /** File name for an exported knowledge map. */
 export function exportFileName(label: string): string {
-  const base = (label || 'knowledge-map')
+  const base = (typeof label === 'string' && label ? label : 'knowledge-map')
     .trim()
     .replace(/[\s\\/:*?"<>|#%&{}$!'@+`=^~\[\]();,]+/g, '-')
     .replace(/^-+|-+$/g, '');

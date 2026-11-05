@@ -117,7 +117,7 @@ describe('delete dialog template', () => {
       expect(area, 'deleting area').to.exist;
       const inner = await extractTemplateScope(area).compile('{{> template}}');
       const render = (data: object) => parseMarkup(inner(data));
-      return { area, render, renderHtml: (data: object) => inner(data) };
+      return { area, render, renderHtml: (data: object) => inner(data), dialog: parseMarkup(html) };
     }
 
     const triggerData = (nodes: any[], id: string) => {
@@ -147,6 +147,32 @@ describe('delete dialog template', () => {
       const whenLoaded = findById(deleting, `${IRI}-resource-removal-when-loaded`);
       expect(whenLoaded.attribs['on-event-source']).to.equal(`${IRI}-resource-form`);
       expect(findById(deleting, `${IRI}-start-resource-removal`), 'Delete is not clickable twice').to.be.undefined;
+    });
+
+    it('listens to the hidden form and its template', async () => {
+      const { dialog, render, area } = await renderDialog();
+      const form = findById(dialog, `${IRI}-delete-form-template-${VIEW}`);
+      expect(form.name).to.equal('inline-template');
+      // the form template gets viewId = iri, so the form's id is <iri>-resource-form
+      expect(JSON.parse(form.attribs.options).viewId).to.equal(IRI);
+
+      const templateFailed = findById(dialog, `${IRI}-delete-form-template-failed-${VIEW}`);
+      expect(templateFailed.attribs['on-event-source']).to.equal(form.attribs.id);
+      expect(JSON.parse(templateFailed.attribs['on-event-types'])).to.deep.equal(['Template.LoadFailed']);
+      const loadFailed = findById(dialog, `${IRI}-delete-form-load-failed-${VIEW}`);
+      expect(loadFailed.attribs['on-event-source']).to.equal(`${IRI}-resource-form`);
+      expect(JSON.parse(loadFailed.attribs['on-event-types'])).to.deep.equal(['Form.LoadFailed']);
+      for (const proxy of [templateFailed, loadFailed]) {
+        expect(JSON.parse(proxy.attribs['proxy-targets'])).to.deep.equal([`${IRI}-deleting-area-${VIEW}`]);
+        expect(JSON.parse(proxy.attribs['additional-data']).formFailed).to.be.true;
+      }
+
+      const deleting = render({ ...JSON.parse(area.attribs.data), resourceDeleting: true });
+      const whenLoaded = findById(deleting, `${IRI}-resource-removal-when-loaded`);
+      expect(JSON.parse(whenLoaded.attribs['on-event-types'])).to.deep.equal(['Form.Loaded']);
+      expect(whenLoaded.attribs['proxy-event-type']).to.equal('Form.RemoveResource');
+      expect(JSON.parse(whenLoaded.attribs['proxy-targets'])).to.deep.equal([`${IRI}-resource-form`]);
+      expect(JSON.parse(whenLoaded.attribs['additional-data']).iri).to.equal(IRI);
     });
 
     it('shows the message and Close when the form cannot be loaded', async () => {

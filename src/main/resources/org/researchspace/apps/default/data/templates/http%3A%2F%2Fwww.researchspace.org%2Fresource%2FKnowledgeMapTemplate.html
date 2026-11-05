@@ -83,7 +83,12 @@
       </template>
     </mp-event-target-template-render>
   {{else}}
-    {{> rsp:KnowledgeMapOntodiaConfig}}
+    {{#if data.graph}}
+      [[!-- data.graph is URI-encoded, see the graph URL parameter of rsp:ThinkingFrames --]]
+      {{> rsp:KnowledgeMapOntodiaConfig graph=(decodeUriComponent data.graph)}}
+    {{else}}
+      {{> rsp:KnowledgeMapOntodiaConfig}}
+    {{/if}}
   {{/if}}
   
   <mp-event-proxy id='ontodia-is-dirty'

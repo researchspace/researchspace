@@ -160,7 +160,7 @@ export class KnowledgeMapImport extends Component<KnowledgeMapImportProps, State
         <div className={classnames(`${CLASS_NAME}__actions`, 'btn-inline-container')}>
           {openable.map(({ iri, label, existing }) => (
             <button key={iri} className="btn btn-action btn-textAndIcon" onClick={() => this.openMap(iri)}>
-              <Icon iconType="rounded" iconName="account_tree" symbol={true} />
+              <Icon iconType="rounded" iconName="hub" symbol={true} />
               <span>{existing ? `Open existing map "${label}"` : `Open knowledge map "${label}"`}</span>
             </button>
           ))}

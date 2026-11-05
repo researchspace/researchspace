@@ -973,13 +973,31 @@
           <button class="btn btn-default">Cancel</button>
         </mp-event-trigger>
 
-        <mp-event-trigger id='{{iri}}-resource-removal' 
-                          type='Form.RemoveResource'                               
-                          data='{"iri": "{{iri}}", "node": "{{iri}}"}' 
-                          targets='["{{iri}}-resource-form"]'>
-          <button class="btn btn-action">Delete</button>
-        </mp-event-trigger>  
+        [[!-- Delete is enabled once the hidden form has loaded the resource: before, the remove
+              request would get lost and the user had to press Delete again --]]
+        <mp-event-target-template-render id="{{iri}}-delete-action-{{viewId}}" template='{{> template}}'>
+          <template id='template'>
+            {{#if formLoaded}}
+              <mp-event-trigger id='{{iri}}-resource-removal'
+                                type='Form.RemoveResource'
+                                data='{"iri": "{{iri}}", "node": "{{iri}}"}'
+                                targets='["{{iri}}-resource-form"]'>
+                <button class="btn btn-action">Delete</button>
+              </mp-event-trigger>
+            {{else}}
+              <button class="btn btn-action" disabled title="Loading the resource…">Delete</button>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render>
       </div>
+
+      <mp-event-proxy id='{{iri}}-resource-loaded-{{viewId}}'
+                      on-event-source='{{iri}}-resource-form'
+                      on-event-types='["Form.Loaded"]'
+                      proxy-event-type='Component.TemplateUpdate'
+                      additional-data='{"formLoaded": true, "iri": "{{iri}}"}'
+                      proxy-targets='["{{iri}}-delete-action-{{viewId}}"]'
+      ></mp-event-proxy>
 
       [[!-- Listen Form.ResourceRemoving to display a 'please wait' message while waiting the delete --]]
       <mp-event-proxy id='{{iri}}-resource-removing-{{viewId}}' 

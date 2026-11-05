@@ -138,6 +138,9 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
 
   private readonly cancellation = new Cancellation();
   private unmounted = false;
+  /** Remove was requested before the data of the form was loaded. */
+  private removeRequested = false;
+  private removing = false;
 
   constructor(props: ResourceEditorFormProps, context) {
     super(props, context);
@@ -165,7 +168,18 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       ).observe({
         value: (event) => {
           if (event.data.iri === this.props.subject) {
-            this.onRemove();
+            if (this.initialState) {
+              this.onRemove();
+            } else {
+              // the form is still loading the data to remove: remove as soon as it is loaded,
+              // instead of failing (which made users press "Delete" a second time)
+              this.removeRequested = true;
+              trigger({
+                eventType: FormEvents.FormResourceRemoving,
+                source: this.props.id,
+                data: { iri: getSubject(this.props).value },
+              });
+            }
           }
         }
       });
@@ -251,6 +265,17 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         };
         const { model, recoveredFromStorage } = this.applyCachedData(this.initialState.model);
         this.setState({ model, recoveredFromStorage, submitting: false });
+        if (this.props.id) {
+          trigger({
+            eventType: FormEvents.FormLoaded,
+            source: this.props.id,
+            data: { iri: getSubject(this.props).value },
+          });
+        }
+        if (this.removeRequested) {
+          this.removeRequested = false;
+          this.onRemove();
+        }
       },
       onChanged: (model) => {
         this.setState({ model });
@@ -462,6 +487,11 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   }
 
   private onRemove = () => {
+    // ignore repeated requests while the resource is being removed
+    if (this.removing) {
+      return;
+    }
+    this.removing = true;
     const itemToRemove = this.initialState.model.subject;
     trigger({
       eventType: FormEvents.FormResourceRemoving,
@@ -525,11 +555,13 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
                 });
               },
               error: (error) => {
+                this.removing = false;
                 addNotification({ level: 'error', message: 'Failed to delete the resource' }, error);
               }
             });
         },
         error: (error) => {
+          this.removing = false;
           addNotification({ level: 'error', message: 'Failed to delete the resource' }, error);
         }
       });

@@ -114,46 +114,6 @@
 
               <template id='actions'>
                 <div class="btn-inline-container">
-                  [[!-- Open the content of the graph in a new knowledge map, only for graphs small enough to be readable;
-                        resources are counted the same way they become nodes: IRIs in statements other than rdf:type --]]
-                  <semantic-query query='
-                    SELECT ?graph ?resources ?openable ?tooLarge WHERE {
-                      {
-                        SELECT (COUNT(*) AS ?resources) WHERE {
-                          {
-                            SELECT DISTINCT ?resource WHERE {
-                              GRAPH <{{graph.value}}> {
-                                { ?resource ?p ?o } UNION { ?s ?p ?resource }
-                                FILTER(isIRI(?resource) && ?p != <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
-                              }
-                            } LIMIT 201
-                          }
-                        }
-                      }
-                      BIND(<{{graph.value}}> AS ?graph)
-                      BIND(?resources > 0 && ?resources <= 200 AS ?openable)
-                      BIND(?resources > 200 AS ?tooLarge)
-                    }'
-                    template='{{> openInKnowledgeMap}}'>
-                    <template id='openInKnowledgeMap'>
-                      [[!-- comparisons are done in the query: a "<" in the template markup breaks its parsing --]]
-                      {{#if (eq bindings.0.openable.value "true")}}
-                        <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
-                                        urlqueryparam-graph='{{bindings.0.graph.value}}'>
-                          <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;"
-                                  title="Open the {{bindings.0.resources.value}} resources of this graph in a new knowledge map">
-                            <rs-icon icon-type="rounded" icon-name="account_tree" symbol="true"></rs-icon>Open in knowledge map
-                          </button>
-                        </semantic-link>
-                      {{/if}}
-                      {{#if (eq bindings.0.tooLarge.value "true")}}
-                        <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;" disabled
-                                title="This graph has more than 200 resources, too many for a readable knowledge map">
-                          <rs-icon icon-type="rounded" icon-name="account_tree" symbol="true"></rs-icon>Open in knowledge map
-                        </button>
-                      {{/if}}
-                    </template>
-                  </semantic-query>
                   [[#if (hasPermission "sparql:graphstore:get")]]
                     <bs-dropdown id="download">
                       <bs-dropdown-toggle>
@@ -192,6 +152,46 @@
                       </button>
                     </mp-graph-store-action>
                   [[/if]]
+                  [[!-- Open the content of the graph in a new knowledge map, only for graphs small enough to be readable;
+                        resources are counted the same way they become nodes: IRIs in statements other than rdf:type --]]
+                  <semantic-query query='
+                    SELECT ?graph ?resources ?openable ?tooLarge WHERE {
+                      {
+                        SELECT (COUNT(*) AS ?resources) WHERE {
+                          {
+                            SELECT DISTINCT ?resource WHERE {
+                              GRAPH <{{graph.value}}> {
+                                { ?resource ?p ?o } UNION { ?s ?p ?resource }
+                                FILTER(isIRI(?resource) && ?p != <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
+                              }
+                            } LIMIT 201
+                          }
+                        }
+                      }
+                      BIND(<{{graph.value}}> AS ?graph)
+                      BIND(?resources > 0 && ?resources <= 200 AS ?openable)
+                      BIND(?resources > 200 AS ?tooLarge)
+                    }'
+                    template='{{> openInKnowledgeMap}}'>
+                    <template id='openInKnowledgeMap'>
+                      [[!-- comparisons are done in the query: a "<" in the template markup breaks its parsing --]]
+                      {{#if (eq bindings.0.openable.value "true")}}
+                        <semantic-link-container  uri='http://www.researchspace.org/resource/ThinkingFrames'
+                                                  urlqueryparam-graph='{{bindings.0.graph.value}}'>
+                          <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;"
+                                  title="Open the {{bindings.0.resources.value}} resources of this graph in a new knowledge map">
+                            <rs-icon icon-type="rounded" icon-name="hub" symbol="true"></rs-icon>Open in knowledge map
+                          </button>
+                        </semantic-link-container>
+                      {{/if}}
+                      {{#if (eq bindings.0.tooLarge.value "true")}}
+                        <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;" disabled
+                                title="This graph has more than 200 resources, too many for a readable knowledge map">
+                          <rs-icon icon-type="rounded" icon-name="hub" symbol="true"></rs-icon>Open in knowledge map
+                        </button>
+                      {{/if}}
+                    </template>
+                  </semantic-query>
                 </div>
               </template>
 

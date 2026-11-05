@@ -114,45 +114,8 @@
 
               <template id='actions'>
                 <div class="btn-inline-container">
-                  [[#if (hasPermission "sparql:graphstore:get")]]
-                    <bs-dropdown id="download">
-                      <bs-dropdown-toggle>
-                          <rs-icon icon-type="rounded" icon-name="file_download" symbol="true"></rs-icon>
-                          Download
-                      </bs-dropdown-toggle>
-                      <bs-dropdown-menu>
-                        
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig">
-                          <bs-menu-item event-key=1 draggable="false">TRIG</bs-menu-item>
-                        </mp-graph-store-action>
-                      
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl">
-                          <bs-menu-item event-key=2 draggable="false">TURTLE</bs-menu-item>
-                        </mp-graph-store-action>
-                      
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt">
-                          <bs-menu-item event-key=3 draggable="false">NTRIPLES</bs-menu-item>
-                        </mp-graph-store-action>
-                        
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf">
-                          <bs-menu-item event-key=4 draggable="false">RDF/XML</bs-menu-item>
-                        </mp-graph-store-action>
-                        
-                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl">
-                          <bs-menu-item event-key=5 draggable="false">OWL</bs-menu-item>
-                        </mp-graph-store-action>
-                        
-                      </bs-dropdown-menu>
-                    </bs-dropdown>
-                  [[/if]]
-                  [[#if (hasPermission "sparql:graphstore:delete")]]
-                    <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}">
-                      <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;">
-                        <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>Delete
-                      </button>
-                    </mp-graph-store-action>
-                  [[/if]]
-                  [[!-- Open the content of the graph in a new knowledge map, only for graphs small enough to be readable;
+                  [[!-- Order of the actions: the most common first, the destructive Delete last.
+                        Open the content of the graph in a new knowledge map, only for graphs small enough to be readable;
                         resources are counted the same way they become nodes: IRIs in statements other than rdf:type --]]
                   <semantic-query query='
                     SELECT ?graph ?resources ?openable ?tooLarge WHERE {
@@ -192,6 +155,44 @@
                       {{/if}}
                     </template>
                   </semantic-query>
+                  [[#if (hasPermission "sparql:graphstore:get")]]
+                    <bs-dropdown id="download">
+                      <bs-dropdown-toggle>
+                          <rs-icon icon-type="rounded" icon-name="file_download" symbol="true"></rs-icon>
+                          Download
+                      </bs-dropdown-toggle>
+                      <bs-dropdown-menu>
+
+                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig">
+                          <bs-menu-item event-key=1 draggable="false">TRIG</bs-menu-item>
+                        </mp-graph-store-action>
+
+                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl">
+                          <bs-menu-item event-key=2 draggable="false">TURTLE</bs-menu-item>
+                        </mp-graph-store-action>
+
+                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt">
+                          <bs-menu-item event-key=3 draggable="false">NTRIPLES</bs-menu-item>
+                        </mp-graph-store-action>
+
+                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf">
+                          <bs-menu-item event-key=4 draggable="false">RDF/XML</bs-menu-item>
+                        </mp-graph-store-action>
+
+                        <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl">
+                          <bs-menu-item event-key=5 draggable="false">OWL</bs-menu-item>
+                        </mp-graph-store-action>
+
+                      </bs-dropdown-menu>
+                    </bs-dropdown>
+                  [[/if]]
+                  [[#if (hasPermission "sparql:graphstore:delete")]]
+                    <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}">
+                      <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;">
+                        <rs-icon icon-type="rounded" icon-name="delete" symbol="true"></rs-icon>Delete
+                      </button>
+                    </mp-graph-store-action>
+                  [[/if]]
                 </div>
               </template>
 

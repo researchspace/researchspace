@@ -412,14 +412,20 @@ describe('KnowledgeMapTrig', () => {
       expect(report.ignoredGraphs).to.deep.equal([DATA_GRAPH]);
     });
 
-    it('downloads the data shown on the map without layout, with the types of all resources', async () => {
+    it('downloads the data shown on the map without layout, with types and labels of all resources', async () => {
       const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
+      const RDFS_LABEL = 'http://www.w3.org/2000/01/rdf-schema#label';
+      const SKOS_PREF_LABEL = 'http://www.w3.org/2004/02/skos/core#prefLabel';
       const database = (
         await parseTrig(`<${DATA_GRAPH}> {
           <${EX}rome> a <${CRM}E53_Place> ; <${CRM}P2_has_type> <${EX}type/city> ;
-            <http://www.w3.org/2000/01/rdf-schema#label> "Rome" ;
+            <${RDFS_LABEL}> "Rome" ; <${EX}description> "not a label" ;
+            <${CRM}P1_is_identified_by> <${EX}rome/name>, _:identifier ;
             <${EX}connectedTo> <${EX}ostia> ; <${EX}notOnTheMap> <${EX}ostia> .
-          <${EX}ostia> a <${CRM}E53_Place> .
+          <${EX}rome/name> a <${CRM}E41_Appellation> ; <${CRM}P2_has_type> <${EX}type/primary_appellation> ;
+            <${CRM}P190_has_symbolic_content> "Roma"@it ; <${EX}note> "not exported" .
+          _:identifier a <${CRM}E42_Identifier> .
+          <${EX}ostia> a <${CRM}E53_Place> ; <${SKOS_PREF_LABEL}> "Ostia" .
           <${EX}via> a <${CRM}E53_Place> .
         }`)
       ).map((q) => ({ s: q.subject, p: q.predicate, o: q.object }));
@@ -474,11 +480,33 @@ describe('KnowledgeMapTrig', () => {
               database.filter((t) => tuples.some(([s, p, o]) => t.s === s && t.p === p && t.o === o))
             );
           }
-          const [subjects, predicates] = query
-            .split('VALUES')
-            .slice(1)
-            .map((part) => iris(part.substring(0, part.indexOf('}'))));
-          return Promise.resolve(database.filter((t) => subjects.indexOf(t.s) >= 0 && predicates.indexOf(t.p) >= 0));
+          // evaluates the other two queries by what they are meant to return
+          const resources = iris(query.substring(query.indexOf('VALUES'), query.indexOf('}')));
+          const isLiteral = (value: string) => value.startsWith('"');
+          const appellationLabels = [`${CRM}P190_has_symbolic_content`, RDFS_LABEL];
+          if (query.indexOf('?appellation') >= 0 || query.indexOf('P1_is_identified_by') >= 0) {
+            const labelled = (s: string) => database.some((t) => t.s === s && appellationLabels.indexOf(t.p) >= 0);
+            const links = database.filter(
+              (t) => resources.indexOf(t.s) >= 0 && t.p === `${CRM}P1_is_identified_by` && labelled(t.o)
+            );
+            const appellations = links.map((t) => t.o);
+            return Promise.resolve([
+              ...links,
+              ...database.filter(
+                (t) =>
+                  appellations.indexOf(t.s) >= 0 &&
+                  [...appellationLabels, RDF_TYPE, `${CRM}P2_has_type`].indexOf(t.p) >= 0
+              ),
+            ]);
+          }
+          const labels = [RDFS_LABEL, `${CRM}P190_has_symbolic_content`, SKOS_PREF_LABEL];
+          return Promise.resolve(
+            database.filter(
+              (t) =>
+                resources.indexOf(t.s) >= 0 &&
+                ([RDF_TYPE, `${CRM}P2_has_type`].indexOf(t.p) >= 0 || (labels.indexOf(t.p) >= 0 && isLiteral(t.o)))
+            )
+          );
         },
       };
 
@@ -493,7 +521,14 @@ describe('KnowledgeMapTrig', () => {
         `${EX}rome ${CRM}P2_has_type ${EX}type/city`,
         `${EX}ostia ${RDF_TYPE} ${CRM}E53_Place`,
         `${EX}via ${RDF_TYPE} ${CRM}E53_Place`,
+        `${EX}rome ${RDFS_LABEL} "Rome"`,
+        `${EX}ostia ${SKOS_PREF_LABEL} "Ostia"`,
+        `${EX}rome ${CRM}P1_is_identified_by ${EX}rome/name`,
+        `${EX}rome/name ${RDF_TYPE} ${CRM}E41_Appellation`,
+        `${EX}rome/name ${CRM}P2_has_type ${EX}type/primary_appellation`,
+        `${EX}rome/name ${CRM}P190_has_symbolic_content "Roma"@it`,
       ]);
+      expect(queries.some((q) => q.indexOf('P1_is_identified_by') >= 0)).to.be.true;
       expect(exported.trig).not.to.contain('ontodia');
     });
   });

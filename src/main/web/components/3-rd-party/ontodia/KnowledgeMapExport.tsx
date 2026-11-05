@@ -32,8 +32,9 @@ export interface KnowledgeMapExportConfig {
   /**
    * What to download:
    *   - `map`: the knowledge map with its layout, which can be imported again
-   *   - `data`: the data shown on the map without layout: the statements shown as links and
-   *     the rdf:type and crm:P2_has_type values of all resources on the map, in one named graph
+   *   - `data`: the data shown on the map without layout: the statements shown as links, and
+   *     the rdf:type and crm:P2_has_type values and the labels (also through appellations) of all
+   *     resources on the map, in one named graph
    *
    * @default "map"
    */

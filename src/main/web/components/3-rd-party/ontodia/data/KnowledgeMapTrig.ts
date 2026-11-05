@@ -41,6 +41,16 @@ const RDFS_LABEL = 'http://www.w3.org/2000/01/rdf-schema#label';
 const CRM_SYMBOLIC_CONTENT = 'http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content';
 const LDP_CONTAINS = 'http://www.w3.org/ns/ldp#contains';
 const CRM_HAS_TYPE = 'http://www.cidoc-crm.org/cidoc-crm/P2_has_type';
+const CRM_IS_IDENTIFIED_BY = 'http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by';
+const SKOS_PREF_LABEL = 'http://www.w3.org/2004/02/skos/core#prefLabel';
+
+/**
+ * Label properties of the resources on a knowledge map, the same as the `dataLabelProperty`
+ * of the knowledge map editor (rsp:KnowledgeMapOntodiaConfig): directly on the resource,
+ * or on its appellations (crm:P1_is_identified_by).
+ */
+const DIRECT_LABEL_PROPERTIES = [RDFS_LABEL, CRM_SYMBOLIC_CONTENT, SKOS_PREF_LABEL];
+const APPELLATION_LABEL_PROPERTIES = [CRM_SYMBOLIC_CONTENT, RDFS_LABEL];
 
 const N3Util = N3.Util;
 
@@ -625,20 +635,62 @@ export function makeExistingStatementsQuery(statements: ReadonlyArray<DiagramSta
 }`;
 }
 
-/** SPARQL query returning the rdf:type and crm:P2_has_type values of the given resources. */
+const iriList = (iris: ReadonlyArray<string>) => iris.map((iri) => `<${iri}>`).join(' ');
+
+/**
+ * SPARQL query returning the rdf:type and crm:P2_has_type values and the labels
+ * (see {@link DIRECT_LABEL_PROPERTIES}) of the given resources.
+ */
 export function makeResourceTypesQuery(resourceIris: ReadonlyArray<string>): string {
   return `SELECT DISTINCT ?s ?p ?o WHERE {
-  VALUES ?s { ${resourceIris.map((iri) => `<${iri}>`).join(' ')} }
-  VALUES ?p { <${RDF_TYPE}> <${CRM_HAS_TYPE}> }
-  ?s ?p ?o .
+  VALUES ?s { ${iriList(resourceIris)} }
+  {
+    VALUES ?p { <${RDF_TYPE}> <${CRM_HAS_TYPE}> }
+    ?s ?p ?o .
+  } UNION {
+    VALUES ?p { ${iriList(DIRECT_LABEL_PROPERTIES)} }
+    ?s ?p ?o .
+    FILTER(isLiteral(?o))
+  }
 }`;
 }
 
 /**
- * Exports the data shown on a knowledge map, without its layout: the statements shown as
- * links (if they are in the database) and the rdf:type and crm:P2_has_type values of every
- * resource on the map, including the types not shown on the map. Everything is written
- * into one named graph, {@link knowledgeMapDataGraph}.
+ * SPARQL query returning the appellations of the given resources with their labels and
+ * types (e.g. the primary appellation): the statements linking resource and appellation,
+ * and the label, rdf:type and crm:P2_has_type values of each appellation.
+ */
+export function makeResourceAppellationsQuery(resourceIris: ReadonlyArray<string>): string {
+  // the variables of each UNION branch are bound inside the branch: a BIND of a variable
+  // from outside the branch would be evaluated before that variable is bound
+  const hasLabel = (variable: string) =>
+    `FILTER EXISTS { VALUES ?labelProperty { ${iriList(
+      APPELLATION_LABEL_PROPERTIES
+    )} } ${variable} ?labelProperty ?anyLabel }`;
+  return `SELECT DISTINCT ?s ?p ?o WHERE {
+  {
+    VALUES ?s { ${iriList(resourceIris)} }
+    VALUES ?p { <${CRM_IS_IDENTIFIED_BY}> }
+    ?s ?p ?o .
+    ${hasLabel('?o')}
+  } UNION {
+    VALUES ?resource { ${iriList(resourceIris)} }
+    ?resource <${CRM_IS_IDENTIFIED_BY}> ?s .
+    VALUES ?p { ${iriList(APPELLATION_LABEL_PROPERTIES)} <${RDF_TYPE}> <${CRM_HAS_TYPE}> }
+    ?s ?p ?o .
+    ${hasLabel('?s')}
+  }
+}`;
+}
+
+/**
+ * Exports the data shown on a knowledge map, without its layout:
+ *   - the statements shown as links (if they are in the database)
+ *   - the rdf:type and crm:P2_has_type values of every resource on the map, including the
+ *     types not shown on the map
+ *   - the labels of every resource, directly on it or through its appellations (with the
+ *     labels and types of the appellations)
+ * Everything is written into one named graph, {@link knowledgeMapDataGraph}.
  */
 export async function exportKnowledgeMapDataTrig(
   mapIri: string,
@@ -656,6 +708,7 @@ export async function exportKnowledgeMapDataTrig(
   }
   for (const batch of chunk(getDiagramResourceIris(diagram), 100)) {
     (await backend.selectData(makeResourceTypesQuery(batch))).forEach(add);
+    (await backend.selectData(makeResourceAppellationsQuery(batch))).forEach(add);
   }
   return {
     label,

@@ -36,6 +36,8 @@ export interface TemplateItemProps extends Props<TemplateItem> {
   };
   componentMapper?: (component: JSX.Element) => JSX.Element;
   onLoad?: () => void;
+  /** Called when the template could not be compiled or rendered. */
+  onError?: (error: any) => void;
 }
 
 type Template = {
@@ -193,7 +195,10 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
           return;
         }
         console.error(error);
-        this.setState({ error }, () => props.onLoad?.());
+        this.setState({ error }, () => {
+          props.onError?.(error);
+          props.onLoad?.();
+        });
       });
   }
 }

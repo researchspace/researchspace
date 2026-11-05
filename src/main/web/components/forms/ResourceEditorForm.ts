@@ -35,7 +35,7 @@ import { ErrorNotification } from 'platform/components/ui/notification';
 import { listen, trigger } from 'platform/api/events';
 
 import { FieldDefinitionProp } from './FieldDefinition';
-import { DataState, FieldValue, FieldError, CompositeValue } from './FieldValues';
+import { DataState, FieldValue, FieldError, CompositeValue, ErrorKind } from './FieldValues';
 import { readyToSubmit } from './FormModel';
 import { SemanticForm, SemanticFormProps } from './SemanticForm';
 import { ValuePatch, computeValuePatch, applyValuePatch } from './Serialization';
@@ -46,6 +46,7 @@ import { SparqlPersistence, SparqlPersistenceConfig } from './persistence/Sparql
 import { RawSparqlPersistence } from './persistence/RawSparqlPersistence';
 import { SparqlPersistence as SparqlPersistenceClass } from './persistence/SparqlPersistence';
 import { RecoverNotification } from './static/RecoverNotification';
+import { CollectedError, collectErrors } from './static/FormErrors';
 
 import { CompositeInput } from './inputs/CompositeInput';
 import * as FormEvents from './FormEvents';
@@ -265,16 +266,27 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         };
         const { model, recoveredFromStorage } = this.applyCachedData(this.initialState.model);
         this.setState({ model, recoveredFromStorage, submitting: false });
+        const loadingError = getLoadingError(this.initialState.model);
         if (this.props.id) {
-          trigger({
-            eventType: FormEvents.FormLoaded,
-            source: this.props.id,
-            data: { iri: getSubject(this.props).value },
-          });
+          trigger(
+            loadingError
+              ? {
+                  eventType: FormEvents.FormLoadFailed,
+                  source: this.props.id,
+                  data: { iri: getSubject(this.props).value, message: loadingError },
+                }
+              : {
+                  eventType: FormEvents.FormLoaded,
+                  source: this.props.id,
+                  data: { iri: getSubject(this.props).value },
+                }
+          );
         }
         if (this.removeRequested) {
           this.removeRequested = false;
-          this.onRemove();
+          if (!loadingError) {
+            this.onRemove();
+          }
         }
       },
       onChanged: (model) => {
@@ -489,6 +501,12 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   private onRemove = () => {
     // ignore repeated requests while the resource is being removed
     if (this.removing) {
+      return;
+    }
+    const loadingError = getLoadingError(this.initialState.model);
+    if (loadingError) {
+      // the values of some fields are unknown, removing would leave part of the data behind
+      addNotification({ level: 'error', message: `The resource cannot be deleted: ${loadingError}` });
       return;
     }
     this.removing = true;
@@ -759,6 +777,22 @@ function getSubject(props: ResourceEditorFormProps): Rdf.Iri {
     subjectIri = Rdf.iri(subjectIri);
   }
   return subjectIri || Rdf.iri('');
+}
+
+/**
+ * Returns a description of the configuration and loading errors of a form model,
+ * or `undefined` if the data of the resource was loaded completely.
+ */
+function getLoadingError(model: CompositeValue): string | undefined {
+  const errors: CollectedError[] = [];
+  collectErrors([], model, errors);
+  const fatal = errors.filter((e) => e.kind === ErrorKind.Configuration || e.kind === ErrorKind.Loading);
+  if (fatal.length === 0) {
+    return undefined;
+  }
+  const described = fatal.slice(0, 3).map((e) => `${e.path.join(' / ')}: ${e.message}`);
+  const more = fatal.length - described.length;
+  return described.join('; ') + (more > 0 ? ` (and ${more} more)` : '');
 }
 
 function getInvalidFields(fields: ReadonlyArray<FieldDefinitionProp>) { 

@@ -170,7 +170,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
           if (event.data.iri === this.props.subject) {
             if (this.initialState) {
               this.onRemove();
-            } else {
+            } else if (!this.removeRequested) {
               // the form is still loading the data to remove: remove as soon as it is loaded,
               // instead of failing (which made users press "Delete" a second time)
               this.removeRequested = true;

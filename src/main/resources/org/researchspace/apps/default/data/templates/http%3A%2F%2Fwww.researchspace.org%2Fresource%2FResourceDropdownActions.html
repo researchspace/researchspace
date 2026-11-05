@@ -956,58 +956,48 @@
         </inline-template> 
       </div>  
 
+      [[!-- Delete shows the progress right away and sends the remove request to the hidden form.
+            The form may still be loading the data of the resource (or not be mounted yet), in which
+            case the request is repeated when the form reports Form.Loaded; the form ignores
+            repeated requests. --]]
       <mp-event-target-template-render id="{{iri}}-deleting-area-{{viewId}}" template='{{> template}}'>
         <template id='template'>
           {{#if resourceDeleting}}
             <div>
               <bs-progress-bar active="true" min="0" now="100" max="100" label="Deleting resource" striped="true"></bs-progress-bar>
             </div>
+            <mp-event-trigger id='{{iri}}-resource-removal'
+                              on='["mounted"]'
+                              type='Form.RemoveResource'
+                              data='{"iri": "{{iri}}", "node": "{{iri}}"}'
+                              targets='["{{iri}}-resource-form"]'>
+            </mp-event-trigger>
+            <mp-event-proxy id='{{iri}}-resource-removal-when-loaded'
+                            on-event-source='{{iri}}-resource-form'
+                            on-event-types='["Form.Loaded"]'
+                            proxy-event-type='Form.RemoveResource'
+                            additional-data='{"iri": "{{iri}}", "node": "{{iri}}"}'
+                            proxy-targets='["{{iri}}-resource-form"]'
+            ></mp-event-proxy>
           {{/if}}
         </template>
       </mp-event-target-template-render>
-      
+
       <div class="form-btn-group">
-        <mp-event-trigger id='{{iri}}-cancel-modal' 
-                          type='OverlayDialog.Close' 
+        <mp-event-trigger id='{{iri}}-cancel-modal'
+                          type='OverlayDialog.Close'
                           targets='["{{viewId}}-delete-resource-dialog"]'>
           <button class="btn btn-default">Cancel</button>
         </mp-event-trigger>
 
-        [[!-- Delete is enabled once the hidden form has loaded the resource: before, the remove
-              request would get lost and the user had to press Delete again --]]
-        <mp-event-target-template-render id="{{iri}}-delete-action-{{viewId}}" template='{{> template}}'>
-          <template id='template'>
-            {{#if formLoaded}}
-              <mp-event-trigger id='{{iri}}-resource-removal'
-                                type='Form.RemoveResource'
-                                data='{"iri": "{{iri}}", "node": "{{iri}}"}'
-                                targets='["{{iri}}-resource-form"]'>
-                <button class="btn btn-action">Delete</button>
-              </mp-event-trigger>
-            {{else}}
-              <button class="btn btn-action" disabled title="Loading the resource…">Delete</button>
-            {{/if}}
-          </template>
-        </mp-event-target-template-render>
+        <mp-event-trigger id='{{iri}}-start-resource-removal'
+                          type='Component.TemplateUpdate'
+                          data='{"resourceDeleting": true, "iri": "{{iri}}"}'
+                          targets='["{{iri}}-deleting-area-{{viewId}}"]'>
+          <button class="btn btn-action">Delete</button>
+        </mp-event-trigger>
       </div>
 
-      <mp-event-proxy id='{{iri}}-resource-loaded-{{viewId}}'
-                      on-event-source='{{iri}}-resource-form'
-                      on-event-types='["Form.Loaded"]'
-                      proxy-event-type='Component.TemplateUpdate'
-                      additional-data='{"formLoaded": true, "iri": "{{iri}}"}'
-                      proxy-targets='["{{iri}}-delete-action-{{viewId}}"]'
-      ></mp-event-proxy>
-
-      [[!-- Listen Form.ResourceRemoving to display a 'please wait' message while waiting the delete --]]
-      <mp-event-proxy id='{{iri}}-resource-removing-{{viewId}}' 
-                      on-event-source='{{iri}}-resource-form' 
-                      on-event-types='["Form.ResourceRemoving"]'
-                      proxy-event-type='Component.TemplateUpdate' 
-                      additional-data='{"resourceDeleting": true, "iri": "{{iri}}"}'
-                      proxy-targets='["{{iri}}-deleting-area-{{viewId}}"]'
-      ></mp-event-proxy>      
-      
     </mp-overlay-dialog-content>
   </mp-overlay-dialog>
 [[/inline]]

@@ -461,49 +461,29 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     }
   }
 
-  private onRemove = () => { 
+  private onRemove = () => {
     const itemToRemove = this.initialState.model.subject;
     trigger({
       eventType: FormEvents.FormResourceRemoving,
       source: this.props.id,
       data: { iri: itemToRemove.value },
-    })
-    this.persistence
-      .remove(this.initialState.model)
+    });
+
+    // The form data includes the rdf:type statements of the resource, so check what kind of
+    // resource it is before removing the form data. An LDP resource (e.g. a knowledge map with
+    // its layout graph) is deleted first: the server only recognises it by its ldp:Resource type.
+    // Running the checks in parallel with the form removal could miss the LDP resource and
+    // leave e.g. the layout and container entry of a deleted knowledge map behind.
+    Kefir.combine([
+      this.executeAskIsResourceQuery(itemToRemove).take(1),
+      this.executeAskIsAuthorityDocumentQuery(itemToRemove).take(1),
+    ])
+      .take(1)
       .observe({
-        value: () => {
-          // if item to be removed is also a setItem also delete its connected setItems 
-          // (several sets can contain setItems connected to the resource to be removed)
-          // to delete a setItem, one needs to identify the parent set
-          this.getSetIris(itemToRemove)
-                .onValue(f => {
-                  f.results.bindings.map(binding => {
-                    new LdpService(binding["set"].value, { repository: "assets" })
-                      .deleteResource(Rdf.iri(binding["setItem"].value))
-                      .onValue(res => this.setState({}))
-                  })
-          });
-
-          performFormPostAction({
-            postAction: this.props.postAction,
-            subject: itemToRemove,
-            eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
-            queryParams: getPostActionUrlQueryParams(this.props),
-            sendNotification: true
-
-          });
-        },
-        error: () => {}
-      })
-    ;
-
-    this.executeAskIsResourceQuery(itemToRemove)
-      .onValue(answer => {
-        if (answer) 
-          new LdpPersistence()
-            .remove(this.initialState.model)
-            .observe({
-              value: () => {
+        value: ([isLdpResource, isAuthorityDocument]) => {
+          // forms with LDP persistence delete the LDP resource themselves
+          const removingLdpResource = isLdpResource && !(this.persistence instanceof LdpPersistence)
+            ? new LdpPersistence().remove(this.initialState.model).map(() => {
                 // if item to be removed is a set also delete the set items
                 this.getSetItemIris(itemToRemove).onValue(f => {
                   f.results.bindings.map(binding => {
@@ -511,40 +491,66 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
                       .deleteResource(Rdf.iri(binding["setItem"].value))
                       .onValue(res => this.setState({}))
                   })
-                });  
-                             
+                });
+              })
+            : Kefir.constant<void>(undefined);
+
+          removingLdpResource
+            .flatMap(() => this.persistence.remove(this.initialState.model))
+            .take(1)
+            .observe({
+              value: () => {
+                // if item to be removed is also a setItem also delete its connected setItems
+                // (several sets can contain setItems connected to the resource to be removed)
+                // to delete a setItem, one needs to identify the parent set
+                this.getSetIris(itemToRemove)
+                      .onValue(f => {
+                        f.results.bindings.map(binding => {
+                          new LdpService(binding["set"].value, { repository: "assets" })
+                            .deleteResource(Rdf.iri(binding["setItem"].value))
+                            .onValue(res => this.setState({}))
+                        })
+                });
+
+                if (isAuthorityDocument) {
+                  this.removeAuthorityDocumentGraph(itemToRemove);
+                }
+
                 performFormPostAction({
                   postAction: this.props.postAction,
                   subject: itemToRemove,
                   eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
                   queryParams: getPostActionUrlQueryParams(this.props),
+                  sendNotification: true
                 });
               },
-              error: () => {}
-            })
-          ;     
-      });
-
-    this.executeAskIsAuthorityDocumentQuery(itemToRemove)
-      .onValue(answer => {
-        if (answer) {
-          //do a delete of the whole graph 
-          RDFGraphStoreService.deleteGraph({ targetGraph: itemToRemove, repository: "authorities"})
-            .onValue((_) => {
-              // FIRE EVENT
-              trigger({
-                eventType: GraphActionEvents.GraphActionSuccess,
-                source: Math.random().toString()
-              }); })
-            .onError((error: string) => {
-              addNotification({
-                level: 'error',
-                message: error,
-              });
+              error: (error) => {
+                addNotification({ level: 'error', message: 'Failed to delete the resource' }, error);
+              }
             });
-          /* TODO: handle itemToRemove+/extended_context graph deletion for SN, KM, etc.*/
-        }  
-      });  
+        },
+        error: (error) => {
+          addNotification({ level: 'error', message: 'Failed to delete the resource' }, error);
+        }
+      });
+  }
+
+  private removeAuthorityDocumentGraph(itemToRemove: Rdf.Iri) {
+    //do a delete of the whole graph
+    RDFGraphStoreService.deleteGraph({ targetGraph: itemToRemove, repository: "authorities"})
+      .onValue((_) => {
+        // FIRE EVENT
+        trigger({
+          eventType: GraphActionEvents.GraphActionSuccess,
+          source: Math.random().toString()
+        }); })
+      .onError((error: string) => {
+        addNotification({
+          level: 'error',
+          message: error,
+        });
+      });
+    /* TODO: handle itemToRemove+/extended_context graph deletion for SN, KM, etc.*/
   }
 
   private  executeAskIsResourceQuery(resourceIri: Rdf.Iri): Kefir.Property<boolean> {

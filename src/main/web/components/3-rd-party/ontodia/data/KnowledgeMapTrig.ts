@@ -41,9 +41,6 @@ const RDFS_LABEL = 'http://www.w3.org/2000/01/rdf-schema#label';
 const CRM_SYMBOLIC_CONTENT = 'http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content';
 const LDP_CONTAINS = 'http://www.w3.org/ns/ldp#contains';
 
-/** Name used for triples outside named graphs in reports. */
-export const DEFAULT_GRAPH_NAME = 'the default graph';
-
 const N3Util = N3.Util;
 
 /** Quad in the N3.js string representation; `graph` is '' for the default graph. */
@@ -412,15 +409,6 @@ export interface ReportView {
   readonly openableMaps: ReadonlyArray<{ iri: string; label: string; existing: boolean }>;
 }
 
-const MAX_LISTED_GRAPHS = 5;
-
-function listGraphs(graphs: ReadonlyArray<string>): string {
-  const names = graphs.map((graph) => graph || DEFAULT_GRAPH_NAME);
-  const listed = names.slice(0, MAX_LISTED_GRAPHS).join(', ');
-  const more = names.length - MAX_LISTED_GRAPHS;
-  return more > 0 ? `${listed} and ${more} more` : listed;
-}
-
 /** Turns an import report into the messages shown to the user. */
 export function describeImportReport(report: ImportReport): ReportView {
   const { fileName } = report;
@@ -470,15 +458,8 @@ export function describeImportReport(report: ImportReport): ReportView {
     }
   }
 
-  const ignored = report.ignoredGraphs;
-  if (ignored.length > 0) {
-    paragraphs.push(
-      (ignored.length === 1
-        ? `1 other graph in the file was not imported: ${listGraphs(ignored)}.`
-        : `${ignored.length} other graphs in the file were not imported: ${listGraphs(ignored)}.`) +
-        ' Only knowledge maps are imported here; use Administration → Data import and download for other data.'
-    );
-    raise('warning');
+  if (report.maps.length > 0 && report.ignoredGraphs.length > 0) {
+    paragraphs.push('Other data in the file was not imported.');
   }
 
   return { level, paragraphs, openableMaps };

@@ -215,7 +215,7 @@ describe('KnowledgeMapTrig', () => {
       expect(backend.saved[0].diagram.layoutData.links).to.have.length(1);
     });
 
-    it('does not import other graphs and says so', async () => {
+    it('does not import other graphs and says so briefly', async () => {
       const backend = new FakeImportBackend();
       const report = await importKnowledgeMapTrig(
         storedMap(WITH_POSITION, `<${EX}persons> { <${EX}q1> <${EX}p> "x" . } <${EX}a> <${EX}p> <${EX}b> .`),
@@ -224,11 +224,10 @@ describe('KnowledgeMapTrig', () => {
       );
       expect(backend.saved).to.have.length(1);
       const view = describeImportReport(report);
-      expect(view.level).to.equal('warning');
+      expect(view.level).to.equal('success');
       expect(view.paragraphs).to.deep.equal([
         'Imported knowledge map "ESWC Series".',
-        `2 other graphs in the file were not imported: ${EX}persons, the default graph. ` +
-          'Only knowledge maps are imported here; use Administration → Data import and download for other data.',
+        'Other data in the file was not imported.',
       ]);
     });
 
@@ -256,11 +255,7 @@ describe('KnowledgeMapTrig', () => {
       );
       const view = describeImportReport(report);
       expect(view.level).to.equal('warning');
-      expect(view.paragraphs).to.deep.equal([
-        'No knowledge map found in data.trig, nothing was imported.',
-        `1 other graph in the file was not imported: ${EX}g. ` +
-          'Only knowledge maps are imported here; use Administration → Data import and download for other data.',
-      ]);
+      expect(view.paragraphs).to.deep.equal(['No knowledge map found in data.trig, nothing was imported.']);
     });
 
     it('reports maps that could not be saved', async () => {

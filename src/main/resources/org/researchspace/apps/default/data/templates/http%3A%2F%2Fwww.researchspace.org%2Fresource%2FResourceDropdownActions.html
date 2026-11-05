@@ -1022,12 +1022,17 @@
                                 targets='["{{viewId}}-delete-resource-dialog"]'>
                 <button class="btn btn-default">Cancel</button>
               </mp-event-trigger>
-              <mp-event-trigger id='{{iri}}-start-resource-removal'
-                                type='Component.TemplateUpdate'
-                                data='{"resourceDeleting": true, "iri": "{{iri}}"}'
-                                targets='["{{iri}}-deleting-area-{{viewId}}"]'>
-                <button class="btn btn-action" {{#if resourceDeleting}}disabled{{/if}}>Delete</button>
-              </mp-event-trigger>
+              [[!-- no Handlebars inside the tag: the template markup is parsed as HTML first --]]
+              {{#if resourceDeleting}}
+                <button class="btn btn-action" disabled>Delete</button>
+              {{else}}
+                <mp-event-trigger id='{{iri}}-start-resource-removal'
+                                  type='Component.TemplateUpdate'
+                                  data='{"resourceDeleting": true, "iri": "{{iri}}"}'
+                                  targets='["{{iri}}-deleting-area-{{viewId}}"]'>
+                  <button class="btn btn-action">Delete</button>
+                </mp-event-trigger>
+              {{/if}}
             </div>
           {{/if}}
         </template>

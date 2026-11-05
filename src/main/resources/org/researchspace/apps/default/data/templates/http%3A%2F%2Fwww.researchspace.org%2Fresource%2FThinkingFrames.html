@@ -28,7 +28,13 @@
   <rs-dashboard
     home-page-iri="http://www.researchspace.org/resource/Start"
 
-    [[#if (urlParam "view")]]
+    [[#if (urlParam "graph")]]
+      [[!-- new knowledge map with the content of a named graph, see "Open in knowledge map" on the data import page --]]
+      initial-view='{"view": "knowledge-map",
+                    "resource": "",
+                    "data": {"graph": "[[urlParam "graph"]]", "customLabel": "Graph [[urlParam "graph"]]"}
+                    }'
+    [[else]][[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", 
                     "resource": "[[urlParam "resource"]]", 
                     "data": {[[#if (urlParam "entityTypeConfig")]]
@@ -62,7 +68,7 @@
 
                             } 
                     }'
-    [[/if]] 
+    [[/if]][[/if]]
     [[#if view]]
       initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
     [[/if]] 

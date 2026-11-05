@@ -114,6 +114,44 @@
 
               <template id='actions'>
                 <div class="btn-inline-container">
+                  [[!-- Open the content of the graph in a new knowledge map, only for graphs small enough to be readable;
+                        resources are counted the same way they become nodes: IRIs in statements other than rdf:type --]]
+                  <semantic-query query='
+                    SELECT ?graph ?resources WHERE {
+                      {
+                        SELECT (COUNT(*) AS ?resources) WHERE {
+                          {
+                            SELECT DISTINCT ?resource WHERE {
+                              GRAPH <{{graph.value}}> {
+                                { ?resource ?p ?o } UNION { ?s ?p ?resource }
+                                FILTER(isIRI(?resource) && ?p != <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
+                              }
+                            } LIMIT 201
+                          }
+                        }
+                      }
+                      BIND(<{{graph.value}}> AS ?graph)
+                    }'
+                    template='{{> openInKnowledgeMap}}'>
+                    <template id='openInKnowledgeMap'>
+                      {{#ifCond bindings.0.resources.value "<=" 200}}
+                        {{#ifCond bindings.0.resources.value ">" 0}}
+                          <semantic-link  iri='http://www.researchspace.org/resource/ThinkingFrames'
+                                          urlqueryparam-graph='{{bindings.0.graph.value}}'>
+                            <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;"
+                                    title="Open the {{bindings.0.resources.value}} resources of this graph in a new knowledge map">
+                              <rs-icon icon-type="rounded" icon-name="account_tree" symbol="true"></rs-icon>Open in knowledge map
+                            </button>
+                          </semantic-link>
+                        {{/ifCond}}
+                      {{else}}
+                        <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;" disabled
+                                title="This graph has more than 200 resources, too many for a readable knowledge map">
+                          <rs-icon icon-type="rounded" icon-name="account_tree" symbol="true"></rs-icon>Open in knowledge map
+                        </button>
+                      {{/ifCond}}
+                    </template>
+                  </semantic-query>
                   [[#if (hasPermission "sparql:graphstore:get")]]
                     <bs-dropdown id="download">
                       <bs-dropdown-toggle>

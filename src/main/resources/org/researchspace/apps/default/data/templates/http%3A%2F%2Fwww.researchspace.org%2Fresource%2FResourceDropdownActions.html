@@ -971,7 +971,10 @@
             and the form ignores repeated requests. If the form's template cannot be loaded
             (Template.LoadFailed) or the data cannot be loaded completely (Form.LoadFailed) the delete
             button is replaced by a message, since the resource cannot be deleted from here. --]]
-      <mp-event-target-template-render id="{{iri}}-deleting-area-{{viewId}}" template='{{> template}}'>
+      [[!-- iri and viewId are passed as data: in the dialog the template cannot see the
+            variables of the surrounding template --]]
+      <mp-event-target-template-render id="{{iri}}-deleting-area-{{viewId}}" template='{{> template}}'
+                                       data='{"iri": "{{iri}}", "viewId": "{{viewId}}"}'>
         <template id='template'>
           {{#if formFailed}}
             <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin: 20px 0;">

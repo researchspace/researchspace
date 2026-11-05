@@ -33,6 +33,15 @@ export interface EventTargetTemplateRenderConfig {
    * <semantic-link iri='http://help.researchspace.org/resource/TemplatingSystem' target="_blank">Template</semantic-link> that will be rendered with data passed as context variables.
    */
   template: string;
+  /**
+   * Data the template is rendered with. Data of a `Component.TemplateUpdate` event is
+   * added to it (event data wins).
+   *
+   * Use it to pass values of the surrounding template that are needed in the template:
+   * when the component is rendered in an overlay dialog, the template cannot see the
+   * variables of the surrounding template.
+   */
+  data?: object;
 }
 type Props = EventTargetTemplateRenderConfig;
 
@@ -67,7 +76,7 @@ export class EventTargetTemplateRender extends Component<Props, State> {
     super(props, context);
     this.state = {
       key: 0,
-      data: {},
+      data: props.data || {},
     };
   }
 
@@ -92,7 +101,13 @@ export class EventTargetTemplateRender extends Component<Props, State> {
         })
       )
       .observe({
-        value: ({ data }) => this.setState((prevState: State): State => ({ key: prevState.key + 1, data })),
+        value: ({ data }) =>
+          this.setState(
+            (prevState: State): State => ({
+              key: prevState.key + 1,
+              data: this.props.data ? { ...this.props.data, ...data } : data,
+            })
+          ),
       });
   }
 

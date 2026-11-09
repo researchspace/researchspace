@@ -75,6 +75,18 @@ describe('FieldCommonTypes', () => {
     expect(normalizeFieldDefinition(FIELD_DEFINITION_CARDINATILIY)).to.eql(result);
   });
 
+  it('keeps allowDeleteInInsertPattern only when it is literally true', () => {
+    expect(normalizeFieldDefinition({ id: 'a', allowDeleteInInsertPattern: true }).allowDeleteInInsertPattern).to.be
+      .true;
+    expect(normalizeFieldDefinition({ id: 'b', allowDeleteInInsertPattern: false })).to.not.have.property(
+      'allowDeleteInInsertPattern'
+    );
+    expect(normalizeFieldDefinition({ id: 'c', allowDeleteInInsertPattern: 'true' as any })).to.not.have.property(
+      'allowDeleteInInsertPattern'
+    );
+    expect(normalizeFieldDefinition({ id: 'd' })).to.not.have.property('allowDeleteInInsertPattern');
+  });
+
   it('add minOccur', () => {
     let definition = clone(FIELD_DEFINITION);
     delete definition.minOccurs;

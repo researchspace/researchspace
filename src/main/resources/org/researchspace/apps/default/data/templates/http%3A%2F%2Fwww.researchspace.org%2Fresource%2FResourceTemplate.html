@@ -4,33 +4,17 @@
     padding-top: 0;
   }
 </style>
-<div class="page page-local-overwrite">
-    [[> rsp:ResourceContent]]
-</div>
+  [[#if (urlParam "resourceIri")]]
+    <div class="page page-local-overwrite">
+      [[> rsp:ResourceContent  iri=(urlParam "resourceIri") frameView=true]] 
+    </div>
+  [[/if]]
 
 [[else]]
-[[!-- Breadcrumb --]]
-<ol class="page-breadcrumb">
-    <li>
-        <mp-link title="Home" url="/">Home</mp-link>
-    </li>
-  
-   [[#block "activeBreadcrumb"]]
-   <with-types iri='[[this]]'
-        template='{{> template}}'
-        [[> rsp:TypeMappings]]
-    >
-        <template id='template'>
-            <li class="active"> 
-                {{directTypesLabels}}: <mp-label iri='[[this]]'></mp-label>
-            </li>
-        </template>
-   </with-types>
-   [[/block]]
-</ol>
-
-[[!-- Resource Page --]]
-<div class="page">
-  [[> rsp:ResourceContent]]
-</div>
+  [[#if (urlParam "uri")]]
+  [[!-- Resource Page --]]
+    <div class="page">
+    [[> rsp:ResourceContent iri=(urlParam "uri") frameView=false]]
+    </div>
+  [[/if]]
 [[/if]]

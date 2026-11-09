@@ -28,6 +28,7 @@ import { DefaultRepositoryInfo } from 'platform/api/services/repository';
 
 import PageToolbar from './PageToolbar';
 import PageViewer from './PageViewer';
+import { getResourcePageView } from './ResourcePageView';
 
 export class PageComponent extends Component<{}, {}> {
   public render() {
@@ -37,7 +38,7 @@ export class PageComponent extends Component<{}, {}> {
           componentTagName: 'mp-internal-page-editor',
           componentProps: props,
         })
-      : PageViewer(props);
+      : PageViewer(getResourcePageView(props.iri, props.params));
 
     return createElement(
       BaseSemanticContextProvider,

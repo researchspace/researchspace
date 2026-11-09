@@ -73,6 +73,18 @@ module.exports = function (defaults) {
             'karma-junit-reporter'
         ],
         basePath: defaults.ROOT_DIR,
+        // Layout tests render the production theme, including its icon fonts.
+        files: [
+            {pattern: defaults.SRC + '/styling/fonts/*', included: false},
+            {pattern: defaults.ROOT_DIR + '/node_modules/material-symbols/*.woff2', included: false},
+            {pattern: defaults.ROOT_DIR + '/node_modules/material-icons/iconfont/*.woff2', included: false},
+        ],
+        proxies: {
+            '/assets/no_auth/material-symbols-rounded.woff2': '/base/node_modules/material-symbols/material-symbols-rounded.woff2',
+            '/assets/no_auth/material-icons-round.woff2': '/base/node_modules/material-icons/iconfont/material-icons-round.woff2',
+            '/assets/no_auth/material-icons-outlined.woff2': '/base/node_modules/material-icons/iconfont/material-icons-outlined.woff2',
+            '/assets/no_auth/': '/base/src/main/web/styling/fonts/',
+        },
         preprocessors: {
             '**/*.test.ts': ['webpack']
         },

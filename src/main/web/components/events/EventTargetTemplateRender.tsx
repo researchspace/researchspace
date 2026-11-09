@@ -103,7 +103,12 @@ export class EventTargetTemplateRender extends Component<Props, State> {
   render() {
     const { template: source } = this.props;
     const { key, data: options } = this.state;
-    return <TemplateItem key={key} template={{ source, options }} />;
+    // Component keys are stable across page loads, so when the surrounding
+    // markup is re-parsed (another resource rendered by the same page
+    // template, or an API refresh) this instance is updated in place with a
+    // new template scope. Pass it on explicitly so the TemplateItem recompiles
+    // the local partials instead of keeping the previous page's content.
+    return <TemplateItem key={key} template={{ source, options }} markupTemplateScope={this.appliedTemplateScope} />;
   }
 }
 

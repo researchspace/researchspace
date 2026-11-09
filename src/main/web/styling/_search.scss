@@ -164,6 +164,8 @@
 
   .search-results-area {
 
+    min-width: 0;
+    container: rs-search-results / inline-size;
     position: relative;
     height: 100%;
     display: flex;
@@ -550,9 +552,47 @@
   }
 }
 
+// The authority entries tab is a column: only results consume spare height.
+// The shared search-page toolbar's flex growth otherwise creates large gaps.
+.authority-entries {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+
+  > .customFormHeader,
+  > .select-text-field { flex: none; }
+
+  > .semantic-search-table-container {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+    min-width: 0;
+
+    .search-container { min-height: 0; }
+
+    .semantic-search-header-actions {
+      flex: 0 0 auto;
+      min-width: 0;
+      margin-bottom: 12px;
+
+      .keyword-search-container { flex: 1 1 180px; min-width: 0; }
+      .keyword-search-container .form-group { min-width: 0; margin: 0; }
+    }
+
+    .search-results-area {
+      flex: 1 1 0;
+      height: auto;
+      min-height: 0;
+    }
+  }
+}
+
 .search-all-tree-input-container {
 
-  position: absolute;
+  /* position: absolute; it ends up on top of new button*/
   padding: 25px 0 0 30px; 
   display: flex; 
   align-items: baseline;
@@ -798,13 +838,202 @@
   gap: 6px;
 }
 
-
-.authority-listOfResourceSearch {
+.resource-editView-container .resource-editView-form-container .authority-listOfResourceSearch {
   height: 100%;
+  padding: 0 20px;
   overflow: auto;
 
   & .search-container {
-
     height: 100%;
+  }
+  
+  .semantic-form .btn-form-actions {
+    padding: 0;
+  }
+}
+
+/* Getting the search-keyword box to stretch */
+.search-page-container .search-container .semantic-search-content .semantic-search-header-content .semantic-search-header-title {
+  display: none;
+}
+
+/* Make the complete header row occupy the available width */
+.semantic-search-header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Allow the actions area to consume the rest of the header */
+.semantic-search-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Left-hand group: keep its intrinsic width */
+.semantic-search-header-actions .btn-newDraggableTab-container {
+  flex: 0 0 auto;
+
+  /* Overrides the inline margin-right: 20px */
+  margin-right: 0 !important;
+}
+
+/* Middle group: consume all remaining space */
+.semantic-search-header-actions .search-results-header-keyword {
+  flex: 1 1 0;
+  min-width: 180px;
+  width: auto !important;
+  max-width: none !important;
+}
+
+/* Propagate the available width through the search wrappers */
+.search-results-header-keyword .keyword-search-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.search-results-header-keyword .keyword-search-container .form-group {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.search-results-header-keyword .input-keyword-search {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Right-hand controls: retain their intrinsic widths */
+.semantic-search-header-actions > .btn,
+.semantic-search-header-actions > .dropdown,
+.semantic-search-header-actions > .btn-group {
+  flex: 0 0 auto;
+}
+
+/* Optional: remove the empty element between the search and refresh button */
+.semantic-search-header-actions
+  > .search-results-header-keyword
+  + div:empty {
+  display: none;
+}
+/* end section of getting the search-keyword to stretch */
+
+// Resource search controls must fit the pane, including very narrow Thinking
+// Frames. The old percentage width could make the view toggle narrower than
+// its caption, while its query/template wrappers retained their intrinsic width.
+.search-page-container .search-container .semantic-search-content .semantic-search-header-content.rs-search-toolbar {
+  flex: none;
+
+  .semantic-search-header-actions {
+    min-width: 0;
+    max-width: 100%;
+
+    .btn-newDraggableTab-container {
+      flex: 0 1 auto;
+      min-width: 0;
+      max-width: 100%;
+      align-items: stretch;
+
+      .btn-action {
+        height: auto;
+        min-height: 34px;
+      }
+
+      #create-new-btn {
+        min-width: 0;
+        white-space: nowrap;
+
+        .rs-search-new-label {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .rs-search-new-compact { display: none; }
+        i { flex: none; }
+      }
+
+      .btn-newDraggableTab { flex: none; }
+    }
+
+    .search-results-header-keyword {
+      flex: 1 1 200px;
+      min-width: 0;
+      max-width: 100%;
+
+      .keyword-search-container .form-group {
+        min-width: 0;
+        margin-right: 0;
+      }
+    }
+
+    .search-results-header-tools {
+      container: rs-search-tools / inline-size;
+      display: flex;
+      align-items: stretch;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-width: 0;
+      max-width: 100%;
+      flex: 0 1 260px;
+
+      > div:empty { display: none; }
+      > .btn, > .search-actions-dropdown { flex: none; }
+
+      .search-view-dropdown {
+        flex: 1 1 160px;
+        width: auto;
+        min-width: 0;
+        max-width: 100%;
+
+        .dropdown-toggle {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+          width: 100%;
+          min-width: 0;
+
+          .search-view-label {
+            min-width: 0;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            text-align: left;
+          }
+
+          .caret { flex: none; }
+        }
+      }
+    }
+  }
+
+  @container semantic-search-header-content (max-width: 640px) {
+    .semantic-search-header-actions {
+      .search-results-header-keyword,
+      .search-results-header-tools { flex: 1 1 100%; }
+    }
+  }
+
+  // Shorten the caption before the two-button group runs out of room.
+  // Its full action name remains available to assistive technology and on hover.
+  @container semantic-search-header-content (max-width: 320px) {
+    .semantic-search-header-actions .btn-newDraggableTab-container #create-new-btn {
+      .rs-search-new-label { display: none; }
+      .rs-search-new-compact { display: inline; }
+    }
+  }
+
+  @container semantic-search-header-content (max-width: 140px) {
+    .semantic-search-header-actions #create-new-btn i { display: none; }
   }
 }

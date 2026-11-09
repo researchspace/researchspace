@@ -18,6 +18,7 @@
                   resource_restriction_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern"
 
                   resource_form="http://www.researchspace.org/pattern/system/resource_configuration/resource_form"
+                  resource_visualisation="http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation"
 
                   resource_card_icon="http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon"
 
@@ -25,6 +26,7 @@
                   resource_broader_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property"
                   resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
 
+                  resource_default_search_view_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_default_search_view_type"                 
                   resource_search_view_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_view_type"
                   resource_search_facet_kpCategory="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_facet_kpCategory"
                   resource_search_listView_column1="http://www.researchspace.org/pattern/system/resource_configuration/resource_search_listView_column1"
@@ -41,10 +43,10 @@
                 ]]'
                >
 
-    <div class='resource-editView-formHeader'>
+    <div class='resource-record-header'>
       <div style="flex: 1;">
         {{#ifCond mode "==" "new"}}
-          <h2 class="resource-editView-formHeader-title">New configuration</h2> 
+          <h2 class="resource-record-header-title">New configuration</h2> 
         {{else}}
           <semantic-query query="SELECT ?label WHERE {
                                   <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
@@ -54,7 +56,7 @@
             <template id='template'>
               <div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                  <h2 class="resource-editView-formHeader-title">
+                  <h2 class="resource-record-header-title">
                     {{#switch mode}}
                       {{#case "edit" break=true}}
                         <span class="text-first-letter-uppercase">
@@ -251,6 +253,7 @@
               <semantic-form-select-input for='resource_ontology_class' 
                                           label="Ontology class (CIDOC-CRM, Skos, etc.)" 
                                           placeholder="Select the ontology class (e.g. CIDOC-CRM  object, Place, etc.)"  
+                                          readonly-resource="true"
                                           readonly="true"> 
               </semantic-form-select-input>
             </div>
@@ -259,6 +262,7 @@
                                             label="Ontology class (CIDOC-CRM, Skos, etc.)"
                                             placeholder="Select the ontology class (e.g. CIDOC-CRM  object, Place, etc.)" 
                                             close-dropdown-on-selection='true'
+                                            open-resource-on-click='false'
                                             query-item-label='SELECT ?label WHERE {
                                                 ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
                                                 FILTER (lang(?label) = "en")
@@ -309,6 +313,7 @@
               <semantic-form-select-input for="resource_type" 
                                           label="Type" 
                                           placeholder="Select an additional type to be associated to the resource" 
+                                          readonly-resource="true"
                                           readonly="true">
               </semantic-form-select-input>
             </div>
@@ -317,6 +322,7 @@
                                             label="Type"
                                             placeholder="Select an additional type to be associated to the resource" 
                                             close-dropdown-on-selection='true'
+                                            open-resource-on-click='false'
                                             tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/resource_type>", 
                                                             "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/resource_type>",
                                                             "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
@@ -373,6 +379,40 @@
             </div>
           </div>
 
+          <div class="form-section-content page__section-container">
+            <div style="display:flex; gap:5px; align-items: end;">
+              <div style="flex: 1;">
+                {{#if (not resource_type)}} 
+                  <semantic-form-text-input 
+                    for="resource_visualisation" 
+                    label="Resource visualisation template -- Template:{{resource_ontology_class}}" 
+                    placeholder="Use the following file -- Template:{{resource_ontology_class}}"
+                  >
+                </semantic-form-text-input>  
+                {{else}}
+                  <semantic-form-text-input 
+                    for="resource_visualisation" 
+                    label="Resource visualisation template -- Template:{{resource_p2type}}" 
+                    placeholder="Use the following file -- Template:{{resource_p2type}}"
+                  >
+                </semantic-form-text-input>
+                {{/if}}            
+              </div>
+              {{#if node}}
+                  <semantic-query query='SELECT ?template WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_visualisation> ?template}'>
+                    <template id='template'>
+                      <semantic-link-container uri='{{bindings.0.template.value}}' urlqueryparam-action='edit' target='_blank'>
+                          <button class="btn btn-default btn-textAndIcon" style="height: 38px;">
+                            <rs-icon icon-type="rounded" icon-name="edit" title="Edit form" symbol="true" symbol="true"></rs-icon>
+                            Edit visualisation template
+                          </button>
+                      </semantic-link-container>
+                    </template>
+                  </semantic-query>
+              {{/if}}
+            </div>
+          </div>
+         
           <div class="form-section-header">
             Enter the icon to be used in any resource visualisation (e.g., resource cards, resource search item, etc.)  
           </div>
@@ -506,6 +546,7 @@
                                                 label="Membership in the authority document" 
                                                 placeholder="Enter a property that define the membership of the resource in the authority document (e.g. skos:inScheme, crm:P71i_is_listed_in)"
                                                 close-dropdown-on-selection='true'
+                                                open-resource-on-click='false'
               >
               </semantic-form-tree-picker-input>
 
@@ -559,7 +600,8 @@
               <semantic-form-tree-picker-input for="resource_broader_property" 
                                                 label="Broader resource property" 
                                                 placeholder="Enter a property that define the relation with a broader resource in the list (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"
-                                                close-dropdown-on-selection='true'>
+                                                close-dropdown-on-selection='true'
+                                                open-resource-on-click='false'>
               </semantic-form-tree-picker-input>
 
               <semantic-form-text-input for="resource_order_sparql_pattern" label="List order (SPARQL pattern)" placeholder="Enter a SPARQL pattern to get the order in the list"> </semantic-form-text-input>
@@ -580,6 +622,8 @@
               </div>
         
               <div class="form-section-content page__section-container">
+                <semantic-form-checklist-input for='resource_default_search_view_type' label="Default search view" row="true" force-default=true default-value="http://www.researchspace.org/resource/system/vocab/search_view_type/list"></semantic-form-checklist-input>
+                
                 <semantic-form-checklist-input for='resource_search_view_type' label="Search view" row="true" default-value="http://www.researchspace.org/resource/system/vocab/search_view_type/list"></semantic-form-checklist-input>
                   
                 <semantic-form-tree-picker-input  for="resource_search_facet_kpCategory" 
@@ -785,6 +829,7 @@
                                                               label="Finder section" 
                                                               placeholder="Select section"
                                                               close-dropdown-on-selection='true'
+                                                              open-resource-on-click='false'
                                                               tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/vocab/navigation_menu_section", 
                                                                               "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/navigation_menu_section>",
                                                                               "labelPattern": "?item skos:prefLabel ?label"
@@ -860,6 +905,7 @@
                                                           label="Finder broader item" 
                                                           placeholder="Select the broader item in finder"
                                                           close-dropdown-on-selection='true'
+                                                          open-resource-on-click='false'
                                                           tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
                                                                           "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container> .
                                                                                             MINUS {?item crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource> }",

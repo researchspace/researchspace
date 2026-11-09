@@ -48,42 +48,47 @@
 
 .rs-header-logo {
 
-    font-family: $font-family-navbar-logo;
-    color: $color-white;
+    font-family: $rs-font-family-brand;
+    color: $rs-color-on-dark;
     font-size: 16px;
-    font-weight: 800;
+    font-weight: $rs-font-weight-bold;
     line-height: 26px;
     @include character(0.34px);
 
 }
 
 /* Headings */
-$h-line: 1.2;
+$h-line: $rs-line-height-heading;
 
 h1.headline {
-    font-size: 26px;
-    font-weight: 600;
+    font-family: $rs-font-family-heading;
+    font-size: $rs-font-size-headline;
+    font-weight: $rs-font-weight-semibold;
     margin: 0;
 }
 
 h1, .h1 {
-    @include font-common($color-dark, 24px, $h-line);
-     font-weight: 600;
+    @include font-common($rs-color-text, $rs-font-size-h1, $h-line);
+    font-family: $rs-font-family-heading;
+    font-weight: $rs-font-weight-semibold;
 }
 
 h2, .h2 {
-    @include font-common($color-dark, 22px, $h-line);
-    font-weight: 600;
+    @include font-common($rs-color-text, $rs-font-size-h2, $h-line);
+    font-family: $rs-font-family-heading;
+    font-weight: $rs-font-weight-semibold;
 }
 
 h3, .h3 {
-    @include font-common($color-dark, 20px, $h-line);
-    font-weight: 600;
+    @include font-common($rs-color-text, $rs-font-size-h3, $h-line);
+    font-family: $rs-font-family-heading;
+    font-weight: $rs-font-weight-semibold;
 }
 
 h4, .h4 {
-    @include font-common($color-dark, 18px, $h-line);
-    font-weight: 600;
+    @include font-common($rs-color-text, $rs-font-size-h4, $h-line);
+    font-family: $rs-font-family-heading;
+    font-weight: $rs-font-weight-semibold;
 }
 
 h4.panel-title {
@@ -91,13 +96,15 @@ h4.panel-title {
 }
 
 h5, .h5 {
-    @include font-common($color-dark, 16px, $h-line);
-    font-weight: 600;
+    @include font-common($rs-color-text, $rs-font-size-h5, $h-line);
+    font-family: $rs-font-family-heading;
+    font-weight: $rs-font-weight-semibold;
 }
 
 h6, .h6 {
-    @include font-common($color-dark, 15px, $h-line);
-    font-weight: 600;
+    @include font-common($rs-color-text, $rs-font-size-h6, $h-line);
+    font-family: $rs-font-family-heading;
+    font-weight: $rs-font-weight-semibold;
 }
 
 // override default header margins
@@ -132,6 +139,15 @@ a {
         cursor: pointer;
     }
 
+    // Replace Bootstrap's rectangular click outline with a text underline.
+    // The shared :focus-visible rule below still identifies keyboard focus.
+    &:focus {
+        outline: none;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.15em;
+    }
+
     &.text-muted {
         cursor: pointer;
         text-decoration: none;
@@ -149,25 +165,25 @@ a {
     user-select: none;
 } */
  
-a.active.focus,
-a.active:focus,
-a:active,
-a.active,
-a:active.focus,
-a:active:focus,
-a.focus,
-a:focus,
-a:focus-within,
-.btn.active.focus,
-.btn.active:focus,
-.btn.focus,
-.btn:active.focus,
-.btn:active:focus,
-.btn:focus {
+// Text links use one underline for pointer and keyboard interaction. Keep the
+// stronger rectangular indicator for buttons and controls without link text.
+a:not(.btn):not([role="button"]):focus-visible {
     outline: none !important;
+    box-shadow: none;
+    text-decoration: underline dotted !important;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.15em;
 }
 
-.fa, 
+button:focus-visible,
+a[role="button"]:focus-visible,
+.btn:focus-visible,
+[role="tab"]:focus-visible {
+    outline: 2px solid $rs-color-focus !important;
+    outline-offset: 3px;
+}
+
+.fa,
 .material-icons,
 .material-icons-outlined,
 .material-icons-round,
@@ -175,13 +191,21 @@ a:focus-within,
 .material-icons-two-tone,
 .material-symbols-rounded,
 .material-symbols-outlined,
-.material-symbols-round,
 .material-symbols-sharp,
-.material-symbols-two-tone,
 .rs-icon,
 .iconmoon {
     font-size: $icon-font-size;  /* Preferred icon size */
     color: $color-icon-dark;
+}
+
+.material-symbols-rounded,
+.material-symbols-outlined,
+.material-symbols-sharp {
+    font-variation-settings:
+        'FILL' var(--rs-symbol-fill, 0),
+        'wght' var(--rs-symbol-weight, 400),
+        'GRAD' var(--rs-symbol-grade, 0),
+        'opsz' var(--rs-symbol-optical-size, 24);
 }
 
 
@@ -746,8 +770,8 @@ ul {
       align-items: flex-start;
   
       .danger-documentation-section-icon-container {
-        background-color: #e3909b;
-        border: 1px solid #dd7b88;
+        background-color: $rs-color-danger-surface-strong;
+        border: 1px solid $rs-color-danger-border-strong;
   
         border-radius: 5px;
         padding: 6px;

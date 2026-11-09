@@ -27,6 +27,7 @@ import * as Either from 'data.either';
 import * as maybe from 'data.maybe';
 
 import { Cancellation } from 'platform/api/async';
+import * as SparqlJs from 'sparqljs';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { Component, ComponentProps, ComponentContext } from 'platform/api/components';
 import { BuiltInEvents, trigger } from 'platform/api/events';
@@ -37,6 +38,76 @@ import { ControlledPropsHandler } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
 
 import { ColumnConfiguration, Table, TableConfig, TableLayout } from './Table';
+
+/**
+ * Triggered by a semantic-table with an `id` after its query has returned,
+ * with the counts the table already has in hand, so that a page can show
+ * "Found N results" without re-running the query:
+ * `{ numberOfRows, numberOfResults, variable, hasResultsCount: true }` where
+ * `numberOfResults` is the number of distinct values of the first projected
+ * variable (`?subject` in search tables) and `numberOfRows` the raw row count.
+ */
+export const SemanticTableResultsLoaded = 'Components.SemanticTable.ResultsLoaded';
+
+export interface SemanticTableResultsLoadedData {
+  numberOfRows: number;
+  numberOfResults: number;
+  variable: string | undefined;
+  hasResultsCount: true;
+  /** LIMIT of the executed query, when it has one (search results default to 1000). */
+  limit?: number;
+  /**
+   * True when the row count reached the query LIMIT, i.e. the table holds a
+   * truncated result set and `numberOfResults` is a lower bound, not the total.
+   */
+  isTruncated: boolean;
+}
+
+function queryLimit(query: string): number | undefined {
+  try {
+    const parsed = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(query);
+    return typeof parsed.limit === 'number' ? parsed.limit : undefined;
+  } catch (e) {
+    return undefined;
+  }
+}
+
+/** Variable whose distinct values are counted: ?subject (the search convention) when projected. */
+export const DEFAULT_COUNT_VARIABLE = 'subject';
+
+function countResults(
+  result: SparqlClient.SparqlSelectResult, query: string, countVariable?: string
+): SemanticTableResultsLoadedData {
+  const vars = result.head.vars || [];
+  const bindings = result.results.bindings;
+  const numberOfRows = bindings.length;
+  const isBound = (name: string) => bindings.some(b => b[name] !== undefined);
+  // the requested variable, else ?subject, else the first variable that is
+  // actually bound in the data (a leading expression/optional variable that
+  // is unbound everywhere must not collapse the count to 1)
+  const candidates = [countVariable, DEFAULT_COUNT_VARIABLE, ...vars].filter(
+    (name, i, all): name is string => Boolean(name) && vars.indexOf(name) >= 0 && all.indexOf(name) === i
+  );
+  const variable = candidates.find(isBound);
+  let numberOfResults = numberOfRows;
+  if (variable) {
+    const distinct = new Set<string>();
+    for (const binding of bindings) {
+      const value = binding[variable];
+      if (value) { distinct.add(`${value.termType}:${value.value}`); }
+    }
+    numberOfResults = distinct.size;
+  }
+  const limit = queryLimit(query);
+  return {
+    numberOfRows,
+    numberOfResults,
+    variable,
+    hasResultsCount: true,
+    limit,
+    isTruncated: limit !== undefined && numberOfRows >= limit,
+  };
+}
 
 interface ControlledProps {
   /**
@@ -86,7 +157,17 @@ interface BaseConfig extends ControlledProps {
    */
   query: string;
 
+  /**
+   * Variable whose distinct values are reported as `numberOfResults` in the
+   * Components.SemanticTable.ResultsLoaded event. Defaults to `subject` when
+   * the query projects it, otherwise the first variable bound in the results.
+   */
+  countVariable?: string;
+
   className?: string;
+
+  /** Keep pagination outside the table's scrolling content. @default false */
+  separatePagination?: boolean;
 
   /**
    * Number of rows to show on the one page
@@ -266,7 +347,12 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
     this.querying = this.cancellation.deriveAndCancel(this.querying);
     const loading = this.querying
       .map(SparqlClient.select(props.query, { context: context.semanticContext }))
-      .onValue((res) => this.setState({ data: res, isLoading: false }))
+      .onValue((res) => {
+        this.setState({ data: res, isLoading: false });
+        if (this.props.id) {
+          trigger({ eventType: SemanticTableResultsLoaded, source: this.props.id, data: countResults(res, props.query, props.countVariable) });
+        }
+      })
       .onError((error) => this.setState({ isLoading: false, error }))
       .onEnd(() => {
         if (this.props.id) {

@@ -310,7 +310,7 @@ export function collectDefinitionErrors(definition: FieldDefinition, errors: Fie
     store('deletePattern', validateDeletePattern(definition.deletePattern));
   }
   if (definition.insertPattern) {
-    store('insertPattern', validateInsertPattern(definition.insertPattern));
+    store('insertPattern', validateInsertPattern(definition.insertPattern, definition.allowDeleteInInsertPattern));
   }
   if (definition.autosuggestionPattern) {
     store('autosuggestionPattern', validateQueryPattern(definition.autosuggestionPattern, 'SELECT'));
@@ -320,7 +320,13 @@ export function collectDefinitionErrors(definition: FieldDefinition, errors: Fie
   }
 }
 
-function validateInsertPattern(pattern: string): ValidationError | undefined {
+/**
+ * Insert patterns may only insert: INSERT ... WHERE. A DELETE clause
+ * (DELETE ... INSERT ... WHERE) is accepted only when the field opts in with
+ * `allowDeleteInInsertPattern`, which can be set in inline JSON field definitions only.
+ * A pure DELETE is always rejected: it belongs in deletePattern.
+ */
+function validateInsertPattern(pattern: string, allowDelete = false): ValidationError | undefined {
   const query = parseQuery(pattern);
   if (query instanceof ValidationError) {
     return query;
@@ -329,12 +335,16 @@ function validateInsertPattern(pattern: string): ValidationError | undefined {
     return new ValidationError(`should be INSERT query but was: '${query.type}'`);
   }
   for (const update of query.updates) {
-    const isInsertWhere =
-      SparqlTypeGuards.isInsertDeleteOperation(update) &&
-      update.updateType === 'insertdelete' &&
-      update.delete.length === 0;
-    if (!isInsertWhere) {
-      return new ValidationError('query should include only INSERT WHERE operations');
+    const isInsertDelete = SparqlTypeGuards.isInsertDeleteOperation(update) && update.updateType === 'insertdelete';
+    const isInsertWhere = isInsertDelete && update.delete.length === 0;
+    const isDeleteInsertWhere = isInsertDelete && update.delete.length > 0 && update.insert.length > 0;
+    if (!(isInsertWhere || (allowDelete && isDeleteInsertWhere))) {
+      return new ValidationError(
+        allowDelete
+          ? 'query should include only INSERT WHERE or DELETE INSERT WHERE operations'
+          : 'query should include only INSERT WHERE operations ' +
+              '(a DELETE clause needs "allowDeleteInInsertPattern": true in an inline JSON field definition)'
+      );
     }
   }
   return undefined;

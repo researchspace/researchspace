@@ -1,45 +1,58 @@
+
 <http://www.researchspace.org/pattern/system/entity/description/context> {
   <http://www.researchspace.org/pattern/system/entity/description> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "http://www.researchspace.org/pattern/system/entity/description";
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.w3.org/2000/01/rdf-schema#label> "Description/comment"@en;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a532e60a978d45168230f96ee0fa3fa62729-uj1te9;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a532e60a978d45168230f96ee0fa3fa62729-zjafbb;
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-e6e6ecbdd35f4d9c8eba3cf053b98f4a-flv9j6;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-e6e6ecbdd35f4d9c8eba3cf053b98f4a-upn11v;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-e6e6ecbdd35f4d9c8eba3cf053b98f4a-r7bxch;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a532e60a978d45168230f96ee0fa3fa62729-o9uifi;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-25T18:22:21.148Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2026-11-09T17:51:35.323Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-e6e6ecbdd35f4d9c8eba3cf053b98f4a-upn11v a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
-    $subject crm:P67i_is_referred_to_by ?information_object  .
-    ?information_object a crm:E73_Information_Object .
-    ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
- 	  ?information_object crm:P1_is_identified_by ?appellation . 
-    ?appellation a crm:E41_Appellation . 
-    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content $value .
-}""" .
-  
-  _:genid-e6e6ecbdd35f4d9c8eba3cf053b98f4a-r7bxch a <http://spinrdf.org/sp#Query>;
+  _:genid-a532e60a978d45168230f96ee0fa3fa62729-o9uifi a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
     $subject crm:P67i_is_referred_to_by ?information_object  .
     ?information_object a crm:E73_Information_Object .
     ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
- 	  ?information_object crm:P1_is_identified_by ?appellation . 
+    ?information_object crm:P1_is_identified_by ?appellation . 
     ?appellation a crm:E41_Appellation . 
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-    ?appellation crm:P190_has_symbolic_content $value .
+    ?appellation crm:P190_has_symbolic_content ?cleanValue .
 } WHERE {
   BIND(URI(CONCAT(str($subject), \"/description\")) as ?information_object)
   BIND(URI(CONCAT(STR($subject), \"/description/primary_appellation\") ) as ?appellation)
+
+  # Clean the text (often pasted from web pages) so that templates showing it cannot break.
+  # 1. Line breaks: CR LF, CR and the Unicode line and paragraph separators become LF.
+  BIND(REPLACE(STR($value), \"\\\\r\\\\n?|[\\\\x{2028}\\\\x{2029}]\", \"\\n\") AS ?clean1)
+  # 2. Remove control characters (except tab and LF) and invisible characters:
+  #    zero-width space, byte order mark, soft hyphen, word joiner, bidirectional controls.
+  BIND(REPLACE(?clean1, \"[\\\\p{Cc}&&[^\\\\t\\\\n]]|[\\\\x{200B}\\\\x{FEFF}\\\\x{00AD}\\\\x{2060}\\\\x{202A}-\\\\x{202E}\\\\x{2066}-\\\\x{2069}]\", \"\") AS ?clean2)
+  # 3. Non-breaking and other fixed-width spaces become normal spaces.
+  BIND(REPLACE(?clean2, \"[\\\\x{00A0}\\\\x{2007}\\\\x{202F}]\", \" \") AS ?clean3)
+  # 4. Straight double quotes become typographic quotes and backslashes a look-alike,
+  #    since both break JSON in template attributes. A quote at the start or after a space
+  #    or opening bracket, and followed by text, opens; every other quote closes.
+  BIND(REPLACE(?clean3, \"(^|[\\\\s(\\\\[])\\\"(?=\\\\S)\", \"$1“\") AS ?clean4)
+  BIND(REPLACE(?clean4, \"\\\"\", \"”\") AS ?clean5)
+  BIND(REPLACE(?clean5, \"\\\\\\\\\", \"⧵\") AS ?clean6)
+  # 5. Separate repeated curly braces, which templates would read as template expressions.
+  BIND(REPLACE(?clean6, \"\\\\{(?=\\\\{)\", \"{ \") AS ?clean7)
+  BIND(REPLACE(?clean7, \"\\\\}(?=\\\\})\", \"} \") AS ?clean8)
+  # 6. Remove leading and trailing white space.
+  BIND(REPLACE(?clean8, \"^\\\\s+|\\\\s+$\", \"\") AS ?clean9)
+  FILTER(STRLEN(?clean9) > 0)
+  # Keep the language or datatype of the value.
+  BIND(IF(LANG($value) != \"\", STRLANG(?clean9, LANG($value)), STRDT(?clean9, DATATYPE($value))) AS ?cleanValue)
 }
 """ .
   
-  _:genid-e6e6ecbdd35f4d9c8eba3cf053b98f4a-flv9j6 a <http://spinrdf.org/sp#Query>;
+  _:genid-a532e60a978d45168230f96ee0fa3fa62729-zjafbb a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE { 
     $subject crm:P67i_is_referred_to_by ?information_object  .
     ?information_object a crm:E73_Information_Object .
@@ -53,6 +66,17 @@
     ?information_object a crm:E73_Information_Object .
     ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
  	?information_object crm:P1_is_identified_by ?appellation . 
+    ?appellation a crm:E41_Appellation . 
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content $value .
+}""" .
+  
+  _:genid-a532e60a978d45168230f96ee0fa3fa62729-uj1te9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+    $subject crm:P67i_is_referred_to_by ?information_object  .
+    ?information_object a crm:E73_Information_Object .
+    ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+ 	  ?information_object crm:P1_is_identified_by ?appellation . 
     ?appellation a crm:E41_Appellation . 
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
     ?appellation crm:P190_has_symbolic_content $value .

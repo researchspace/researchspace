@@ -190,6 +190,27 @@ describe('Sigma GraphLayoutRunner', () => {
     assert.equal(runner.getSnapshot().appliedLayout, 'circular');
     assert.isUndefined(runner.getSnapshot().activeLayout);
   });
+  it('keeps shown nodes in place when a static layout places new nodes', () => {
+    for (const layout of ['circular', 'circlepack', 'random'] as const) {
+      graph = new MultiDirectedGraph();
+      ['a', 'b', 'c'].forEach((node, i) => graph.addNode(node, { x: i, y: i }));
+      const runner = makeRunner();
+      runner.apply(layout);
+      graph.mergeNodeAttributes('a', { x: 123, y: 456 }); // dragged by the user
+      const before = graph.nodes().map(node => [node, graph.getNodeAttribute(node, 'x'), graph.getNodeAttribute(node, 'y')]);
+      runner.mutate(() => {
+        graph.addNode('d', { x: NaN, y: NaN });
+        graph.addEdge('a', 'd');
+      });
+      before.forEach(([node, x, y]) => {
+        assert.equal(graph.getNodeAttribute(node, 'x'), x, layout + ' keeps ' + node);
+        assert.equal(graph.getNodeAttribute(node, 'y'), y, layout + ' keeps ' + node);
+      });
+      assert.isTrue(Number.isFinite(graph.getNodeAttribute('d', 'x')), layout + ' places the new node');
+      runner.apply(layout);
+      assert.notEqual(graph.getNodeAttribute('a', 'x'), 123, 'Apply lays out every node again');
+    }
+  });
   it('defers exploration of a hidden graph until it becomes visible', () => {
     const runner = makeRunner(100);
     runner.apply('forceAtlas2');

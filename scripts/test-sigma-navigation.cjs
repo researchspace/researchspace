@@ -26,7 +26,11 @@ const context = React.createContext(null),
   requestContexts = new Map(),
   requestQueries = new Map(),
   requestCalls = [],
-  workers = new Set();
+  workers = new Set(),
+  listeners = new Set(),
+  triggered = [],
+  labelRequests = [],
+  typeLabels = { 'http://example.org/Person': 'Person' };
 let nextFrame = 0,
   nextTimer = 0,
   mounts = 0,
@@ -107,6 +111,26 @@ const core = {
     return React.createElement(context.Provider, { value: s }, children);
   },
 };
+// Synchronous delivery, like EventsStore: listener exceptions reach the caller.
+const eventsApi = {
+  EventMaker: (t) => t,
+  BuiltInEvents: { ComponentLoaded: 'loaded' },
+  trigger(event) {
+    triggered.push(event);
+    for (const listener of [...listeners]) {
+      if (listener.eventType && listener.eventType !== event.eventType) continue;
+      if (listener.target && !(event.targets || []).includes(listener.target)) continue;
+      if (listener.source && listener.source !== event.source) continue;
+      listener.emit(event);
+    }
+  },
+  listen: (filter) =>
+    Kefir.stream((emitter) => {
+      const listener = { ...filter, emit: (event) => emitter.emit(event) };
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    }),
+};
 const original = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === '@react-sigma/core') return core;
@@ -114,15 +138,16 @@ Module._load = function (request, parent, isMain) {
     return request.endsWith('/useSigma') ? { useSigma: core.useSigma } : { useSetSettings: core.useSetSettings };
   }
   if (request === 'platform/api/components') return { Component: React.Component };
-  if (request === 'platform/api/events')
-    return {
-      EventMaker: (t) => t,
-      BuiltInEvents: { ComponentLoaded: 'loaded' },
-      trigger() {},
-      listen: () => Kefir.never(),
-    };
+  if (request === 'platform/api/events') return eventsApi;
   if (request === 'platform/components/ui/notification') return { ErrorNotification: () => null, addNotification() {} };
   if (request === 'platform/components/ui/spinner') return { Spinner: () => null };
+  if (request === 'platform/api/services/resource-label')
+    return {
+      getLabels: (iris) => {
+        labelRequests.push(iris.map((iri) => iri.value));
+        return Kefir.constant(new Map(iris.map((iri) => [iri, typeLabels[iri.value]])));
+      },
+    };
   if (request === 'platform/components/semantic/graph/GraphInternals')
     return {
       getGraphDataWithLabels: ({ query }, { context: queryContext }) => {
@@ -419,6 +444,7 @@ assert.equal(sigma.graph.listenerCount('nodeAdded'), 0);
 assert.equal(sigma.graph.listenerCount('nodeDropped'), 0);
 assert.equal(sigma.graph.listenerCount('cleared'), 0);
 assert.equal(sigma.listenerCount('clickStage'), 0);
+assert.equal(listeners.size, 0, 'incoming event listeners are removed on unmount');
 console.log('PASS clean unmount after navigation');
 
 // Exercise group expansion through the real click handler and layout controller.
@@ -446,6 +472,8 @@ for (const behaviour of ['replace', 'expand']) {
   act(() => button('Stop layout').props.onClick());
   assert.equal(workers.size, 0);
   for (const node of groupedNodes) {
+    // Expanding one group draws b and c, which dissolves the overlapping group.
+    if (!sigma.graph.hasNode(node)) continue;
     act(() => { sigma.emit('clickNode', { node }); });
     assert.equal(workers.size, 1, 'expansion restarts exactly one supervisor');
   }
@@ -456,7 +484,8 @@ for (const behaviour of ['replace', 'expand']) {
   } else {
     assert.equal(sigma.graph.inEdges('<b>').length, 3);
     assert.equal(sigma.graph.inEdges('<c>').length, 2);
-    assert(groupedNodes.every(node => sigma.graph.hasNode(node)));
+    assert(sigma.graph.hasNode(groupedNodes[0]) && !sigma.graph.hasNode(groupedNodes[1]));
+    assert.deepEqual(sigma.graph.inEdges('<b>').filter(edge => !edge.startsWith('sigma-group')), ['qb']);
   }
   act(() => tree.unmount());
   assert.equal(workers.size, 0);
@@ -464,3 +493,101 @@ for (const behaviour of ['replace', 'expand']) {
   assert.equal(timers.size, 0);
   console.log(`PASS ${behaviour}: grouped-node clicks preserve parallel edges and restart the selected layout`);
 }
+
+// Incoming events address groups by their opaque ID; the bus above delivers them.
+const groupElements = [
+  ...['<a>', '<b>', '<c>', '_:d'].map((id) => ({ group: 'nodes', data: { id, label: id } })),
+  ...['<b>', '<c>', '_:d'].map((target, i) => ({
+    group: 'edges', data: { id: 'e' + i, source: '<a>', target, resource: '<p>', label: 'p' },
+  })),
+];
+const sendEvent = (eventType, targets, data) =>
+  act(() => eventsApi.trigger({ eventType, source: 'test', targets, data }));
+for (const behaviour of ['replace', 'expand', 'none']) {
+  const id = 'events-' + behaviour;
+  act(() => {
+    tree = create(React.createElement(SigmaGraph, {
+      id, query: 'events-query', grouping: { enabled: true, threshold: 2, behaviour },
+      layout: 'forceAtlas2', layoutRunDuration: 0,
+    }));
+  });
+  act(() => { requests.get('events-query').emit(groupElements); });
+  const [group] = sigma.graph.filterNodes((_node, attrs) => attrs.grouped);
+  assert.match(group, /^sigma-group-[0-9a-f]{32}$/);
+  sendEvent('Sigma.TriggerNodeClicked', [id], { node: group });
+  if (behaviour === 'replace') {
+    assert(!sigma.graph.hasNode(group));
+    assert.deepEqual(sigma.graph.edges().sort(), ['e0', 'e1', 'e2']);
+  } else if (behaviour === 'expand') {
+    assert(sigma.graph.hasNode(group));
+    assert.equal(sigma.graph.outDegree(group), 3);
+  } else {
+    assert.equal(sigma.graph.getNodeAttribute(group, 'highlighted'), true);
+    assert(!sigma.graph.hasNode('<b>'));
+  }
+  act(() => tree.unmount());
+  assert.equal(listeners.size, 0);
+  console.log(`PASS ${behaviour}: TriggerNodeClicked with a group ID does not fail`);
+}
+
+act(() => {
+  tree = create(React.createElement(SigmaGraph, {
+    id: 'events', query: 'events-query', grouping: { enabled: true, threshold: 2, behaviour: 'none' },
+    layout: 'forceAtlas2', layoutRunDuration: 0,
+  }));
+});
+act(() => { requests.get('events-query').emit(groupElements); });
+const [eventGroup] = sigma.graph.filterNodes((_node, attrs) => attrs.grouped);
+triggered.length = 0;
+act(() => { sigma.emit('clickNode', { node: eventGroup }); });
+const clicked = triggered.find((event) => event.eventType === 'Sigma.NodeClicked').data;
+assert.equal(clicked.id, eventGroup);
+assert.deepEqual(clicked.group, { source: 'a', types: [], predicate: 'p' });
+assert.deepEqual(clicked.nodes.slice().sort(), ['_:d', 'b', 'c']);
+console.log('PASS NodeClicked for a group carries its identity and unmangled child keys');
+
+const focuses = sigma.camera.focuses;
+sendEvent('Sigma.FocusNode', ['events'], { node: eventGroup });
+assert.equal(sigma.camera.focuses, focuses + 1);
+sendEvent('Sigma.ScatterGroupNode', ['events'], { id: '<a>' });
+assert(sigma.graph.hasNode('<a>'), 'a resource node is never scattered');
+const warn = console.warn;
+console.warn = () => {};
+sendEvent('Sigma.ScatterGroupNode', ['events'], { id: eventGroup, mode: 'Expand' });
+console.warn = warn;
+assert(sigma.graph.hasNode(eventGroup) && !sigma.graph.hasNode('<b>'), 'unknown modes are ignored');
+sendEvent('Sigma.ScatterGroupNode', ['other-graph'], { id: eventGroup, mode: 'expand' });
+assert(!sigma.graph.hasNode('<b>'), 'events for another graph are ignored');
+sendEvent('Sigma.ScatterGroupNode', ['events'], { id: eventGroup, mode: 'expand' });
+assert(sigma.graph.hasNode(eventGroup) && sigma.graph.hasNode('<b>') && sigma.graph.hasNode('_:d'));
+act(() => tree.unmount());
+assert.equal(listeners.size, 0);
+console.log('PASS FocusNode and ScatterGroupNode accept group IDs and ignore other requests');
+
+// Grouping without a behaviour uses the documented default, expand. Groups are
+// named after the label of their type, fetched once for the whole result.
+const typed = (value) => ({ value, isIri: () => true });
+const RDF_TYPE = '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>';
+act(() => {
+  tree = create(React.createElement(SigmaGraph, {
+    id: 'defaults', query: 'defaults-query', grouping: { enabled: true, threshold: 2 },
+    layout: 'forceAtlas2', layoutRunDuration: 0,
+  }));
+});
+labelRequests.length = 0;
+act(() => {
+  requests.get('defaults-query').emit(groupElements.map((element) =>
+    element.group === 'nodes' && element.data.id !== '<a>'
+      ? { ...element, data: { ...element.data, [RDF_TYPE]: [typed('http://example.org/Person')] } }
+      : element));
+});
+assert.deepEqual(labelRequests, [['http://example.org/Person']]);
+const [defaultGroup] = sigma.graph.filterNodes((_node, attrs) => attrs.grouped);
+assert.equal(sigma.graph.getNodeAttribute(defaultGroup, 'label'), 'Person (3)');
+act(() => { sigma.emit('clickNode', { node: defaultGroup }); });
+assert(sigma.graph.hasNode(defaultGroup) && sigma.graph.hasNode('<b>'), 'expand is the default behaviour');
+const focusesBefore = sigma.camera.focuses;
+sendEvent('Sigma.FocusNode', ['defaults'], { node: '_:d' });
+assert.equal(sigma.camera.focuses, focusesBefore + 1, 'blank nodes are addressed by their own key');
+act(() => tree.unmount());
+console.log('PASS default expand behaviour, type labels for groups, and blank-node keys in events');

@@ -4,18 +4,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import * as Kefir from 'kefir';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import { Cancellation } from 'platform/api/async';
 import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
+import { getLabels } from 'platform/api/services/resource-label';
+import { Rdf } from 'platform/api/rdf';
 import { QueryContext } from 'platform/api/sparql/SparqlClient';
 
 import { MultiDirectedGraph } from "graphology";
 
 import { SigmaGraphConfig, DEFAULT_HIDE_PREDICATES } from './Config';
 import random from 'graphology-layout/random';
-import { applyGroupingToGraph, mergeGroupChildren, releaseNodeFromGroup } from './GraphGrouping';
+import { applyGroupingToGraph, mergeGroupChildren, releaseDrawnChildren } from './GraphGrouping';
 export { applyGroupingToGraph, cleanGraph, expandGroup, releaseNodeFromGroup } from './GraphGrouping';
 const SAVED_STATE_PREFIX = 'sigmaGraph:v2:';
+const RDF_TYPE = '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>';
 
 const DEFAULT_COLOUR_NODE = "#000";
 const DEFAULT_COLOUR_EDGE = "#aaa";
@@ -130,8 +134,9 @@ export function getGraphStorageKey(
         defaultGraphs: context.defaultGraphs, namedGraphs: context.namedGraphs, bindings,
         // Older grouped snapshots did not preserve original relationships. Fetch
         // them again, and do not share snapshots between grouping configurations.
+        // Version 2 invalidates snapshots with JSON group IDs and no group identity.
         grouping: grouping?.enabled ? {
-            version: 1, threshold: grouping.threshold ?? 3, behaviour: grouping.behaviour,
+            version: 2, threshold: grouping.threshold ?? 3, behaviour: grouping.behaviour,
         } : undefined,
     }));
 }
@@ -190,27 +195,44 @@ export function mergeGraphs(graph: MultiDirectedGraph, newGraph: MultiDirectedGr
             graph.addEdgeWithKey(edge, source, target, { ...attributes });
         }
     });
-    // If the new graph contains grouped nodes, it might be that a node that
-    // is part of a group is already present as an individual node in the graph. 
-    // In this case we need to remove the grouped node from its group and add a
-    // corresponding edge from the groups source to the node.
-    const nodes = graph.nodes();            
+    // A group child that the merged result draws on its own leaves its group.
+    releaseDrawnChildren(graph, newGraph);
+}
 
-    const nodesToRelease = [];
-    for (const node of nodes) {
-        if (graph.hasNodeAttribute(node, 'grouped')) {
-            // Look at children of group and check if they are already present in the graph
-            const children = graph.getNodeAttribute(node, 'children') || [];
-            for (const child of children) {
-                if (graph.hasNode(child.node)) {
-                    nodesToRelease.push({group: node, child: child});
-                }
-            }
-        }
-    }
-    for (const node of nodesToRelease) {
-        releaseNodeFromGroup(graph, node.child.node, node.group);
-    }
+/** Last segment of an IRI, used when the label service has no label. */
+function localName(iri: string): string {
+    const name = iri.replace(/[#/]+$/, '').split(/[#/]/).pop();
+    return name || iri;
+}
+
+/**
+ * Set `typeLabels` (used to name groups, e.g. "Person (3)") from the labels of
+ * each node's rdf:type values. The data loader does not fetch these, because
+ * rdf:type is a hidden predicate. `fetchLabels` is replaceable for tests.
+ */
+export function withTypeLabels(
+    elements: any[],
+    context?: QueryContext,
+    fetchLabels: (iris: Rdf.Iri[]) => Kefir.Property<{ get(iri: Rdf.Iri): string | undefined }> =
+        iris => getLabels(iris, { context }),
+): Kefir.Property<any[]> {
+    const iris = new Map<string, Rdf.Iri>();
+    const typesOf = (element: any): Rdf.Iri[] => {
+        const types = element.group === 'nodes' && !element.data.typeLabels ? element.data[RDF_TYPE] : undefined;
+        return Array.isArray(types) ? types.filter(type => type && type.isIri && type.isIri()) : [];
+    };
+    elements.forEach(element => typesOf(element).forEach(type => {
+        if (!iris.has(type.value)) iris.set(type.value, type);
+    }));
+    if (iris.size === 0) return Kefir.constant(elements);
+    return fetchLabels(Array.from(iris.values())).map(labels => {
+        elements.forEach(element => {
+            const types = typesOf(element);
+            if (types.length === 0) return;
+            element.data.typeLabels = types.map(type => labels.get(iris.get(type.value)) || localName(type.value));
+        });
+        return elements;
+    });
 }
 
 export function loadGraphDataFromQuery(query: string, context: QueryContext, cancellation: Cancellation) {
@@ -218,7 +240,11 @@ export function loadGraphDataFromQuery(query: string, context: QueryContext, can
         query: query,
         hidePredicates: DEFAULT_HIDE_PREDICATES
     }
-    return cancellation.map(getGraphDataWithLabels(config, { context }))
+    return cancellation.map(
+        getGraphDataWithLabels(config, { context })
+            .flatMap(elements => withTypeLabels(elements, context))
+            .toProperty()
+    );
 }
 
 export function saveStateIntoLocalStorage(graph: MultiDirectedGraph, key: string) {

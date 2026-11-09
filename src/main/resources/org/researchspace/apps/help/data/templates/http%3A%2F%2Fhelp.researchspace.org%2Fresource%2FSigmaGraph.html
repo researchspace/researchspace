@@ -298,8 +298,11 @@
     </table>
     <p>These controls also preserve whether a continuous layout is running or stopped.
       See whole graph keeps active filters: select (all) in the Filter panel if you also want every
-      relationship visible. To test expansion, click Alice, Bob, David or Emma. Newly added nodes use
-      the applied layout, and Force or ForceAtlas2 receives a fresh run period.</p>
+      relationship visible. To test expansion, click Alice, Bob, David or Emma. Force or ForceAtlas2
+      receives a fresh run period. With Circular, Circlepack or Random, nodes that were already shown
+      (including ones you dragged or that were restored) keep their positions and only the newly added
+      nodes are placed by the layout; Noverlap runs again over the whole graph. Apply lays out every
+      node again.</p>
 
     <h3>Keep one layout and hide the layout menu</h3>
 
@@ -422,16 +425,18 @@
     <p>
       Grouping is useful when one source node has many related target nodes of the same type through the
       same predicate. Instead of drawing every target immediately, the component draws a group node labelled
-      with the grouped type and count.
+      with the label of the grouped type and the count, for example <code>Person (3)</code>.
     </p>
 
     <p>
-      The <code>threshold</code> controls when grouping starts. The <code>behaviour</code> controls what
-      happens when a group is expanded:
+      The <code>threshold</code> is the smallest number of targets that forms a group. A target that is
+      drawn anyway, because it has relationships of its own in the result or because another group was
+      expanded, is never hidden in a group, and only the remaining targets count towards the threshold.
+      The <code>behaviour</code> controls what happens when a group is clicked:
     </p>
 
     <ul>
-      <li><code>expand</code>: keep the group node and attach the children to it.</li>
+      <li><code>expand</code> (the default): keep the group node and attach the children to it.</li>
       <li><code>replace</code>: replace the group node with its children.</li>
       <li><code>none</code>: show the group but do not expand it on click.</li>
     </ul>
@@ -562,6 +567,104 @@
     color: "#2980b9"
   }
 }</code></pre>
+
+    <h3>Group IDs and group data</h3>
+
+    <p>
+      A group is a synthetic graph node, not an RDF resource. Its <code>id</code> and
+      <code>node</code> are an opaque ID: <code>sigma-group-</code> followed by 32 lowercase hex
+      digits, derived from the group's source, types and predicate. The same group always gets
+      the same ID, regardless of type order or how many children it has. The ID contains only
+      letters, digits and hyphens, so it can be used as an HTML <code>id</code>, a CSS selector,
+      a JSON string or a URL parameter without escaping.
+    </p>
+
+    <p>
+      Do not parse the ID. A group's <code>Sigma.NodeClicked</code> payload also has a
+      <code>group</code> field with its <code>source</code>, sorted <code>types</code> and, if the
+      grouped edges have one, <code>predicate</code>. IRIs are given without angle brackets, as in
+      <code>nodes</code>, which lists the child IRIs rather than the group ID. Blank nodes and
+      literals keep their own form.
+    </p>
+
+    <pre class="documentation__code-example"><code>{
+  componentId: "resource-network",
+  id: "sigma-group-761665760522369d3c6d85ff8b7917b1",
+  node: "sigma-group-761665760522369d3c6d85ff8b7917b1",
+  group: {
+    source: "http://example.com/collection/letters",
+    types: ["http://www.cidoc-crm.org/cidoc-crm/E21_Person"],
+    predicate: "http://www.cidoc-crm.org/cidoc-crm/P67_refers_to"
+  },
+  nodes: [
+    "http://example.com/person/alice",
+    "http://example.com/person/bob",
+    "http://example.com/person/carol"
+  ],
+  attributes: { label: "Person (3)", grouped: true }
+}</code></pre>
+
+    <p>
+      Pass the ID back unchanged to <code>Sigma.ScatterGroupNode</code>,
+      <code>Sigma.FocusNode</code> or <code>Sigma.TriggerNodeClicked</code>. These events also accept
+      blank-node and literal keys exactly as they appear in <code>id</code>; bare IRIs may be given with
+      or without angle brackets. The optional
+      <code>mode</code> of <code>Sigma.ScatterGroupNode</code> is <code>"replace"</code>
+      (the default) or <code>"expand"</code>. Requests with any other mode, or with the ID of a
+      node that is not a group, are ignored.
+    </p>
+
+    <p>
+      The example below shows details for a clicked group and a button that expands it. It sets
+      the grouping <code>behaviour</code> to <code>"none"</code> so that a click only selects the
+      group: with <code>"expand"</code> or <code>"replace"</code> the click already expands it.
+      <code>mp-event-proxy</code> forwards the click payload to the template, where its fields
+      are available as <code>{{id}}</code>, <code>{{group.source}}</code>, <code>{{nodes}}</code>
+      and so on. The <code>id</code> of <code>mp-event-trigger</code> is only the event source
+      name.
+    </p>
+
+    <pre class="documentation__code-example"><code>&lt;semantic-sigma-graph
+  id="resource-network"
+  query="..."
+  grouping='{"enabled": true, "behaviour": "none"}'&gt;
+&lt;/semantic-sigma-graph&gt;
+
+&lt;mp-event-proxy
+  id="resource-network-click"
+  on-event-type="Sigma.NodeClicked"
+  on-event-source="resource-network"
+  proxy-event-type="Component.TemplateUpdate"
+  proxy-targets='["resource-network-details"]'&gt;
+&lt;/mp-event-proxy&gt;
+
+&lt;mp-event-target-template-render
+  id="resource-network-details"
+  template='{{&gt; details}}'&gt;
+  &lt;template id="details"&gt;
+    {{#if group}}
+      &lt;p&gt;
+        {{nodes.length}} items linked from
+        &lt;semantic-link iri="{{group.source}}"&gt;&lt;/semantic-link&gt;
+        {{#if group.predicate}}
+          by &lt;semantic-link iri="{{group.predicate}}"&gt;&lt;/semantic-link&gt;
+        {{/if}}
+      &lt;/p&gt;
+      &lt;mp-event-trigger
+        id="resource-network-expand"
+        type="Sigma.ScatterGroupNode"
+        targets='["{{componentId}}"]'
+        data='{"id": "{{id}}", "mode": "expand"}'&gt;
+        &lt;button&gt;Show items&lt;/button&gt;
+      &lt;/mp-event-trigger&gt;
+    {{/if}}
+  &lt;/template&gt;
+&lt;/mp-event-target-template-render&gt;</code></pre>
+
+    <p>
+      Grouped snapshots saved by earlier versions are ignored and reloaded from the configured
+      query; saved non-grouped graphs retain their existing storage keys.
+    </p>
 
     <h3>Targeting one graph from another component</h3>
 

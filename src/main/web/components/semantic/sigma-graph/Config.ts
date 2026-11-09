@@ -28,7 +28,9 @@ export interface GroupingConfig {
     enabled?: boolean;
 
     /**
-     * Number of nodes above which they will be grouped together.
+     * Smallest number of targets that forms a group. Targets drawn on their
+     * own anyway (they have relationships of their own) are not grouped and
+     * do not count.
      * @default 3
      */
     threshold?: number;

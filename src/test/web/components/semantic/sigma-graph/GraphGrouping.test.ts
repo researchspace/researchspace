@@ -4,10 +4,14 @@
  */
 import { assert } from 'chai';
 import { MultiDirectedGraph } from 'graphology';
+import * as Kefir from 'kefir';
+import { Rdf } from 'platform/api/rdf';
 import {
     applyGroupingToGraph, cleanGraph, expandGroup, releaseNodeFromGroup,
 } from 'platform/components/semantic/sigma-graph/GraphGrouping';
-import { mergeGraphs } from 'platform/components/semantic/sigma-graph/Common';
+import {
+    createGraphFromElements, mergeGraphs, withTypeLabels,
+} from 'platform/components/semantic/sigma-graph/Common';
 
 function fixture() {
     const graph = new MultiDirectedGraph();
@@ -130,5 +134,116 @@ describe('Sigma grouping preserves RDF relationships', () => {
         assert.lengthOf(groups(grouped), 2);
         groups(grouped).forEach(node => expandGroup(grouped, node, 'replace'));
         assertEdgesEqual(grouped, graph);
+    });
+    it('never hides a child that is drawn on its own, and forms only groups that reach the threshold', () => {
+        const graph = fixture();
+        graph.addNode('e', { x: 9, y: 9 });
+        graph.addEdgeWithKey('b-e', 'b', 'e', { predicate: 'r' });
+        // b has an outgoing edge, so it is drawn: groups keep only c and d.
+        const grouped = group(graph, 2);
+        assert.lengthOf(groups(grouped), 2);
+        groups(grouped).forEach(node => assert.sameMembers(
+            grouped.getNodeAttribute(node, 'children').map((child: any) => child.node), ['c', 'd']));
+        assert.sameMembers(grouped.edges('a', 'b'), ['p-b', 'p-b-2', 'q-b']);
+        // With threshold 3, two hidden children are not enough for a group.
+        assertEdgesEqual(group(graph, 3), graph);
+    });
+    it('keeps every node either drawn or in a group, never both, for arbitrary graphs', () => {
+        let seed = 7;
+        const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+        for (let run = 0; run < 200; run++) {
+            const graph = new MultiDirectedGraph();
+            const size = 3 + Math.floor(random() * 8);
+            for (let i = 0; i < size; i++) graph.addNode('n' + i, { types: [random() < 0.5 ? 't' : 'u'], x: i, y: i });
+            for (let i = 0; i < size * 2; i++) {
+                const source = 'n' + Math.floor(random() * Math.min(3, size));
+                const target = 'n' + Math.floor(random() * size);
+                graph.addEdge(source, target, { predicate: random() < 0.7 ? 'p' : 'q' });
+            }
+            const threshold = 2 + Math.floor(random() * 2);
+            const grouped = group(graph, threshold);
+            groups(grouped).forEach(node => {
+                const children = grouped.getNodeAttribute(node, 'children');
+                assert.isAtLeast(children.length, threshold);
+                children.forEach((child: any) => assert.isFalse(grouped.hasNode(child.node), 'run ' + run));
+            });
+            groups(grouped).forEach(node => expandGroup(grouped, node, 'replace'));
+            assertEdgesEqual(grouped, graph);
+        }
+    });
+    it('releases children from other groups as soon as an expansion draws them', () => {
+        const graph = fixture();
+        const grouped = group(graph);
+        const [p, q] = groups(grouped);
+        expandGroup(grouped, p, 'expand');
+        assert.isTrue(grouped.hasNode(p));
+        assert.lengthOf(grouped.getNodeAttribute(q, 'children'), 0, 'b, c and d are drawn, so q no longer hides them');
+        cleanGraph(grouped);
+        assert.isFalse(grouped.hasNode(q));
+        expandGroup(grouped, p, 'replace');
+        assertEdgesEqual(grouped, graph);
+    });
+    it('keeps a group expanded in place when an unrelated result is merged', () => {
+        const graph = fixture();
+        const grouped = group(graph);
+        const node = groups(grouped)[0];
+        expandGroup(grouped, node, 'expand');
+        cleanGraph(grouped);
+        const edges = grouped.edges().length;
+        const unrelated = new MultiDirectedGraph();
+        unrelated.addNode('z', { x: 0, y: 0 });
+        unrelated.addNode('y', { x: 1, y: 1 });
+        unrelated.addEdgeWithKey('z-y', 'z', 'y', { predicate: 'r' });
+        mergeGraphs(grouped, unrelated);
+        cleanGraph(grouped);
+        assert.isTrue(grouped.hasNode(node));
+        assert.equal(grouped.edges().length, edges + 1);
+        assert.isFalse(grouped.hasEdge('p-b') || grouped.hasEdge('p-b-2'), 'b stays attached to the expanded group');
+    });
+    it('releases an expanded child when a merged result contains it', () => {
+        const graph = fixture();
+        const grouped = group(graph);
+        const node = groups(grouped).find(n => grouped.getNodeAttribute(n, 'children')[0].edges[0].attributes.predicate === 'p');
+        expandGroup(grouped, node, 'expand');
+        const incoming = new MultiDirectedGraph();
+        incoming.addNode('b', { x: 0, y: 0 });
+        mergeGraphs(grouped, incoming);
+        // b was already drawn by the expansion, so the q group released it too.
+        assert.sameMembers(grouped.inEdges('b').filter(edge => grouped.source(edge) === 'a'), ['p-b', 'p-b-2', 'q-b']);
+        assert.lengthOf(grouped.outEdges(node, 'b'), 0);
+    });
+});
+
+describe('Sigma type labels', () => {
+    const type = Rdf.iri('http://example.org/vocab#Person');
+    const other = Rdf.iri('http://example.org/vocab/Place/');
+    const node = (id: string, types?: Rdf.Node[]) => ({
+        group: 'nodes', data: { id, label: id, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>': types },
+    });
+    const elements = () => [
+        node('<a>'), node('<b>', [type]), node('<c>', [type]), node('<d>', [type, other]),
+        ...['<b>', '<c>', '<d>'].map((target, i) => ({
+            group: 'edges', data: { id: 'e' + i, source: '<a>', target, resource: '<p>' },
+        })),
+    ];
+    it('labels groups with the fetched label of their type, falling back to the local name', () => {
+        let requested: string[];
+        let result: any[];
+        withTypeLabels(elements(), undefined, iris => {
+            requested = iris.map(iri => iri.value);
+            return Kefir.constant(new Map([[iris[0], 'Person']]));
+        }).onValue(value => { result = value; });
+        assert.sameMembers(requested, [type.value, other.value], 'one request, no duplicates');
+        assert.deepEqual(result.find(e => e.data.id === '<d>').data.typeLabels, ['Person', 'Place']);
+        const grouped = createGraphFromElements(
+            result.filter(e => e.data.id !== '<d>' && e.data.target !== '<d>'), { grouping: { enabled: true, threshold: 2 } });
+        assert.equal(grouped.getNodeAttribute(groups(grouped)[0], 'label'), 'Person (2)');
+    });
+    it('does not call the label service when no node has a type', () => {
+        let called = false;
+        const input = [node('<a>'), node('<b>')];
+        withTypeLabels(input, undefined, () => { called = true; return Kefir.constant(new Map()); })
+            .onValue(value => assert.strictEqual(value, input));
+        assert.isFalse(called);
     });
 });

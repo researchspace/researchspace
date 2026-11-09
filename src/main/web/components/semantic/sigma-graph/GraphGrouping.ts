@@ -5,6 +5,9 @@
 import { MultiDirectedGraph } from 'graphology';
 import { Attributes } from 'graphology-types';
 import { SigmaGraphConfig } from './Config';
+import {
+    SigmaGroupIdentity, createGroupNodeId, derivedEdgeKey, groupEdgeKey, toPlainIri,
+} from './GroupId';
 
 interface GroupEdge {
     key: string;
@@ -20,11 +23,9 @@ export interface GroupChild {
 interface Group {
     source: string;
     predicate: any;
+    identity: SigmaGroupIdentity;
     children: Map<string, GroupChild>;
 }
-
-const derivedEdgeKey = (edge: string, source: string, target: string) =>
-    'sigma-group-member:' + JSON.stringify([edge, source, target]);
 
 function groupEdgeLabel(children: GroupChild[]): string {
     const labels = new Set<string>();
@@ -38,7 +39,7 @@ function updateGroupLabel(graph: MultiDirectedGraph, node: string, children: Gro
     const types = graph.getNodeAttribute(node, 'typeLabels');
     const prefix = (Array.isArray(types) ? Array.from(new Set(types)).join(', ') : types) || 'Group';
     graph.setNodeAttribute(node, 'label', prefix + ' (' + children.length + ')');
-    const edge = 'sigma-group-edge:' + node;
+    const edge = groupEdgeKey(node);
     if (graph.hasEdge(edge)) graph.setEdgeAttribute(edge, 'label', groupEdgeLabel(children));
 }
 
@@ -53,11 +54,18 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
     graph.forEachEdge((edge, attributes, source, target) => {
         const predicate = attributes.predicate;
         const predicateValue = predicate && typeof predicate === 'object' ? predicate.value : predicate;
-        const key = 'sigma-group:' + JSON.stringify([source, types.get(target), predicateValue]);
-        let group = groups.get(key);
+        const targetTypes: string[] = types.get(target);
+        // Canonical identity from the original RDF terms; hashed into the node ID below.
+        const identityKey = JSON.stringify([source, targetTypes, predicateValue ?? null]);
+        let group = groups.get(identityKey);
         if (!group) {
-            group = { source, predicate, children: new Map() };
-            groups.set(key, group);
+            const identity: SigmaGroupIdentity = {
+                source: toPlainIri(source),
+                types: targetTypes.map(type => toPlainIri(String(type))),
+            };
+            if (predicateValue != null) identity.predicate = toPlainIri(String(predicateValue));
+            group = { source, predicate, identity, children: new Map() };
+            groups.set(identityKey, group);
         }
         let child = group.children.get(target);
         if (!child) {
@@ -67,39 +75,80 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
         child.edges.push({ key: edge, source, target, attributes: { ...attributes } });
     });
 
+    // Roots and every edge source are drawn on their own. A child that is drawn
+    // anyway must not also be hidden in a group, and a group left with fewer
+    // hidden children than the threshold is not formed. Not forming a group
+    // draws its children, which can affect other groups: repeat until stable.
+    const threshold = props.grouping?.threshold ?? 3;
+    const drawn = new Set<string>();
+    graph.forEachNode(node => {
+        if (graph.inDegree(node) === 0 || graph.outDegree(node) > 0) drawn.add(node);
+    });
+    const formed = new Set(groups.keys());
+    for (let changed = true; changed;) {
+        changed = false;
+        formed.forEach(identityKey => {
+            const children = Array.from(groups.get(identityKey).children.keys());
+            if (children.filter(child => !drawn.has(child)).length < threshold) {
+                formed.delete(identityKey);
+                children.forEach(child => drawn.add(child));
+                changed = true;
+            }
+        });
+    }
+
     const grouped = new MultiDirectedGraph();
     const addNode = (node: string) => {
         if (!grouped.hasNode(node)) grouped.addNode(node, { ...graph.getNodeAttributes(node) });
     };
     // Includes isolated nodes, which never occur in an incoming-edge group.
     graph.forEachNode(node => { if (graph.inDegree(node) === 0) addNode(node); });
-    groups.forEach((group, key) => {
+    groups.forEach((group, identityKey) => {
         addNode(group.source);
-        const children = Array.from(group.children.values());
-        if (children.length < (props.grouping?.threshold ?? 3)) {
-            children.forEach(child => {
-                addNode(child.node);
-                child.edges.forEach(edge => grouped.addEdgeWithKey(
-                    edge.key, edge.source, edge.target, { ...edge.attributes }
-                ));
-            });
-            return;
-        }
+        const all = Array.from(group.children.values());
+        const children = formed.has(identityKey) ? all.filter(child => !drawn.has(child.node)) : [];
+        all.filter(child => !children.includes(child)).forEach(child => {
+            addNode(child.node);
+            child.edges.forEach(edge => grouped.addEdgeWithKey(
+                edge.key, edge.source, edge.target, { ...edge.attributes }
+            ));
+        });
+        if (children.length === 0) return;
 
+        const key = createGroupNodeId(identityKey);
         const first = children[0].attributes;
         grouped.addNode(key, {
-            grouped: true, children, typeLabels: first.typeLabels,
+            grouped: true, group: group.identity, children, typeLabels: first.typeLabels,
             size: (props.sizes?.nodes ?? 10) * 1.5, color: first.color,
             x: Number.isFinite(first.x) ? first.x : Math.random(),
             y: Number.isFinite(first.y) ? first.y : Math.random(),
         });
         updateGroupLabel(grouped, key, children);
-        grouped.addEdgeWithKey('sigma-group-edge:' + key, group.source, key, {
+        grouped.addEdgeWithKey(groupEdgeKey(key), group.source, key, {
             label: groupEdgeLabel(children), predicate: group.predicate,
             size: props.sizes?.edges ?? 5, color: props.colours?.edge || '#aaa',
         });
     });
     return grouped;
+}
+
+/**
+ * Release group children that are drawn on their own, e.g. after a query
+ * result added them. A child shown only because its group was expanded in
+ * place stays with the group, unless `incoming` (the merged result) has it.
+ */
+export function releaseDrawnChildren(graph: MultiDirectedGraph, incoming?: MultiDirectedGraph) {
+    const releases: Array<[string, string]> = [];
+    graph.forEachNode((node, attributes) => {
+        if (!attributes.grouped) return;
+        (attributes.children || []).forEach((child: GroupChild) => {
+            if (!graph.hasNode(child.node)) return;
+            const expandedInPlace = child.edges.some(edge =>
+                graph.hasEdge(derivedEdgeKey(edge.key, node, child.node)));
+            if (!expandedInPlace || incoming?.hasNode(child.node)) releases.push([child.node, node]);
+        });
+    });
+    releases.forEach(([child, group]) => detachChild(graph, child, group));
 }
 
 function addChild(graph: MultiDirectedGraph, groupNode: string, child: GroupChild) {
@@ -127,9 +176,16 @@ export function expandGroup(graph: MultiDirectedGraph, groupNode: string, mode: 
     children.forEach(child => addChild(graph, groupNode, child));
     children.forEach(child => addChildEdges(graph, groupNode, child, mode === 'replace'));
     if (mode === 'replace') graph.dropNode(groupNode);
+    // The children are drawn now, so other groups must not keep hiding them.
+    releaseDrawnChildren(graph);
 }
 
 export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: string, groupNode: string) {
+    detachChild(graph, childNode, groupNode);
+    releaseDrawnChildren(graph);
+}
+
+function detachChild(graph: MultiDirectedGraph, childNode: string, groupNode: string) {
     const children: GroupChild[] = graph.getNodeAttribute(groupNode, 'children') || [];
     const child = children.find(entry => entry.node === childNode);
     if (!child) return;
@@ -163,6 +219,24 @@ export function mergeGroupChildren(graph: MultiDirectedGraph, node: string, inco
     const merged = Array.from(children.values());
     graph.setNodeAttribute(node, 'children', merged);
     updateGroupLabel(graph, node, merged);
+}
+
+/**
+ * Validate a Sigma.ScatterGroupNode request. Only existing group nodes can be
+ * scattered: expanding a resource node in replace mode would delete it.
+ */
+export function resolveScatterRequest(
+    graph: MultiDirectedGraph, data: { id?: string; mode?: string } | undefined
+): { node: string; mode: 'expand' | 'replace' } | undefined {
+    const node = typeof data?.id === 'string' ? data.id.trim() : undefined;
+    if (!node || !graph.hasNode(node) || !graph.getNodeAttribute(node, 'grouped')) return undefined;
+    const mode = data.mode ?? 'replace';
+    if (mode !== 'expand' && mode !== 'replace') {
+        // Never fall back to replace, which removes the group node.
+        console.warn(`Sigma.ScatterGroupNode: ignoring unknown mode "${mode}"; use "expand" or "replace".`);
+        return undefined;
+    }
+    return { node, mode };
 }
 
 export function cleanGraph(graph: MultiDirectedGraph) {

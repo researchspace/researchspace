@@ -163,12 +163,29 @@ export class GraphLayoutRunner {
     if (this.disposed) return;
     const token = this.pause();
     try {
+      const layout = this.snapshot.appliedLayout;
+      // Circular, circlepack and random recompute every position. Keep nodes
+      // that were already shown (dragged or restored) where they are, and use
+      // the layout only to place nodes the change added. Apply re-lays out all.
+      const kept = layout === 'noverlap' || isContinuousLayout(layout) ? undefined : this.positions();
       change();
-      if (!isContinuousLayout(this.snapshot.appliedLayout)) this.apply(this.snapshot.appliedLayout);
-      else this.refreshExploration(exploration);
+      if (isContinuousLayout(layout)) this.refreshExploration(exploration);
+      else {
+        this.apply(layout);
+        kept?.forEach(([x, y], node) => {
+          if (this.graph.hasNode(node)) this.graph.mergeNodeAttributes(node, { x, y });
+        });
+      }
     } finally {
       this.resume(token);
     }
+  }
+  private positions(): Map<string, [number, number]> {
+    const positions = new Map<string, [number, number]>();
+    this.graph.forEachNode((node, { x, y }) => {
+      if (Number.isFinite(x) && Number.isFinite(y)) positions.set(node, [x, y]);
+    });
+    return positions;
   }
   private scheduleStop(): void {
     if (this.timer !== undefined) window.clearTimeout(this.timer);

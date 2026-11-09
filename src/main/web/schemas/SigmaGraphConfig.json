@@ -20,7 +20,7 @@
                 },
                 "threshold": {
                     "default": 3,
-                    "description": "Number of nodes above which they will be grouped together.",
+                    "description": "Smallest number of targets that forms a group. Targets drawn on their\nown anyway (they have relationships of their own) are not grouped and\ndo not count.",
                     "type": "number"
                 }
             },
@@ -58,11 +58,6 @@
             "description": "Display a control panel with buttons to control the graph.",
             "type": "boolean"
         },
-        "layoutControls": {
-            "default": true,
-            "description": "Show the layout menu when controls is enabled. Set false to keep zoom and See whole graph while hiding layout selection and its Start/Stop buttons. The configured layout and automatic layout on node expansion still apply.",
-            "type": "boolean"
-        },
         "edgeFilter": {
             "default": false,
             "description": "Display a filter box for the edges",
@@ -80,7 +75,7 @@
         },
         "id": {
             "default": "undefined",
-            "description": "Optional identifier. \nRequired if component should be controlled via external events.",
+            "description": "Optional identifier. \nRequired for external events and persistence across page reloads.",
             "type": "string"
         },
         "layout": {
@@ -88,14 +83,29 @@
             "default": "'circular'",
             "description": "Initial layout to apply once after the graph has mounted.\nIf omitted, the component applies the lightweight deterministic\n'circular' layout. Users can then choose and apply a different layout\nfrom the controls when required.\n\nAvailable values: 'circular', 'circlepack', 'force', 'forceAtlas2',\n'noverlap', 'random'."
         },
+        "layoutControls": {
+            "default": true,
+            "description": "Show the layout menu when controls is enabled. Set false to keep zoom and\nSee whole graph while hiding layout selection and its Start/Stop buttons.\nThe configured layout and automatic layout on node expansion still apply.",
+            "type": "boolean"
+        },
+        "layoutRunDuration": {
+            "default": 10000,
+            "description": "Maximum active time for a continuous layout, in milliseconds; 0 means unlimited.\nNode clicks and completed expansions renew this run period.",
+            "type": "number"
+        },
+        "maxForceNodes": {
+            "default": 500,
+            "description": "Above this node count, Force uses worker-based ForceAtlas2 instead.",
+            "type": "number"
+        },
         "nodeQuery": {
             "default": "undefined",
-            "description": "Query to retrieve additional graph data. ?subject will be replaced by the\nURI of the node that is clicked.",
+            "description": "Query to retrieve additional graph data. ?subject or $subject is bound to the\nIRI of the resource that is clicked. Literal and blank-node clicks do not\nrun this query. Other variables, literals and IRIs are left unchanged.",
             "type": "string"
         },
         "persistGraph": {
             "default": false,
-            "description": "Persist this graph independently in browser local storage. Requires a stable component id; the query, page URL and semantic context scope the saved state.",
+            "description": "If true, the graph will be persisted in the browser's local storage.\nRequires a stable id. The query, page URL and semantic context scope\nthe saved state; other graph instances are stored independently.",
             "type": "boolean"
         },
         "persistGraphMessage": {
@@ -153,16 +163,6 @@
             "default": "800px",
             "description": "Width of the graph.",
             "type": "string"
-        },
-        "layoutRunDuration": {
-            "description": "Maximum active time for a continuous layout in milliseconds; 0 means unlimited. Node clicks and completed expansions renew this run period.",
-            "type": "number",
-            "default": 10000
-        },
-        "maxForceNodes": {
-            "description": "Above this node count, Force uses worker-based ForceAtlas2 instead.",
-            "type": "number",
-            "default": 500
         }
     },
     "propertyOrder": [
@@ -187,3 +187,4 @@
     ],
     "type": "object"
 }
+

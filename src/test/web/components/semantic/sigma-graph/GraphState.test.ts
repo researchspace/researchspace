@@ -4,6 +4,7 @@
  */
 import { assert } from 'chai';
 import { MultiDirectedGraph } from 'graphology';
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import {
   getGraphStorageKey,
   saveStateIntoLocalStorage,
@@ -79,5 +80,22 @@ describe('Sigma graph persistence', () => {
     assert.equal(key({ enabled: true }), key({ enabled: true, threshold: 3 }));
     assert.notEqual(key({ enabled: true, threshold: 3 }), key({ enabled: true, threshold: 5 }));
     assert.notEqual(key({ enabled: true, behaviour: 'expand' }), key({ enabled: true, behaviour: 'replace' }));
+  });
+  it('does not restore grouped snapshots saved with JSON group IDs', () => {
+    const fresh = getGraphStorageKey('hashed-group-ids', 'query', {}, { enabled: true });
+    const prefix = 'sigmaGraph:v2:';
+    const context = JSON.parse(decompressFromEncodedURIComponent(fresh.slice(prefix.length)));
+    assert.equal(context.grouping.version, 2);
+    context.grouping.version = 1;
+    const previous = prefix + compressToEncodedURIComponent(JSON.stringify(context));
+    const legacy = 'sigma-group:' + JSON.stringify(['a', ['type'], 'predicate']);
+    graph.addNode(legacy, { grouped: true, children: [] });
+    saveStateIntoLocalStorage(graph, previous);
+    try {
+      assert.isNull(getStateFromLocalStorage(fresh));
+      assert.isTrue(getStateFromLocalStorage(previous).hasNode(legacy));
+    } finally {
+      clearStateFromLocalStorage(previous);
+    }
   });
 });

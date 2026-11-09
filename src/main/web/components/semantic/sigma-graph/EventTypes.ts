@@ -5,6 +5,7 @@
  */
 
 import { EventMaker } from 'platform/api/events';
+import { SigmaGroupIdentity } from './GroupId';
 
 export interface SigmaEventData {
   /**
@@ -17,7 +18,9 @@ export interface SigmaEventData {
     componentId: string;
 
     /**
-     * Full clicked node id, usually the internal graph node IRI with angle brackets.
+     * Full graph node key. Resource nodes use their RDF term, usually an IRI in
+     * angle brackets. Groups use an opaque ID: sigma-group- and 32 hex digits.
+     * Pass the complete key back to ScatterGroupNode, FocusNode or TriggerNodeClicked.
      */
     id: string;
 
@@ -27,9 +30,16 @@ export interface SigmaEventData {
     node: string;
 
     /**
-     * Node IRIs exposed to external consumers.
+     * Node IRIs without angle brackets. For a group, the IRIs of its children
+     * (not the group ID); otherwise the clicked node IRI.
      */
     nodes: string[];
+
+    /**
+     * Present only for groups: the shared source, the sorted child types and,
+     * if there is one, the predicate. IRIs have no angle brackets. Do not parse the ID.
+     */
+    group?: SigmaGroupIdentity;
 
     /**
      * Sigma / graphology node attributes.
@@ -55,15 +65,18 @@ export interface SigmaEventData {
   }
   
   /**
-   * Event that listens to an external event and expands the given group node, replacing the group node with its children
+   * Event that listens to an external event and expands the given group node.
+   * In 'replace' mode the group node is replaced by its children; in 'expand'
+   * mode it is kept and linked to them.
    * 
-   * @param id The id of the group node to expand
-   * @param mode The mode in which the group node should be expanded. Default is 'replace'
+   * @param id The id of the group node to expand. IDs of non-group nodes are ignored.
+   * @param mode The mode in which the group node should be expanded. Default is 'replace'.
+   * Unknown modes are ignored.
    */
   'Sigma.ScatterGroupNode': {
     componentId?: string;
     id: string;
-    mode: 'expand' | 'replace';
+    mode?: 'expand' | 'replace';
   }
 }
 const event: EventMaker<SigmaEventData> = EventMaker;

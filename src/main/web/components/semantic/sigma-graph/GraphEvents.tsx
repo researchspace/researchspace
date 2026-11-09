@@ -18,6 +18,8 @@ import { GraphEventsConfig } from './Config';
 import { getNodeQueryContext } from './NodeQuery';
 import { cleanGraph, createGraphFromElements, expandGroup, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
 import { ScatterGroupNode, FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
+import { resolveScatterRequest } from './GraphGrouping';
+import { toGraphNodeKey, toPlainIri } from './GroupId';
 import { EdgeFilterControl } from './EdgeFilterControl'
 import { Panel } from './ControlPanel'
 import { useGraphLayout } from './GraphLayoutContext';
@@ -64,7 +66,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         requestsRef.current.clear();
     }, [sigma, props.nodeQuery, props.context]);
 
-    const scatterGroupNode = (node: string, mode = 'replace') => {
+    const scatterGroupNode = (node: string, mode: 'expand' | 'replace' = 'replace') => {
         handleGroupedNodeClicked(node, () => { return undefined; }, mode);
     };
 
@@ -82,10 +84,12 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     };
 
     const highlightNode = (node: string) => {
-        for (const graphNode of sigma.getGraph().nodes()) {
-            sigma.getGraph().setNodeAttribute(graphNode, "highlighted", false);
+        const graph = sigma.getGraph();
+        for (const graphNode of graph.nodes()) {
+            graph.setNodeAttribute(graphNode, "highlighted", false);
         }
-        sigma.getGraph().setNodeAttribute(node, "highlighted", true);
+        // A group clicked in replace mode no longer exists by the time this runs.
+        if (graph.hasNode(node)) graph.setNodeAttribute(node, "highlighted", true);
     };
 
     const handleGroupedNodeClicked = (
@@ -93,9 +97,11 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         callback = () => { return undefined; },
         mode: string | boolean = false
     ) => {
-        const effectiveMode = mode || props.grouping?.behaviour;
+        // 'expand' is the documented default behaviour.
+        const effectiveMode = mode || props.grouping?.behaviour || 'expand';
         if (effectiveMode !== "expand" && effectiveMode !== "replace") {
             exploreGraph();
+            callback();
             return;
         }
 
@@ -130,13 +136,15 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 componentId,
                 id: node,
                 node,
+                // Groups are synthetic nodes; their identity is exposed by name.
+                ...(attributes.grouped && attributes.group ? { group: attributes.group } : {}),
                 attributes,
+                // Strip angle brackets from IRIs only; blank nodes and literals keep their form.
                 nodes: attributes.children
                     ? attributes.children.map(
-                        (childNode: { node: string; attributes: any }) =>
-                            childNode.node.substring(1, childNode.node.length - 1)
+                        (childNode: { node: string; attributes: any }) => toPlainIri(childNode.node)
                     )
-                    : [node.substring(1, node.length - 1)]
+                    : [toPlainIri(node)]
             };
             trigger({
                 eventType: NodeClicked,
@@ -225,11 +233,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         ).observe({
                 value: ( event ) => {
                     if (event.data.node)  {                                              
-                        // Add < and > brackets to node IRI
-                        const rawNode = event.data.node.trim();
-                        const node = rawNode.startsWith("<") && rawNode.endsWith(">")
-                                        ? rawNode
-                                        : `<${rawNode}>`; 
+                        // Add < and > brackets to node IRIs; group IDs are used as they are.
+                        const node = toGraphNodeKey(event.data.node);
                         // Check if parent node exists in graph
                         if (!sigma.getGraph().hasNode(node)) {
                             // Node might be in group
@@ -266,12 +271,9 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         ).observe({
             value: ( event ) => {
                 if (event.data.node) {
-                    // Add < and > brackets to node IRI
-                     const rawNode = event.data.node.trim();
-                        const node = rawNode.startsWith("<") && rawNode.endsWith(">")
-                                        ? rawNode
-                                        : `<${rawNode}>`;
-                     
+                    // Add < and > brackets to node IRIs; group IDs are used as they are.
+                    const node = toGraphNodeKey(event.data.node);
+
                     if (sigma.getGraph().hasNode(node)) {
                         focusNodeRef.current(node);
                     }
@@ -285,11 +287,10 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             })
         ).observe({
             value: ( event ) => {
-                if (event.data.id) {
-                    const node = event.data.id
-                    if (sigma.getGraph().hasNode(node)) {
-                        scatterGroupNodeRef.current(node);
-                    }
+                // Honour the requested mode, and ignore IDs that are not groups.
+                const request = resolveScatterRequest(sigma.getGraph(), event.data);
+                if (request) {
+                    scatterGroupNodeRef.current(request.node, request.mode);
                 }
             }
         });

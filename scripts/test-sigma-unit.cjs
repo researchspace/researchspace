@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
  * Standalone Sigma unit tests; also discovered by the existing Karma suite.
- * Only graph fetching and browser storage are replaced. Graphology, RDF terms,
+ * Only graph fetching, label fetching and browser storage are replaced. Graphology, RDF terms,
  * SPARQL parsing/binding and the components' pure helpers use real code.
  */
 const fs = require('fs'), path = require('path'), Module = require('module');
@@ -20,6 +20,7 @@ global.localStorage = {
 const originalLoad = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === 'platform/components/semantic/graph/GraphInternals') return {};
+  if (request === 'platform/api/services/resource-label') return { getLabels: () => require('kefir').constant(new Map()) };
   if (request === 'platform/api/async') request = path.join(root, 'src/main/web/api/async/Cancellation.ts');
   else if (request.startsWith('platform/')) request = path.join(root, 'src/main/web', request.slice('platform/'.length));
   return originalLoad.call(this, request, parent, isMain);

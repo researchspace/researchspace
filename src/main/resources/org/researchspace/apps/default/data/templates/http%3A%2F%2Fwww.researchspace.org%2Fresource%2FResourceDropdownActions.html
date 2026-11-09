@@ -110,7 +110,7 @@
                                 "resourceIri": "{{iri}}"}' 
                         targets='["thinking-frames"]'>
         <bs-menu-item draggable="false">
-          <rs-icon icon-type="rounded" icon-name="account_tree" class="icon-left" symbol="true"></rs-icon>
+          <rs-icon icon-type="rounded" icon-name="hub" class="icon-left" symbol="true"></rs-icon>
           <span>Open knowledge map</span>
         </bs-menu-item>
       </mp-event-trigger>
@@ -445,6 +445,27 @@
         <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
         <span>Download file</span>
       </mp-graph-store-action> 
+    </bs-menu-item>
+
+    <hr>
+  {{/if}}
+
+  [[!-- search results pass the resource configuration, the open map's header menu only the form --]]
+  {{#if (or (eq resourceConfig "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map")
+            (eq resourceFormIRI "http://www.researchspace.org/resource/system/forms/KnowledgeMap"))}}
+    [[!-- the knowledge map with its layout, to import it again --]]
+    <bs-menu-item draggable="false">
+      <rs-knowledge-map-export iri="{{iri}}">
+        <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
+        <span>Download Knowledge Map</span>
+      </rs-knowledge-map-export>
+    </bs-menu-item>
+    [[!-- the data shown on the knowledge map without layout, with the types and labels of all its resources --]]
+    <bs-menu-item draggable="false">
+      <rs-knowledge-map-export iri="{{iri}}" content="data">
+        <rs-icon icon-type="rounded" icon-name="download" class="icon-left" symbol="true"></rs-icon>
+        <span>Download Data</span>
+      </rs-knowledge-map-export>
     </bs-menu-item>
 
     <hr>
@@ -990,7 +1011,8 @@
       </div>
     
       <div style="visibility: hidden; height: 0px; width: 0; overflow: hidden;">
-        <inline-template template-iri='{{resourceFormIRI}}'
+        <inline-template id='{{iri}}-delete-form-template-{{viewId}}'
+                          template-iri='{{resourceFormIRI}}'
                           options='{  
                                       "viewId": "{{iri}}",
                                       "mode": "edit",
@@ -1001,40 +1023,97 @@
         </inline-template> 
       </div>  
 
-      <mp-event-target-template-render id="{{iri}}-deleting-area-{{viewId}}" template='{{> template}}'>
+      [[!-- The resource is removed by the hidden form above, which first loads the data of the resource.
+            Delete shows the progress right away and sends the remove request to the form; if the form is
+            still loading (or not mounted yet) the request is repeated when the form reports Form.Loaded,
+            and the form ignores repeated requests. If the form's template cannot be loaded
+            (Template.LoadFailed) or the data cannot be loaded completely (Form.LoadFailed) the delete
+            button is replaced by a message, since the resource cannot be deleted from here. --]]
+      [[!-- iri and viewId are passed as data: in the dialog the template cannot see the
+            variables of the surrounding template --]]
+      <mp-event-target-template-render id="{{iri}}-deleting-area-{{viewId}}" template='{{> template}}'
+                                       data='{"iri": "{{iri}}", "viewId": "{{viewId}}"}'>
         <template id='template'>
-          {{#if resourceDeleting}}
-            <div>
-              <bs-progress-bar active="true" min="0" now="100" max="100" label="Deleting resource" striped="true"></bs-progress-bar>
+          {{#if formFailed}}
+            <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin: 20px 0;">
+              <div class="warning-documentation-section-icon-container">
+                <rs-icon icon-type="rounded" icon-name="error" symbol="true"></rs-icon>
+              </div>
+              <div>
+                <div class="warning-documentation-section-title">This resource cannot be deleted from here</div>
+                <div class="warning-documentation-section-content">
+                  {{#if templateIri}}
+                    The form <i>{{templateIri}}</i> used to delete it could not be loaded: {{message}}
+                  {{else}}
+                    The form used to delete it could not load all of its data: {{message}}
+                  {{/if}}
+                  <br>Fix the form or ask an administrator, then try again.
+                </div>
+              </div>
+            </div>
+            <div class="form-btn-group">
+              <mp-event-trigger id='{{iri}}-close-modal'
+                                type='OverlayDialog.Close'
+                                targets='["{{viewId}}-delete-resource-dialog"]'>
+                <button class="btn btn-default">Close</button>
+              </mp-event-trigger>
+            </div>
+          {{else}}
+            {{#if resourceDeleting}}
+              <div>
+                <bs-progress-bar active="true" min="0" now="100" max="100" label="Deleting resource" striped="true"></bs-progress-bar>
+              </div>
+              <mp-event-trigger id='{{iri}}-resource-removal'
+                                on='["mounted"]'
+                                type='Form.RemoveResource'
+                                data='{"iri": "{{iri}}", "node": "{{iri}}"}'
+                                targets='["{{iri}}-resource-form"]'>
+              </mp-event-trigger>
+              <mp-event-proxy id='{{iri}}-resource-removal-when-loaded'
+                              on-event-source='{{iri}}-resource-form'
+                              on-event-types='["Form.Loaded"]'
+                              proxy-event-type='Form.RemoveResource'
+                              additional-data='{"iri": "{{iri}}", "node": "{{iri}}"}'
+                              proxy-targets='["{{iri}}-resource-form"]'
+              ></mp-event-proxy>
+            {{/if}}
+            <div class="form-btn-group">
+              <mp-event-trigger id='{{iri}}-cancel-modal'
+                                type='OverlayDialog.Close'
+                                targets='["{{viewId}}-delete-resource-dialog"]'>
+                <button class="btn btn-default">Cancel</button>
+              </mp-event-trigger>
+              [[!-- no Handlebars inside the tag: the template markup is parsed as HTML first --]]
+              {{#if resourceDeleting}}
+                <button class="btn btn-action" disabled>Delete</button>
+              {{else}}
+                <mp-event-trigger id='{{iri}}-start-resource-removal'
+                                  type='Component.TemplateUpdate'
+                                  data='{"resourceDeleting": true, "iri": "{{iri}}"}'
+                                  targets='["{{iri}}-deleting-area-{{viewId}}"]'>
+                  <button class="btn btn-action">Delete</button>
+                </mp-event-trigger>
+              {{/if}}
             </div>
           {{/if}}
         </template>
       </mp-event-target-template-render>
-      
-      <div class="form-btn-group">
-        <mp-event-trigger id='{{iri}}-cancel-modal' 
-                          type='OverlayDialog.Close' 
-                          targets='["{{viewId}}-delete-resource-dialog"]'>
-          <button class="btn btn-default">Cancel</button>
-        </mp-event-trigger>
 
-        <mp-event-trigger id='{{iri}}-resource-removal' 
-                          type='Form.RemoveResource'                               
-                          data='{"iri": "{{iri}}", "node": "{{iri}}"}' 
-                          targets='["{{iri}}-resource-form"]'>
-          <button class="btn btn-action">Delete</button>
-        </mp-event-trigger>  
-      </div>
-
-      [[!-- Listen Form.ResourceRemoving to display a 'please wait' message while waiting the delete --]]
-      <mp-event-proxy id='{{iri}}-resource-removing-{{viewId}}' 
-                      on-event-source='{{iri}}-resource-form' 
-                      on-event-types='["Form.ResourceRemoving"]'
-                      proxy-event-type='Component.TemplateUpdate' 
-                      additional-data='{"resourceDeleting": true, "iri": "{{iri}}"}'
+      <mp-event-proxy id='{{iri}}-delete-form-template-failed-{{viewId}}'
+                      on-event-source='{{iri}}-delete-form-template-{{viewId}}'
+                      on-event-types='["Template.LoadFailed"]'
+                      proxy-event-type='Component.TemplateUpdate'
+                      additional-data='{"formFailed": true, "iri": "{{iri}}"}'
                       proxy-targets='["{{iri}}-deleting-area-{{viewId}}"]'
-      ></mp-event-proxy>      
-      
+      ></mp-event-proxy>
+      <mp-event-proxy id='{{iri}}-delete-form-load-failed-{{viewId}}'
+                      on-event-source='{{iri}}-resource-form'
+                      on-event-types='["Form.LoadFailed"]'
+                      proxy-event-type='Component.TemplateUpdate'
+                      additional-data='{"formFailed": true, "iri": "{{iri}}"}'
+                      proxy-targets='["{{iri}}-deleting-area-{{viewId}}"]'
+      ></mp-event-proxy>
+
     </mp-overlay-dialog-content>
   </mp-overlay-dialog>
 [[/inline]]

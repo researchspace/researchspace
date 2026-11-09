@@ -57,6 +57,19 @@ export interface FormEventData {
    */
   'Form.DryRunResults': Record<string, any>;
 
+  /**
+   * semantic-form fires this event when it has loaded the data of the resource,
+   * i.e. when it is ready to save or remove the resource
+   */
+  'Form.Loaded': { iri: string };
+
+  /**
+   * semantic-form fires this event instead of `Form.Loaded` when the data of the
+   * resource could not be loaded completely (errors in the form configuration or
+   * in field queries): the resource cannot be saved or removed with this form.
+   */
+  'Form.LoadFailed': { iri: string; message: string };
+
 
   // listens
   /**
@@ -77,6 +90,8 @@ export const FormResourceModified = event('Form.ResourceModified');
 export const FormResourceRemoving = event('Form.ResourceRemoving');
 export const FormResourceRemoved = event('Form.ResourceRemoved');
 export const FormDryRunResults = event('Form.DryRunResults');
+export const FormLoaded = event('Form.Loaded');
+export const FormLoadFailed = event('Form.LoadFailed');
 
 export const FormRemoveResource = event('Form.RemoveResource');
 export const FormSave = event('Form.Save');

@@ -49,13 +49,25 @@
         }
       }'
     [[else]]
-      [[#if view]]
-        initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
-      [[else]]
-        initial-view='{"view": "dashboard"}'
-      [[/if]]
-    [[/if]]
 
+      [[#if (urlParam "graph")]]
+         [[!-- New knowledge map with the content of a named graph, see "Open in knowledge map" on the data import page.
+              The graph is URI-encoded, so whatever the URL contains it can neither end the JSON string nor the
+              attribute: the encoded value has no " & < >, and the attribute uses double quotes because the
+              encoding keeps '. The knowledge map template decodes it, the knowledge map editor checks the IRI. --]]
+      
+         initial-view='{"view": "knowledge-map",
+                      "resource": "",
+                      "data": {"graph": "[[encodeUriComponent (urlParam "graph" escape=false)]]",
+                                      "customLabel": "Knowledge map of a named graph"} }'
+      [[else]]
+        [[#if view]]
+          initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
+        [[else]]
+          initial-view='{"view": "dashboard"}'
+        [[/if]]
+      [[/if]]     
+    [[/if]]
     default-view-id="dashboard"
 
     views='[
@@ -248,7 +260,7 @@
     	"id": "knowledge-map",
       "label": "Knowledge map",
       "description": "Express research thinking and processes as networks of relations",
-      "iconName": "account_tree",
+      "iconName": "hub",
       "template": "{{> knowledgeMapTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,

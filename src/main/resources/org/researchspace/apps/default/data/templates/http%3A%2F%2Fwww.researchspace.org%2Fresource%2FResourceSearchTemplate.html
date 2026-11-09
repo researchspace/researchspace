@@ -213,6 +213,77 @@
               ></mp-event-proxy>
             {{/ifCond}}
 
+            [[!-- Import knowledge maps from a TriG file (e.g. a knowledge map download) --]]
+            {{#ifCond "[[urlParam "resourceconfig" escape=false]]" "==" "http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map"}}
+              [[#if (hasPermission "forms:ldp:*")]]
+                <mp-overlay-dialog  id='[[urlParam "viewid" escape=false]]-import-knowledgeMap-dialog'
+                                    title="Import knowledge map"
+                                    type="modal"
+                                    bs-size="large"
+                                    class="importVocabulary-modal">
+                  <mp-overlay-dialog-trigger>
+                    <button class="btn btn-default btn-textAndIcon">
+                      <rs-icon icon-type='rounded' icon-name='upload' symbol='true'></rs-icon>
+                      <span>Import</span>
+                    </button>
+                  </mp-overlay-dialog-trigger>
+                  <mp-overlay-dialog-content>
+                    <rs-knowledge-map-import  id='[[urlParam "viewid" escape=false]]-knowledgeMap-import'
+                                              accept='[".trig"]'
+                                              drop-area-template='{{> template}}'>
+                      <template id='template'>
+                        <div class='RdfUpload__rdf-dropzone-content' style='text-align: center;'>
+                          {{#if isDragAccept}}
+                            <div>
+                              <bs-progress-bar active="true" min="0" now="100" max="100" label="Uploading files" striped="true"></bs-progress-bar>
+                            </div>
+                          {{else}}
+                            {{#if isDragReject}}
+                              Only *.trig files are accepted.
+                            {{else}}
+                              <div class='placeholder-item'>
+                                <rs-icon icon-type='rounded' icon-name='upload' class='upload_icon' symbol='true'></rs-icon>
+                                <div>
+                                  <p>Drag a knowledge map as *.trig file or click to upload</p>
+                                  <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
+                                    <div class="documentation-section-icon-container">
+                                      <i class="fa fa-info"></i>
+                                    </div>
+
+                                    <div style="flex: 1;">
+                                      <div class="documentation-section-title">Only knowledge maps are imported.</div>
+                                      <div class="documentation-section-content">
+                                        Knowledge maps that already exist are skipped, other data in the file is ignored.
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            {{/if}}
+                          {{/if}}
+                        </div>
+                      </template>
+                    </rs-knowledge-map-import>
+                  </mp-overlay-dialog-content>
+                </mp-overlay-dialog>
+
+                <mp-event-proxy id='[[urlParam "viewid" escape=false]]-knowledgeMap-import-closeModal-proxy'
+                                on-event-source='[[urlParam "viewid" escape=false]]-knowledgeMap-import'
+                                on-event-type='KnowledgeMapImport.Done'
+                                on-event-data='{"dialogOpen": true}'
+                                proxy-event-type='OverlayDialog.Close'
+                                proxy-targets='["[[urlParam "viewid" escape=false]]-import-knowledgeMap-dialog"]'
+                ></mp-event-proxy>
+
+                <mp-event-proxy id='[[urlParam "viewid" escape=false]]-knowledgeMap-import-refreshSearch-proxy'
+                                on-event-source='[[urlParam "viewid" escape=false]]-knowledgeMap-import'
+                                on-event-type='KnowledgeMapImport.Done'
+                                proxy-event-type='Component.TemplateUpdate'
+                                proxy-targets='["http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map-resourceSearch-frame"]'
+                ></mp-event-proxy>
+              [[/if]]
+            {{/ifCond}}
+
             <div class="search-results-header-keyword">
               <semantic-search-query-keyword  domain='[[urlParam "resourceontologyclass" escape=false]]'
                                               query='SELECT ?subject WHERE { 

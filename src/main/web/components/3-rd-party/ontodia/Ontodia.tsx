@@ -73,6 +73,7 @@ import {
   extractFieldConfiguration,
 } from './authoring/OntodiaFieldConfiguration';
 import { OntodiaPersistenceResult } from './authoring/OntodiaPersistence';
+import { makeGraphKnowledgeMapQuery } from './data/KnowledgeMapTrig';
 import {
   getEntityMetadata,
   convertCompositeValueToElementModel,
@@ -145,8 +146,13 @@ export interface OntodiaConfig {
    */
   query?: string;
   /**
+   * Named graph whose content is shown (all statements except rdf:type), laid out
+   * automatically. If property diagram or query is defined, this will be ignored.
+   */
+  graph?: string;
+  /**
    * Iri to be used as a single diagram element
-   * If property diagram or query is defined, this will be ignored.
+   * If property diagram, query or graph is defined, this will be ignored.
    */
   iri?: string;
   /**
@@ -1368,7 +1374,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
   private setLayout(generation: number): Promise<void> {
     return this.importProvisionData()
       .then(() => {
-        const { query, iri, linkSettings, iris } = this.props;
+        const { query, graph, iri, linkSettings, iris } = this.props;
         const { diagramIri } = this.state;
         const linkOptions = linkSettings as ReadonlyArray<Reactodia.SerializedLinkOptions>;
 
@@ -1376,6 +1382,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
           return this.setLayoutByDiagram(diagramIri, generation);
         } else if (query) {
           return this.setLayoutBySparqlQuery(query, linkOptions);
+        } else if (graph) {
+          // the graph comes from a URL parameter: the query refuses IRIs that are not safe
+          return this.setLayoutBySparqlQuery(makeGraphKnowledgeMapQuery(graph), linkOptions);
         } else if (iri) {
           return this.setLayoutByIri(iri, linkOptions);
         } else if (iris) {

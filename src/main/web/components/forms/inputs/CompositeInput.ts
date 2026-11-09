@@ -272,7 +272,7 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
     return result;
   }
 
-  private dataStateForField = (fieldId: string): DataState => {
+  private dataStateForField = (fieldId: string | undefined): DataState => {
     if (this.compositeState !== DataState.Ready) {
       return this.compositeState;
     }

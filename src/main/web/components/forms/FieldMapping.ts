@@ -206,7 +206,8 @@ export function renderFields(
   inputChildren: React.ReactNode,
   model: CompositeValue,
   inputHandlers: Immutable.Map<string, ReadonlyArray<MultipleValuesHandler>>,
-  getDataState: (fieldId: string) => DataState,
+  /** Called with undefined for static components without `for` (composite-level state). */
+  getDataState: (fieldId: string | undefined) => DataState,
   onValuesChanged: (field: FieldDefinition, reducer: (previous: ValuesWithErrors) => ValuesWithErrors) => void,
   onInputMounted: (inputId: string, index: number, input: MultipleValuesInput<any, any>) => void
 ) {
@@ -261,7 +262,7 @@ export function renderFields(
       );
     } else if (FieldMapping.isStatic(mapping)) {
       const { element } = mapping;
-      const override: Partial<StaticFieldProps> = { model };
+      const override: Partial<StaticFieldProps> = { model, dataState: getDataState(element.props.for) };
       if (element.props.for) {
         const definition = model.definitions.get(element.props.for);
         if (!definition) {

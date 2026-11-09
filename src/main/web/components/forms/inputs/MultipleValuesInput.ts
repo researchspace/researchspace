@@ -60,6 +60,12 @@ export interface MultipleValuesProps {
   label?: string;
 
   /**
+   * Show the number of non-empty values next to the label, e.g. "More images 11".
+   * Nothing is shown while the field is empty.
+   */
+  showCount?: boolean;
+
+  /**
    * Can set input component into readonly mode.
    *
    * @default false

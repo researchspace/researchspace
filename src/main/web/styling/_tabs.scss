@@ -301,32 +301,32 @@
 
 /* count badge after the title (rs-tab badge="…") */
 .rs-tab-title__badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1;
-  color: $color-secondary-light;
-  background: $color-light;
+  @include rs-count-badge();
 }
 
 .nav-tabs > li.active > a .rs-tab-title__badge {
-  color: #fff;
-  background: $color-action;
+  @include rs-count-badge-active();
 }
 
-/* rs-tab muted=true: selectable, but visibly empty */
-.rs-tab-title--muted {
-  opacity: .55;
+/* rs-tab muted=true: selectable, but visibly empty. The label keeps AA contrast
+   and the 0 badge is outlined, so an empty tab still differs from a disabled one. */
+.rs-tab-title--muted .rs-tab-title__label,
+.rs-tab-title--muted .rs-tab-title__icon {
+  color: $rs-color-muted-text;
 }
 
-.nav-tabs > li.active > a .rs-tab-title--muted {
-  opacity: .85;
+.rs-tab-title--muted .rs-tab-title__badge {
+  @include rs-count-badge-empty();
+}
+
+/* selected or hovered, a muted tab takes the tab's own colour */
+.nav-tabs > li.active > a .rs-tab-title--muted .rs-tab-title__label,
+.nav-tabs > li.active > a .rs-tab-title--muted .rs-tab-title__icon,
+.nav-tabs > li > a:hover .rs-tab-title--muted .rs-tab-title__label,
+.nav-tabs > li > a:hover .rs-tab-title--muted .rs-tab-title__icon,
+.nav-tabs > li > a:focus-visible .rs-tab-title--muted .rs-tab-title__label,
+.nav-tabs > li > a:focus-visible .rs-tab-title--muted .rs-tab-title__icon {
+  color: inherit;
 }
 
 .rs-secondary-tabs {

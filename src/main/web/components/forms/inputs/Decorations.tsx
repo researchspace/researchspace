@@ -27,8 +27,9 @@ import { ResourceLink } from 'platform/api/navigation/components';
 import { Spinner } from 'platform/components/ui/spinner';
 
 import { getPreferredLabel } from '../FieldDefinition';
-import { DataState, FieldError } from '../FieldValues';
+import { DataState, FieldError, FieldValue } from '../FieldValues';
 import { MultipleValuesProps } from './MultipleValuesInput';
+import { itemsLabel } from '../FormAssetCounts';
 import Icon from 'platform/components/ui/icon/Icon';
 
 export interface ValidationMessagesProps {
@@ -81,9 +82,12 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
   }
 
   private renderHeader() {
-    const { definition, dataState, label } = this.props;
+    const { definition, dataState, label, showCount, values } = this.props;
     const isRequired = definition.minOccurs !== 0;
     const isReady = dataState === DataState.Ready;
+    // Hidden only while loading; kept during validation (Verifying) so it does not flicker on edits.
+    const count = showCount && dataState !== DataState.Loading && values ?
+      values.filter(v => !FieldValue.isEmpty(v)).size : 0;
     return (
       <div className={`${DECORATOR_CLASS}__header`}>
         {(definition.label && definition.label.length) || label ? (
@@ -93,6 +97,9 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
               {isRequired ? <span className={`${DECORATOR_CLASS}__label-required`} title="Required field" />: null}
             </span>
           </ResourceLink>
+        ) : null}
+        {count > 0 ? (
+          <span className={`${DECORATOR_CLASS}__count`}>{count}<span className='sr-only'>{itemsLabel(count)}</span></span>
         ) : null}
         {/* {definition.description ? (
           <OverlayTrigger

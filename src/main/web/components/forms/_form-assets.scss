@@ -70,7 +70,6 @@
     &:hover { background: var(--rs-asset-nav-hover, var(--rs-color-surface-subtle, #f0f0f5)); }
     &:focus-visible { outline: 2px solid var(--rs-color-focus, #396efe); outline-offset: -3px; }
     &:disabled { cursor: default; opacity: .5; }
-    > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   }
   .form-asset-navigation__tab[aria-selected='true'] {
     color: var(--rs-asset-nav-active-text, var(--rs-color-action, #396efe));
@@ -78,6 +77,25 @@
     font-weight: 600;
   }
   .form-asset-navigation__more { gap: 4px; margin-left: auto; i { font-size: 18px; } }
+  // Item counts (count-fields on bs-nav-item): same badge as rs-tab badge="…".
+  .form-asset-navigation__tab > .form-asset-navigation__label {
+    min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  }
+  .form-asset-navigation__count {
+    @include rs-count-badge();
+    margin-left: 6px;
+  }
+  .form-asset-navigation__tab[aria-selected='true'] > .form-asset-navigation__count {
+    @include rs-count-badge-active();
+    background: var(--rs-asset-nav-active-text, #{$color-action});
+  }
+  // A tab with no items stays selectable but reads as empty (as rs-tab muted):
+  // a muted label that keeps AA contrast and an outlined 0, unlike a disabled tab.
+  .form-asset-navigation__tab--empty:not([aria-selected='true']),
+  .form-asset-navigation__menu .form-asset-navigation__menu-item--empty {
+    color: $rs-color-muted-text;
+    .form-asset-navigation__count { @include rs-count-badge-empty(); }
+  }
   .form-asset-navigation__measure {
     // A zero-sized, clipped measuring surface cannot enlarge scroll ancestors.
     position: absolute; width: 0; height: 0; overflow: hidden; visibility: hidden;
@@ -95,7 +113,8 @@
       text-align: left;
       border-bottom: 0;
       border-left: 3px solid transparent;
-      > span { overflow-wrap: break-word; }
+      > .form-asset-navigation__label { overflow-wrap: break-word; }
+      > .form-asset-navigation__count { margin-left: auto; } // counts line up on the side rail
       &[aria-selected='true'] { border-left-color: currentColor; }
     }
   }
@@ -115,7 +134,8 @@
     scrollbar-width: thin;
     li { margin: 0; padding: 0; }
     button {
-      display: block; width: 100%; padding: 9px 12px; min-height: 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 9px 12px; min-height: 40px;
       border: 0; border-radius: 0; background: transparent; color: inherit;
       text-align: left; white-space: normal; font: inherit; cursor: pointer;
       &:hover, &:focus { background: var(--rs-asset-nav-hover, var(--rs-color-surface-subtle, #f0f0f5)); }

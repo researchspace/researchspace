@@ -18,6 +18,8 @@
 
 package org.researchspace.sail.rest.reconciliation;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +34,6 @@ import org.eclipse.rdf4j.model.datatypes.XMLDatatypeUtil;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.sail.SailException;
-import org.glassfish.jersey.uri.UriComponent;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
 import org.researchspace.sail.rest.RESTSail;
 import org.researchspace.sail.rest.RESTSailConnection;
@@ -78,7 +79,11 @@ public class ReconciliationSailConnection extends RESTSailConnection {
     protected Response submitGet(WebTarget targetResource, ServiceParametersHolder parametersHolder) {
         // Encoded here because WebTarget#queryParam treats curly braces as URI
         // template variables; already percent-encoded values are left as is by it.
-        String queries = UriComponent.encode(buildQueries(parametersHolder), UriComponent.Type.QUERY_PARAM);
+        // Everything except unreserved characters is percent-encoded, '+' and
+        // space included: servers decode query strings as form data, where a
+        // literal '+' means a space.
+        String queries = URLEncoder.encode(buildQueries(parametersHolder), StandardCharsets.UTF_8).replace("+",
+                "%20");
         targetResource = auth(targetResource.queryParam(QUERIES_PARAMETER, queries));
         return addHTTPHeaders(targetResource.request()).get();
     }

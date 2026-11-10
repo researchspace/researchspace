@@ -1,0 +1,266 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX config: <tag:rdf4j.org,2023:config/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/service/rdsreconciliation/>
+
+# Wrapper for the Swiss Art Research Reference Data Service (RDS),
+# https://reconcile.rds.swissartresearch.net/, which implements the
+# Reconciliation Service API v0.2.
+#
+#   PREFIX rds: <http://www.researchspace.org/resource/system/service/rdsreconciliation/>
+#   SELECT ?entity ?label ?dataset ?score WHERE {
+#     SERVICE rds:RdsReconciliation {
+#       ?_res rds:query "Picasso" ;
+#             rds:type "Person" ;
+#             rds:dataset "gnd,ulan" ;
+#             rds:limit 10 ;
+#             rds:id ?entity ;
+#             rds:name ?label ;
+#             rds:entityDataset ?dataset ;
+#             rds:score ?score ;
+#             rds:ordinal ?ordinal .
+#     }
+#   } ORDER BY ?ordinal
+#
+# Only rds:query is required. The inputs are sent to the service as one
+# reconciliation query (see the RESTSail help page, "Reconciliation Service
+# API"): query, type and limit by their names, every other input - here
+# dataset - as a property of the query.
+#
+# rds:type and rds:dataset accept a single value or a comma-separated list;
+# the list is split by the service itself, which then returns the best
+# rds:limit results over all the listed types and datasets (10 by default).
+#
+#   types:    Artwork, BibliographicItem, Concept, Event, Group, Person, Place
+#   datasets: aat, bso, geonames, gnd, grp, lcnaf, sikart, thesarchesp,
+#             thesobjmob, ulan, wikidata
+#             (config/datasets/*.yml of
+#             https://github.com/swiss-art-research-net/rds-global; a
+#             deployment can enable a subset of them)
+
+:RdsReconciliation a ephedra:Service ;
+	config:sail.type "researchspace:ReconciliationSail" ;
+	rdfs:label "A wrapper for the Swiss Art Research RDS reconciliation service." ;
+	ephedra:hasSPARQLPattern (
+
+    [
+      sp:subject :_results ;
+      sp:predicate :query ;
+      sp:object :_query
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :type ;
+      sp:object :_type
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :dataset ;
+      sp:object :_dataset
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :limit ;
+      sp:object :_limit
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :id ;
+      sp:object :_id
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :name ;
+      sp:object :_name
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :description ;
+      sp:object :_description
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :entityType ;
+      sp:object :_entityType
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :entityDataset ;
+      sp:object :_entityDataset
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :score ;
+      sp:object :_score
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :match ;
+      sp:object :_match
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :recordId ;
+      sp:object :_recordId
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :reference ;
+      sp:object :_reference
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :isReference ;
+      sp:object :_isReference
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :ordinal ;
+      sp:object :_ordinal
+    ]
+
+  ) ;
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "Text to reconcile, e.g. the name of a person, place or artwork" ;
+		spl:predicate :_query ;
+		spl:valueType xsd:string
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "Entity type(s) to restrict the results to, comma-separated" ;
+		spl:predicate :_type ;
+		spl:valueType xsd:string
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "Dataset(s) to restrict the results to, comma-separated; sent as the reconciliation property 'dataset'" ;
+		spl:predicate :_dataset ;
+		spl:valueType xsd:string
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "Maximum number of results" ;
+		spl:predicate :_limit ;
+		spl:valueType xsd:integer
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "results of the reconciliation query" ;
+		spl:predicate :_results ;
+		spl:valueType rdfs:Resource ;
+		ephedra:jsonPath "$.q0.result[*]"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "IRI of the entity" ;
+		spl:predicate :_id ;
+		# rdfs:Resource makes RESTSail mint an IRI, so that the entity can be
+		# joined into SPARQL members
+		spl:valueType rdfs:Resource ;
+		ephedra:jsonPath "$.id"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Name of the entity" ;
+		spl:predicate :_name ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.name"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Short description of the entity, not always present" ;
+		spl:predicate :_description ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.description"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Type of the entity, e.g. Person (the first one, if there are several)" ;
+		spl:predicate :_entityType ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.type[0].id"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Dataset the entity comes from, e.g. gnd" ;
+		spl:predicate :_entityDataset ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.dataset"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Relevance score, the higher the better; shared by equivalent entities" ;
+		spl:predicate :_score ;
+		spl:valueType xsd:double ;
+		ephedra:jsonPath "$.score"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "true if the service considers the result a confident match" ;
+		spl:predicate :_match ;
+		spl:valueType xsd:boolean ;
+		ephedra:jsonPath "$.match"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "Identifier of the entity inside its dataset" ;
+		spl:predicate :_recordId ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.recordId"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "IRI of the reference entity of the group of equivalent entities the result belongs to" ;
+		spl:predicate :_reference ;
+		spl:valueType rdfs:Resource ;
+		ephedra:jsonPath "$.reference"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "1 if the result is the reference entity of its group, 0 otherwise" ;
+		spl:predicate :_isReference ;
+		spl:valueType xsd:integer ;
+		ephedra:jsonPath "$.isReference"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "0-based position of the result in the response (relevance rank)" ;
+		spl:predicate :_ordinal ;
+		spl:valueType xsd:integer ;
+		ephedra:rowIndex true
+	] .

@@ -1,0 +1,65 @@
+[[!--
+  "Coreference with reference data" button and dialog for an existing record,
+  the counterpart of rsp:ImportFromExternalSourceModal for records that are
+  already in the system. Expects the same variables in scope: viewId, iri,
+  resourceOntologyClass, resourceName, resourceLabelPattern and collection.
+
+  The RDS types are preselected from the class of the record where there is an
+  obvious match, and can be changed in the dialog. To preselect datasets as well,
+  set coreferenceDatasets (comma-separated, e.g. "gnd,ulan,wikidata") in the
+  including template; coreferenceTypes overrides the types.
+
+  The label of the record is looked up around the dialog, not inside it: the
+  content of a dialog is shown by the overlay system and does not inherit the
+  variables of the surrounding template, so everything it needs is passed
+  through the options of the inline-template.
+--]]
+[[!-- always one row; ?searchLabel is unbound when the record has no label --]]
+<semantic-query query='SELECT ?item ?searchLabel WHERE {
+                         BIND(<{{iri}}> as ?item) .
+                         OPTIONAL { {{resourceLabelPattern}} }
+                         BIND(REPLACE(STR(?label), "\"", "") AS ?searchLabel)
+                       } LIMIT 1'
+                template='{{> coreferenceDialog}}'>
+  <template id='coreferenceDialog'>
+    <mp-overlay-dialog  id='{{viewId}}-coreferenceWithReferenceData-dialog'
+                        title="Coreference with reference data"
+                        type="lightbox">
+      <mp-overlay-dialog-trigger>
+        <button class="btn btn-action btn-textAndIcon" title="Find this record in reference datasets and record the matches as identifiers">
+          <rs-icon icon-type='rounded' icon-name='link' symbol='true'></rs-icon>
+          <span>Coreference with reference data</span>
+        </button>
+      </mp-overlay-dialog-trigger>
+      <mp-overlay-dialog-content>
+        <div class="page__section-container" style="padding-top: 10px;">
+          <h6 style="margin: 0px 0 7px;">Search in Swiss Art Research reference data (RDS)</h6>
+          <inline-template  template-iri='[[resolvePrefix "rsp:CoreferenceWithRDS"]]'
+                            options='{
+                                    "viewId": "{{viewId}}",
+                                    "recordIri": "{{iri}}",
+                                    {{#if bindings.0.searchLabel}}"recordLabel": "{{bindings.0.searchLabel.value}}",{{/if}}
+                                    {{#if collection}}"scheme": "{{collection}}",{{/if}}
+                                    {{#if coreferenceDatasets}}"datasets": "{{coreferenceDatasets}}",{{/if}}
+                                    {{#if coreferenceTypes}}
+                                      "types": "{{coreferenceTypes}}",
+                                    {{else}}
+                                      {{#switch resourceOntologyClass}}
+                                        {{#case "http://www.cidoc-crm.org/cidoc-crm/E21_Person" break=true}}"types": "Person",{{/case}}
+                                        {{#case "http://www.cidoc-crm.org/cidoc-crm/E74_Group" break=true}}"types": "Group",{{/case}}
+                                        {{#case "http://www.cidoc-crm.org/cidoc-crm/E39_Actor" break=true}}"types": "Person,Group",{{/case}}
+                                        {{#case "http://www.cidoc-crm.org/cidoc-crm/E53_Place" break=true}}"types": "Place",{{/case}}
+                                        {{#case "http://www.cidoc-crm.org/cidoc-crm/E27_Site" break=true}}"types": "Place",{{/case}}
+                                        {{#case "http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object" break=true}}"types": "Artwork",{{/case}}
+                                        {{#case "http://www.cidoc-crm.org/cidoc-crm/E55_Type" break=true}}"types": "Concept",{{/case}}
+                                        {{#case "http://www.cidoc-crm.org/cidoc-crm/E5_Event" break=true}}"types": "Event",{{/case}}
+                                      {{/switch}}
+                                    {{/if}}
+                                    "limit": "100"
+                            }'>
+          </inline-template>
+        </div>
+      </mp-overlay-dialog-content>
+    </mp-overlay-dialog>
+  </template>
+</semantic-query>

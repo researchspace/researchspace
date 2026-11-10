@@ -1,0 +1,20 @@
+@prefix config: <tag:rdf4j.org,2023:config/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix : <http://www.researchspace.org/resource/system/service/rdsreconciliation/> .
+
+# Swiss Art Research Reference Data Service (RDS), a Reconciliation Service API
+# endpoint. Any other service implementing that API is added the same way: a
+# copy of this file with another serviceURL plus a service descriptor.
+[] a config:Repository ;
+   config:rep.id "rds-reconciliation" ;
+   rdfs:label "Swiss Art Research RDS reconciliation service repository" ;
+   config:rep.impl [
+    config:rep.type "openrdf:SailRepository" ;
+    config:sail.impl [
+      config:sail.type "researchspace:ReconciliationSail" ;
+      ephedra:serviceURL "https://reconcile.rds.swissartresearch.net/" ;
+      ephedra:httpMethod "GET" ;
+      ephedra:implementsService :RdsReconciliation
+    ]
+  ] .

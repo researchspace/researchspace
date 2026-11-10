@@ -190,7 +190,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
    * Input parameters to send to the remote API: all of the query's inputs
    * except local row bounds ({@code ephedra:rowLimit} arguments).
    */
-  private Map<String, String> httpInputParameters(ServiceParametersHolder parametersHolder) {
+  protected Map<String, String> httpInputParameters(ServiceParametersHolder parametersHolder) {
     Map<String, Parameter> declared = getSail().getServiceDescriptor().getInputParameters();
     Map<String, String> result = new java.util.LinkedHashMap<>();
     for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
@@ -342,7 +342,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
     }
   }
 
-  private WebTarget auth(WebTarget targetResource) {
+  protected WebTarget auth(WebTarget targetResource) {
     RestAuthorization auth = getSail().getConfig().getAuth();
     if (auth != null && auth.getLocation() == AUTH_LOCATION.PARAMETER) {
       return authQueryParams(targetResource);
@@ -395,7 +395,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
     }
   }
 
-  private Invocation.Builder addHTTPHeaders(Invocation.Builder request) {
+  protected Invocation.Builder addHTTPHeaders(Invocation.Builder request) {
     request.accept(getSail().getConfig().getMediaType());
 
     for (Map.Entry<String, String> header : this.getSail().getConfig().getHttpHeaders().entrySet()) {

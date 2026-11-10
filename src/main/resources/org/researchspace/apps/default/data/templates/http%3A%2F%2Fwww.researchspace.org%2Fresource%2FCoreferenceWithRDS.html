@@ -1,0 +1,581 @@
+[[!--
+  Coreference an existing record with entries of the Swiss Art Research Reference
+  Data Service (RDS), searched through the rds-reconciliation REST service
+  (config/services/rds-reconciliation.ttl).
+
+  Same structure as rsp:ImportFromWikidata - a search, a table of results and an
+  action per result - but nothing is imported: the action records the reference
+  entry as an identifier of the record.
+
+  Options:
+    viewId       (required) prefix for the ids of the components
+    recordIri    (required) IRI of the record to coreference
+    recordLabel  (optional) pre-fills the search box
+    scheme       (optional) authority document of the record; when set, the
+                 coreference is saved in that graph of the "authorities"
+                 repository, otherwise in the data graph of the default one,
+                 exactly like the record forms do
+    types        (optional) preselected RDS type(s), comma-separated,
+                 e.g. "Person" or "Person,Group"
+    datasets     (optional) preselected RDS dataset(s), comma-separated,
+                 e.g. "gnd" or "gnd,ulan,wikidata"
+    limit        (optional) maximum number of results, 20 by default
+
+  When types / datasets are not given nothing is preselected, i.e. the search
+  is not restricted. All the types and datasets of the service are always
+  listed, so the preselection can be changed or cleared by the user.
+
+  What is saved for every coreference (see the insertPattern below), each new
+  entity with a primary appellation in the shape of the entity/primary_appellation KP:
+
+    <record> crm:P1_is_identified_by <identifier> .
+    <identifier> a crm:E42_Identifier ;                  # <record>/coreference/<md5 of the entry IRI>
+        crm:P190_has_symbolic_content "IRI of the reference entry" ;
+        crm:P2_has_type <identifier type of the dataset, e.g. .../vocab/identifier/gnd_id> .
+    <assignment> a crm:E15_Identifier_Assignment ;       # <identifier>/assignment
+        crm:P140_assigned_attribute_to <record> ;
+        crm:P37_assigned <identifier> ;
+        crm:P14_carried_out_by <logged-in user> ;         # ?__useruri__, as in the entity form records
+        crm:P4_has_time-span <timespan> ;                 # crm:E52_Time-Span, P82_at_some_time_within NOW()
+        crm:P33_used_specific_technique
+            <http://www.researchspace.org/resource/system/vocab/resource_type/inline_rds_search> .   # crm:E29_Design_or_Procedure
+
+  Nothing is written when the record already has the identifier. "Remove" on a
+  coreferenced entry deletes all of the above again, see the deletePattern of the
+  remove form; so does removing the identifier in the "Other identifier" field of
+  the record, see the deletePattern of the entity/identifier KP.
+--]]
+[[!-- Everything is inside a client-side template, like in rsp:ImportFromExternalSource:
+      the options of the including inline-template are inherited by it. --]]
+<mp-event-target-template-render id='{{viewId}}-coreference-with-rds' template='{{> main}}'>
+  <template id='main'>
+    <div class="coreference-with-rds">
+
+      [[!-- Confirmation step, filled by the "Add coreference" / "Add all in group" triggers --]]
+      <mp-event-target-template-render id='{{viewId}}-coreference-confirm' template='{{> confirm}}'>
+        <template id='confirm'>
+          {{#if references}}
+            <div style="border: 1px solid #b7c9ff; background: #f2f6ff; border-radius: 4px; padding: 10px 12px; margin-bottom: 12px;">
+              <semantic-form  id='{{viewId}}-coreference-form'
+                              post-action='event'
+                              subject='{{recordIri}}'
+                              persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository": "{{#if scheme}}authorities{{else}}default{{/if}}"}'
+                              fields='[
+                                {
+                                  "id": "coreference",
+                                  "label": "Coreference",
+                                  "xsdDatatype": "xsd:anyURI",
+                                  "minOccurs": "0",
+                                  "maxOccurs": "unbound",
+                                  "insertPattern": "INSERT {
+                                      $subject crm:P1_is_identified_by ?identifier .
+                                      ?identifier crm:P1i_identifies $subject .
+                                      ?identifier a crm:E42_Identifier .
+                                      ?identifier crm:P2_has_type ?identifierType .
+                                      ?identifier crm:P190_has_symbolic_content ?content .
+                                      ?identifier crm:P1_is_identified_by ?identifierAppellation .
+                                      ?identifierAppellation a crm:E41_Appellation .
+                                      ?identifierAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?identifierAppellation crm:P190_has_symbolic_content ?content .
+
+                                      ?assignment a crm:E15_Identifier_Assignment .
+                                      ?assignment crm:P140_assigned_attribute_to $subject .
+                                      $subject crm:P140i_was_attributed_by ?assignment .
+                                      ?assignment crm:P37_assigned ?identifier .
+                                      ?identifier crm:P37i_was_assigned_by ?assignment .
+                                      ?assignment crm:P14_carried_out_by ?user .
+                                      ?assignment crm:P4_has_time-span ?timespan .
+                                      ?assignment crm:P33_used_specific_technique ?procedure .
+                                      ?procedure crm:P33i_was_used_by ?assignment .
+                                      ?assignment crm:P1_is_identified_by ?assignmentAppellation .
+                                      ?assignmentAppellation a crm:E41_Appellation .
+                                      ?assignmentAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?assignmentAppellation crm:P190_has_symbolic_content ?assignmentLabel .
+
+                                      ?timespan a crm:E52_Time-Span .
+                                      ?timespan crm:P82_at_some_time_within ?now .
+                                      ?timespan crm:P1_is_identified_by ?timespanAppellation .
+                                      ?timespanAppellation a crm:E41_Appellation .
+                                      ?timespanAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?timespanAppellation crm:P190_has_symbolic_content ?timespanLabel .
+
+                                      ?procedure a crm:E29_Design_or_Procedure .
+                                      ?procedure crm:P1_is_identified_by ?procedureAppellation .
+                                      ?procedureAppellation a crm:E41_Appellation .
+                                      ?procedureAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?procedureAppellation crm:P190_has_symbolic_content \"Inline RDS search\" .
+                                    } WHERE {
+                                      BIND(STR($value) AS ?content)
+                                      BIND(IRI(CONCAT(STR($subject), \"/coreference/\", MD5(?content))) AS ?identifier)
+                                      FILTER NOT EXISTS { $subject crm:P1_is_identified_by ?identifier }
+                                      BIND(IRI(CONCAT(STR(?identifier), \"/primary_appellation\")) AS ?identifierAppellation)
+                                      BIND(IRI(CONCAT(STR(?identifier), \"/assignment\")) AS ?assignment)
+                                      BIND(IRI(CONCAT(STR(?assignment), \"/primary_appellation\")) AS ?assignmentAppellation)
+                                      BIND(IRI(CONCAT(STR(?assignment), \"/timespan\")) AS ?timespan)
+                                      BIND(IRI(CONCAT(STR(?timespan), \"/primary_appellation\")) AS ?timespanAppellation)
+                                      BIND(<http://www.researchspace.org/resource/system/vocab/resource_type/inline_rds_search> AS ?procedure)
+                                      BIND(IRI(CONCAT(STR(?procedure), \"/primary_appellation\")) AS ?procedureAppellation)
+                                      BIND(?__useruri__ AS ?user)
+                                      BIND(NOW() AS ?now)
+                                      BIND(STR(?now) AS ?timespanLabel)
+                                      OPTIONAL {
+                                        $subject crm:P1_is_identified_by ?recordAppellation .
+                                        ?recordAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                        ?recordAppellation crm:P190_has_symbolic_content ?recordLabel .
+                                      }
+                                      BIND(CONCAT(\"Coreference of \", COALESCE(STR(?recordLabel), STR($subject)), \" with \", ?content) AS ?assignmentLabel)
+                                      OPTIONAL {
+                                        VALUES (?namespace ?datasetType) {
+                                          (\"http://vocab.getty.edu/aat/\" <http://www.researchspace.org/resource/system/vocab/identifier/aat_id>)
+                                          (\"https://resource.swissartresearch.net\" <http://www.researchspace.org/resource/system/vocab/identifier/bso_id>)
+                                          (\"https://sws.geonames.org/\" <http://www.researchspace.org/resource/system/vocab/identifier/geonames_id>)
+                                          (\"https://d-nb.info/gnd/\" <http://www.researchspace.org/resource/system/vocab/identifier/gnd_id>)
+                                          (\"https://resource.gta.arch.ethz.ch/\" <http://www.researchspace.org/resource/system/vocab/identifier/grp_id>)
+                                          (\"http://id.loc.gov/authorities/names/\" <http://www.researchspace.org/resource/system/vocab/identifier/lcnaf_id>)
+                                          (\"https://recherche.sik-isea.ch/\" <http://www.researchspace.org/resource/system/vocab/identifier/sikart_id>)
+                                          (\"http://data.culture.fr/thesaurus/resource/ark:/67717/T96-\" <http://www.researchspace.org/resource/system/vocab/identifier/thesarchesp_id>)
+                                          (\"http://data.culture.fr/thesaurus/resource/ark:/67717/T69-\" <http://www.researchspace.org/resource/system/vocab/identifier/thesobjmob_id>)
+                                          (\"http://vocab.getty.edu/ulan/\" <http://www.researchspace.org/resource/system/vocab/identifier/ulan_id>)
+                                          (\"http://www.wikidata.org/entity/\" <http://www.researchspace.org/resource/system/vocab/identifier/wikidata_id>)
+                                        }
+                                        FILTER(STRSTARTS(?content, ?namespace))
+                                      }
+                                      BIND(COALESCE(?datasetType, <http://www.researchspace.org/resource/system/vocab/identifier/reference_data_uri>) AS ?identifierType)
+                                    }",
+                                  "deletePattern": "DELETE {
+                                      $subject crm:P1_is_identified_by ?identifier .
+                                      $subject crm:P140i_was_attributed_by ?assignment .
+                                      <http://www.researchspace.org/resource/system/vocab/resource_type/inline_rds_search> crm:P33i_was_used_by ?assignment .
+                                      ?identifier ?identifierProperty ?identifierValue .
+                                      ?identifierAppellation ?identifierAppellationProperty ?identifierAppellationValue .
+                                      ?assignment ?assignmentProperty ?assignmentValue .
+                                      ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue .
+                                      ?timespan ?timespanProperty ?timespanValue .
+                                      ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue .
+                                    } WHERE {
+                                      BIND(IRI(CONCAT(STR($subject), \"/coreference/\", MD5(STR($value)))) AS ?identifier)
+                                      $subject crm:P1_is_identified_by ?identifier .
+                                      BIND(IRI(CONCAT(STR(?identifier), \"/primary_appellation\")) AS ?identifierAppellation)
+                                      BIND(IRI(CONCAT(STR(?identifier), \"/assignment\")) AS ?assignment)
+                                      BIND(IRI(CONCAT(STR(?assignment), \"/primary_appellation\")) AS ?assignmentAppellation)
+                                      BIND(IRI(CONCAT(STR(?assignment), \"/timespan\")) AS ?timespan)
+                                      BIND(IRI(CONCAT(STR(?timespan), \"/primary_appellation\")) AS ?timespanAppellation)
+                                      { ?identifier ?identifierProperty ?identifierValue }
+                                      UNION { ?identifierAppellation ?identifierAppellationProperty ?identifierAppellationValue }
+                                      UNION { ?assignment ?assignmentProperty ?assignmentValue }
+                                      UNION { ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue }
+                                      UNION { ?timespan ?timespanProperty ?timespanValue }
+                                      UNION { ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue }
+                                    }"
+
+                                }
+                              ]'>
+
+                [[!-- no selectPattern + force-defaults: the values below are always treated as new and inserted on save.
+                      The form refuses fields without both an insertPattern and a deletePattern, hence the deletePattern above. --]]
+                <semantic-form-hidden-input for='coreference' default-values='[{{#each references}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]' force-defaults=true></semantic-form-hidden-input>
+
+                <div style="font-weight: 600; margin-bottom: 6px;">
+                  Add coreference to {{#if recordLabel}}“{{recordLabel}}”{{else}}<mp-label iri='{{recordIri}}'></mp-label>{{/if}}
+                </div>
+                <div style="margin-bottom: 4px;">The following reference entries will be recorded as identifiers of the record:</div>
+                <ul style="margin: 0 0 8px; padding-left: 18px;">
+                  {{#each references}}
+                    <li><a class="text-link-action" target="_blank" href="{{this}}" title="{{this}}">{{this}}</a></li>
+                  {{/each}}
+                </ul>
+
+                <semantic-form-errors></semantic-form-errors>
+
+                <div style="display: flex; gap: 8px;">
+                  <button name="submit" class="btn btn-action">Confirm</button>
+                  <mp-event-trigger id='{{viewId}}-coreference-cancel-trigger'
+                                    type='Component.TemplateUpdate'
+                                    data='{}'
+                                    targets='["{{viewId}}-coreference-confirm"]'>
+                    <button type="button" class="btn btn-default">Cancel</button>
+                  </mp-event-trigger>
+                </div>
+              </semantic-form>
+            </div>
+          {{/if}}
+
+          [[!-- Removal of a coreference. The subject of this form is the identifier, not the
+                record: its delete button runs the deletePattern below, which removes the
+                identifier, the identifier assignment, the time-span and their appellations,
+                i.e. everything the insertPattern above has added, and nothing of the record
+                besides its links to them. The shared "Inline RDS search" procedure is kept. --]]
+          {{#if removeIdentifier}}
+            <div style="border: 1px solid #f0c2c2; background: #fdf3f3; border-radius: 4px; padding: 10px 12px; margin-bottom: 12px;">
+              <semantic-form  id='{{viewId}}-coreference-remove-form'
+                              post-action='event'
+                              subject='{{removeIdentifier}}'
+                              persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}", "repository": "{{#if scheme}}authorities{{else}}default{{/if}}"}'
+                              fields='[
+                                {
+                                  "id": "coreferenceOf",
+                                  "label": "Coreference of",
+                                  "xsdDatatype": "xsd:anyURI",
+                                  "minOccurs": "0",
+                                  "maxOccurs": "unbound",
+                                  "selectPattern": "SELECT ?value WHERE { ?value crm:P1_is_identified_by $subject . }",
+                                  "insertPattern": "INSERT { $value crm:P1_is_identified_by $subject . } WHERE {}",
+                                  "deletePattern": "DELETE {
+                                      $value crm:P1_is_identified_by $subject .
+                                      $value crm:P140i_was_attributed_by ?assignment .
+                                      <http://www.researchspace.org/resource/system/vocab/resource_type/inline_rds_search> crm:P33i_was_used_by ?assignment .
+                                      $subject ?identifierProperty ?identifierValue .
+                                      ?identifierAppellation ?identifierAppellationProperty ?identifierAppellationValue .
+                                      ?assignment ?assignmentProperty ?assignmentValue .
+                                      ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue .
+                                      ?timespan ?timespanProperty ?timespanValue .
+                                      ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue .
+                                    } WHERE {
+                                      $value crm:P1_is_identified_by $subject .
+                                      BIND(IRI(CONCAT(STR($subject), \"/primary_appellation\")) AS ?identifierAppellation)
+                                      BIND(IRI(CONCAT(STR($subject), \"/assignment\")) AS ?assignment)
+                                      BIND(IRI(CONCAT(STR(?assignment), \"/primary_appellation\")) AS ?assignmentAppellation)
+                                      BIND(IRI(CONCAT(STR(?assignment), \"/timespan\")) AS ?timespan)
+                                      BIND(IRI(CONCAT(STR(?timespan), \"/primary_appellation\")) AS ?timespanAppellation)
+                                      { $subject ?identifierProperty ?identifierValue }
+                                      UNION { ?identifierAppellation ?identifierAppellationProperty ?identifierAppellationValue }
+                                      UNION { ?assignment ?assignmentProperty ?assignmentValue }
+                                      UNION { ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue }
+                                      UNION { ?timespan ?timespanProperty ?timespanValue }
+                                      UNION { ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue }
+                                    }"
+                                }
+                              ]'>
+
+                <semantic-form-hidden-input for='coreferenceOf'></semantic-form-hidden-input>
+
+                <div style="font-weight: 600; margin-bottom: 6px;">
+                  Remove coreference of {{#if recordLabel}}“{{recordLabel}}”{{else}}<mp-label iri='{{recordIri}}'></mp-label>{{/if}}
+                </div>
+                <div style="margin-bottom: 8px;">
+                  The identifier <a class="text-link-action" target="_blank" href="{{entry}}" title="{{entry}}">{{entry}}</a>
+                  and the record of its assignment will be deleted.
+                </div>
+
+                <semantic-form-errors></semantic-form-errors>
+
+                <div style="display: flex; gap: 8px;">
+                  <button name="delete" class="btn btn-action">Remove coreference</button>
+                  <mp-event-trigger id='{{viewId}}-coreference-remove-cancel-trigger'
+                                    type='Component.TemplateUpdate'
+                                    data='{}'
+                                    targets='["{{viewId}}-coreference-confirm"]'>
+                    <button type="button" class="btn btn-default">Cancel</button>
+                  </mp-event-trigger>
+                </div>
+              </semantic-form>
+            </div>
+          {{/if}}
+
+          {{#if added}}
+            <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-bottom: 12px;">
+              <div class="success-documentation-section-icon-container">
+                <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
+              </div>
+              <div style="flex: 1;">
+                <div class="success-documentation-section-title">Coreference added</div>
+                <div class="success-documentation-section-content">
+                  It is listed under “Other identifier” when the record is opened again.
+                </div>
+              </div>
+            </div>
+          {{/if}}
+
+          {{#if removed}}
+            <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%; margin-bottom: 12px;">
+              <div class="success-documentation-section-icon-container">
+                <rs-icon icon-type="rounded" icon-name="done" symbol="true"></rs-icon>
+              </div>
+              <div style="flex: 1;">
+                <div class="success-documentation-section-title">Coreference removed</div>
+                <div class="success-documentation-section-content">
+                  The identifier and the record of its assignment have been deleted.
+                </div>
+              </div>
+            </div>
+          {{/if}}
+        </template>
+      </mp-event-target-template-render>
+
+      [[!-- after saving: replace the confirmation step with a message, re-run the result query to update the row states --]]
+      <mp-event-proxy id='{{viewId}}-coreference-added-message-proxy'
+                      on-event-source='{{viewId}}-coreference-form'
+                      on-event-types='["Form.ResourceUpdated", "Form.ResourceCreated"]'
+                      proxy-event-type='Component.TemplateUpdate'
+                      proxy-targets='["{{viewId}}-coreference-confirm"]'
+                      data='{"added": "true"}'
+      ></mp-event-proxy>
+      <mp-event-proxy id='{{viewId}}-coreference-added-refresh-proxy'
+                      on-event-source='{{viewId}}-coreference-form'
+                      on-event-types='["Form.ResourceUpdated", "Form.ResourceCreated"]'
+                      proxy-event-type='Component.Refresh'
+                      proxy-targets='["{{viewId}}-coreference-results"]'
+      ></mp-event-proxy>
+      <mp-event-proxy id='{{viewId}}-coreference-removed-message-proxy'
+                      on-event-source='{{viewId}}-coreference-remove-form'
+                      on-event-types='["Form.ResourceRemoved"]'
+                      proxy-event-type='Component.TemplateUpdate'
+                      proxy-targets='["{{viewId}}-coreference-confirm"]'
+                      data='{"removed": "true"}'
+      ></mp-event-proxy>
+      <mp-event-proxy id='{{viewId}}-coreference-removed-refresh-proxy'
+                      on-event-source='{{viewId}}-coreference-remove-form'
+                      on-event-types='["Form.ResourceRemoved"]'
+                      proxy-event-type='Component.Refresh'
+                      proxy-targets='["{{viewId}}-coreference-results"]'
+      ></mp-event-proxy>
+
+      <semantic-search>
+        [[!-- One reconciliation query. The type and dataset inputs are optional and
+              hold either one value or the comma-separated preselection, which the
+              RDS service splits itself; left empty they do not restrict the search. --]]
+        <semantic-search-form-query query-template='{"queryString": "PREFIX rds: <http://www.researchspace.org/resource/system/service/rdsreconciliation/>
+                                                                    SELECT ?subject WHERE {
+                                                                      SERVICE rds:RdsReconciliation {
+                                                                        ?_res rds:query ?token ;
+                                                                              rds:type ?typeInput ;
+                                                                              rds:dataset ?datasetInput ;
+                                                                              rds:limit {{#if limit}}{{limit}}{{else}}20{{/if}} ;
+                                                                              rds:id ?subject ;
+                                                                              rds:name ?name ;
+                                                                              rds:description ?description ;
+                                                                              rds:entityType ?entityType ;
+                                                                              rds:entityDataset ?dataset ;
+                                                                              rds:score ?score ;
+                                                                              rds:match ?match ;
+                                                                              rds:recordId ?recordId ;
+                                                                              rds:reference ?reference ;
+                                                                              rds:isReference ?isReference ;
+                                                                              rds:ordinal ?ordinal .
+                                                                      }
+                                                                    }",
+                                                      "arguments": {"token": {"type": "xsd:string"},
+                                                                    "typeInput": {"type": "xsd:string", "optional": true},
+                                                                    "datasetInput": {"type": "xsd:string", "optional": true}
+                                                                   }
+                                                    }'
+                                    fields='[
+                                              {
+                                                "id": "token",
+                                                "label": "Search for",
+                                                "xsdDatatype": "xsd:string",
+                                                "minOccurs": "1",
+                                                "maxOccurs": "1"
+                                              },
+                                              {
+                                                "id": "typeInput",
+                                                "label": "Type",
+                                                "xsdDatatype": "xsd:string",
+                                                "minOccurs": "0",
+                                                "maxOccurs": "1",
+                                                "valueSetPattern": "SELECT ?value (MAX(?optionLabel) AS ?label) WHERE { VALUES(?value ?optionLabel) { {{#if types}}(\"{{types}}\" \"{{types}} (preselected)\") {{/if}}(\"Artwork\" \"Artwork\") (\"BibliographicItem\" \"Bibliographic item\") (\"Concept\" \"Concept\") (\"Event\" \"Event\") (\"Group\" \"Group\") (\"Person\" \"Person\") (\"Place\" \"Place\") } } GROUP BY ?value ORDER BY ?value"
+                                              },
+                                              {
+                                                "id": "datasetInput",
+                                                "label": "Dataset",
+                                                "xsdDatatype": "xsd:string",
+                                                "minOccurs": "0",
+                                                "maxOccurs": "1",
+                                                "valueSetPattern": "SELECT ?value (MAX(?optionLabel) AS ?label) WHERE { VALUES(?value ?optionLabel) { {{#if datasets}}(\"{{datasets}}\" \"{{datasets}} (preselected)\") {{/if}}(\"aat\" \"AAT\") (\"bso\" \"BSO\") (\"geonames\" \"GeoNames\") (\"gnd\" \"GND\") (\"grp\" \"GRP\") (\"lcnaf\" \"LCNAF\") (\"sikart\" \"SIKART\") (\"thesarchesp\" \"ThesArchEsp\") (\"thesobjmob\" \"ThesObjMob\") (\"ulan\" \"ULAN\") (\"wikidata\" \"Wikidata\") } } GROUP BY ?value ORDER BY ?value"
+                                              }
+                                            ]'>
+
+          <div style="display: flex; align-items: flex-start; gap: 10px; width: 100%; flex-wrap: wrap;">
+            <div style="flex: 2; min-width: 240px;">
+              <semantic-form-text-input for="token" render-header="false" placeholder="Search by name" default-value="{{recordLabel}}"></semantic-form-text-input>
+            </div>
+            <div style="flex: 1; min-width: 170px;">
+              <semantic-form-select-input for="typeInput" render-header="false" placeholder='All types' readonly-resource="true" default-value="{{types}}"></semantic-form-select-input>
+            </div>
+            <div style="flex: 1; min-width: 170px;">
+              <semantic-form-select-input for="datasetInput" render-header="false" placeholder='All datasets' readonly-resource="true" default-value="{{datasets}}"></semantic-form-select-input>
+            </div>
+            <button type='button' name='submit' className='btn btn-action' style="height: 37px;">Search</button>
+          </div>
+        </semantic-search-form-query>
+
+        <semantic-search-result-holder>
+          <div style="margin-top: 15px;">
+            <semantic-search-result>
+              <mp-event-target-refresh id='{{viewId}}-coreference-results'>
+                <div class="coreferenceResults">
+                  <semantic-context repository='ephedra'>
+                    [[!-- One row per group of equivalent entries: the service gives the
+                          entries of the same entity in different datasets the same
+                          reference and score. The entries of a group are packed into
+                          ?members, as entry|#|entry, with entry being
+                          IRI|~|dataset|~|record id|~|is reference|~|name|~|description. --]]
+                    <semantic-query id='{{viewId}}-coreference-result-query'
+                                    query='SELECT ?reference
+                                                  (MAX(?score) AS ?groupScore)
+                                                  (MIN(?ordinal) AS ?groupOrdinal)
+                                                  (MAX(STR(?match)) AS ?groupMatch)
+                                                  (SAMPLE(?entityType) AS ?groupType)
+                                                  (COUNT(DISTINCT ?subject) AS ?entries)
+                                                  (GROUP_CONCAT(DISTINCT ?entry; separator="|#|") AS ?members)
+                                           WHERE {
+                                             BIND(CONCAT(STR(?subject), "|~|", STR(?dataset), "|~|", STR(?recordId), "|~|", STR(?isReference), "|~|",
+                                                         STR(?name), "|~|", COALESCE(STR(?description), "")) AS ?entry)
+                                           }
+                                           GROUP BY ?reference
+                                           ORDER BY ?groupOrdinal'
+                                    template='{{> groups}}'
+                                    no-result-template='{{> noResults}}'>
+
+                      <template id='noResults'>
+                        <div style="padding: 10px 0;">No matching reference entries found.</div>
+                      </template>
+
+                      <template id='groups'>
+                        <table class="table" style="width: 100%;">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                              <th>Description</th>
+                              <th>Dataset</th>
+                              <th style="text-align: right;">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {{#each bindings}}
+                              {{#bind viewId=../viewId recordIri=../recordIri recordLabel=../recordLabel scheme=../scheme groupIndex=@index}}
+                                <tr style="background: #fafbfc; border-top: 2px solid #dfe3e8;">
+                                  <td colspan="3" style="font-size: 12px;">
+                                    <strong>{{groupType.value}}</strong>
+                                    · {{entries.value}} equivalent {{#if (eq entries.value "1")}}entry{{else}}entries{{/if}}
+                                    · score {{toFixed groupScore.value 1}}
+                                    {{#if (eq groupMatch.value "true")}}
+                                      · <span style="background: #e5f4ec; color: #1b7f4b; border-radius: 3px; padding: 1px 7px;">confident match</span>
+                                    {{else}}
+                                      · <span style="background: #eef1f5; color: #667380; border-radius: 3px; padding: 1px 7px;">candidate</span>
+                                    {{/if}}
+                                  </td>
+                                  <td style="text-align: right;">
+                                    {{#if (eq entries.value "1")}}
+                                    {{else}}
+                                      <mp-event-trigger id='{{viewId}}-add-all-coreferences-trigger-{{groupIndex}}'
+                                                        type='Component.TemplateUpdate'
+                                                        targets='["{{viewId}}-coreference-confirm"]'
+                                                        data='{ "references": [{{#each (split members.value "|#|")}}"{{lookup (split this "|~|") 0}}"{{#unless @last}}, {{/unless}}{{/each}}],
+                                                                "recordIri": "{{recordIri}}",
+                                                                {{#if recordLabel}}"recordLabel": "{{recordLabel}}",{{/if}}
+                                                                {{#if scheme}}"scheme": "{{scheme}}",{{/if}}
+                                                                "viewId": "{{viewId}}"
+                                                              }'>
+                                        <button class="btn btn-default btn-sm" title="Record all the entries of this group as identifiers of the record">Add all in group</button>
+                                      </mp-event-trigger>
+                                    {{/if}}
+                                  </td>
+                                </tr>
+
+                                {{#each (split members.value "|#|")}}
+                                  {{#bind entry=(split this "|~|") viewId=../viewId recordIri=../recordIri recordLabel=../recordLabel scheme=../scheme}}
+                                    <tr>
+                                      <td>
+                                        <a class="text-link-action" target="_blank" href="{{entry.[0]}}" title="{{entry.[0]}}">{{entry.[4]}}</a>
+                                        {{#if (eq entry.[3] "1")}}
+                                          <span style="font-size: 11px; color: #667380; margin-left: 6px;" title="Reference entry of the group">reference</span>
+                                        {{/if}}
+                                      </td>
+                                      <td>
+                                        <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                          {{entry.[5]}}
+                                        </mp-text-truncate>
+                                      </td>
+                                      <td>
+                                        <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; background: #e9edf2; border-radius: 3px; padding: 1px 7px;">{{entry.[1]}}</span>
+                                        <div style="font-size: 11px; color: #667380;">{{entry.[2]}}</div>
+                                      </td>
+                                      <td>
+                                        <semantic-context repository='{{#if scheme}}authorities{{else}}default{{/if}}'>
+                                          <div style="display: flex; flex-direction: column; gap: 7px; align-items: end; min-width: 150px;">
+
+                                            [[!-- is the entry already an identifier of the record? --]]
+                                            <semantic-query query='SELECT ?entry ?existing WHERE {
+                                                                     BIND(<{{entry.[0]}}> AS ?entry)
+                                                                     OPTIONAL {
+                                                                       <{{recordIri}}> crm:P1_is_identified_by ?existing .
+                                                                       ?existing a crm:E42_Identifier .
+                                                                       ?existing crm:P190_has_symbolic_content "{{entry.[0]}}" .
+                                                                     }
+                                                                   } LIMIT 1'
+                                                            template='{{> status}}'>
+                                              <template id='status'>
+                                                {{#if bindings.0.existing}}
+                                                  <span style="background: #e5f4ec; color: #1b7f4b; border-radius: 3px; padding: 5px 10px;"
+                                                        title="Recorded as an identifier of this record">
+                                                    Coreferenced ✓
+                                                  </span>
+                                                  <mp-event-trigger id='{{viewId}}-remove-coreference-trigger'
+                                                                    type='Component.TemplateUpdate'
+                                                                    targets='["{{viewId}}-coreference-confirm"]'
+                                                                    data='{ "removeIdentifier": "{{bindings.0.existing.value}}",
+                                                                            "entry": "{{bindings.0.entry.value}}",
+                                                                            "recordIri": "{{recordIri}}",
+                                                                            {{#if recordLabel}}"recordLabel": "{{recordLabel}}",{{/if}}
+                                                                            {{#if scheme}}"scheme": "{{scheme}}",{{/if}}
+                                                                            "viewId": "{{viewId}}"
+                                                                          }'>
+                                                    <button class="btn btn-default btn-sm" title="Delete this coreference, including the record of its assignment">Remove</button>
+                                                  </mp-event-trigger>
+                                                {{else}}
+                                                  <mp-event-trigger id='{{viewId}}-add-coreference-trigger'
+                                                                    type='Component.TemplateUpdate'
+                                                                    targets='["{{viewId}}-coreference-confirm"]'
+                                                                    data='{ "references": ["{{bindings.0.entry.value}}"],
+                                                                            "recordIri": "{{recordIri}}",
+                                                                            {{#if recordLabel}}"recordLabel": "{{recordLabel}}",{{/if}}
+                                                                            {{#if scheme}}"scheme": "{{scheme}}",{{/if}}
+                                                                            "viewId": "{{viewId}}"
+                                                                          }'>
+                                                    <button class="btn btn-action" title="Record this reference entry as an identifier of the record">Add coreference</button>
+                                                  </mp-event-trigger>
+                                                {{/if}}
+                                              </template>
+                                            </semantic-query>
+
+                                            [[!-- other records with the same coreference, i.e. possible duplicates --]]
+                                            <semantic-query query='SELECT DISTINCT ?otherRecord WHERE {
+                                                                     ?otherRecord crm:P1_is_identified_by ?identifier .
+                                                                     ?identifier a crm:E42_Identifier .
+                                                                     ?identifier crm:P190_has_symbolic_content "{{entry.[0]}}" .
+                                                                     FILTER(?otherRecord != <{{recordIri}}>)
+                                                                   } LIMIT 5'
+                                                            template='{{> others}}'>
+                                              <template id='others'>
+                                                <div style="font-size: 12px; background: #fdf3dc; color: #8a5a00; border-radius: 3px; padding: 2px 7px; text-align: right;">
+                                                  Also coreferenced by:
+                                                  {{#each bindings}}
+                                                    <semantic-link iri='{{otherRecord.value}}' class="text-link-action" target="_blank"></semantic-link>{{#unless @last}}, {{/unless}}
+                                                  {{/each}}
+                                                </div>
+                                              </template>
+                                            </semantic-query>
+
+                                          </div>
+                                        </semantic-context>
+                                      </td>
+                                    </tr>
+                                  {{/bind}}
+                                {{/each}}
+                              {{/bind}}
+                            {{/each}}
+                          </tbody>
+                        </table>
+                      </template>
+                    </semantic-query>
+                  </semantic-context>
+                </div>
+              </mp-event-target-refresh>
+            </semantic-search-result>
+          </div>
+        </semantic-search-result-holder>
+      </semantic-search>
+    </div>
+  </template>
+</mp-event-target-template-render>

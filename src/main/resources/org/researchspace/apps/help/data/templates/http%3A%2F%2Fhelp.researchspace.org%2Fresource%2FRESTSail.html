@@ -291,6 +291,106 @@ spin:column [
     entity search relevance order.</p>
 
     <hr class="divider">
+    <h2>Reconciliation Service API</h2>
+
+    <p>Services implementing the <a href="https://www.w3.org/community/reports/reconciliation/CG-FINAL-specs-0.2-20230410/"
+    class="text-link-action" target="_blank">Reconciliation Service API</a> (the protocol used by OpenRefine, implemented
+    by many authority files and reference data services) do not take one request parameter per input. They expect a
+    single <code>queries</code> parameter holding a JSON document, which a plain REST Sail cannot produce. For them use
+    the sail type <code>researchspace:ReconciliationSail</code> in both the repository configuration and the service
+    descriptor. Everything else described on this page stays the same, so a new reconciliation service needs only these
+    two files, no code.</p>
+
+    <mp-code-block mode='text/turtle'>
+    <![CDATA[
+config:sail.impl [
+  config:sail.type "researchspace:ReconciliationSail" ;
+  ephedra:serviceURL "https://reconcile.rds.swissartresearch.net/" ;
+  ephedra:httpMethod "GET" ;  # or "POST" to send the query as a form
+  ephedra:implementsService :RdsReconciliation
+]
+      ]]>
+    </mp-code-block>
+
+    <p>The input arguments (<code>spl:Argument</code>) of the descriptor are combined into one reconciliation query.
+    Where the value of an argument goes is decided by its name, i.e. the local name of <code>spl:predicate</code>
+    without the leading underscore, or by <code>ephedra:inputJsonPath</code> if the argument should be named
+    differently:</p>
+
+    <table class="table table-striped">
+      <thead>
+        <tr><th>Name or <code>ephedra:inputJsonPath</code></th><th>Sent as</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>query</code></td><td>the text to reconcile, required</td></tr>
+        <tr><td><code>type</code></td><td>type of the entities to return</td></tr>
+        <tr><td><code>type_strict</code></td><td><code>any</code>, <code>all</code> or <code>should</code></td></tr>
+        <tr><td><code>limit</code></td><td>maximum number of results, a positive integer</td></tr>
+        <tr><td><code>properties.&lt;pid&gt;</code>, or any other name</td><td>a property of the query,
+          <code>{"pid": "&lt;pid&gt;", "v": value}</code>. The value is a JSON number or boolean if
+          <code>spl:valueType</code> is a numeric XSD datatype or <code>xsd:boolean</code>,
+          <code>{"id": value}</code> if it is <code>rdfs:Resource</code>, a string otherwise.</td></tr>
+      </tbody>
+    </table>
+
+    <mp-code-block mode='text/turtle'>
+    <![CDATA[
+# sent as "type"
+spin:constraint [
+  a spl:Argument ;
+  spl:predicate :_type ;
+  spl:valueType xsd:string
+] ;
+
+# sent as {"pid": "dataset", "v": ...}
+spin:constraint [
+  a spl:Argument ;
+  spl:predicate :_dataset ;
+  spl:valueType xsd:string
+] ;
+
+# sent as {"pid": "P19/P17", "v": ...}
+spin:constraint [
+  a spl:Argument ;
+  spl:predicate :_countryOfBirth ;
+  spl:valueType xsd:string ;
+  ephedra:inputJsonPath "properties.P19/P17"
+] ;
+      ]]>
+    </mp-code-block>
+
+    <p>Values are sent as they are given in the query. Whether a type or a property accepts several values, and in
+    which form, depends on the service: check its documentation or its <code>/suggest/property</code> endpoint.
+    Arguments without a value are left out, and arguments flagged <code>ephedra:rowLimit true</code> stay local.</p>
+
+    <p>The query is sent under the identifier <code>q0</code>, so the results are read with
+    <code>ephedra:jsonPath "$.q0.result[*]"</code> on the subject column; the other columns are relative to one
+    result, e.g. <code>$.id</code>, <code>$.name</code>, <code>$.score</code>, <code>$.match</code>,
+    <code>$.type[0].id</code>. Results are ordered by relevance, declare an <code>ephedra:rowIndex</code> column to
+    keep that order. A complete example is the descriptor shipped for the Swiss Art Research reference data service,
+    <code>config/services/rds-reconciliation.ttl</code>:</p>
+
+    <mp-code-block mode='SPARQL'>
+    <![CDATA[
+PREFIX rds: <http://www.researchspace.org/resource/system/service/rdsreconciliation/>
+
+SELECT ?entity ?label ?dataset ?score WHERE {
+  SERVICE rds:RdsReconciliation {
+    ?_res rds:query "Picasso" ;
+          rds:type "Person" ;
+          rds:dataset "gnd,ulan" ;
+          rds:limit 10 ;
+          rds:id ?entity ;
+          rds:name ?label ;
+          rds:entityDataset ?dataset ;
+          rds:score ?score ;
+          rds:ordinal ?ordinal .
+  }
+} ORDER BY ?ordinal
+      ]]>
+    </mp-code-block>
+
+    <hr class="divider">
     <h2>Use SPARQL to make requests</h2>
 
     <p>The query MUST be executed against the repository created in the previous passage, i.e., <code>librarycloud</code>. Otherwise it will not work.</p>

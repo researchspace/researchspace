@@ -1,0 +1,123 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX config: <tag:rdf4j.org,2023:config/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/service/testreconciliation/>
+
+# Descriptor of a made-up reconciliation service, exercises everything that
+# a descriptor can say about the request: inputs named differently from the
+# parts of the reconciliation query, property ids that are not valid local
+# names, typed property values, a default value and a local row limit.
+
+:TestReconciliation a ephedra:Service ;
+	config:sail.type "researchspace:ReconciliationSail" ;
+	rdfs:label "Reconciliation service used in tests" ;
+	ephedra:hasSPARQLPattern (
+    [ sp:subject :_results ; sp:predicate :search ; sp:object :_search ]
+    [ sp:subject :_results ; sp:predicate :entityType ; sp:object :_entityType ]
+    [ sp:subject :_results ; sp:predicate :typeStrict ; sp:object :_typeStrict ]
+    [ sp:subject :_results ; sp:predicate :maxResults ; sp:object :_maxResults ]
+    [ sp:subject :_results ; sp:predicate :countryOfBirth ; sp:object :_countryOfBirth ]
+    [ sp:subject :_results ; sp:predicate :placeOfBirth ; sp:object :_placeOfBirth ]
+    [ sp:subject :_results ; sp:predicate :born ; sp:object :_born ]
+    [ sp:subject :_results ; sp:predicate :lang ; sp:object :_lang ]
+    [ sp:subject :_results ; sp:predicate :rowLimit ; sp:object :_rowLimit ]
+    [ sp:subject :_results ; sp:predicate :id ; sp:object :_id ]
+    [ sp:subject :_results ; sp:predicate :name ; sp:object :_name ]
+    [ sp:subject :_results ; sp:predicate :ordinal ; sp:object :_ordinal ]
+  ) ;
+
+	spin:constraint [
+		a spl:Argument ;
+		spl:predicate :_search ;
+		spl:valueType xsd:string ;
+		ephedra:inputJsonPath "query"
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		spl:predicate :_entityType ;
+		spl:valueType xsd:string ;
+		ephedra:inputJsonPath "$.type"
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		spl:predicate :_typeStrict ;
+		spl:valueType xsd:string ;
+		ephedra:inputJsonPath "type_strict"
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		spl:predicate :_maxResults ;
+		spl:valueType xsd:integer ;
+		ephedra:inputJsonPath "limit"
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		spl:predicate :_countryOfBirth ;
+		spl:valueType xsd:string ;
+		ephedra:inputJsonPath "properties.P19/P17"
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		spl:predicate :_placeOfBirth ;
+		spl:valueType rdfs:Resource ;
+		ephedra:inputJsonPath "properties.P19"
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "no inputJsonPath and not a part of the query: a property called 'born'" ;
+		spl:predicate :_born ;
+		spl:valueType xsd:gYear
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		spl:predicate :_lang ;
+		spl:valueType xsd:string ;
+		spl:defaultValue "en"
+	] ;
+
+	spin:constraint [
+		a spl:Argument ;
+		rdfs:comment "local bound, not sent to the service" ;
+		spl:predicate :_rowLimit ;
+		spl:valueType xsd:integer ;
+		ephedra:rowLimit true
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		spl:predicate :_results ;
+		spl:valueType rdfs:Resource ;
+		ephedra:jsonPath "$.q0.result[*]"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		spl:predicate :_id ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.id"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		spl:predicate :_name ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.name"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		spl:predicate :_ordinal ;
+		spl:valueType xsd:integer ;
+		ephedra:rowIndex true
+	] .

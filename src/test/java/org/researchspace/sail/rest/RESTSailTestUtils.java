@@ -20,6 +20,14 @@ public class RESTSailTestUtils {
      * @param port                      - port from wiremock
      * @return repository repository that implements given service descriptor
      */
+    /**
+     * Sets the service URL of a sail config from tests outside this package, where
+     * the protected setter of {@link AbstractServiceWrappingSailConfig} is not visible.
+     */
+    public static void setServiceUrl(AbstractServiceWrappingSailConfig config, String url) {
+        config.setUrl(url);
+    }
+
     public static Repository createRestSailRepo(String serviceDescriptorLocation, int port, String url,
             String httpMethod) {
         return createRestSailRepo(serviceDescriptorLocation, port, url, httpMethod, null);

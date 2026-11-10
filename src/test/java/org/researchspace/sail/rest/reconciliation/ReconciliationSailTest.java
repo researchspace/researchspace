@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.researchspace.federation.repository.service.ServiceDescriptor;
 import org.researchspace.repository.MpRepositoryVocabulary;
 import org.researchspace.sail.rest.RESTSailConfig;
+import org.researchspace.sail.rest.RESTSailTestUtils;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
@@ -88,7 +89,7 @@ public class ReconciliationSailTest {
         ReconciliationSailFactory factory = new ReconciliationSailFactory();
         RESTSailConfig sailConfig = (RESTSailConfig) factory.getConfig();
         sailConfig.setHttpMethod(httpMethod);
-        sailConfig.setUrl("http://localhost:" + wireMockRule.port() + path);
+        RESTSailTestUtils.setServiceUrl(sailConfig, "http://localhost:" + wireMockRule.port() + path);
 
         ReconciliationSail sail = (ReconciliationSail) factory.getSail(sailConfig);
         sail.setServiceDescriptor(serviceDescriptor);

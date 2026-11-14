@@ -12,6 +12,7 @@ import { SparqlUtil } from 'platform/api/sparql';
 import { OntodiaContextV1, addLegacyLayoutFields } from 'platform/components/3-rd-party/ontodia/data/DiagramService';
 import {
   ESTIMATED_NODE_SIZE,
+  IriUse,
   KnowledgeMapExportBackend,
   KnowledgeMapImportBackend,
   N3Bindings,
@@ -23,11 +24,16 @@ import {
   exportFileName,
   exportKnowledgeMapDataTrig,
   exportKnowledgeMapTrig,
+  getDiagramStatements,
   importKnowledgeMapTrig,
   iriRef,
   isSafeIri,
   knowledgeMapSlug,
+  ldpContextGraph,
   makeGraphKnowledgeMapQuery,
+  makeGraphResourceCountQuery,
+  makeIriInUseQuery,
+  makeIsKnowledgeMapQuery,
   parseTrig,
   planImport,
 } from 'platform/components/3-rd-party/ontodia/data/KnowledgeMapTrig';
@@ -44,12 +50,12 @@ interface SavedMap {
 
 class FakeImportBackend implements KnowledgeMapImportBackend {
   readonly saved: SavedMap[] = [];
-  readonly existenceChecks: Array<{ iri: string | undefined; graph: string | undefined }> = [];
-  constructor(private existingMaps: string[] = [], private existingGraphs: string[] = [], private failSave = false) {}
+  readonly checkedIris: string[] = [];
+  constructor(private used: { [iri: string]: IriUse } = {}, private failSave = false) {}
 
-  knowledgeMapExists(iri: string | undefined, graph: string | undefined) {
-    this.existenceChecks.push({ iri, graph });
-    return Promise.resolve(this.existingMaps.indexOf(iri) >= 0 || this.existingGraphs.indexOf(graph) >= 0);
+  iriUse(iri: string) {
+    this.checkedIris.push(iri);
+    return Promise.resolve(this.used[iri] || 'unused');
   }
   saveKnowledgeMap(label: string, diagram: Reactodia.SerializedDiagram, iri?: string) {
     if (this.failSave) {
@@ -158,6 +164,18 @@ describe('KnowledgeMapTrig', () => {
       expect(() => iriRef('http://x> . ?s ?p ?o')).to.throw();
       expect(() => makeGraphKnowledgeMapQuery('http://x> } }')).to.throw();
       expect(() => SparqlUtil.parseQuery(makeGraphKnowledgeMapQuery(`${EX}graph`))).not.to.throw();
+      for (const makeQuery of [makeGraphResourceCountQuery, makeIsKnowledgeMapQuery, makeIriInUseQuery]) {
+        expect(() => makeQuery('http://x> } }'), makeQuery.name).to.throw();
+        expect(() => SparqlUtil.parseQuery(makeQuery(`${EX}graph`)), makeQuery.name).not.to.throw();
+      }
+    });
+
+    it('asks about the graph in which the server would store the knowledge map', () => {
+      expect(ldpContextGraph(`${EX}map`)).to.equal(`${EX}map/context`);
+      expect(ldpContextGraph(`${EX}ontology/`)).to.equal(`${EX}ontology/context`);
+      const query = makeIriInUseQuery(`${EX}ontology/`);
+      expect(query).to.contain(`GRAPH <${EX}ontology/context>`);
+      expect(query).to.contain(`<${EX}ontology/> ?p ?o`);
     });
   });
 
@@ -230,7 +248,7 @@ describe('KnowledgeMapTrig', () => {
     it('imports a knowledge map with its IRI, label and layout', async () => {
       const backend = new FakeImportBackend();
       const report = await importKnowledgeMapTrig(storedMap(WITH_POSITION), 'eswc.trig', backend);
-      expect(backend.existenceChecks).to.deep.equal([{ iri: `${EX}diagram`, graph: `${EX}diagram/context` }]);
+      expect(backend.checkedIris).to.deep.equal([`${EX}diagram`]);
       const saved = backend.saved[0];
       expect(saved.label).to.equal('ESWC Series');
       expect(saved.iri).to.equal(`${EX}diagram`);
@@ -238,6 +256,12 @@ describe('KnowledgeMapTrig', () => {
       expect(Object.keys(saved.diagram).sort()).to.deep.equal(['@context', '@type', 'layoutData', 'linkTypeOptions']);
       expect(entityElements(saved.diagram).find((e) => e.iri === `${EX}q1`).position).to.deep.equal({ x: 487, y: 232 });
       expect(saved.diagram.layoutData.links).to.have.length(1);
+      // elements and links get new ids
+      const ids = entityElements(saved.diagram).map((e) => e['@id']);
+      expect(ids).not.to.include(`${EX}e1`);
+      const [link] = saved.diagram.layoutData.links;
+      expect(link['@id']).not.to.equal(`${EX}l1`);
+      expect([link.source['@id'], link.target['@id']]).to.have.members(ids);
 
       const view = describeImportReport(report);
       expect(view.level).to.equal('success');
@@ -313,19 +337,111 @@ describe('KnowledgeMapTrig', () => {
     });
 
     it('does not import a knowledge map that already exists', async () => {
-      for (const backend of [
-        new FakeImportBackend([`${EX}diagram`]),
-        new FakeImportBackend([], [`${EX}diagram/context`]),
-      ]) {
-        const report = await importKnowledgeMapTrig(storedMap(WITH_POSITION), 'eswc.trig', backend);
-        expect(backend.saved).to.have.length(0);
-        const view = describeImportReport(report);
-        expect(view.level).to.equal('warning');
-        expect(view.paragraphs).to.deep.equal([
-          'The knowledge map "ESWC Series" already exists, so it was not imported.',
-        ]);
-        expect(view.openableMaps).to.deep.equal([{ iri: `${EX}diagram`, label: 'ESWC Series', existing: true }]);
+      const backend = new FakeImportBackend({ [`${EX}diagram`]: 'knowledge-map' });
+      const report = await importKnowledgeMapTrig(storedMap(WITH_POSITION), 'eswc.trig', backend);
+      expect(backend.saved).to.have.length(0);
+      const view = describeImportReport(report);
+      expect(view.level).to.equal('warning');
+      expect(view.paragraphs).to.deep.equal(['The knowledge map "ESWC Series" already exists, so it was not imported.']);
+      expect(view.openableMaps).to.deep.equal([{ iri: `${EX}diagram`, label: 'ESWC Series', existing: true }]);
+    });
+
+    it('does not import a knowledge map whose IRI names something else', async () => {
+      const backend = new FakeImportBackend({ [`${EX}diagram`]: 'other' });
+      const report = await importKnowledgeMapTrig(storedMap(WITH_POSITION), 'eswc.trig', backend);
+      expect(backend.saved).to.have.length(0);
+      const view = describeImportReport(report);
+      expect(view.level).to.equal('danger');
+      expect(view.paragraphs).to.deep.equal([
+        `Failed to import knowledge map "ESWC Series": its identifier ${EX}diagram is already used by another resource`,
+      ]);
+      expect(view.openableMaps).to.deep.equal([]);
+    });
+
+    it('imports the layout only', async () => {
+      const state = {
+        'urn:reactodia:expanded': true,
+        '@id': `${EX}other`,
+        nested: { '@reverse': { [`${EX}p`]: { '@id': `${EX}other` } } },
+      };
+      const backend = new FakeImportBackend();
+      const report = await importKnowledgeMapTrig(
+        `<${EX}m/context> {
+          <${EX}m> a <${O}Diagram> ; <${CRM}P190_has_symbolic_content> "Layout" ; <${O}layoutData> _:l .
+          _:l a <${O}Layout> ; <${O}hasElement> <${EX}victim>, <${EX}unknown> ; <${O}hasLink> <${EX}l1> .
+          <${EX}victim> a <${O}Element> ; <${O}resource> <${EX}a> ;
+            <${O}position> [ <${O}xCoordValue> 1 ; <${O}yCoordValue> 2 ] ;
+            <${O}elementStateJson> ${JSON.stringify(JSON.stringify(state))} ;
+            <${EX}anyProperty> <${EX}anyValue> .
+          <${EX}unknown> a <${EX}NotLayout> ; <${O}resource> <${EX}b> .
+          <${EX}l1> a <${O}Link> ; <${O}property> <${EX}p> ; <${O}source> <${EX}victim> ; <${O}target> <${EX}victim> ;
+            <${EX}anyProperty> "x" .
+        }`,
+        'm.trig',
+        backend
+      );
+      expect(report.maps[0].status).to.equal('created');
+      const { diagram } = backend.saved[0];
+      const [element] = entityElements(diagram);
+      expect(diagram.layoutData.elements).to.have.length(1);
+      expect(element.iri).to.equal(`${EX}a`);
+      expect(element.position).to.deep.equal({ x: 1, y: 2 });
+      // the state without the JSON-LD keywords that would make statements about other resources
+      expect(element.elementState).to.deep.equal({ 'urn:reactodia:expanded': true, nested: {} });
+      const [link] = diagram.layoutData.links as Reactodia.SerializedRelationLink[];
+      expect(link.property).to.equal(`${EX}p`);
+      expect(link.source['@id']).to.equal(element['@id']);
+      const saved = JSON.stringify(diagram);
+      for (const notLayout of [`${EX}victim`, `${EX}l1`, `${EX}anyProperty`, `${EX}other`, 'NotLayout', '@reverse']) {
+        expect(saved, notLayout).not.to.contain(notLayout);
       }
+    });
+
+    it('keeps sizes, state stored as RDF and link vertices', async () => {
+      const backend = new FakeImportBackend();
+      await importKnowledgeMapTrig(
+        `<${EX}m/context> {
+          <${EX}m> a <${O}Diagram> ; <${CRM}P190_has_symbolic_content> "Sized" ; <${O}layoutData> _:l .
+          _:l a <${O}Layout> ; <${O}hasElement> <${EX}e1>, <${EX}e2> ; <${O}hasLink> <${EX}l1> .
+          <${EX}e1> a <${O}Element> ; <${O}resource> <${EX}a> ;
+            <${O}position> [ <${O}xCoordValue> 100 ; <${O}yCoordValue> 120.5 ] ;
+            <${O}size> [ <${O}width> 300 ; <${O}height> 140 ] ; <${O}fixedSize> true ; <${O}isExpanded> true ;
+            <${O}elementState> [
+              <urn:reactodia:expanded> true ;
+              <urn:reactodia:elementSize> [ <${O}width> 300 ; <${O}height> 140 ]
+            ] .
+          <${EX}e2> a <${O}Element> ; <${O}resource> <${EX}b> ;
+            <${O}position> [ <${O}xCoordValue> 600 ; <${O}yCoordValue> 120 ] .
+          <${EX}l1> a <${O}Link> ; <${O}property> <${EX}p> ; <${O}source> <${EX}e1> ; <${O}target> <${EX}e2> ;
+            <${O}vertex> ( [ <${O}xCoordValue> 400 ; <${O}yCoordValue> 300 ] ) .
+        }`,
+        'm.trig',
+        backend
+      );
+      const { diagram } = backend.saved[0];
+      const sized: any = entityElements(diagram).find((e) => e.iri === `${EX}a`);
+      expect(sized.position).to.deep.equal({ x: 100, y: 120.5 });
+      expect(sized.size).to.deep.equal({ width: 300, height: 140 });
+      expect(sized.fixedSize).to.be.true;
+      expect(sized.isExpanded).to.be.true;
+      expect(sized.elementState).to.deep.equal({
+        'urn:reactodia:expanded': true,
+        'urn:reactodia:elementSize': { width: 300, height: 140 },
+      });
+      expect(diagram.layoutData.links[0].vertices).to.deep.equal([{ x: 400, y: 300 }]);
+    });
+
+    it('does not import a knowledge map without layout', async () => {
+      const backend = new FakeImportBackend();
+      const report = await importKnowledgeMapTrig(
+        `<${EX}m/context> { <${EX}m> a <${O}Diagram> ; <${CRM}P190_has_symbolic_content> "Empty" . }`,
+        'm.trig',
+        backend
+      );
+      expect(backend.saved).to.have.length(0);
+      expect(describeImportReport(report).paragraphs).to.deep.equal([
+        'Failed to import knowledge map "Empty": it has no layout in the file',
+      ]);
     });
 
     it('reports files without knowledge maps', async () => {
@@ -343,7 +459,7 @@ describe('KnowledgeMapTrig', () => {
       const report = await importKnowledgeMapTrig(
         storedMap(WITH_POSITION),
         'eswc.trig',
-        new FakeImportBackend([], [], true)
+        new FakeImportBackend({}, true)
       );
       const view = describeImportReport(report);
       expect(view.level).to.equal('danger');
@@ -354,7 +470,7 @@ describe('KnowledgeMapTrig', () => {
       const report = await importKnowledgeMapTrig('this is not trig', 'broken.trig', new FakeImportBackend());
       const view = describeImportReport(report);
       expect(view.level).to.equal('danger');
-      expect(view.paragraphs[0]).to.match(/^broken\.trig could not be read: .*\. Nothing was imported\.$/);
+      expect(view.paragraphs[0]).to.match(/^broken\.trig could not be read: .*[^.]\. Nothing was imported\.$/);
     });
 
     it('makes slugs that are safe in HTTP headers and IRIs', () => {
@@ -620,6 +736,43 @@ describe('KnowledgeMapTrig', () => {
       ]);
       expect(queries.some((q) => q.indexOf('P1_is_identified_by') >= 0)).to.be.true;
       expect(exported.trig).not.to.contain('ontodia');
+    });
+
+    it('finds the statement of a link that ends at a group', () => {
+      const statements = getDiagramStatements({
+        '@context': Reactodia.DiagramContextV1,
+        '@type': 'Diagram',
+        layoutData: {
+          '@type': 'Layout',
+          elements: [
+            {
+              '@type': 'ElementGroup',
+              '@id': 'g1',
+              position: { x: 0, y: 0 },
+              items: [
+                { '@type': 'ElementItem', iri: `${EX}rome` },
+                { '@type': 'ElementItem', iri: `${EX}via` },
+              ],
+            } as any,
+            { '@type': 'Element', '@id': 'e2', iri: `${EX}ostia`, position: { x: 300, y: 120 } } as any,
+          ],
+          links: [
+            {
+              '@type': 'Link',
+              '@id': 'l1',
+              property: `${EX}connectedTo`,
+              source: { '@id': 'g1' },
+              target: { '@id': 'e2' },
+              sourceIri: `${EX}rome`,
+              targetIri: `${EX}ostia`,
+            } as any,
+          ],
+        },
+        linkTypeOptions: [],
+      });
+      expect(statements).to.deep.equal([
+        { subject: `${EX}rome`, predicate: `${EX}connectedTo`, object: `${EX}ostia` },
+      ]);
     });
   });
 });

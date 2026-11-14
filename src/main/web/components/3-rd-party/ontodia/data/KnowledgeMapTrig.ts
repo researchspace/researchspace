@@ -24,6 +24,7 @@ import * as Reactodia from '@reactodia/workspace';
 import { blockingDefaultLayout } from '@reactodia/workspace/layout-sync';
 
 import { Rdf, turtle } from 'platform/api/rdf';
+import { VocabPlatform } from 'platform/api/rdf/vocabularies/vocabularies';
 
 import { parseDiagramFromTurtle } from './DiagramService';
 
@@ -72,6 +73,28 @@ export function iriRef(iri: string): string {
 }
 
 const iriList = (iris: ReadonlyArray<string>) => iris.map(iriRef).join(' ');
+
+/** Named graph in which the server stores an LDP resource (AbstractLDPResource.getContextIRI). */
+export function ldpContextGraph(iri: string): string {
+  return iri + (iri.endsWith('/') ? 'context' : '/context');
+}
+
+/** SPARQL query telling whether the IRI is a stored knowledge map. */
+export function makeIsKnowledgeMapQuery(iri: string): string {
+  return `ASK { ${iriRef(VocabPlatform.OntodiaDiagramContainer.value)} <${LDP_CONTAINS}> ${iriRef(iri)} }`;
+}
+
+/**
+ * SPARQL query telling whether the IRI already names something, or the graph in which a
+ * knowledge map with this IRI would be stored has content.
+ */
+export function makeIriInUseQuery(iri: string): string {
+  return `ASK {
+  { ?container <${LDP_CONTAINS}> ${iriRef(iri)} }
+  UNION { ${iriRef(iri)} ?p ?o }
+  UNION { GRAPH ${iriRef(ldpContextGraph(iri))} { ?s ?p ?o } }
+}`;
+}
 
 /** Quad in the N3.js string representation; `graph` is '' for the default graph. */
 export interface Quad {
@@ -286,17 +309,178 @@ export async function computeLayout(
   return positions;
 }
 
+const ELEMENT_TYPES = ['Element', 'ElementGroup', 'Annotation'];
+const LINK_TYPES = ['Link', 'LinkGroup', 'AnnotationLink'];
+
 /**
- * Keeps only the layout part of a parsed diagram, dropping metadata of the
- * original resource (provenance, label, types) which is re-created on save.
+ * Builds a new diagram from the layout of a parsed one. A file is untrusted input: only the
+ * known parts of the layout are copied, and elements and links get new ids, so that the only
+ * resource of the file that statements are stored about is the knowledge map itself.
+ * Metadata of the original resource (provenance, label, types) is re-created on save.
  */
-export function cleanImportedDiagram(diagram: Reactodia.SerializedDiagram): Reactodia.SerializedDiagram {
+export function rebuildImportedDiagram(diagram: Reactodia.SerializedDiagram): Reactodia.SerializedDiagram {
+  const layout: any = diagram.layoutData;
+  if (!layout || typeof layout !== 'object') {
+    throw new Error('it has no layout in the file');
+  }
+  const elementIds = new Map<string, string>();
+  const elements = asArray(layout.elements)
+    .map((source) => rebuildElement(source, elementIds))
+    .filter((element) => element);
+  const links = asArray(layout.links)
+    .map((source) => rebuildLink(source, elementIds))
+    .filter((link) => link);
+  const linkTypeOptions = asArray(diagram.linkTypeOptions)
+    .filter((options) => isSafeIri(options?.property))
+    .map(
+      (options): Reactodia.SerializedLinkOptions => ({
+        '@type': 'LinkTypeOptions',
+        property: options.property,
+        visible: options.visible !== false,
+        ...(typeof options.showLabel === 'boolean' ? { showLabel: options.showLabel } : {}),
+      })
+    );
   return {
-    '@context': diagram['@context'],
+    '@context': Reactodia.DiagramContextV1,
     '@type': 'Diagram',
-    layoutData: diagram.layoutData,
-    linkTypeOptions: diagram.linkTypeOptions || [],
+    layoutData: { '@type': 'Layout', elements, links },
+    linkTypeOptions,
   };
+}
+
+function rebuildElement(source: any, elementIds: Map<string, string>): Reactodia.SerializedElement | undefined {
+  const type = cellType(source, ELEMENT_TYPES);
+  if (!type || (type === 'Element' && !isSafeIri(source.iri))) {
+    return undefined;
+  }
+  const element: any = { '@type': type, '@id': Reactodia.Element.generateId() };
+  if (typeof source['@id'] === 'string') {
+    elementIds.set(source['@id'], element['@id']);
+  }
+  if (type === 'Element') {
+    element.iri = source.iri;
+  } else if (type === 'ElementGroup') {
+    element.items = asArray(source.items)
+      .filter((item) => isSafeIri(item?.iri))
+      .map((item) => withState({ '@type': 'ElementItem', iri: item.iri }, 'elementState', item));
+  }
+  const position = asVector(source.position);
+  if (position) {
+    element.position = position;
+  }
+  // layout fields of the legacy Ontodia format, see upgradeLegacyDiagram
+  const width = asNumber(source.size?.width);
+  const height = asNumber(source.size?.height);
+  if (width !== undefined && height !== undefined) {
+    element.size = { width, height };
+  }
+  for (const flag of ['fixedSize', 'isExpanded']) {
+    if (typeof source[flag] === 'boolean') {
+      element[flag] = source[flag];
+    }
+  }
+  return withState(element, 'elementState', source);
+}
+
+function rebuildLink(source: any, elementIds: ReadonlyMap<string, string>): Reactodia.SerializedLink | undefined {
+  const type = cellType(source, LINK_TYPES);
+  const from = elementIds.get(source?.source?.['@id']);
+  const to = elementIds.get(source?.target?.['@id']);
+  if (!type || !from || !to || (type !== 'AnnotationLink' && !isSafeIri(source.property))) {
+    return undefined;
+  }
+  const link: any = {
+    '@type': type,
+    '@id': Reactodia.Link.generateId(),
+    source: { '@id': from },
+    target: { '@id': to },
+  };
+  if (type !== 'AnnotationLink') {
+    link.property = source.property;
+  }
+  if (type === 'Link') {
+    for (const end of ['sourceIri', 'targetIri']) {
+      if (isSafeIri(source[end])) {
+        link[end] = source[end];
+      }
+    }
+  } else if (type === 'LinkGroup') {
+    link.items = asArray(source.items)
+      .filter((item) => isSafeIri(item?.sourceIri) && isSafeIri(item?.targetIri))
+      .map((item) =>
+        withState({ '@type': 'LinkItem', sourceIri: item.sourceIri, targetIri: item.targetIri }, 'linkState', item)
+      );
+  }
+  const vertices = asArray(source.vertices)
+    .map(asVector)
+    .filter((vertex) => vertex);
+  if (vertices.length > 0) {
+    link.vertices = vertices;
+  }
+  return withState(link, 'linkState', source);
+}
+
+/**
+ * Adds the template state of the source cell: from its JSON copy if there is one, as on load
+ * (see upgradeLegacyDiagram). JSON-LD keywords are removed from it: the state is saved as RDF,
+ * where e.g. "@id" or "@reverse" would make statements about other resources.
+ */
+function withState<T extends object>(cell: T, stateKey: 'elementState' | 'linkState', source: any): T {
+  let state: unknown = source?.[stateKey];
+  const json = source?.[`${stateKey}Json`];
+  if (typeof json === 'string') {
+    try {
+      state = JSON.parse(json);
+    } catch {
+      // not JSON: keep the state itself
+    }
+  }
+  if (!state || typeof state !== 'object' || Array.isArray(state)) {
+    return cell;
+  }
+  const plain = withoutKeywords(state) as object;
+  return Object.keys(plain).length > 0 ? { ...cell, [stateKey]: plain } : cell;
+}
+
+function withoutKeywords(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(withoutKeywords);
+  }
+  if (value && typeof value === 'object') {
+    const result: { [key: string]: unknown } = {};
+    for (const key of Object.keys(value)) {
+      if (!key.startsWith('@')) {
+        result[key] = withoutKeywords((value as { [key: string]: unknown })[key]);
+      }
+    }
+    return result;
+  }
+  return value;
+}
+
+function cellType(source: any, known: ReadonlyArray<string>): string | undefined {
+  const types = asArray(source?.['@type']);
+  return known.find((type) => types.indexOf(type) >= 0);
+}
+
+function asArray(value: any): any[] {
+  if (value === undefined || value === null) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
+}
+
+/** Number of a JSON-LD value, which is an object for datatypes without a native type. */
+function asNumber(value: any): number | undefined {
+  const raw = value && typeof value === 'object' ? value['@value'] : value;
+  const parsed = typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : raw;
+  return typeof parsed === 'number' && isFinite(parsed) ? parsed : undefined;
+}
+
+function asVector(value: any): { x: number; y: number } | undefined {
+  const x = asNumber(value?.x);
+  const y = asNumber(value?.y);
+  return x !== undefined && y !== undefined ? { x, y } : undefined;
 }
 
 function hasPosition(element: Reactodia.SerializedElement): boolean {
@@ -404,13 +588,15 @@ export function fileBaseName(fileName: string): string {
 /** Backend operations needed by the import, see {@link importKnowledgeMapTrig}. */
 export interface KnowledgeMapImportBackend {
   /**
-   * Returns `true` if the knowledge map is already stored: its IRI is in a container
-   * or the named graph of the map already exists.
+   * Tells what the IRI of a knowledge map in the file is in the database: a stored knowledge
+   * map, something else (see {@link makeIriInUseQuery}), or not used.
    */
-  knowledgeMapExists(iri: string | undefined, graph: string | undefined): Promise<boolean>;
+  iriUse(iri: string): Promise<IriUse>;
   /** Stores a new knowledge map and returns its IRI; `iri` is the IRI to keep, if any. */
   saveKnowledgeMap(label: string, diagram: Reactodia.SerializedDiagram, iri?: string): Promise<string>;
 }
+
+export type IriUse = 'unused' | 'knowledge-map' | 'other';
 
 export type MapImportStatus = 'created' | 'exists' | 'failed';
 
@@ -473,12 +659,17 @@ async function importDiagram(
 ): Promise<MapImportReport> {
   let label = findLabel(imported.quads, imported.iri) || fileBaseName(fileName);
   try {
-    if (await backend.knowledgeMapExists(imported.iri, imported.graph || undefined)) {
+    // a knowledge map keeps its IRI only if the IRI is free: the map is stored in a graph named
+    // after it, and deleting the map removes that graph and the statements about the IRI
+    const use = imported.iri ? await backend.iriUse(imported.iri) : 'unused';
+    if (use === 'knowledge-map') {
       return { label, iri: imported.iri, status: 'exists' };
+    } else if (use === 'other') {
+      throw new Error(`its identifier ${imported.iri} is already used by another resource`);
     }
     const parsed = await parseDiagramFromTurtle(await serializeTurtle(imported.quads)).toPromise();
     label = parsed.label || label;
-    const { diagram, laidOut } = await ensureDiagramPositions(cleanImportedDiagram(parsed.diagram));
+    const { diagram, laidOut } = await ensureDiagramPositions(rebuildImportedDiagram(parsed.diagram));
     const iri = await backend.saveKnowledgeMap(label, diagram, imported.iri);
     return { label, iri, status: 'created', laidOut };
   } catch (error) {
@@ -501,7 +692,7 @@ export function describeImportReport(report: ImportReport): ReportView {
   if (report.parseError) {
     return {
       level: 'danger',
-      paragraphs: [`${fileName} could not be read: ${report.parseError}. Nothing was imported.`],
+      paragraphs: [`${fileName} could not be read: ${report.parseError.replace(/\.+$/, '')}. Nothing was imported.`],
       openableMaps: [],
     };
   }
@@ -689,7 +880,12 @@ export function getDiagramStatements(diagram: Reactodia.SerializedDiagram): Diag
         add(item.sourceIri, link.property, item.targetIri);
       }
     } else {
-      add(iriById.get(link.source?.['@id']), link.property, iriById.get(link.target?.['@id']));
+      // a link that ends at a group names the resources itself, the group has none
+      add(
+        link.sourceIri ?? iriById.get(link.source?.['@id']),
+        link.property,
+        link.targetIri ?? iriById.get(link.target?.['@id'])
+      );
     }
   }
   return Array.from(statements.values());
@@ -701,6 +897,32 @@ export function getDiagramStatements(diagram: Reactodia.SerializedDiagram): Diag
  */
 export function makeGraphKnowledgeMapQuery(graph: string): string {
   return `CONSTRUCT { ?s ?p ?o } WHERE { GRAPH ${iriRef(graph)} { ?s ?p ?o . FILTER(?p != <${RDF_TYPE}>) } }`;
+}
+
+/** A knowledge map of a named graph with more resources than this is not readable. */
+export const MAX_GRAPH_RESOURCES = 200;
+
+export class GraphTooLargeError extends Error {
+  constructor() {
+    super(`This graph has more than ${MAX_GRAPH_RESOURCES} resources, too many for a readable knowledge map`);
+  }
+}
+
+/**
+ * SPARQL query counting the resources of a named graph the way they become nodes
+ * (see {@link makeGraphKnowledgeMapQuery}), up to one more than {@link MAX_GRAPH_RESOURCES}.
+ */
+export function makeGraphResourceCountQuery(graph: string): string {
+  return `SELECT (COUNT(*) AS ?resources) WHERE {
+  {
+    SELECT DISTINCT ?resource WHERE {
+      GRAPH ${iriRef(graph)} {
+        { ?resource ?p ?o } UNION { ?s ?p ?resource }
+        FILTER(isIRI(?resource) && ?p != <${RDF_TYPE}>)
+      }
+    } LIMIT ${MAX_GRAPH_RESOURCES + 1}
+  }
+}`;
 }
 
 /** Named graph with the data of a knowledge map in a data download. */

@@ -27,9 +27,9 @@ import {
   ReportLevel,
   describeImportReport,
   importKnowledgeMapTrig,
-  iriRef,
-  isSafeIri,
   knowledgeMapSlug,
+  makeIriInUseQuery,
+  makeIsKnowledgeMapQuery,
 } from './data/KnowledgeMapTrig';
 import * as KnowledgeMapImportEvents from './KnowledgeMapImportEvents';
 
@@ -85,10 +85,10 @@ const ALERT_TYPES: { [level in ReportLevel]: AlertType } = {
 /**
  * Imports knowledge maps from TriG files.
  *
- * Only knowledge map graphs (e.g. from `rs-knowledge-map-export`) are imported, each
- * map keeps its IRI; maps that already exist are skipped. Other graphs in the file
- * are not imported and are listed in the report. Maps with nodes without position
- * are laid out automatically.
+ * Only the layout of knowledge maps (e.g. from `rs-knowledge-map-export`) is imported. Each
+ * map keeps its IRI; a map that already exists is skipped, and a map whose IRI is used by
+ * another resource is not imported. Other graphs in the file are not imported and are
+ * mentioned in the report. Maps with nodes without position are laid out automatically.
  *
  * @example
  * <rs-knowledge-map-import id='km-import' drop-area-template='{{> template}}'>
@@ -252,18 +252,18 @@ export class KnowledgeMapImport extends Component<KnowledgeMapImportProps, State
 
   private makeBackend(): KnowledgeMapImportBackend {
     const metadata = parseMetadata(this.props.metadata || DEFAULT_METADATA);
+    const ask = (query: string, repository: string) =>
+      SparqlClient.ask(query, { context: { repository } }).toPromise();
+    // knowledge maps are stored with the assets, the IRI may also name data
+    const { repository = 'default' } = this.context.semanticContext;
+    const repositories = repository === 'assets' ? ['assets'] : ['assets', repository];
     return {
-      knowledgeMapExists: (iri, graph) => {
-        const patterns = [
-          isSafeIri(iri) ? `{ ?container <http://www.w3.org/ns/ldp#contains> ${iriRef(iri)} }` : undefined,
-          isSafeIri(graph) ? `{ GRAPH ${iriRef(graph)} { ?s ?p ?o } }` : undefined,
-        ].filter((pattern) => pattern);
-        if (patterns.length === 0) {
-          return Promise.resolve(false);
+      iriUse: async (iri) => {
+        if (await ask(makeIsKnowledgeMapQuery(iri), 'assets')) {
+          return 'knowledge-map';
         }
-        return SparqlClient.ask(`ASK { ${patterns.join(' UNION ')} }`, {
-          context: { repository: 'assets' },
-        }).toPromise();
+        const inUse = await Promise.all(repositories.map((id) => ask(makeIriInUseQuery(iri), id)));
+        return inUse.some((used) => used) ? 'other' : 'unused';
       },
       saveKnowledgeMap: async (label: string, diagram: Reactodia.SerializedDiagram, iri?: string) => {
         const triples = await metadata;

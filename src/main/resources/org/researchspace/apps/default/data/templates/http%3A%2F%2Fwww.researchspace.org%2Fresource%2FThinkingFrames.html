@@ -28,7 +28,16 @@
   <rs-dashboard
     home-page-iri="http://www.researchspace.org/resource/Start"
 
-    [[#if (urlParam "view")]]
+    [[#if (urlParam "graph")]]
+      [[!-- New knowledge map with the content of a named graph, see "Open in knowledge map" on the data import page.
+            The graph is URI-encoded, so whatever the URL contains it can neither end the JSON string nor the
+            attribute: the encoded value has no " & < >, and the attribute uses double quotes because the
+            encoding keeps '. The knowledge map template decodes it, the knowledge map editor checks the IRI. --]]
+      initial-view="{&quot;view&quot;: &quot;knowledge-map&quot;,
+                     &quot;resource&quot;: &quot;&quot;,
+                     &quot;data&quot;: {&quot;graph&quot;: &quot;[[encodeUriComponent (urlParam "graph" escape=false)]]&quot;,
+                                    &quot;customLabel&quot;: &quot;Knowledge map of a named graph&quot;}}"
+    [[else]][[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", 
                     "resource": "[[urlParam "resource"]]", 
                     "data": {[[#if (urlParam "entityTypeConfig")]]
@@ -62,7 +71,7 @@
 
                             } 
                     }'
-    [[/if]] 
+    [[/if]][[/if]]
     [[#if view]]
       initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
     [[/if]] 
@@ -249,7 +258,7 @@
     	"id": "knowledge-map",
       "label": "Knowledge map",
       "description": "Express research thinking and processes as networks of relations",
-      "iconName": "account_tree",
+      "iconName": "hub",
       "template": "{{> knowledgeMapTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,

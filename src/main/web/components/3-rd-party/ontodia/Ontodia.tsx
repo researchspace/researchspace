@@ -34,6 +34,7 @@ import { BuiltInEvents, trigger, listen, registerEventSource, unregisterEventSou
 import { Cancellation, WrappingError } from 'platform/api/async';
 import { Component } from 'platform/api/components';
 import { Rdf, turtle, vocabularies } from 'platform/api/rdf';
+import { SparqlClient } from 'platform/api/sparql';
 import {
   constructUrlForResourceSync,
   navigateToResource,
@@ -73,6 +74,12 @@ import {
   extractFieldConfiguration,
 } from './authoring/OntodiaFieldConfiguration';
 import { OntodiaPersistenceResult } from './authoring/OntodiaPersistence';
+import {
+  GraphTooLargeError,
+  MAX_GRAPH_RESOURCES,
+  makeGraphKnowledgeMapQuery,
+  makeGraphResourceCountQuery,
+} from './data/KnowledgeMapTrig';
 import {
   getEntityMetadata,
   convertCompositeValueToElementModel,
@@ -145,8 +152,13 @@ export interface OntodiaConfig {
    */
   query?: string;
   /**
+   * Named graph whose content is shown (all statements except rdf:type), laid out
+   * automatically. If property diagram or query is defined, this will be ignored.
+   */
+  graph?: string;
+  /**
    * Iri to be used as a single diagram element
-   * If property diagram or query is defined, this will be ignored.
+   * If property diagram, query or graph is defined, this will be ignored.
    */
   iri?: string;
   /**
@@ -592,7 +604,12 @@ export class Ontodia extends Component<OntodiaProps, State> {
     const { fieldConfiguration } = this.state;
     return (
       <>
-        {this.state.layoutError ? <ErrorNotification errorMessage={this.state.layoutError} /> : null}
+        {this.state.layoutError ? (
+          <ErrorNotification
+            title={this.state.layoutError instanceof GraphTooLargeError ? this.state.layoutError.message : undefined}
+            errorMessage={this.state.layoutError}
+          />
+        ) : null}
         <Reactodia.Workspace
         ref={this.initWorkspace}
         defaultLayout={blockingDefaultLayout}
@@ -1368,7 +1385,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
   private setLayout(generation: number): Promise<void> {
     return this.importProvisionData()
       .then(() => {
-        const { query, iri, linkSettings, iris } = this.props;
+        const { query, graph, iri, linkSettings, iris } = this.props;
         const { diagramIri } = this.state;
         const linkOptions = linkSettings as ReadonlyArray<Reactodia.SerializedLinkOptions>;
 
@@ -1376,6 +1393,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
           return this.setLayoutByDiagram(diagramIri, generation);
         } else if (query) {
           return this.setLayoutBySparqlQuery(query, linkOptions);
+        } else if (graph) {
+          return this.setLayoutByGraph(graph, linkOptions);
         } else if (iri) {
           return this.setLayoutByIri(iri, linkOptions);
         } else if (iris) {
@@ -1425,6 +1444,30 @@ export class Ontodia extends Component<OntodiaProps, State> {
       )
       // Wait for the layout history batch.
       .then(() => performLayout({}));
+  }
+
+  /**
+   * Sets diagram layout to the content of a named graph, unless it has too many resources.
+   * The graph comes from a URL parameter: the queries refuse IRIs that are not safe.
+   */
+  private async setLayoutByGraph(
+    graph: string,
+    linkSettings: ReadonlyArray<Reactodia.SerializedLinkOptions>
+  ): Promise<void> {
+    const countQuery = makeGraphResourceCountQuery(graph);
+    const counts = await Promise.all(
+      this.getRepositories().map((repository) =>
+        SparqlClient.select(countQuery, { context: { repository } }).toPromise()
+      )
+    );
+    // repositories may be views of the same data, so the counts are not added up
+    const resources = Math.max(
+      ...counts.map((result) => Number(result.results.bindings[0]?.['resources']?.value || 0))
+    );
+    if (resources > MAX_GRAPH_RESOURCES) {
+      throw new GraphTooLargeError();
+    }
+    return this.setLayoutBySparqlQuery(makeGraphKnowledgeMapQuery(graph), linkSettings);
   }
 
   private importProvisionData = (): Promise<void> => {

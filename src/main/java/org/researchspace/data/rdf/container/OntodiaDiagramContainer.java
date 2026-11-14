@@ -25,6 +25,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.researchspace.data.rdf.PointedGraph;
+import org.researchspace.data.rdf.ReadConnection;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.vocabulary.LDP;
 import org.researchspace.vocabulary.CidocCRM;
@@ -58,8 +59,20 @@ public class OntodiaDiagramContainer extends DefaultLDPContainer {
         }
     }
 
+    /**
+     * A diagram is stored in a graph named after its IRI, and deleting or updating the diagram
+     * clears that graph. A new diagram therefore gets only an IRI that does not name anything
+     * yet: the IRI may come from a slug, i.e. from the name a user typed or from an imported file.
+     */
     @Override
     public IRI add(PointedGraph pointedGraph) throws RepositoryException {
+        IRI resource = pointedGraph.getPointer();
+        IRI context = new DefaultLDPResource(resource, this.repositoryProvider).getContextIRI();
+        ReadConnection read = getReadConnection();
+        if (read.hasOutgoingStatements(resource) || read.hasStatement(null, null, null, context)) {
+            throw new IllegalArgumentException(
+                    "The IRI is already used by another resource: " + resource.stringValue());
+        }
         return super.add(pointedGraph);
     }
 

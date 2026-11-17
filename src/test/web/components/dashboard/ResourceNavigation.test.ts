@@ -45,10 +45,12 @@ function viewAction(configuredTemplateIRI?: string, configuration = resourceConf
 // This initial-view fragment uses only standard Handlebars conditionals and
 // urlParam. Exercise its branches without needing the Java template server.
 function initialView(params: {[key: string]: string} = {}, context = {}) {
-  const fragment = framesSource.slice(framesSource.indexOf('[[#if (urlParam "view")]]'),
+  // Start at the outermost conditional (the graph parameter) so the fragment is balanced.
+  const fragment = framesSource.slice(framesSource.indexOf('[[#if (urlParam "graph")]]'),
     framesSource.indexOf("views='["));
   const engine = Handlebars.create();
   engine.registerHelper('urlParam', (name: string) => params[name] || '');
+  engine.registerHelper('encodeUriComponent', (value: string) => encodeURIComponent(value));
   // Protect literal JSON braces from becoming triple-brace Handlebars syntax.
   // The HTML parser below decodes these entities when reading the attribute.
   const clientFragment = fragment.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;')

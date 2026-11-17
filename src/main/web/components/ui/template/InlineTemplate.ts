@@ -19,10 +19,17 @@
 import { createElement } from 'react';
 
 import { Component, ComponentProps } from 'platform/api/components';
+import { trigger } from 'platform/api/events';
 
 import { TemplateItem } from './TemplateItem';
+import * as TemplateEvents from './TemplateEvents';
 
 export interface InlineTemplateConfig {
+  /**
+   * Identifier used as the source of the `Template.LoadFailed` event, which is
+   * triggered when the template cannot be loaded or rendered.
+   */
+  id?: string
   template?: string
   templateIri?: string
   options?: Record<string, any>
@@ -37,10 +44,24 @@ export class InlineTemplate extends Component<InlineTemplateProps> {
         template: {
           source: this.getTemplateString(),
           options: this.props.options
-        }
+        },
+        onError: this.onError,
       }
     );
   }
+
+  private onError = (error: any) => {
+    if (this.props.id) {
+      trigger({
+        eventType: TemplateEvents.TemplateLoadFailed,
+        source: this.props.id,
+        data: {
+          templateIri: this.props.templateIri,
+          message: error && error.message ? String(error.message) : String(error),
+        },
+      });
+    }
+  };
 
   private getTemplateString = (): string => {
     if (this.props.templateIri) {

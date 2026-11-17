@@ -34,8 +34,8 @@ import { BrowserPersistence, isValidChild, componentHasType, universalChildren }
 import { ErrorNotification } from 'platform/components/ui/notification';
 import { listen, trigger } from 'platform/api/events';
 
-import { FieldDefinitionProp } from './FieldDefinition';
-import { DataState, FieldValue, FieldError, CompositeValue } from './FieldValues';
+import { FieldDefinitionProp, getPreferredLabel } from './FieldDefinition';
+import { DataState, FieldValue, FieldError, CompositeValue, ErrorKind } from './FieldValues';
 import { readyToSubmit } from './FormModel';
 import { SemanticForm, SemanticFormProps } from './SemanticForm';
 import { ValuePatch, computeValuePatch, applyValuePatch } from './Serialization';
@@ -138,6 +138,11 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
 
   private readonly cancellation = new Cancellation();
   private unmounted = false;
+  /** Remove was requested before the data of the form was loaded. */
+  private removeRequested = false;
+  /** Form.ResourceRemoving was already triggered for the requested removal. */
+  private removingAnnounced = false;
+  private removing = false;
 
   constructor(props: ResourceEditorFormProps, context) {
     super(props, context);
@@ -165,7 +170,19 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       ).observe({
         value: (event) => {
           if (event.data.iri === this.props.subject) {
-            this.onRemove();
+            if (this.initialState) {
+              this.onRemove();
+            } else if (!this.removeRequested) {
+              // the form is still loading the data to remove: remove as soon as it is loaded,
+              // instead of failing (which made users press "Delete" a second time)
+              this.removeRequested = true;
+              this.removingAnnounced = true;
+              trigger({
+                eventType: FormEvents.FormResourceRemoving,
+                source: this.props.id,
+                data: { iri: getSubject(this.props).value },
+              });
+            }
           }
         }
       });
@@ -207,9 +224,16 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       const invalidFieldsIds = uniqBy(invalidFields, 'id')
         .map(({ id }) => `"${id}"`)
         .join(', ');
-      this.setState({
-        error: `The fields [${invalidFieldsIds}] don't have INSERT or DELETE patterns`,
-      });
+      const error = `The fields [${invalidFieldsIds}] don't have INSERT or DELETE patterns`;
+      this.setState({ error });
+      // the form is not shown, so it will not report Form.Loaded
+      if (this.props.id) {
+        trigger({
+          eventType: FormEvents.FormLoadFailed,
+          source: this.props.id,
+          data: { iri: getSubject(this.props).value, message: error },
+        });
+      }
     }
   }
 
@@ -251,6 +275,28 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         };
         const { model, recoveredFromStorage } = this.applyCachedData(this.initialState.model);
         this.setState({ model, recoveredFromStorage, submitting: false });
+        const loadingError = getLoadingError(this.initialState.model);
+        if (this.props.id) {
+          trigger(
+            loadingError
+              ? {
+                  eventType: FormEvents.FormLoadFailed,
+                  source: this.props.id,
+                  data: { iri: getSubject(this.props).value, message: loadingError },
+                }
+              : {
+                  eventType: FormEvents.FormLoaded,
+                  source: this.props.id,
+                  data: { iri: getSubject(this.props).value },
+                }
+          );
+        }
+        if (this.removeRequested) {
+          this.removeRequested = false;
+          if (!loadingError) {
+            this.onRemove();
+          }
+        }
       },
       onChanged: (model) => {
         this.setState({ model });
@@ -461,49 +507,43 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     }
   }
 
-  private onRemove = () => { 
+  private onRemove = () => {
+    // ignore repeated requests while the resource is being removed
+    if (this.removing) {
+      return;
+    }
+    const loadingError = getLoadingError(this.initialState.model);
+    if (loadingError) {
+      // the values of some fields are unknown, removing would leave part of the data behind
+      addNotification({ level: 'error', message: `The resource cannot be deleted: ${loadingError}` });
+      return;
+    }
+    this.removing = true;
     const itemToRemove = this.initialState.model.subject;
-    trigger({
-      eventType: FormEvents.FormResourceRemoving,
-      source: this.props.id,
-      data: { iri: itemToRemove.value },
-    })
-    this.persistence
-      .remove(this.initialState.model)
+    if (!this.removingAnnounced) {
+      trigger({
+        eventType: FormEvents.FormResourceRemoving,
+        source: this.props.id,
+        data: { iri: itemToRemove.value },
+      });
+    }
+    this.removingAnnounced = false;
+
+    // The form data includes the rdf:type statements of the resource, so check what kind of
+    // resource it is before removing the form data. An LDP resource (e.g. a knowledge map with
+    // its layout graph) is deleted first: the server only recognises it by its ldp:Resource type.
+    // Running the checks in parallel with the form removal could miss the LDP resource and
+    // leave e.g. the layout and container entry of a deleted knowledge map behind.
+    Kefir.combine([
+      this.executeAskIsResourceQuery(itemToRemove).take(1),
+      this.executeAskIsAuthorityDocumentQuery(itemToRemove).take(1),
+    ])
+      .take(1)
       .observe({
-        value: () => {
-          // if item to be removed is also a setItem also delete its connected setItems 
-          // (several sets can contain setItems connected to the resource to be removed)
-          // to delete a setItem, one needs to identify the parent set
-          this.getSetIris(itemToRemove)
-                .onValue(f => {
-                  f.results.bindings.map(binding => {
-                    new LdpService(binding["set"].value, { repository: "assets" })
-                      .deleteResource(Rdf.iri(binding["setItem"].value))
-                      .onValue(res => this.setState({}))
-                  })
-          });
-
-          performFormPostAction({
-            postAction: this.props.postAction,
-            subject: itemToRemove,
-            eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
-            queryParams: getPostActionUrlQueryParams(this.props),
-            sendNotification: true
-
-          });
-        },
-        error: () => {}
-      })
-    ;
-
-    this.executeAskIsResourceQuery(itemToRemove)
-      .onValue(answer => {
-        if (answer) 
-          new LdpPersistence()
-            .remove(this.initialState.model)
-            .observe({
-              value: () => {
+        value: ([isLdpResource, isAuthorityDocument]) => {
+          // forms with LDP persistence delete the LDP resource themselves
+          const removingLdpResource = isLdpResource && !(this.persistence instanceof LdpPersistence)
+            ? new LdpPersistence().remove(this.initialState.model).map(() => {
                 // if item to be removed is a set also delete the set items
                 this.getSetItemIris(itemToRemove).onValue(f => {
                   f.results.bindings.map(binding => {
@@ -511,40 +551,68 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
                       .deleteResource(Rdf.iri(binding["setItem"].value))
                       .onValue(res => this.setState({}))
                   })
-                });  
-                             
+                });
+              })
+            : Kefir.constant<void>(undefined);
+
+          removingLdpResource
+            .flatMap(() => this.persistence.remove(this.initialState.model))
+            .take(1)
+            .observe({
+              value: () => {
+                // if item to be removed is also a setItem also delete its connected setItems
+                // (several sets can contain setItems connected to the resource to be removed)
+                // to delete a setItem, one needs to identify the parent set
+                this.getSetIris(itemToRemove)
+                      .onValue(f => {
+                        f.results.bindings.map(binding => {
+                          new LdpService(binding["set"].value, { repository: "assets" })
+                            .deleteResource(Rdf.iri(binding["setItem"].value))
+                            .onValue(res => this.setState({}))
+                        })
+                });
+
+                if (isAuthorityDocument) {
+                  this.removeAuthorityDocumentGraph(itemToRemove);
+                }
+
                 performFormPostAction({
                   postAction: this.props.postAction,
                   subject: itemToRemove,
                   eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
                   queryParams: getPostActionUrlQueryParams(this.props),
+                  sendNotification: true
                 });
               },
-              error: () => {}
-            })
-          ;     
-      });
-
-    this.executeAskIsAuthorityDocumentQuery(itemToRemove)
-      .onValue(answer => {
-        if (answer) {
-          //do a delete of the whole graph 
-          RDFGraphStoreService.deleteGraph({ targetGraph: itemToRemove, repository: "authorities"})
-            .onValue((_) => {
-              // FIRE EVENT
-              trigger({
-                eventType: GraphActionEvents.GraphActionSuccess,
-                source: Math.random().toString()
-              }); })
-            .onError((error: string) => {
-              addNotification({
-                level: 'error',
-                message: error,
-              });
+              error: (error) => {
+                this.removing = false;
+                addNotification({ level: 'error', message: 'Failed to delete the resource' }, error);
+              }
             });
-          /* TODO: handle itemToRemove+/extended_context graph deletion for SN, KM, etc.*/
-        }  
-      });  
+        },
+        error: (error) => {
+          this.removing = false;
+          addNotification({ level: 'error', message: 'Failed to delete the resource' }, error);
+        }
+      });
+  }
+
+  private removeAuthorityDocumentGraph(itemToRemove: Rdf.Iri) {
+    //do a delete of the whole graph
+    RDFGraphStoreService.deleteGraph({ targetGraph: itemToRemove, repository: "authorities"})
+      .onValue((_) => {
+        // FIRE EVENT
+        trigger({
+          eventType: GraphActionEvents.GraphActionSuccess,
+          source: Math.random().toString()
+        }); })
+      .onError((error: string) => {
+        addNotification({
+          level: 'error',
+          message: error,
+        });
+      });
+    /* TODO: handle itemToRemove+/extended_context graph deletion for SN, KM, etc.*/
   }
 
   private  executeAskIsResourceQuery(resourceIri: Rdf.Iri): Kefir.Property<boolean> {
@@ -721,6 +789,40 @@ function getSubject(props: ResourceEditorFormProps): Rdf.Iri {
     subjectIri = Rdf.iri(subjectIri);
   }
   return subjectIri || Rdf.iri('');
+}
+
+/**
+ * Returns a description of the errors that make the data of the resource incomplete, or
+ * `undefined` if it was loaded completely: errors in the configuration of a form (e.g. a
+ * missing field definition) and fields whose values could not be loaded (failing select
+ * pattern), also in nested forms. Other errors, e.g. a value set that failed to load or
+ * an invalid value, do not prevent removing the resource.
+ */
+function getLoadingError(model: CompositeValue): string | undefined {
+  const errors: string[] = [];
+  const visit = (composite: CompositeValue, path: string[]) => {
+    composite.errors
+      .filter((e) => e.kind === ErrorKind.Configuration || e.kind === ErrorKind.Loading)
+      .forEach((e) => errors.push(`${[...path, 'Form'].join(' / ')}: ${e.message}`));
+    composite.fields.forEach((state, fieldId) => {
+      const definition = composite.definitions.get(fieldId);
+      const fieldPath = [...path, (definition && getPreferredLabel(definition.label)) || fieldId];
+      state.errors
+        .filter((e) => e.kind === ErrorKind.Loading)
+        .forEach((e) => errors.push(`${fieldPath.join(' / ')}: ${e.message}`));
+      state.values.forEach((value) => {
+        if (FieldValue.isComposite(value)) {
+          visit(value, fieldPath);
+        }
+      });
+    });
+  };
+  visit(model, []);
+  if (errors.length === 0) {
+    return undefined;
+  }
+  const more = errors.length - 3;
+  return errors.slice(0, 3).join('; ') + (more > 0 ? ` (and ${more} more)` : '');
 }
 
 function getInvalidFields(fields: ReadonlyArray<FieldDefinitionProp>) { 

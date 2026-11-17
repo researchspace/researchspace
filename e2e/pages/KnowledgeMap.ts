@@ -48,6 +48,17 @@ export class KnowledgeMap {
     return km;
   }
 
+  /** The knowledge map already open in the page. */
+  static async current(page: Page): Promise<KnowledgeMap> {
+    const km = new KnowledgeMap(page);
+    await km.waitLoaded();
+    return km;
+  }
+
+  async nodeCount(): Promise<number> {
+    return this.page.locator(sel.km.anyNode).count();
+  }
+
   get canvas(): Locator {
     return this.page.locator(sel.km.canvas);
   }

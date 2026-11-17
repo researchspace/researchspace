@@ -111,50 +111,69 @@ export function getDiagramByIri(
   diagram: Reactodia.SerializedDiagram;
 }> {
   const ldpService = new LdpService(VocabPlatform.OntodiaDiagramContainer.value, context);
+  return ldpService
+    .getResourceRequest(diagramIri, 'text/turtle')
+    .flatMap((resource) => parseDiagramFromTurtle(resource))
+    .toPromise();
+}
+
+/**
+ * Parses label and layout of a diagram from its Turtle serialization,
+ * supporting both the current (Reactodia) and the legacy Ontodia formats.
+ *
+ * The Turtle must describe exactly one diagram resource.
+ */
+export function parseDiagramFromTurtle(
+  turtle: string
+): Kefir.Property<{ label: string; diagram: Reactodia.SerializedDiagram }> {
   const documentLoader = JsonLd.makeDocumentLoader({
     overrideContexts: {
       [Reactodia.DiagramContextV1]: OntodiaContextV1,
     },
   });
-  return ldpService
-    .getResourceRequest(diagramIri, 'text/turtle')
-    .flatMap((resource) =>
-      JsonLd.fromRdf(resource, {
-        documentLoader,
-        format: 'text/turtle',
-        useNativeTypes: true,
-      })
-    )
-    .flatMap(
-      (json): Kefir.Property<{ label: string; diagram: Reactodia.SerializedDiagram }> => {
-        if (
-          json.length > 0 &&
-          json[0] &&
-          json[0]['@type'] &&
-          json[0]['@type'] instanceof Array &&
-          json[0]['@type'].indexOf(ontodiaNsv0.diagram.value) >= 0
-        ) {
-          const oldDiagram = JSON.parse(json[0][ontodiaNsv0.diagramLayoutString.value][0]['@value']);
-          return Kefir.constant({
-            label: json[0][crm.symbolic_content.value] as string,
-            diagram: convertToSerializedDiagram({
-              layoutData: oldDiagram.layoutData,
-              linkTypeOptions: oldDiagram.linkSettings,
-            }),
-          });
-        } else {
-          return JsonLd.frame(json, JSONLD_DIAGRAM_FRAME, { documentLoader }).map((diagram) => ({
-            label: diagram['@graph'][0][crm.symbolic_content.value] as string,
-            diagram: {
-              linkTypeOptions: [],
-              ...diagram['@graph'][0],
-              ...{ '@context': diagram['@context'] },
-            } as Reactodia.SerializedDiagram,
-          }));
-        }
+  return JsonLd.fromRdf(turtle, {
+    documentLoader,
+    format: 'text/turtle',
+    useNativeTypes: true,
+  }).flatMap(
+    (json): Kefir.Property<{ label: string; diagram: Reactodia.SerializedDiagram }> => {
+      if (
+        json.length > 0 &&
+        json[0] &&
+        json[0]['@type'] &&
+        json[0]['@type'] instanceof Array &&
+        json[0]['@type'].indexOf(ontodiaNsv0.diagram.value) >= 0
+      ) {
+        const oldDiagram = JSON.parse(json[0][ontodiaNsv0.diagramLayoutString.value][0]['@value']);
+        return Kefir.constant({
+          label: jsonLdLiteralValue(json[0][crm.symbolic_content.value]),
+          diagram: convertToSerializedDiagram({
+            layoutData: oldDiagram.layoutData,
+            linkTypeOptions: oldDiagram.linkSettings,
+          }),
+        });
+      } else {
+        return JsonLd.frame(json, JSONLD_DIAGRAM_FRAME, { documentLoader }).map((diagram) => ({
+          // a language-tagged label is framed as {"@value", "@language"}
+          label: jsonLdLiteralValue(diagram['@graph'][0][crm.symbolic_content.value]),
+          diagram: {
+            linkTypeOptions: [],
+            ...diagram['@graph'][0],
+            ...{ '@context': diagram['@context'] },
+          } as Reactodia.SerializedDiagram,
+        }));
       }
-    )
-    .toPromise();
+    }
+  ).toProperty();
+}
+
+/** Returns the value of a (possibly expanded) JSON-LD literal. */
+function jsonLdLiteralValue(value: any): string | undefined {
+  const first = Array.isArray(value) ? value[0] : value;
+  if (first && typeof first === 'object' && '@value' in first) {
+    return String(first['@value']);
+  }
+  return typeof first === 'string' ? first : undefined;
 }
 
 /**
@@ -342,18 +361,23 @@ function makeDiagramResource(
 
 /**
  * Save diagram
+ *
+ * @param slug optional LDP slug for the new diagram: either a full IRI (e.g. to keep
+ *   the IRI of an imported diagram; the server rejects it if a resource with this IRI
+ *   already exists in some container) or a local name. Defaults to `name`.
  */
 export function saveDiagram(
   name: string,
   diagram: Reactodia.SerializedDiagram,
-  metadata: ReadonlyArray<Rdf.Triple>
+  metadata: ReadonlyArray<Rdf.Triple>,
+  slug?: string
 ): Kefir.Property<Rdf.Iri> {
   const jsonldDiagram = makeDiagramResource(diagram, name, metadata);
   return new LdpService(VocabPlatform.OntodiaDiagramContainer.value)
     .createResourceRequest(
       VocabPlatform.OntodiaDiagramContainer,
       { data: JSON.stringify(jsonldDiagram), format: 'application/ld+json' },
-      maybe.Just(name)
+      maybe.Just(slug || name)
     )
     .map((iri) => new Rdf.Iri(iri));
 }

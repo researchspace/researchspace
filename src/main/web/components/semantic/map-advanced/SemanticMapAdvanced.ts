@@ -59,7 +59,7 @@ import { defaults as controlDefaults } from 'ol/control';
 import { Interaction } from 'ol/interaction';
 import { defaults as interactionDefaults } from 'ol/interaction';
 import { Extent } from 'ol/extent';
-import { extend, buffer, getWidth, containsExtent, isEmpty, createEmpty } from 'ol/extent';
+import { extend, buffer, getWidth, containsExtent, isEmpty, createEmpty, getCenter } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
 import { getRenderPixel, getVectorContext } from 'ol/render';
@@ -153,6 +153,7 @@ import {
   buildModel,
   selectAt,
   parseYear,
+  matchGroup,
   Tileset3dItem,
   Tileset3dModelState,
   Tileset3dRawItem,
@@ -163,6 +164,7 @@ import {
   FeatureAppearanceResolver,
   LayerOpacityOverrides,
   buildWebglFeatureStyle,
+  getFeatureColor,
   isPointFeature,
   isShownByGroup,
   isShownByYear,
@@ -590,6 +592,8 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
   private tilesetGeneration = 0;
   private tilesetScopeTimer: number | undefined;
   private detachTilesetScopeListener: (() => void) | null = null;
+  /** Picks models on click, for sources with `feature-field`. */
+  private tileset3dClickHandler: any = null;
   /** One shader per model colour ('' keeps the models' own); Cesium caches programs by source. */
   private tilesetShaders: { [color: string]: any } = {};
   private is3dEnabled: boolean = false;
@@ -1531,6 +1535,10 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
       this.detachTilesetScopeListener();
       this.detachTilesetScopeListener = null;
     }
+    if (this.tileset3dClickHandler) {
+      this.tileset3dClickHandler.destroy();
+      this.tileset3dClickHandler = null;
+    }
     if (this.ol3d) {
       try {
         this.ol3d.getCesiumScene().primitives.removeAll();
@@ -1573,6 +1581,7 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
       console.log('Selected feature CHANGED. sending new');
       this.triggerSendSelectedFeature();
       this.captureSharedState();
+      this.updateTileset3dHighlight();
     } else {
       //console.log("Groupcolors NOT changed.")
     }
@@ -1813,21 +1822,8 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
           console.log('Clicked on already selected feature - no state change needed');
         }
 
-        // Only show the popup if tupleTemplate prop is present
-        if (this.props.tupleTemplate) {
-          const geometry = feature.getGeometry();
-          const coord = getPopupCoordinate(geometry, evt.coordinate);
-          const { features = [feature] } = feature.getProperties();
-
-          const popupContent = features.map((feature) => {
-            const props = feature.getProperties();
-            return `<div>${SemanticMapAdvanced.createPopupContent(props, this.state.tupleTemplate)}</div>`;
-          });
-
-          // Offset the popup so it points at the middle of the marker not the tip
-          this.markerPopup.setOffset([0, -22]);
-          this.markerPopup.show(coord, `<mp-template-item>${popupContent.join('')}</mp-template-item>`);
-        }
+        // Offset the popup so it points at the middle of the marker not the tip
+        this.showFeaturePopup(feature, getPopupCoordinate(feature.getGeometry(), evt.coordinate), [0, -22]);
       } else {
         // No feature was clicked, reset selectedFeature to null
         this.clearSelection();
@@ -1865,6 +1861,25 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
         });
       }
     });
+  }
+
+  /**
+   * Opens the `tuple-template` popup of a feature, if the map has one, at `anchor` (a third
+   * coordinate is its height in the 3D view).
+   */
+  private showFeaturePopup(feature: Feature, anchor: number[], offset: [number, number]) {
+    if (!this.props.tupleTemplate) {
+      return;
+    }
+    const { features = [feature] } = feature.getProperties();
+
+    const popupContent = features.map((feature) => {
+      const props = feature.getProperties();
+      return `<div>${SemanticMapAdvanced.createPopupContent(props, this.state.tupleTemplate)}</div>`;
+    });
+
+    this.markerPopup.setOffset(offset);
+    this.markerPopup.show(anchor, `<mp-template-item>${popupContent.join('')}</mp-template-item>`);
   }
 
   private static createPopupContent(props, tupleTemplate: Data.Maybe<HandlebarsTemplateDelegate>) {
@@ -4604,6 +4619,106 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
     if (this.tileset3dRuntimes.length && scene.camera && scene.camera.moveEnd) {
       this.detachTilesetScopeListener = scene.camera.moveEnd.addEventListener(this.scheduleTileset3dScope);
     }
+    const Cesium = this.cesiumLib;
+    if (this.tileset3dRuntimes.some((runtime) => runtime.source.featureField)) {
+      this.tileset3dClickHandler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+      this.tileset3dClickHandler.setInputAction(
+        (click) => this.onTileset3dClick(scene, click.position),
+        Cesium.ScreenSpaceEventType.LEFT_CLICK
+      );
+    }
+  }
+
+  /**
+   * A click in the 3D view: a model of a source with `feature-field` selects the map feature of its
+   * group and opens its popup, as a click on that feature does in 2D; anywhere else clears it.
+   */
+  private onTileset3dClick(scene: any, position: any): void {
+    this.markerPopup.hide();
+    this.markerPopup.setOffset([0, 0]);
+    const picked = scene.pick(position);
+    // Both Cesium3DTileFeature and content without a batch table expose the tileset as `primitive`.
+    const tileset = picked && picked.primitive;
+    let feature: Feature | null = null;
+    this.tileset3dRuntimes.forEach((runtime) => {
+      if (feature || !tileset || !runtime.source.featureField) {
+        return;
+      }
+      const itemId = Object.keys(runtime.tilesets).find((id) => runtime.tilesets[id] === tileset);
+      const item = itemId && runtime.model.items.find((candidate) => candidate.id === itemId);
+      if (item) {
+        feature = this.findTileset3dFeature(runtime, item.group);
+      }
+    });
+    if (!feature) {
+      this.clearSelection();
+      return;
+    }
+    this.selectFeature(feature, { zoom: false });
+    const Cesium = this.cesiumLib;
+    const world = scene.pickPositionSupported ? scene.pickPosition(position) : undefined;
+    let anchor: number[];
+    if (world) {
+      // The clicked point on the model, height included, so the popup sits on the building.
+      const carto = Cesium.Cartographic.fromCartesian(world);
+      const [x, y] = transform(
+        [Cesium.Math.toDegrees(carto.longitude), Cesium.Math.toDegrees(carto.latitude)],
+        'EPSG:4326',
+        this.map.getView().getProjection()
+      );
+      anchor = [x, y, carto.height];
+    } else {
+      const geometry = feature.getGeometry();
+      anchor = getPopupCoordinate(geometry, getCenter(geometry.getExtent()) as [number, number]);
+    }
+    this.showFeaturePopup(feature, anchor, [0, 0]);
+  }
+
+  /** The feature shown at the current year whose `feature-field` matches `group`, if any. */
+  private findTileset3dFeature(runtime: Tileset3dRuntime, group: string): Feature | null {
+    for (const subject of Object.keys(this.featuresBySubject)) {
+      for (const feature of this.featuresBySubject[subject]) {
+        if (isFeatureOfGroup(feature, runtime, group) && this.isFeatureShown(feature as Feature<Geometry>)) {
+          return feature;
+        }
+      }
+    }
+    return null;
+  }
+
+  /** Model colour of a group: the selected feature's colour when it is that group's feature. */
+  private tileset3dModelColor(runtime: Tileset3dRuntime, group: string): string | undefined {
+    const selected = this.state.selectedFeature;
+    if (selected && isFeatureOfGroup(selected, runtime, group)) {
+      const [r, g, b] = getFeatureColor(selected as Feature<Geometry>);
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+    return runtime.source.modelColor;
+  }
+
+  /** Recolours the loaded models after the selection changed. */
+  private updateTileset3dHighlight(): void {
+    const Cesium = this.cesiumLib;
+    if (!Cesium) {
+      return;
+    }
+    this.tileset3dRuntimes.forEach((runtime) => {
+      if (!runtime.source.featureField) {
+        return;
+      }
+      runtime.model.items.forEach((item) => {
+        const tileset = runtime.tilesets[item.id];
+        // Still loading: gets the colour of the selection when its load started.
+        // shortcut: a selection changed mid-load is missed until the next change, fine for a few-second load.
+        if (!tileset || tileset.isDestroyed() || !tileset.customShader) {
+          return;
+        }
+        const shader = this.getTilesetShader(Cesium, this.tileset3dModelColor(runtime, item.group));
+        if (shader && tileset.customShader !== shader) {
+          tileset.customShader = shader;
+        }
+      });
+    });
   }
 
   private scheduleTileset3dScope = () => {
@@ -4870,7 +4985,7 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
           // registered at once, so a year change during the load already reaches it
           (created) => (runtime.tilesets[item.id] = created),
           runtime.inZoom,
-          runtime.source.modelColor
+          this.tileset3dModelColor(runtime, item.group)
         );
         if (tileset) {
           added.push(tileset);
@@ -6061,6 +6176,18 @@ export function createAnnotateControl(): Control {
     });
   }
   */
+}
+
+/** Whether a map feature's `feature-field` names `group` (features keep query bindings as RDF terms). */
+function isFeatureOfGroup(feature: Feature, runtime: Tileset3dRuntime, group: string): boolean {
+  const field = runtime.source.featureField;
+  const term = field ? feature.get(field) : null;
+  const value = term && typeof term === 'object' ? term.value : term;
+  return (
+    value !== undefined &&
+    value !== null &&
+    matchGroup(String(value), { [group]: true }, runtime.source.rules.identifierSeparator) === group
+  );
 }
 
 function getPopupCoordinate(geometry: Geometry, coordinate: [number, number]) {

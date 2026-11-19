@@ -533,6 +533,15 @@ data lists overlapping intervals for it. They are cheap: a hundred cost a few mi
 `model-color` (a CSS colour, e.g. `#c8c8c8`) replaces the models' own colours with one solid colour,
 still shaded by the sun, for plain massing models. Without it the models keep their own colours.
 
+### Clicking a model
+
+`feature-field` names the property of the map's own features (from its `query`) that holds the group
+identifier, e.g. `bw_id`. Clicking a model then selects the feature shown at the current year whose
+property matches the model's group (matched like `?identifier`, honouring `identifier-separator`)
+and opens its `tuple-template` popup, exactly like a click on it in 2D. The selected feature's model is
+drawn in the feature's colour, whichever view selected it. Without `feature-field`, models are not
+clickable.
+
 ### Height
 
 `height-offset` raises every tileset along the local vertical, in metres; `height-offset-field`

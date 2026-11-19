@@ -107,6 +107,13 @@ export interface Tileset3dSourceConfig {
    * plain grey massing. Default: the models keep their own colours.
    */
   modelColor?: string;
+  /**
+   * Property of the map's own features holding the group identifier, e.g. `bw_id`. Clicking a model
+   * then selects the feature shown at that year whose property matches its group (as `?identifier`
+   * matches, see `identifier-separator`) and opens its popup; selecting that feature highlights the
+   * model in the feature's colour. Default: models are not clickable.
+   */
+  featureField?: string;
   /** CRS of the `?footprint` WKT. Default `EPSG:4326`. */
   footprintCrs?: string;
 }
@@ -133,6 +140,7 @@ export interface Tileset3dSourceModel {
   placeholderColor: string;
   placeholderTopOpacity: number;
   modelColor?: string;
+  featureField?: string;
   footprintCrs: string;
 }
 
@@ -205,6 +213,7 @@ export function extractTileset3dSource(child: React.ReactNode): Tileset3dSourceM
     placeholderColor: props.placeholderColor || 'rgba(150, 160, 175, 0.5)',
     placeholderTopOpacity: Math.min(1, Math.max(0, number(props.placeholderTopOpacity, 0.15))),
     modelColor: props.modelColor || undefined,
+    featureField: props.featureField || undefined,
     footprintCrs: props.footprintCrs || 'EPSG:4326',
   };
 }

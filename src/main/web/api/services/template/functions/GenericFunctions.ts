@@ -132,6 +132,15 @@ export const GenericFunctions = {
   },
 
   /**
+   * Sorted copy of an array of strings, in lexical order; anything that is
+   * not an array gives an empty array. Pad numbers to a fixed width to sort
+   * them numerically, e.g. `{{#each (sort (split list ","))}}`.
+   */
+  sort: function (array) {
+    return Array.isArray(array) ? array.slice().sort() : [];
+  },
+
+  /**
    * Raw block for template escaping.
    */
   raw: function (options) {

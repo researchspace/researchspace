@@ -97,6 +97,12 @@ PREFIX : <http://www.researchspace.org/resource/system/service/rdsreconciliation
 
     [
       sp:subject :_results ;
+      sp:predicate :entityTypes ;
+      sp:object :_entityTypes
+    ]
+
+    [
+      sp:subject :_results ;
       sp:predicate :entityDataset ;
       sp:object :_entityDataset
     ]
@@ -207,6 +213,14 @@ PREFIX : <http://www.researchspace.org/resource/system/service/rdsreconciliation
 		spl:predicate :_entityType ;
 		spl:valueType xsd:string ;
 		ephedra:jsonPath "$.type[0].id"
+	] ;
+
+	spin:column [
+		a spin:Column ;
+		rdfs:comment "All the types of the entity, as a JSON array, e.g. [\"Concept\",\"Place\"]" ;
+		spl:predicate :_entityTypes ;
+		spl:valueType xsd:string ;
+		ephedra:jsonPath "$.type[*].id"
 	] ;
 
 	spin:column [

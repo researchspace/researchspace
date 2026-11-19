@@ -130,6 +130,7 @@ public class ReconciliationSailTest {
                 + "    rds:name ?label ;\n"
                 + "    rds:description ?description ;\n"
                 + "    rds:entityType ?type ;\n"
+                + "    rds:entityTypes ?types ;\n"
                 + "    rds:entityDataset ?dataset ;\n"
                 + "    rds:score ?score ;\n"
                 + "    rds:match ?match ;\n"
@@ -148,6 +149,7 @@ public class ReconciliationSailTest {
         assertEquals("Spanish painter, sculptor, and printmaker, 1881-1973",
                 ulan.getValue("description").stringValue());
         assertEquals("Person", ulan.getValue("type").stringValue());
+        assertEquals("[\"Person\"]", ulan.getValue("types").stringValue());
         assertEquals("ulan", ulan.getValue("dataset").stringValue());
         assertEquals("158.10873", ulan.getValue("score").stringValue());
         assertEquals("true", ulan.getValue("match").stringValue());
@@ -163,7 +165,11 @@ public class ReconciliationSailTest {
         assertFalse(gnd.hasBinding("description"));
         assertEquals("1", gnd.getValue("ordinal").stringValue());
 
-        assertEquals("false", results.get(2).getValue("match").stringValue());
+        // rds:entityType is the first type only, rds:entityTypes all of them
+        BindingSet twoTypes = results.get(2);
+        assertEquals("Concept", twoTypes.getValue("type").stringValue());
+        assertEquals("[\"Concept\",\"Person\"]", twoTypes.getValue("types").stringValue());
+        assertEquals("false", twoTypes.getValue("match").stringValue());
         assertEquals("3", results.get(3).getValue("ordinal").stringValue());
     }
 

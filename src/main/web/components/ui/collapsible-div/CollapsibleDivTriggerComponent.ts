@@ -43,10 +43,25 @@ export class CollapsibleDivTriggerComponent extends Component<Props, {}> {
         className: classNames(CLASSNAME, expanded ? expandedCssClass : collapsedCssClass),
         style,
         onClick,
+        onKeyDown: this.onKeyDown,
+        role: 'button',
+        tabIndex: 0,
+        'aria-expanded': Boolean(expanded),
       },
       this.props.children
     );
   }
+
+  /** Enter and Space toggle like a click, unless they come from a nested control. */
+  private onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget || !this.props.onClick) {
+      return;
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.props.onClick();
+    }
+  };
 }
 
 export default CollapsibleDivTriggerComponent;

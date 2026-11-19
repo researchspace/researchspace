@@ -43,14 +43,13 @@ const CRM_SYMBOLIC_CONTENT = 'http://www.cidoc-crm.org/cidoc-crm/P190_has_symbol
 const LDP_CONTAINS = 'http://www.w3.org/ns/ldp#contains';
 const CRM_HAS_TYPE = 'http://www.cidoc-crm.org/cidoc-crm/P2_has_type';
 const CRM_IS_IDENTIFIED_BY = 'http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by';
-const SKOS_PREF_LABEL = 'http://www.w3.org/2004/02/skos/core#prefLabel';
 
 /**
- * Label properties of the resources on a knowledge map, the same as the `dataLabelProperty`
- * of the knowledge map editor (rsp:KnowledgeMapOntodiaConfig): directly on the resource,
- * or on its appellations (crm:P1_is_identified_by).
+ * Label properties of the appellations (crm:P1_is_identified_by) of the resources on a
+ * knowledge map, as in the `dataLabelProperty` of the knowledge map editor
+ * (rsp:KnowledgeMapOntodiaConfig). Labels directly on a resource are exported with its
+ * other literal values, see {@link makeResourceLiteralsQuery}.
  */
-const DIRECT_LABEL_PROPERTIES = [RDFS_LABEL, CRM_SYMBOLIC_CONTENT, SKOS_PREF_LABEL];
 const APPELLATION_LABEL_PROPERTIES = [CRM_SYMBOLIC_CONTENT, RDFS_LABEL];
 
 const N3Util = N3.Util;
@@ -943,21 +942,25 @@ export function makeExistingStatementsQuery(statements: ReadonlyArray<DiagramSta
 }`;
 }
 
-/**
- * SPARQL query returning the rdf:type and crm:P2_has_type values and the labels
- * (see {@link DIRECT_LABEL_PROPERTIES}) of the given resources.
- */
+/** SPARQL query returning the rdf:type and crm:P2_has_type values of the given resources. */
 export function makeResourceTypesQuery(resourceIris: ReadonlyArray<string>): string {
   return `SELECT DISTINCT ?s ?p ?o WHERE {
   VALUES ?s { ${iriList(resourceIris)} }
-  {
-    VALUES ?p { <${RDF_TYPE}> <${CRM_HAS_TYPE}> }
-    ?s ?p ?o .
-  } UNION {
-    VALUES ?p { ${iriList(DIRECT_LABEL_PROPERTIES)} }
-    ?s ?p ?o .
-    FILTER(isLiteral(?o))
-  }
+  VALUES ?p { <${RDF_TYPE}> <${CRM_HAS_TYPE}> }
+  ?s ?p ?o .
+}`;
+}
+
+/**
+ * SPARQL query returning every statement of the given resources whose value is a literal:
+ * labels, notes, and typed values such as the begin and end dates of a time-span
+ * (crm:P82a_begin_of_the_begin, crm:P82b_end_of_the_end, ...).
+ */
+export function makeResourceLiteralsQuery(resourceIris: ReadonlyArray<string>): string {
+  return `SELECT DISTINCT ?s ?p ?o WHERE {
+  VALUES ?s { ${iriList(resourceIris)} }
+  ?s ?p ?o .
+  FILTER(isLiteral(?o))
 }`;
 }
 
@@ -994,8 +997,10 @@ export function makeResourceAppellationsQuery(resourceIris: ReadonlyArray<string
  *   - the statements shown as links (if they are in the database)
  *   - the rdf:type and crm:P2_has_type values of every resource on the map, including the
  *     types not shown on the map
- *   - the labels of every resource, directly on it or through its appellations (with the
- *     labels and types of the appellations)
+ *   - every literal value of every resource on the map (labels, notes, dates such as the
+ *     begin and end of a time-span, ...), whatever its property and datatype
+ *   - the labels of every resource through its appellations (with the labels and types of
+ *     the appellations)
  * Everything is written into one named graph, {@link knowledgeMapDataGraph}.
  */
 export async function exportKnowledgeMapDataTrig(
@@ -1014,6 +1019,7 @@ export async function exportKnowledgeMapDataTrig(
   }
   for (const batch of chunk(getDiagramResourceIris(diagram), 100)) {
     (await backend.selectData(makeResourceTypesQuery(batch))).forEach(add);
+    (await backend.selectData(makeResourceLiteralsQuery(batch))).forEach(add);
     (await backend.selectData(makeResourceAppellationsQuery(batch))).forEach(add);
   }
   return {

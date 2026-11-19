@@ -609,10 +609,11 @@ describe('KnowledgeMapTrig', () => {
       expect(report.ignoredGraphs).to.deep.equal([DATA_GRAPH]);
     });
 
-    it('downloads the data shown on the map without layout, with types and labels of all resources', async () => {
+    it('downloads the data shown on the map without layout, with types and literals of all resources', async () => {
       const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
       const RDFS_LABEL = 'http://www.w3.org/2000/01/rdf-schema#label';
       const SKOS_PREF_LABEL = 'http://www.w3.org/2004/02/skos/core#prefLabel';
+      const XSD = 'http://www.w3.org/2001/XMLSchema#';
       const database = (
         await parseTrig(`<${DATA_GRAPH}> {
           <${EX}rome> a <${CRM}E53_Place> ; <${CRM}P2_has_type> <${EX}type/city> ;
@@ -624,6 +625,11 @@ describe('KnowledgeMapTrig', () => {
           _:identifier a <${CRM}E42_Identifier> .
           <${EX}ostia> a <${CRM}E53_Place> ; <${SKOS_PREF_LABEL}> "Ostia" .
           <${EX}via> a <${CRM}E53_Place> .
+          <${EX}founding> a <${CRM}E52_Time-Span> ;
+            <${CRM}P82a_begin_of_the_begin> "-0753-04-21"^^<${XSD}date> ;
+            <${CRM}P82b_end_of_the_end> "-0753-04-21T23:59:59Z"^^<${XSD}dateTime> ;
+            <${EX}durationInDays> 1 ;
+            <${EX}during> <${EX}notOnTheMap> .
         }`)
       ).map((q) => ({ s: q.subject, p: q.predicate, o: q.object }));
       const iris = (text: string) => (text.match(/<[^>]+>/g) || []).map((iri) => iri.slice(1, -1));
@@ -640,6 +646,7 @@ describe('KnowledgeMapTrig', () => {
                 elements: [
                   { '@type': 'Element', '@id': 'e1', iri: `${EX}rome`, position: { x: 0, y: 0 } } as any,
                   { '@type': 'Element', '@id': 'e2', iri: `${EX}ostia`, position: { x: 300, y: 120 } } as any,
+                  { '@type': 'Element', '@id': 'e3', iri: `${EX}founding`, position: { x: 600, y: 120 } } as any,
                   // not a plain IRI (e.g. from a crafted file): never written into a query
                   {
                     '@type': 'Element',
@@ -705,13 +712,11 @@ describe('KnowledgeMapTrig', () => {
               ),
             ]);
           }
-          const labels = [RDFS_LABEL, `${CRM}P190_has_symbolic_content`, SKOS_PREF_LABEL];
+          if (query.indexOf('isLiteral(?o)') >= 0) {
+            return Promise.resolve(database.filter((t) => resources.indexOf(t.s) >= 0 && isLiteral(t.o)));
+          }
           return Promise.resolve(
-            database.filter(
-              (t) =>
-                resources.indexOf(t.s) >= 0 &&
-                ([RDF_TYPE, `${CRM}P2_has_type`].indexOf(t.p) >= 0 || (labels.indexOf(t.p) >= 0 && isLiteral(t.o)))
-            )
+            database.filter((t) => resources.indexOf(t.s) >= 0 && [RDF_TYPE, `${CRM}P2_has_type`].indexOf(t.p) >= 0)
           );
         },
       };
@@ -728,7 +733,13 @@ describe('KnowledgeMapTrig', () => {
         `${EX}ostia ${RDF_TYPE} ${CRM}E53_Place`,
         `${EX}via ${RDF_TYPE} ${CRM}E53_Place`,
         `${EX}rome ${RDFS_LABEL} "Rome"`,
+        `${EX}rome ${EX}description "not a label"`,
         `${EX}ostia ${SKOS_PREF_LABEL} "Ostia"`,
+        // a time-span keeps its dates with their datatypes, but not its links to other resources
+        `${EX}founding ${RDF_TYPE} ${CRM}E52_Time-Span`,
+        `${EX}founding ${CRM}P82a_begin_of_the_begin "-0753-04-21"^^${XSD}date`,
+        `${EX}founding ${CRM}P82b_end_of_the_end "-0753-04-21T23:59:59Z"^^${XSD}dateTime`,
+        `${EX}founding ${EX}durationInDays "1"^^${XSD}integer`,
         `${EX}rome ${CRM}P1_is_identified_by ${EX}rome/name`,
         `${EX}rome/name ${RDF_TYPE} ${CRM}E41_Appellation`,
         `${EX}rome/name ${CRM}P2_has_type ${EX}type/primary_appellation`,

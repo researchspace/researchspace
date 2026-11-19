@@ -2,6 +2,7 @@
 import { expect } from 'chai';
 import { Parser as HtmlParser, Node } from 'html-to-react';
 import { GenericFunctions } from 'platform/api/services/template/functions/GenericFunctions';
+import { StringsFunctions } from 'platform/api/services/template/functions/StringsFunctions';
 import { extractTemplateScope } from 'platform/api/module-loader/Registry';
 
 const source: string = require('!!raw-loader!../../../../main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FCoreferenceWithRDS.html').default;
@@ -18,12 +19,13 @@ function findNode(node: Node, matches: (node: Node) => boolean): Node | undefine
 }
 
 /**
- * Renders the groups of the result query the way the platform does: the markup
- * is parsed into nodes, the <template> elements of the <semantic-query> are
- * registered in its template scope, and the 'groups' partial is rendered with
- * the query results. Server-side comments are removed like on the server.
+ * Renders a partial of a component of the template the way the platform does:
+ * the markup is parsed into nodes, the <template> elements of the component are
+ * registered in its template scope, and the partial is rendered with the given
+ * data. Server-side comments are removed like on the server. Reading attributes
+ * from the DOM decodes HTML entities, like Registry does with he.decode.
  */
-async function render(bindings: Array<{[variable: string]: {value: string}}>) {
+async function renderPartial(component: (node: Node) => boolean, partial: string, data: object) {
   const markup = source.replace(/\[\[!--[\s\S]*?--\]\]/g, '');
   // the processing instruction returns the parsed nodes instead of React elements,
   // like TemplateParser.escapeRemoteTemplateHtml
@@ -31,19 +33,28 @@ async function render(bindings: Array<{[variable: string]: {value: string}}>) {
     shouldProcessNode: () => true,
     processNode: (node: Node) => node as any,
   }])) as any as Node;
-  const resultQuery = findNode(root, node => node.name === 'semantic-query'
-    && /-coreference-result-query$/.test(node.attribs.id || ''));
-  expect(resultQuery, 'result query').not.to.equal(undefined);
-  const scope = extractTemplateScope(resultQuery);
-  const template = await scope.compile('{{> groups}}');
+  const node = findNode(root, component);
+  expect(node, `component with the ${partial} partial`).not.to.equal(undefined);
+  const template = await extractTemplateScope(node).compile(`{{> ${partial}}}`);
   const element = document.createElement('div');
-  element.innerHTML = template({bindings, viewId: 'rds', recordIri});
+  element.innerHTML = template(data);
   return element;
 }
 
+/** Reads a JSON attribute like Registry: entities decoded, line breaks removed, then parsed. */
+function jsonAttribute(element: Element, name: string) {
+  return JSON.parse(element.getAttribute(name).replace(/(\r\n|\n|\r|\t)/gm, ''));
+}
+
+/** Renders the groups of the result query with the given query results. */
+function render(bindings: Array<{[variable: string]: {value: string}}>) {
+  return renderPartial(node => node.name === 'semantic-query'
+    && /-coreference-result-query$/.test(node.attribs.id || ''), 'groups', {bindings, viewId: 'rds', recordIri});
+}
+
 /** Packs an entry like the result query: position|~|IRI|~|dataset|~|record id|~|is reference|~|name|~|description */
-function entry(position: number, iri: string, dataset: string, isReference: boolean, name: string) {
-  return [('0000' + position).slice(-4), iri, dataset, '', isReference ? '1' : '0', name, ''].join('|~|');
+function entry(position: number, iri: string, dataset: string, isReference: boolean, name: string, description = '') {
+  return [('0000' + position).slice(-4), iri, dataset, '', isReference ? '1' : '0', name, description].join('|~|');
 }
 
 function group(members: string[], match = 'true', entries = String(members.length)) {
@@ -60,7 +71,9 @@ function group(members: string[], match = 'true', entries = String(members.lengt
 
 const wikidata = entry(0, 'http://www.wikidata.org/entity/Q64', 'wikidata', true, 'Berlin');
 const geonames = entry(2, 'https://sws.geonames.org/2950159/', 'geonames', false, 'Land Berlin');
-const gnd = entry(10, 'https://d-nb.info/gnd/4005728-8', 'gnd', false, 'Berlin (GND)');
+// quotes, an apostrophe, an ampersand, braces and a line break must all survive the JSON of the event data
+const gndDescription = 'Hauptstadt und Bundesland; "Doppelstadt" & it\'s {1307}\nUnion, 1370 gemeinsamer Rat';
+const gnd = entry(10, 'https://d-nb.info/gnd/4005728-8', 'gnd', false, 'Berlin (GND)', gndDescription);
 
 describe('sort template helper', () => {
   it('returns a sorted copy and leaves the input unchanged', () => {
@@ -72,6 +85,15 @@ describe('sort template helper', () => {
   it('returns an empty array for anything but an array', () => {
     expect(GenericFunctions.sort(undefined)).to.deep.equal([]);
     expect(GenericFunctions.sort('0002|a')).to.deep.equal([]);
+  });
+});
+
+describe('concat template helper', () => {
+  it('joins its arguments and leaves out undefined and null', () => {
+    const options = {};
+    expect(StringsFunctions.concat('a', '|~|', 'b', options)).to.equal('a|~|b');
+    expect(StringsFunctions.concat('a', '|~|', undefined, options)).to.equal('a|~|');
+    expect(StringsFunctions.concat(null, 1, options)).to.equal('1');
   });
 });
 
@@ -111,8 +133,23 @@ describe('Coreference with RDS result groups', () => {
     const element = await render([group([gnd, wikidata, geonames])]);
     const addAll = element.querySelector('.rds-group > .rds-group__add-all mp-event-trigger');
     expect(addAll, '"Add all in group" must not be inside the trigger').not.to.equal(null);
-    expect(JSON.parse(addAll.getAttribute('data')).references).to.deep.equal([
-      'http://www.wikidata.org/entity/Q64', 'https://sws.geonames.org/2950159/', 'https://d-nb.info/gnd/4005728-8',
+    expect(jsonAttribute(addAll, 'data').references).to.deep.equal([
+      {iri: 'http://www.wikidata.org/entity/Q64', description: ''},
+      {iri: 'https://sws.geonames.org/2950159/', description: ''},
+      {iri: 'https://d-nb.info/gnd/4005728-8', description: gndDescription},
+    ]);
+  });
+
+  it('adds one entry with its description', async () => {
+    const element = await renderPartial(node => node.name === 'semantic-query' && node.attribs.template === '{{> status}}',
+      'status', {
+        bindings: [{entry: {value: 'https://d-nb.info/gnd/4005728-8'}}],
+        entry: gnd.split('|~|'), viewId: 'rds', recordIri,
+      });
+    const add = element.querySelector('mp-event-trigger');
+    expect(add.getAttribute('id')).to.equal('rds-add-coreference-trigger');
+    expect(jsonAttribute(add, 'data').references).to.deep.equal([
+      {iri: 'https://d-nb.info/gnd/4005728-8', description: gndDescription},
     ]);
   });
 
@@ -140,5 +177,39 @@ describe('Coreference with RDS result groups', () => {
     const proxies = source.match(/proxy-event-type='Component.Refresh'\s*proxy-targets='([^']*)'/g);
     expect(proxies).to.have.length(2);
     proxies.forEach(proxy => expect(proxy).to.contain(`["{{viewId}}-coreference-status"]`));
+  });
+});
+
+describe('Coreference with RDS confirmation', () => {
+  function renderConfirm(references: Array<{iri: string, description?: string}>) {
+    return renderPartial(node => node.name === 'mp-event-target-template-render'
+      && /-coreference-confirm$/.test(node.attribs.id || ''), 'confirm', {references, recordIri, viewId: 'rds'});
+  }
+
+  it('records the identifiers and their descriptions', async () => {
+    const element = await renderConfirm([
+      {iri: 'https://d-nb.info/gnd/4005728-8', description: gndDescription},
+      {iri: 'https://sws.geonames.org/2950159/', description: ''},
+    ]);
+    const values = (field: string) => jsonAttribute(
+      element.querySelector(`semantic-form-hidden-input[for='${field}']`), 'default-values');
+    expect(values('coreference')).to.deep.equal(['https://d-nb.info/gnd/4005728-8', 'https://sws.geonames.org/2950159/']);
+    expect(values('coreferenceDescription')).to.deep.equal([
+      'https://d-nb.info/gnd/4005728-8|~|' + gndDescription,
+      'https://sws.geonames.org/2950159/|~|',
+    ]);
+    const shown = Array.from(element.querySelectorAll('.rds-confirm__description')).map(node => node.textContent);
+    expect(shown).to.deep.equal([gndDescription]);
+  });
+
+  it('maps the description of an identifier like the entity/description knowledge pattern', async () => {
+    const element = await renderConfirm([{iri: 'https://d-nb.info/gnd/4005728-8', description: gndDescription}]);
+    const fields = jsonAttribute(element.querySelector('semantic-form'), 'fields');
+    const description = fields.find((field: any) => field.id === 'coreferenceDescription');
+    expect(description.insertPattern).to.contain('?identifier crm:P67i_is_referred_to_by ?description');
+    expect(description.insertPattern).to.contain('?description a crm:E73_Information_Object');
+    expect(description.insertPattern)
+      .to.contain('?description crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description>');
+    expect(description.insertPattern).to.contain('?descriptionAppellation crm:P190_has_symbolic_content ?text');
   });
 });

@@ -46,6 +46,22 @@
         crm:P33_used_specific_technique
             <http://www.researchspace.org/resource/system/vocab/resource_type/inline_rds_search> .   # crm:E29_Design_or_Procedure
 
+  When the reference entry has a description in RDS, it becomes the description
+  of the identifier, in the shape of the entity/description KP, so that it is
+  shown and edited like any other entity description:
+
+    <identifier> crm:P67i_is_referred_to_by <description> .
+    <description> a crm:E73_Information_Object ;         # <identifier>/description
+        crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> ;
+        crm:P1_is_identified_by <description>/primary_appellation .
+    <description>/primary_appellation a crm:E41_Appellation ;
+        crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> ;
+        crm:P190_has_symbolic_content "description of the reference entry" .
+
+  The "Add coreference" triggers pass the entries as {"iri": ..., "description": ...};
+  the description is written with {{stringify}}, which escapes quotes and line
+  breaks for the JSON of the event data.
+
   Nothing is written when the record already has the identifier. "Remove" on a
   coreferenced entry deletes all of the above again, see the deletePattern of the
   remove form; so does removing the identifier in the "Other identifier" field of
@@ -158,6 +174,8 @@
                                       ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue .
                                       ?timespan ?timespanProperty ?timespanValue .
                                       ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue .
+                                      ?description ?descriptionProperty ?descriptionValue .
+                                      ?descriptionAppellation ?descriptionAppellationProperty ?descriptionAppellationValue .
                                     } WHERE {
                                       BIND(IRI(CONCAT(STR($subject), \"/coreference/\", MD5(STR($value)))) AS ?identifier)
                                       $subject crm:P1_is_identified_by ?identifier .
@@ -166,28 +184,73 @@
                                       BIND(IRI(CONCAT(STR(?assignment), \"/primary_appellation\")) AS ?assignmentAppellation)
                                       BIND(IRI(CONCAT(STR(?assignment), \"/timespan\")) AS ?timespan)
                                       BIND(IRI(CONCAT(STR(?timespan), \"/primary_appellation\")) AS ?timespanAppellation)
+                                      BIND(IRI(CONCAT(STR(?identifier), \"/description\")) AS ?description)
+                                      BIND(IRI(CONCAT(STR(?description), \"/primary_appellation\")) AS ?descriptionAppellation)
                                       { ?identifier ?identifierProperty ?identifierValue }
                                       UNION { ?identifierAppellation ?identifierAppellationProperty ?identifierAppellationValue }
                                       UNION { ?assignment ?assignmentProperty ?assignmentValue }
                                       UNION { ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue }
                                       UNION { ?timespan ?timespanProperty ?timespanValue }
                                       UNION { ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue }
+                                      UNION { ?description ?descriptionProperty ?descriptionValue }
+                                      UNION { ?descriptionAppellation ?descriptionAppellationProperty ?descriptionAppellationValue }
                                     }"
-
+                                },
+                                {
+                                  "id": "coreferenceDescription",
+                                  "label": "Description of the coreference",
+                                  "xsdDatatype": "xsd:string",
+                                  "minOccurs": "0",
+                                  "maxOccurs": "unbound",
+                                  "insertPattern": "INSERT {
+                                      ?identifier crm:P67i_is_referred_to_by ?description .
+                                      ?description a crm:E73_Information_Object .
+                                      ?description crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                      ?description crm:P1_is_identified_by ?descriptionAppellation .
+                                      ?descriptionAppellation a crm:E41_Appellation .
+                                      ?descriptionAppellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+                                      ?descriptionAppellation crm:P190_has_symbolic_content ?text .
+                                    } WHERE {
+                                      BIND(STRBEFORE(STR($value), \"|~|\") AS ?content)
+                                      BIND(STRAFTER(STR($value), \"|~|\") AS ?text)
+                                      FILTER(STRLEN(?content) > 0 && STRLEN(?text) > 0)
+                                      BIND(IRI(CONCAT(STR($subject), \"/coreference/\", MD5(?content))) AS ?identifier)
+                                      BIND(IRI(CONCAT(STR(?identifier), \"/description\")) AS ?description)
+                                      BIND(IRI(CONCAT(STR(?description), \"/primary_appellation\")) AS ?descriptionAppellation)
+                                      FILTER NOT EXISTS { ?identifier crm:P67i_is_referred_to_by ?description }
+                                    }",
+                                  "deletePattern": "DELETE {
+                                      ?identifier crm:P67i_is_referred_to_by ?description .
+                                      ?description ?descriptionProperty ?descriptionValue .
+                                      ?descriptionAppellation ?descriptionAppellationProperty ?descriptionAppellationValue .
+                                    } WHERE {
+                                      BIND(IRI(CONCAT(STR($subject), \"/coreference/\", MD5(STRBEFORE(STR($value), \"|~|\")))) AS ?identifier)
+                                      BIND(IRI(CONCAT(STR(?identifier), \"/description\")) AS ?description)
+                                      BIND(IRI(CONCAT(STR(?description), \"/primary_appellation\")) AS ?descriptionAppellation)
+                                      ?identifier crm:P67i_is_referred_to_by ?description .
+                                      { ?description ?descriptionProperty ?descriptionValue }
+                                      UNION { ?descriptionAppellation ?descriptionAppellationProperty ?descriptionAppellationValue }
+                                    }"
                                 }
                               ]'>
 
                 [[!-- no selectPattern + force-defaults: the values below are always treated as new and inserted on save.
-                      The form refuses fields without both an insertPattern and a deletePattern, hence the deletePattern above. --]]
-                <semantic-form-hidden-input for='coreference' default-values='[{{#each references}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]' force-defaults=true></semantic-form-hidden-input>
+                      The form refuses fields without both an insertPattern and a deletePattern, hence the deletePatterns above.
+                      A description is passed as "IRI|~|description" (an IRI cannot contain "|"); entries
+                      without a description are passed with an empty one and skipped by the insertPattern. --]]
+                <semantic-form-hidden-input for='coreference' default-values='[{{#each references}}"{{iri}}"{{#unless @last}}, {{/unless}}{{/each}}]' force-defaults=true></semantic-form-hidden-input>
+                <semantic-form-hidden-input for='coreferenceDescription' default-values='[{{#each references}}{{stringify (concat iri "|~|" description)}}{{#unless @last}}, {{/unless}}{{/each}}]' force-defaults=true></semantic-form-hidden-input>
 
                 <div style="font-weight: 600; margin-bottom: 6px;">
                   Add coreference to {{#if recordLabel}}“{{recordLabel}}”{{else}}<mp-label iri='{{recordIri}}'></mp-label>{{/if}}
                 </div>
-                <div style="margin-bottom: 4px;">The following reference entries will be recorded as identifiers of the record:</div>
+                <div style="margin-bottom: 4px;">The following reference entries will be recorded as identifiers of the record, with their description:</div>
                 <ul style="margin: 0 0 8px; padding-left: 18px;">
                   {{#each references}}
-                    <li><a class="text-link-action" target="_blank" href="{{this}}" title="{{this}}">{{this}}</a></li>
+                    <li class="rds-confirm__entry">
+                      <a class="text-link-action" target="_blank" href="{{iri}}" title="{{iri}}">{{iri}}</a>
+                      {{#if description}}<div class="rds-confirm__description">{{description}}</div>{{/if}}
+                    </li>
                   {{/each}}
                 </ul>
 
@@ -236,6 +299,8 @@
                                       ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue .
                                       ?timespan ?timespanProperty ?timespanValue .
                                       ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue .
+                                      ?description ?descriptionProperty ?descriptionValue .
+                                      ?descriptionAppellation ?descriptionAppellationProperty ?descriptionAppellationValue .
                                     } WHERE {
                                       $value crm:P1_is_identified_by $subject .
                                       BIND(IRI(CONCAT(STR($subject), \"/primary_appellation\")) AS ?identifierAppellation)
@@ -243,12 +308,16 @@
                                       BIND(IRI(CONCAT(STR(?assignment), \"/primary_appellation\")) AS ?assignmentAppellation)
                                       BIND(IRI(CONCAT(STR(?assignment), \"/timespan\")) AS ?timespan)
                                       BIND(IRI(CONCAT(STR(?timespan), \"/primary_appellation\")) AS ?timespanAppellation)
+                                      BIND(IRI(CONCAT(STR($subject), \"/description\")) AS ?description)
+                                      BIND(IRI(CONCAT(STR(?description), \"/primary_appellation\")) AS ?descriptionAppellation)
                                       { $subject ?identifierProperty ?identifierValue }
                                       UNION { ?identifierAppellation ?identifierAppellationProperty ?identifierAppellationValue }
                                       UNION { ?assignment ?assignmentProperty ?assignmentValue }
                                       UNION { ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue }
                                       UNION { ?timespan ?timespanProperty ?timespanValue }
                                       UNION { ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue }
+                                      UNION { ?description ?descriptionProperty ?descriptionValue }
+                                      UNION { ?descriptionAppellation ?descriptionAppellationProperty ?descriptionAppellationValue }
                                     }"
                                 }
                               ]'>
@@ -260,7 +329,7 @@
                 </div>
                 <div style="margin-bottom: 8px;">
                   The identifier <a class="text-link-action" target="_blank" href="{{entry}}" title="{{entry}}">{{entry}}</a>
-                  and the record of its assignment will be deleted.
+                  with its description and the record of its assignment will be deleted.
                 </div>
 
                 <semantic-form-errors></semantic-form-errors>
@@ -477,7 +546,7 @@
                                   <mp-event-trigger id='{{viewId}}-add-all-coreferences-trigger-{{groupIndex}}'
                                                     type='Component.TemplateUpdate'
                                                     targets='["{{viewId}}-coreference-confirm"]'
-                                                    data='{ "references": [{{#each groupMembers}}"{{lookup (split this "|~|") 1}}"{{#unless @last}}, {{/unless}}{{/each}}],
+                                                    data='{ "references": [{{#each groupMembers}}{{#bind member=(split this "|~|")}}{"iri": "{{member.[1]}}", "description": {{stringify member.[6]}} }{{/bind}}{{#unless @last}}, {{/unless}}{{/each}}],
                                                             "recordIri": "{{recordIri}}",
                                                             {{#if recordLabel}}"recordLabel": "{{recordLabel}}",{{/if}}
                                                             {{#if scheme}}"scheme": "{{scheme}}",{{/if}}
@@ -591,7 +660,7 @@
                                                         <mp-event-trigger id='{{viewId}}-add-coreference-trigger'
                                                                           type='Component.TemplateUpdate'
                                                                           targets='["{{viewId}}-coreference-confirm"]'
-                                                                          data='{ "references": ["{{bindings.0.entry.value}}"],
+                                                                          data='{ "references": [{"iri": "{{bindings.0.entry.value}}", "description": {{stringify entry.[6]}} }],
                                                                                   "recordIri": "{{recordIri}}",
                                                                                   {{#if recordLabel}}"recordLabel": "{{recordLabel}}",{{/if}}
                                                                                   {{#if scheme}}"scheme": "{{scheme}}",{{/if}}

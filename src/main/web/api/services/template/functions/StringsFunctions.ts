@@ -33,5 +33,14 @@ export const StringsFunctions = {
       separator = ' ';
     }
     return text.split(separator);
+  },
+
+  /**
+   * Joins its arguments into one string; undefined and null are left out,
+   * e.g. `{{concat iri "|~|" description}}`.
+   */
+  concat: function(...args: any[]) {
+    // the last argument is the Handlebars options object
+    return args.slice(0, -1).map((value) => (value === undefined || value === null ? '' : String(value))).join('');
   }
 };

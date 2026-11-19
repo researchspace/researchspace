@@ -64,6 +64,8 @@
     ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue .
     ?timespan ?timespanProperty ?timespanValue .
     ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue .
+    ?description ?descriptionProperty ?descriptionValue .
+    ?descriptionAppellation ?descriptionAppellationProperty ?descriptionAppellationValue .
 } WHERE {
 	$subject crm:P1_is_identified_by $value . 
     $value crm:P1i_identifies $subject .
@@ -80,12 +82,16 @@
       BIND(IRI(CONCAT(STR(?assignment), \"/primary_appellation\")) AS ?assignmentAppellation)
       BIND(IRI(CONCAT(STR(?assignment), \"/timespan\")) AS ?timespan)
       BIND(IRI(CONCAT(STR(?timespan), \"/primary_appellation\")) AS ?timespanAppellation)
+      BIND(IRI(CONCAT(STR($value), \"/description\")) AS ?description)
+      BIND(IRI(CONCAT(STR(?description), \"/primary_appellation\")) AS ?descriptionAppellation)
       { $value ?identifierProperty ?identifierValue }
       UNION { ?identifierAppellation ?identifierAppellationProperty ?identifierAppellationValue }
       UNION { ?assignment ?assignmentProperty ?assignmentValue }
       UNION { ?assignmentAppellation ?assignmentAppellationProperty ?assignmentAppellationValue }
       UNION { ?timespan ?timespanProperty ?timespanValue }
       UNION { ?timespanAppellation ?timespanAppellationProperty ?timespanAppellationValue }
+      UNION { ?description ?descriptionProperty ?descriptionValue }
+      UNION { ?descriptionAppellation ?descriptionAppellationProperty ?descriptionAppellationValue }
     }
 }""" .
   

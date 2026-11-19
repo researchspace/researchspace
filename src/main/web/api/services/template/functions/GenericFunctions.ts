@@ -57,6 +57,12 @@ function checkCondition(v1, operator, v2) {
  * Generic helper functions for Handlebars templates.
  */
 export const GenericFunctions = {
+  /** Accept a sidebar suffix, full event key, or the legacy literal viewId key. */
+  assetTabMatches(requested: string, viewId: string, suffix: string) {
+    return requested === suffix || requested === viewId + '-resourceForm-' + suffix ||
+      requested === '{{viewId}}-resourceForm-' + suffix;
+  },
+
   /**
    * if operator for handlebars templates.
    */
@@ -166,5 +172,53 @@ export const GenericFunctions = {
    */
   uuid() {
     return uuidLib.v4();
-  }
+  },
+
+  /**
+   * First item of a list whose value at `path` satisfies `operator` against
+   * `value` (same operators as ifCond), returning its value at `returnPath`
+   * (or the item itself when `returnPath` is omitted). Numeric strings are
+   * compared as numbers. Returns undefined when nothing matches.
+   *
+   * Usage: `{{#bind firstKey=(findFirst bindings "count.value" ">" 0 "config.value")}}`
+   */
+  findFirst(list: any[], path: string, operator: string, value: any, returnPath?: any) {
+    if (!Array.isArray(list)) { return undefined; }
+    const get = (item: any, p: string) => p.split('.').reduce((acc, key) => acc == null ? undefined : acc[key], item);
+    const asNumber = (v: any) => (typeof v === 'string' && v.trim() !== '' && !isNaN(Number(v))) ? Number(v) : v;
+    const rp = typeof returnPath === 'string' ? returnPath : undefined;
+    for (const item of list) {
+      if (checkCondition(asNumber(get(item, path)), operator, asNumber(value))) {
+        return rp ? get(item, rp) : item;
+      }
+    }
+    return undefined;
+  },
+
+  /**
+   * Deterministic identifier derived from its arguments, for naming component
+   * instances in templates. Unlike `uuid`, the value is identical on every
+   * re-render of the same template with the same inputs, so components keyed or
+   * targeted by it keep their identity (and their loaded state) instead of being
+   * remounted and reloaded. Different inputs give different identifiers, so two
+   * inclusions of the same template on one page do not collide.
+   *
+   * Usage: `{{#bind viewId=(instanceId dashboardId config parentNode)}}`.
+   * Undefined/empty arguments are kept as empty positions so that argument
+   * order matters.
+   */
+  instanceId(...args: any[]) {
+    // the last argument is the Handlebars options object
+    const parts = args.slice(0, -1).map(part =>
+      part === undefined || part === null ? '' : String(part)
+    );
+    const input = parts.join('\u0001');
+    // FNV-1a 32-bit, rendered in base 36: short, stable and safe in HTML ids
+    let hash = 0x811c9dc5;
+    for (let i = 0; i < input.length; i++) {
+      hash ^= input.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    return hash.toString(36);
+  },
 };

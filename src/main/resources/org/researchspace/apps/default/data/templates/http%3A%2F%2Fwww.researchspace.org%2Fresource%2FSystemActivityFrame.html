@@ -1,9 +1,10 @@
 {{#bind viewId=dashboardId}}
 
-  [[!-- Update activities on resourceForm actions, set actions, narrative actions, map saved --]]
+  [[!-- Update activities on resourceForm actions, set actions, narrative actions, map saved.
+       Form.ResourceModified (not Form.ResourceUpdated) so saves that change nothing do not re-run the search. --]]
   <mp-event-proxy id='update-activities-on-resourceForm-actions'
                   on-event-types='["Form.ResourceCreated", 
-                                    "Form.ResourceUpdated", 
+                                    "Form.ResourceModified",
                                     "Form.ResourceRemoved",
                                     "OverlayComparison.Created",
                                     "Components.SetManagement.SetAdded",
@@ -34,6 +35,12 @@
                                 <div class="search-results-header-keyword">
                                   <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>'
                                                                   query='SELECT DISTINCT ?subject WHERE { 
+                                                                          [[!-- full-text search first, so the label match drives the joins below --]]
+                                                                          SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                                                            ?label bds:search ?__token__ ;
+                                                                                   bds:minRelevance "0.3" ;
+                                                                                   bds:matchAllTerms "true" .
+                                                                          }
                                                                           {
                                                                             ?subject prov:generatedAtTime ?date .
                                                                             ?subject crm:P2_has_type ?type .
@@ -53,21 +60,30 @@
                                                                           } UNION {
                                                                             ?subject crm:P129i_is_subject_of ?entityFormRecord .
                                                                             ?entityFormRecord a crmdig:D1_Digital_Object .
-                                                                            ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                  
+                                                                            ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> .
+                                                                            [[!-- Last activity date: the modification event marked as latest by FormEntityRecordModification,
+                                                                                 or the creation event when the record has never been modified. One row per entity.
+                                                                                 Written as two OPTIONALs + COALESCE: a UNION with a MINUS / !BOUND branch is evaluated
+                                                                                 very slowly by Blazegraph. --]]
+                                                                            OPTIONAL {
+                                                                              ?entityFormRecord crmdig:L11i_was_output_of ?creationEvent .
+                                                                              ?creationEvent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                                              ?creationEvent crm:P4_has_time-span ?creationEventTimespan .
+                                                                              ?creationEventTimespan crm:P82_at_some_time_within ?creationDate .
+                                                                            }
+                                                                            OPTIONAL {
+                                                                              ?entityFormRecord crmdig:L11i_was_output_of ?latestEvent .
+                                                                              ?latestEvent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_latest_event> .
+                                                                              ?latestEvent crm:P4_has_time-span ?latestEventTimespan .
+                                                                              ?latestEventTimespan crm:P82_at_some_time_within ?latestDate .
+                                                                            }
+                                                                            BIND(COALESCE(?latestDate, ?creationDate) AS ?date)
+
                                                                             MINUS { ?subject a Platform:resource_configuration .}
                                                                             MINUS {
                                                                               ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
                                                                               ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
                                                                             }
-                  
-                                                                            ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordOutput .
-                                                                            ?entityFormRecordOutput crm:P2_has_type ?entityFormRecordOutputType .
-                                                                            FILTER(?entityFormRecordOutputType IN (<http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation>, 
-                                                                                                                    <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification>
-                                                                                                                    ))
-                                                                            ?entityFormRecordOutput crm:P4_has_time-span ?entityFormRecordOutputTimespan .
-                                                                            ?entityFormRecordOutputTimespan crm:P82_at_some_time_within ?date .
                                                                             { 
                                                                               ?subject crm:P1_is_identified_by ?appellation .
                                                                               ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
@@ -82,56 +98,54 @@
                                                                           }
                                                                           
                                                                           FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
-                                                                            
-                                                                          SERVICE <http://www.bigdata.com/rdf/search#search> {
-                                                                                    ?label bds:search ?__token__ ;
-                                                                                    bds:minRelevance "0.3" ;
-                                                                                    bds:matchAllTerms "true"  .
-                                                                          }
+
                                                                         } ORDER BY DESC(?date) ?label'
                                                                   default-query='SELECT DISTINCT ?subject WHERE {
-                                                                                  {
-                                                                                    ?subject prov:generatedAtTime ?date1 .
-                                                                                    ?subject crm:P2_has_type ?type .
-                                                                                    FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>, 
-                                                                                                      <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
-                                                                                                      <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>, 
-                                                                                                      <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
-                                                                                                      <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
-                                                                                                    )
-                                                                                      )
-                                                                                    MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
-                                                                                  } UNION {
-                                                                                    ?subject a rs:EX_Digital_Image .
-                                                                                    ?subject prov:generatedAtTime ?date2 .
-                                                                                  } UNION {
-                                                                                    ?subject crm:P129i_is_subject_of ?entityFormRecord .
-                                                                                    ?entityFormRecord a crmdig:D1_Digital_Object .
-                                                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-                                                                                    ?entityFormRecordCreation crm:P4_has_time-span ?entityFormRecordCreationTimespan .
-                                                                                    ?entityFormRecordCreationTimespan crm:P82_at_some_time_within ?dateCreation .
-                                                                                  } UNION {
-                                                                                    ?subject crm:P129i_is_subject_of ?entityFormRecord .
-                                                                                    ?entityFormRecord a crmdig:D1_Digital_Object .
-                                                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
-                                                                                    ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
-                                                                                    ?entityFormRecordModification crm:P4_has_time-span ?entityFormRecordModificationTimespan .
-                                                                                    ?entityFormRecordModificationTimespan crm:P82_at_some_time_within ?dateModification .
-                                                                                  } 
-                                                                                  BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?complexDate)
-                                                                                  BIND(IF(BOUND(?complexDate),?complexDate,IF(BOUND(?date1),?date1,IF(BOUND(?date2),?date2,""))) as ?date)
+                                                                                    {
+                                                                                      ?subject prov:generatedAtTime ?date .
+                                                                                      ?subject crm:P2_has_type ?type .
+                                                                                      FILTER(?type IN (<http://www.researchspace.org/resource/system/vocab/resource_type/knowledge_map>,
+                                                                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/set>,
+                                                                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative>,
+                                                                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_chart>,
+                                                                                                        <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_timeline>
+                                                                                                      )
+                                                                                        )
+                                                                                      MINUS {?subject prov:wasAttributedTo ?__useruri__ ; rdfs:label "Uncategorized" .}
+                                                                                    } UNION {
+                                                                                      ?subject a rs:EX_Digital_Image .
+                                                                                      ?subject prov:generatedAtTime ?date .
+                                                                                    } UNION {
+                                                                                      ?subject crm:P129i_is_subject_of ?entityFormRecord .
+                                                                                      ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                                                      ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> .
+                                                                                      [[!-- Last activity date: the modification event marked as latest by FormEntityRecordModification,
+                                                                                           or the creation event when the record has never been modified. One row per entity.
+                                                                                           Written as two OPTIONALs + COALESCE: a UNION with a MINUS / !BOUND branch is evaluated
+                                                                                           very slowly by Blazegraph. --]]
+                                                                                      OPTIONAL {
+                                                                                        ?entityFormRecord crmdig:L11i_was_output_of ?creationEvent .
+                                                                                        ?creationEvent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                                                        ?creationEvent crm:P4_has_time-span ?creationEventTimespan .
+                                                                                        ?creationEventTimespan crm:P82_at_some_time_within ?creationDate .
+                                                                                      }
+                                                                                      OPTIONAL {
+                                                                                        ?entityFormRecord crmdig:L11i_was_output_of ?latestEvent .
+                                                                                        ?latestEvent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_latest_event> .
+                                                                                        ?latestEvent crm:P4_has_time-span ?latestEventTimespan .
+                                                                                        ?latestEventTimespan crm:P82_at_some_time_within ?latestDate .
+                                                                                      }
+                                                                                      BIND(COALESCE(?latestDate, ?creationDate) AS ?date)
+                                                                                    }
 
-                                                                                  MINUS { ?subject a Platform:resource_configuration .}
-                                                                                  MINUS {
-                                                                                    ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
-                                                                                    ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
-                                                                                  }
+                                                                                    MINUS { ?subject a Platform:resource_configuration .}
+                                                                                    MINUS {
+                                                                                      ?subject crm:P71i_is_listed_in|skos:inScheme ?systemAuthorityDoc .
+                                                                                      ?systemAuthorityDoc crm:P2_has_type Platform:System_Resource .
+                                                                                    }
 
-                                                                                  FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
-                                                                                }'
+                                                                                    FILTER (?date > "2024-10-22T00:00:00.000Z"^^xsd:dateTime)
+                                                                                  }'
                                                                   debounce=500
                                                                   placeholder="Search by resource name"
                                   ></semantic-search-query-keyword> 

@@ -1,0 +1,21 @@
+# Run before and after 1.sparql. Expected after: modifiedRecords = markedOnce, markedMoreThanOnce = 0.
+
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX crmdig: <http://www.cidoc-crm.org/extensions/crmdig/>
+
+SELECT (COUNT(?record) AS ?modifiedRecords)
+       (SUM(IF(?marked = 1, 1, 0)) AS ?markedOnce)
+       (SUM(IF(?marked > 1, 1, 0)) AS ?markedMoreThanOnce)
+WHERE {
+  {
+    SELECT ?record (COUNT(DISTINCT ?m) AS ?marked) WHERE {
+      ?record crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> ;
+              crmdig:L11i_was_output_of ?e .
+      ?e crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+      OPTIONAL {
+        ?record crmdig:L11i_was_output_of ?m .
+        ?m crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_latest_event> .
+      }
+    } GROUP BY ?record
+  }
+}

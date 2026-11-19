@@ -1,0 +1,46 @@
+# Backfill the "last activity" marker on entity form records.
+#
+# FormEntityRecordModification types each record's newest modification event as
+# entity_form_record_latest_event and moves that type on every save, so System
+# activities and the activity cards read one row per record. This update marks the
+# newest modification of every record that has modifications but no marker yet.
+# Records that were never modified are left unmarked: readers fall back to the
+# creation event. Safe to re-run: records that already have a marker are skipped.
+# The marker is written into the same named graph as the event's own type triple.
+
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX crmdig: <http://www.cidoc-crm.org/extensions/crmdig/>
+
+INSERT {
+  GRAPH ?g {
+    ?latest crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_latest_event> .
+    <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_latest_event> crm:P2i_is_type_of ?latest .
+  }
+}
+WHERE {
+  {
+    # If several modifications share the newest timestamp, pick one deterministically.
+    # (MAX over the IRIs themselves: IRI(MAX(STR(...))) builds a new term that Blazegraph
+    # does not join back to the stored IRI.)
+    SELECT ?record (MAX(?event) AS ?latest) WHERE {
+      {
+        SELECT ?record (MAX(?date) AS ?latestDate) WHERE {
+          ?record crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> ;
+                  crmdig:L11i_was_output_of ?anyModification .
+          ?anyModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+          ?anyModification crm:P4_has_time-span/crm:P82_at_some_time_within ?date .
+        } GROUP BY ?record
+      }
+      MINUS {
+        ?record crmdig:L11i_was_output_of ?alreadyMarked .
+        ?alreadyMarked crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_latest_event> .
+      }
+      ?record crmdig:L11i_was_output_of ?event .
+      ?event crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+      ?event crm:P4_has_time-span/crm:P82_at_some_time_within ?latestDate .
+    } GROUP BY ?record
+  }
+  GRAPH ?g {
+    ?latest crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
+  }
+}

@@ -1,5 +1,5 @@
-<semantic-query query='SELECT DISTINCT  ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass
-                                        ?actor ?actorEmail ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate (MAX(?recordDate) AS ?latestRecordDate)
+<semantic-query query='SELECT ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass
+                                        ?actor ?actorEmail ?actorFullName ?activityKind ?activityDate
                                  WHERE {
 
                         BIND(<{{iri}}> as ?subject)
@@ -30,36 +30,42 @@
                         BIND((IF(BOUND(?resourceConfigWithP2Icon), 
                               ?resourceConfigWithP2Icon, IF(BOUND(?resourceConfigWithoutP2Icon),?resourceConfigWithoutP2Icon,""))) AS ?resourceIcon)
                         
+                        [[!-- The single latest activity on the resource and who carried it out.
+                              Views (knowledge maps, sets, narratives, ...) carry prov metadata; entities carry
+                              form record creation / modification events. --]]
                         OPTIONAL {
-                          ?subject prov:wasAttributedTo ?actor .
-                          ?subject prov:generatedAtTime ?viewModificationDate .
-                          BIND("true" as ?viewModification) 
-                        }
-
-                        OPTIONAL {
-                          ?subject crm:P129i_is_subject_of ?entityFormRecord .
-                          ?entityFormRecord a crmdig:D1_Digital_Object .
-                          ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                          ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                          ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-
-                          ?entityFormRecordCreation crm:P4_has_time-span ?entityFormRecordCreationTimespan .
-                          ?entityFormRecordCreationTimespan crm:P82_at_some_time_within ?dateCreation .
-                          ?entityFormRecordCreation crm:P14_carried_out_by ?actor .
-                          BIND("true" as ?recordCreation)
-                        }
-
-                        OPTIONAL {
-                          ?subject crm:P129i_is_subject_of ?entityFormRecord .
-                          ?entityFormRecord a crmdig:D1_Digital_Object .
-                          ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                          ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordModification .
-                          ?entityFormRecordModification crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification> .
-
-                          ?entityFormRecordModification crm:P4_has_time-span ?entityFormRecordModificationTimespan .
-                          ?entityFormRecordModificationTimespan crm:P82_at_some_time_within ?dateModification .
-                          ?entityFormRecordModification crm:P14_carried_out_by ?actor .
-                          BIND("true" as ?recordModification)
+                          {
+                            SELECT ?actor ?activityKind ?activityDate WHERE {
+                              {
+                                <{{iri}}> prov:wasAttributedTo ?actor .
+                                <{{iri}}> prov:generatedAtTime ?activityDate .
+                                BIND("modified" AS ?activityKind)
+                              } UNION {
+                                <{{iri}}> crm:P129i_is_subject_of ?entityFormRecord .
+                                ?entityFormRecord a crmdig:D1_Digital_Object .
+                                ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> .
+                                [[!-- The modification marked as latest, or the creation event if the record was never modified --]]
+                                OPTIONAL {
+                                  ?entityFormRecord crmdig:L11i_was_output_of ?creationEvent .
+                                  ?creationEvent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                  ?creationEvent crm:P4_has_time-span ?creationEventTimespan .
+                                  ?creationEventTimespan crm:P82_at_some_time_within ?creationDate .
+                                  ?creationEvent crm:P14_carried_out_by ?creationActor .
+                                }
+                                OPTIONAL {
+                                  ?entityFormRecord crmdig:L11i_was_output_of ?latestEvent .
+                                  ?latestEvent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_latest_event> .
+                                  ?latestEvent crm:P4_has_time-span ?latestEventTimespan .
+                                  ?latestEventTimespan crm:P82_at_some_time_within ?latestDate .
+                                  ?latestEvent crm:P14_carried_out_by ?latestActor .
+                                }
+                                BIND(COALESCE(?latestDate, ?creationDate) AS ?activityDate)
+                                BIND(COALESCE(?latestActor, ?creationActor) AS ?actor)
+                                BIND(IF(BOUND(?latestDate), "modified", "created") AS ?activityKind)
+                                FILTER(BOUND(?activityDate))
+                              }
+                            } ORDER BY DESC(?activityDate) LIMIT 1
+                          }
                         }
 
                         BIND(IRI(REPLACE(STR(?actor), "%40", "_")) as ?actorUser)
@@ -74,10 +80,7 @@
                           ?actorName crm:P190_has_symbolic_content ?actorFullName .
                         }
 
-                        BIND(IF(BOUND(?dateModification), ?dateModification, ?dateCreation) AS ?recordDate)
-
-                      } GROUP BY ?subject ?resourceConfig ?resourceLabel ?resourceType ?resourceIcon ?resourceOntologyClass ?actor ?actorEmail ?actorFullName ?viewModification ?recordCreation ?recordModification ?viewModificationDate
-                      LIMIT 1'
+                      } LIMIT 1'
       
                 template='{{> template}}'>
 
@@ -124,15 +127,14 @@
               {{/if}}
             
               <div class="activity-card-date-value text-truncate-line1">
-                {{#if bindings.0.viewModificationDate.value}}{{dateTimeFormat bindings.0.viewModificationDate.value "LLL"}}{{/if}}
-                {{#if bindings.0.latestRecordDate.value}}{{dateTimeFormat bindings.0.latestRecordDate.value "LLL"}}{{/if}}
+                {{#if bindings.0.activityDate.value}}{{dateTimeFormat bindings.0.activityDate.value "LLL"}}{{/if}}
               </div>
               
           </div>
 
-          {{#if (or (eq bindings.0.viewModification.value "true") (eq bindings.0.recordModification.value "true"))}}
+          {{#if (eq bindings.0.activityKind.value "modified")}}
             <div class="text-font-size__small text-truncate-line1">modified {{bindings.0.resourceLabel.value}}</div>
-          {{else if (eq bindings.0.recordCreation.value "true")}}
+          {{else if (eq bindings.0.activityKind.value "created")}}
             <div class="text-font-size__small text-truncate-line1">created {{bindings.0.resourceLabel.value}}</div>
           {{/if}}
           <mp-draggable iri='{{iri}}'>

@@ -102,6 +102,11 @@ export interface Tileset3dSourceConfig {
   placeholderColor?: string;
   /** Opacity at the top of the placeholders. Default 0.15. */
   placeholderTopOpacity?: number;
+  /**
+   * CSS colour that replaces the models' own colours, still shaded by the sun, e.g. `#c8c8c8` for
+   * plain grey massing. Default: the models keep their own colours.
+   */
+  modelColor?: string;
   /** CRS of the `?footprint` WKT. Default `EPSG:4326`. */
   footprintCrs?: string;
 }
@@ -127,6 +132,7 @@ export interface Tileset3dSourceModel {
   placeholderHeight: number;
   placeholderColor: string;
   placeholderTopOpacity: number;
+  modelColor?: string;
   footprintCrs: string;
 }
 
@@ -198,6 +204,7 @@ export function extractTileset3dSource(child: React.ReactNode): Tileset3dSourceM
     placeholderHeight: number(props.placeholderHeight, 8),
     placeholderColor: props.placeholderColor || 'rgba(150, 160, 175, 0.5)',
     placeholderTopOpacity: Math.min(1, Math.max(0, number(props.placeholderTopOpacity, 0.15))),
+    modelColor: props.modelColor || undefined,
     footprintCrs: props.footprintCrs || 'EPSG:4326',
   };
 }

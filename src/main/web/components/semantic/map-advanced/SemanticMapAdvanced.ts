@@ -590,8 +590,8 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
   private tilesetGeneration = 0;
   private tilesetScopeTimer: number | undefined;
   private detachTilesetScopeListener: (() => void) | null = null;
-  /** One shader for every tileset; Cesium caches programs by source, so sharing costs nothing. */
-  private tilesetShader: any = null;
+  /** One shader per model colour ('' keeps the models' own); Cesium caches programs by source. */
+  private tilesetShaders: { [color: string]: any } = {};
   private is3dEnabled: boolean = false;
   private cesiumLib: any = null;
   private readonly tilesetMinAmbient: number = 0.18;
@@ -4499,7 +4499,8 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
     heightOffset: number,
     generation: number,
     onCreated?: (tileset: any) => void,
-    preloadWhenHidden = true
+    preloadWhenHidden = true,
+    modelColor?: string
   ): Promise<any> {
     const scene = this.ol3d.getCesiumScene();
     const tileset = new Cesium.Cesium3DTileset({
@@ -4527,7 +4528,7 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
       return null;
     }
     tileset.shadows = Cesium.ShadowMode.DISABLED;
-    const shader = this.getTilesetShader(Cesium);
+    const shader = this.getTilesetShader(Cesium, modelColor);
     if (shader) {
       tileset.customShader = shader;
     }
@@ -4540,10 +4541,19 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
     return tileset;
   }
 
-  /** One shader for every tileset: flat-shades IFC-converted geometry that has no vertex normals. */
-  private getTilesetShader(Cesium: any): any {
-    if (!this.tilesetShader && Cesium.CustomShader && Cesium.LightingModel) {
-      this.tilesetShader = new Cesium.CustomShader({
+  /**
+   * Flat-shades IFC-converted geometry that has no vertex normals. With `modelColor` (a CSS colour)
+   * the models' own colours are replaced by it before shading.
+   */
+  private getTilesetShader(Cesium: any, modelColor?: string): any {
+    const key = modelColor || '';
+    if (!this.tilesetShaders[key] && Cesium.CustomShader && Cesium.LightingModel) {
+      const color = modelColor ? Cesium.Color.fromCssColorString(modelColor) : undefined;
+      if (modelColor && !color) {
+        console.warn(`[Cesium] Ignoring invalid model-color "${modelColor}"`);
+      }
+      const base = color ? `material.diffuse = vec3(${color.red}, ${color.green}, ${color.blue});` : '';
+      this.tilesetShaders[key] = new Cesium.CustomShader({
         mode: Cesium.CustomShaderMode ? Cesium.CustomShaderMode.MODIFY_MATERIAL : undefined,
         lightingModel: Cesium.LightingModel.UNLIT,
         fragmentShaderText: `
@@ -4554,12 +4564,13 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
             vec3 n = normalize(cross(dpdx, dpdy));
             float ndotl = max(dot(n, czm_lightDirectionEC), 0.0);
             float lit = 0.15 + 0.85 * ndotl;
+            ${base}
             material.diffuse *= lit;
           }
         `,
       });
     }
-    return this.tilesetShader;
+    return this.tilesetShaders[key];
   }
 
   /**
@@ -4858,7 +4869,8 @@ export class SemanticMapAdvanced extends SharedStateComponent<SemanticMapAdvance
           generation,
           // registered at once, so a year change during the load already reaches it
           (created) => (runtime.tilesets[item.id] = created),
-          runtime.inZoom
+          runtime.inZoom,
+          runtime.source.modelColor
         );
         if (tileset) {
           added.push(tileset);

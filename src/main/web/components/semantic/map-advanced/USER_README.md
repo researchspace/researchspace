@@ -528,6 +528,11 @@ height is unknown, so they are drawn to read as a presence rather than as a volu
 (default `EPSG:4326`) is the CRS of the WKT. One placeholder is drawn per identifier, even if the
 data lists overlapping intervals for it. They are cheap: a hundred cost a few milliseconds.
 
+### Model colour
+
+`model-color` (a CSS colour, e.g. `#c8c8c8`) replaces the models' own colours with one solid colour,
+still shaded by the sun, for plain massing models. Without it the models keep their own colours.
+
 ### Height
 
 `height-offset` raises every tileset along the local vertical, in metres; `height-offset-field`

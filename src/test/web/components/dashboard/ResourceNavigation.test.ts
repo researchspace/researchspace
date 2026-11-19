@@ -18,6 +18,7 @@ const iri = 'https://example.org/entity/one';
 const resourceConfiguration = 'https://example.org/config/person';
 const dashboardIri = Rdf.iri('http://www.researchspace.org/resource/ThinkingFrames');
 const customTemplate = 'https://example.org/templates/person';
+const defaultTemplate = 'rsp:ResourceContent';
 mockConfig();
 
 function viewAction(configuredTemplateIRI?: string, configuration = resourceConfiguration,
@@ -85,11 +86,13 @@ describe('Resource view navigation', () => {
     Navigation.setFrameNavigation(false);
   });
 
-  it('opens the same entity with its configuration in the default resource view', () => {
+  // Same view as the search result title (rsp:ResourceSearchTemplate), so the
+  // dashboard reuses one frame per resource.
+  it('opens the same entity with its configuration in the default detailed visualisation', () => {
     expect(viewAction().uri).to.equal(dashboardIri.value);
     expect(Navigation.NavigationUtils.extractParams(viewAction())).to.deep.equal({
-      view: 'resource', resource: iri, resourceConfig: resourceConfiguration,
-      resourceVisualisationTemplate: '',
+      view: 'resource-detailed-visualisation', resource: iri, resourceConfig: resourceConfiguration,
+      resourceVisualisationTemplate: defaultTemplate,
     });
   });
 
@@ -108,11 +111,11 @@ describe('Resource view navigation', () => {
     });
   });
 
-  it('uses the default view when the configuration has no visualisation, even with an inherited value', () => {
+  it('uses the default template when the configuration has no visualisation, even with an inherited value', () => {
     const action = viewAction(undefined, resourceConfiguration, customTemplate);
     expect(Navigation.NavigationUtils.extractParams(action)).to.deep.equal({
-      view: 'resource', resource: iri, resourceConfig: resourceConfiguration,
-      resourceVisualisationTemplate: '',
+      view: 'resource-detailed-visualisation', resource: iri, resourceConfig: resourceConfiguration,
+      resourceVisualisationTemplate: defaultTemplate,
     });
   });
 
@@ -162,14 +165,16 @@ describe('Resource view navigation', () => {
   });
 
   [
-    {template: undefined, configuration: resourceConfiguration, view: 'resource'},
-    {template: customTemplate, configuration: resourceConfiguration, view: 'resource-detailed-visualisation'},
-    {template: customTemplate,
+    {template: undefined, expectedTemplate: defaultTemplate, configuration: resourceConfiguration,
+      view: 'resource-detailed-visualisation', name: 'default resource-detailed-visualisation'},
+    {template: customTemplate, expectedTemplate: customTemplate, configuration: resourceConfiguration,
+      view: 'resource-detailed-visualisation', name: 'resource-detailed-visualisation'},
+    {template: customTemplate, expectedTemplate: customTemplate,
       configuration: 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document',
-      view: 'authority-list'},
-  ].forEach(({template, configuration: resourceConfiguration, view}) => {
+      view: 'authority-list', name: 'authority-list'},
+  ].forEach(({template, expectedTemplate, configuration: resourceConfiguration, view, name}) => {
 
-    it(`opens the ${view} frame from a standalone editor`, async () => {
+    it(`opens the ${name} frame from a standalone editor`, async () => {
       const environment = ConfigHolder.getEnvironmentConfig();
       (ConfigHolder.getEnvironmentConfig as sinon.SinonStub).returns({
         resourceUrlMapping: {value: '/resource/'},
@@ -190,7 +195,7 @@ describe('Resource view navigation', () => {
         await waitFor(() => Boolean(requested));
         expect(new URL(window.location.href).searchParams.get('uri')).to.equal(dashboardIri.value);
         expect(requested).to.deep.equal({view, resource: iri, data: {
-          resourceConfig: resourceConfiguration, resourceVisualisationTemplate: template || '',
+          resourceConfig: resourceConfiguration, resourceVisualisationTemplate: expectedTemplate,
         }});
         dashboard = mount(createElement(DashboardComponent, {
           id: 'thinking-frames', dashboardIri, initialView: requested,
@@ -202,7 +207,7 @@ describe('Resource view navigation', () => {
           return dashboard.find('[data-resource-view]').length === 1;
         });
         expect(dashboard.find('[data-resource-view]').text()).to.equal(
-          `${iri}|${resourceConfiguration}|${template || ''}`);
+          `${iri}|${resourceConfiguration}|${expectedTemplate}`);
       } finally {
         if (dashboard) { dashboard.unmount(); }
         action.unmount();
@@ -214,7 +219,7 @@ describe('Resource view navigation', () => {
       }
     });
 
-    it(`retains unsaved input when View and Edit reactivate existing ${view} frames`, async () => {
+    it(`retains unsaved input when View and Edit reactivate existing ${name} frames`, async () => {
       const host = document.createElement('div');
       host.style.cssText = 'position:relative;width:1000px;height:700px';
       document.body.appendChild(host);

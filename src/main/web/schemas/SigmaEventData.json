@@ -1,0 +1,160 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "SigmaGroupIdentity": {
+            "description": "What a group stands for: the shared source node, the sorted child types and\nthe predicate. IRIs are given without angle brackets, as in the `nodes`\nfield of Sigma.NodeClicked; blank nodes and literals keep their own form.",
+            "properties": {
+                "predicate": {
+                    "description": "Omitted when the grouped edges have no predicate.",
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "types": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "propertyOrder": [
+                "source",
+                "types",
+                "predicate"
+            ],
+            "required": [
+                "source",
+                "types"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "Sigma.FocusNode": {
+            "description": "Event that listens to an external event that\nfocusses on a given node",
+            "properties": {
+                "componentId": {
+                    "type": "string"
+                },
+                "node": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "componentId",
+                "node"
+            ],
+            "required": [
+                "node"
+            ],
+            "type": "object"
+        },
+        "Sigma.NodeClicked": {
+            "description": "Event triggered when a node is clicked.",
+            "properties": {
+                "attributes": {
+                    "description": "Sigma / graphology node attributes."
+                },
+                "componentId": {
+                    "description": "Id of the Sigma component instance that emitted the event.",
+                    "type": "string"
+                },
+                "group": {
+                    "$ref": "#/definitions/SigmaGroupIdentity",
+                    "description": "Present only for groups: the shared source, the sorted child types and,\nif there is one, the predicate. IRIs have no angle brackets. Do not parse the ID."
+                },
+                "id": {
+                    "description": "Full graph node key. Resource nodes use their RDF term, usually an IRI in\nangle brackets. Groups use an opaque ID: sigma-group- and 32 hex digits.\nPass the complete key back to ScatterGroupNode, FocusNode or TriggerNodeClicked.",
+                    "type": "string"
+                },
+                "node": {
+                    "description": "Same clicked node id, clearer alias for consumers.",
+                    "type": "string"
+                },
+                "nodes": {
+                    "description": "Node IRIs without angle brackets. For a group, the IRIs of its children\n(not the group ID); otherwise the clicked node IRI.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "propertyOrder": [
+                "componentId",
+                "id",
+                "node",
+                "nodes",
+                "group",
+                "attributes"
+            ],
+            "required": [
+                "componentId",
+                "id",
+                "node",
+                "nodes"
+            ],
+            "type": "object"
+        },
+        "Sigma.ScatterGroupNode": {
+            "description": "Event that listens to an external event and expands the given group node.\nIn 'replace' mode the group node is replaced by its children; in 'expand'\nmode it is kept and linked to them.",
+            "properties": {
+                "componentId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "mode": {
+                    "enum": [
+                        "expand",
+                        "replace"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "componentId",
+                "id",
+                "mode"
+            ],
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "Sigma.TriggerNodeClicked": {
+            "description": "External event requesting a click on a given node.",
+            "properties": {
+                "componentId": {
+                    "type": "string"
+                },
+                "node": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "componentId",
+                "node"
+            ],
+            "required": [
+                "node"
+            ],
+            "type": "object"
+        }
+    },
+    "propertyOrder": [
+        "Sigma.NodeClicked",
+        "Sigma.TriggerNodeClicked",
+        "Sigma.FocusNode",
+        "Sigma.ScatterGroupNode"
+    ],
+    "required": [
+        "Sigma.FocusNode",
+        "Sigma.NodeClicked",
+        "Sigma.ScatterGroupNode",
+        "Sigma.TriggerNodeClicked"
+    ],
+    "type": "object"
+}
+

@@ -122,7 +122,7 @@ public class ResearchSpaceHandlebarsTest extends JerseyTest {
 
     private final ValueFactory vf = SimpleValueFactory.getInstance();
 
-    final ContainerRequest containerRequest = new ContainerRequest(URI.create(""), URI.create("/?testParam=test123"),
+    final ContainerRequest containerRequest = new ContainerRequest(URI.create(""), URI.create("/?testParam=test123&falseParam=false"),
             HttpMethod.GET, null, new MapPropertiesDelegate());
 
     private final String thisIriString = "http://www.researchspace.org/handlebars";
@@ -187,6 +187,12 @@ public class ResearchSpaceHandlebarsTest extends JerseyTest {
                 handlebars.compileInline("Test: [[#if (urlParam \"notExistingParam\")]]True[[else]]False[[/if]]")
                         .apply(context(vf.createIRI(thisIriString))));
 
+        // a literal "false" is false in if expressions but still prints as "false"
+        Assert.assertEquals("Test: False",
+                handlebars.compileInline("Test: [[#if (urlParam \"falseParam\")]]True[[else]]False[[/if]]")
+                        .apply(context(vf.createIRI(thisIriString))));
+        Assert.assertEquals("Test: false", handlebars.compileInline("Test: [[urlParam \"falseParam\"]]")
+                .apply(context(vf.createIRI(thisIriString))));
     }
 
     @Test

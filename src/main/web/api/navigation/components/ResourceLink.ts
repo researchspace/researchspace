@@ -29,6 +29,7 @@ import { Draggable } from 'platform/components/dnd';
 import {
   getCurrentResource,
   navigateToResource,
+  navigateToUrl,
   getCurrentUrl,
   constructUrlForResource,
   constructUrlForResourceSync,
@@ -50,6 +51,8 @@ interface ResourceLinkProps extends Props<ResourceLink> {
   repository?: string;
   target?: '_self' | '_blank';
   fragment?: string;
+  /** Allow the dashboard to intercept navigation. Defaults to true. */
+  frameNavigation?: boolean;
 }
 
 interface State {
@@ -127,7 +130,10 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
       e.stopPropagation();
 
       const query = { action: ResourceLinkAction[this.props.action], ...this.props.params };
-      navigateToResource(this.props.resource, query, this.getRepository(), this.props.fragment).onValue(() => {
+      const navigation = this.props.frameNavigation === false
+        ? navigateToUrl(constructUrlForResource(this.props.resource, query, this.getRepository(), this.props.fragment))
+        : navigateToResource(this.props.resource, query, this.getRepository(), this.props.fragment);
+      navigation.onValue(() => {
         /**/
       });
     }

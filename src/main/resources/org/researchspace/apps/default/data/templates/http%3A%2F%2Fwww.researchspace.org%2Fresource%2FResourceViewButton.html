@@ -1,0 +1,23 @@
+
+[[!-- Frame-aware navigation also works outside Thinking Frames. Inside the
+      workspace it activates the view without unmounting the editor frame. --]]
+[[!-- Read the visualisation from the current editor configuration. An inherited
+      template value may be missing or belong to an earlier context. --]]
+[[!-- Open the same view as the search result title
+      (rsp:ResourceSearchTemplate), so both reuse one frame per resource. The
+      dashboard reuses a frame only when resourceIri and viewId both match, so
+      always use resource-detailed-visualisation and fall back to
+      rsp:ResourceContent when the configuration has no visualisation template. --]]
+{{#bind headerVisualisationTemplateIRI=(getResourceConfigurationValue resourceConfiguration "resourceVisualisationTemplateIRI")}}
+<semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames"
+                         urlqueryparam-view="{{#if (eq resourceConfiguration 'http://www.researchspace.org/resource/system/resource_configurations_container/data/Authority_document')}}authority-list{{else}}resource-detailed-visualisation{{/if}}"
+                         urlqueryparam-resource="{{iri}}"
+                         urlqueryparam-resource-config="{{resourceConfiguration}}"
+                         urlqueryparam-resource-visualisation-template="{{#if headerVisualisationTemplateIRI}}{{headerVisualisationTemplateIRI}}{{else}}rsp:ResourceContent{{/if}}"
+                         >
+  <button type="button" class="resource-record-header__action">
+    <rs-icon icon-type="rounded" icon-name="frame_inspect" symbol="true" aria-hidden="true"></rs-icon>
+    <span>View</span>
+  </button>
+</semantic-link-container>
+{{/bind}}

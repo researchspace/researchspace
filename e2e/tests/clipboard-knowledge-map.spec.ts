@@ -70,15 +70,12 @@ test.describe('Knowledge Map and clipboard', () => {
         borderRadius: style.borderRadius,
         borderTopColor: style.borderTopColor,
         borderTopWidth: style.borderTopWidth,
-        height: style.height,
       };
     });
     const labelStyle = async (locator: Locator) => locator.evaluate((element) => {
       const style = getComputedStyle(element);
       return {
-        display: style.display,
         fontSize: style.fontSize,
-        lineHeight: style.lineHeight,
         overflow: style.overflow,
         textOverflow: style.textOverflow,
         whiteSpace: style.whiteSpace,
@@ -97,6 +94,23 @@ test.describe('Knowledge Map and clipboard', () => {
     expect(await groupElement.evaluate(element => getComputedStyle(element).borderTopColor))
       .toBe((await cardStyle(clipboardCard)).borderTopColor);
     expect(await labelStyle(groupLabel)).toEqual(await labelStyle(clipboardLabel));
+    // Group members are compact (42px); responsive clipboard rows also fit
+    // thumbnails and actions (56px by default). Share visual tokens, not height
+    // or display implementation. Both labels must fit inside their own card.
+    for (const [card, type, label] of [
+      [groupCard, groupType, groupLabel], [clipboardCard, clipboardType, clipboardLabel],
+    ]) {
+      await expect(type).toBeVisible();
+      await expect(label).toBeVisible();
+      const cardBox = (await card.boundingBox())!;
+      const typeBox = (await type.boundingBox())!;
+      const labelBox = (await label.boundingBox())!;
+      expect(typeBox.y).toBeGreaterThanOrEqual(cardBox.y);
+      expect(typeBox.y + typeBox.height).toBeLessThanOrEqual(labelBox.y + 1);
+      expect(labelBox.y + labelBox.height).toBeLessThanOrEqual(cardBox.y + cardBox.height + 1);
+      expect(labelBox.x).toBeGreaterThanOrEqual(cardBox.x);
+      expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(cardBox.x + cardBox.width + 1);
+    }
     await expect(groupType).toHaveText(await clipboardType.innerText());
     await expect(groupLabel.locator('.text-link')).toHaveText(alpha);
     await expect(groupCard.locator('.reactodia-standard-element__item-stripe')).toHaveCount(0);

@@ -65,7 +65,7 @@ public class ResourceConfigurationCache {
                         .collect(Collectors.toList());
     
                 String query = constructPropertyQuery(iris, resourceConfigurationsPatterns);
-                logger.info("query "+query);
+                logger.debug("Resource configuration query: {}", query);
 
                 Map<IRI, List<List<Value>>> iriToPredicateToConfiguration = queryAndExtractProperties(
                         repository,
@@ -79,7 +79,7 @@ public class ResourceConfigurationCache {
                     try {
                         Optional<Value> configuration = flattenProperties(iriToPredicateToConfiguration.get(iri)).stream()
                             .findFirst();
-                        logger.info(iri+" "+configuration.get().stringValue());
+                        logger.debug("Resource configuration of {}: {}", iri, configuration.get().stringValue());
                         configurations.put(iri, configuration);
                     }
                     catch (NoSuchElementException noSuchElementEx) {                        
@@ -109,9 +109,10 @@ public class ResourceConfigurationCache {
     }
 
     public Optional<Literal> getResourceConfiguration(IRI resourceIri, Repository repository) {
-        logger.info("datatype"+getResourceConfigurations(Collections.singletonList(resourceIri), repository)
-                .get(resourceIri));
-        return getResourceConfigurations(Collections.singletonList(resourceIri), repository).get(resourceIri);
+        Optional<Literal> configuration =
+            getResourceConfigurations(Collections.singletonList(resourceIri), repository).get(resourceIri);
+        logger.debug("Resource configuration of {}: {}", resourceIri, configuration);
+        return configuration;
     }
 
     public Map<IRI, Optional<Literal>> getResourceConfigurations(

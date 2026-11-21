@@ -24,7 +24,11 @@ import java.util.concurrent.Executors;
 
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.http.client.SharedHttpClientSessionManager;
 import org.researchspace.config.Configuration;
 
@@ -35,6 +39,25 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  *
  */
 public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionManager {
+
+    private static final Logger logger = LogManager.getLogger(MpSharedHttpClientSessionManager.class);
+
+    /**
+     * Retry policy for the shared HTTP client. Package-private for tests.
+     *
+     * <p>Short SPARQL queries are sent as GET (see
+     * {@code EnvironmentConfiguration#getSparqlMaxUrlLength}); GET is
+     * idempotent, so the {@link DefaultHttpRequestRetryHandler} transparently
+     * retries one that hit a keep-alive connection the server had closed while
+     * idle. A POST whose write never reached the server is retried by the
+     * default handler as well. A POST that was already fully sent is never
+     * replayed: all SPARQL UPDATE requests go over this client as POST, and
+     * the server may have executed the update before the connection died — a
+     * replay would apply it twice.</p>
+     */
+    static HttpRequestRetryHandler createRetryHandler() {
+        return new DefaultHttpRequestRetryHandler();
+    }
 
     private final ExecutorService executor;
     private final Configuration config;
@@ -54,8 +77,22 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
         configBuilder.setCookieSpec(CookieSpecs.STANDARD);
 
         RequestConfig requestConfig = configBuilder.build();
-        HttpClientBuilder mpHttpClientBuilder = HttpClientBuilder.create().setMaxConnPerRoute(maxConnections)
-                .setMaxConnTotal(maxConnections).setDefaultRequestConfig(requestConfig);
+        String userAgent = this.config.getEnvironmentConfig().getHttpUserAgent();
+
+        HttpClientBuilder mpHttpClientBuilder = HttpClientBuilder.create()
+                .setMaxConnPerRoute(maxConnections)
+                .setMaxConnTotal(maxConnections)
+                .setDefaultRequestConfig(requestConfig)
+                .setUserAgent(userAgent)
+                .setRetryHandler(createRetryHandler());
+
+        // Short SPARQL queries go as GET (idempotent, so a connection the server
+        // closed while idle is retried transparently); only long queries - which
+        // risk HTTP 431 from servers with small header limits - go as POST.
+        // SPARQLProtocolSession reads this system property; see
+        // EnvironmentConfiguration#getSparqlMaxUrlLength.
+        Integer maxUrlLength = this.config.getEnvironmentConfig().getSparqlMaxUrlLength();
+        System.setProperty("rdf4j.sparql.url.maxlength", String.valueOf(maxUrlLength));
 
         this.setHttpClientBuilder(mpHttpClientBuilder);
     }
@@ -66,5 +103,14 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
         session.setQueryURL(queryEndpointUrl);
         session.setUpdateURL(updateEndpointUrl);
         return session;
+    }
+
+    @Override
+    public void shutDown() {
+        // closes the HTTP client (and with it the connection pool)
+        super.shutDown();
+        // the background executor threads are non-daemon and would otherwise
+        // survive webapp reloads
+        executor.shutdownNow();
     }
 }

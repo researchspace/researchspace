@@ -198,7 +198,14 @@ public class ClassPathStorage implements ObjectStorage {
     }
 
     private Optional<String> getObjectResourcePath(StoragePath path) {
-        return paths.mapForward(path).map(mappedPath -> config.getClasspathLocation() + "/" + mappedPath);
+        return paths.mapForward(path).map(mappedPath -> {
+            String location = config.getClasspathLocation();
+            if (location.isEmpty()) {
+                return mappedPath.toString();
+            } else {
+                return location + "/" + mappedPath;
+            }
+        });
     }
 
     private static String resourceFolderPathToPackageName(StoragePath resourcePath) {

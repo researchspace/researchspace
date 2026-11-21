@@ -58,20 +58,20 @@ public class RepositoryRule extends TemporaryFolder {
         try {
             repository = new SailRepository(new MemoryStore());
             if (!repository.isInitialized())
-                repository.initialize();
+                repository.init();
             try (RepositoryConnection conn = repository.getConnection();) {
             }
 
             assetRepository = new SailRepository(new MemoryStore());
             if (!assetRepository.isInitialized()) {
-                assetRepository.initialize();
+                assetRepository.init();
             }
             try (RepositoryConnection conn = assetRepository.getConnection();) {
             }
 
             testRepository = new SailRepository(new MemoryStore());
             if (!testRepository.isInitialized()) {
-                testRepository.initialize();
+                testRepository.init();
             }
             try (RepositoryConnection conn = testRepository.getConnection();) {
             }

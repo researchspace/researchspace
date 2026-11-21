@@ -27,8 +27,8 @@ import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.evaluation.QueryOptimizer;
-import org.eclipse.rdf4j.query.algebra.evaluation.impl.BindingAssigner;
-import org.eclipse.rdf4j.query.algebra.helpers.StatementPatternCollector;
+import org.eclipse.rdf4j.query.algebra.evaluation.optimizer.BindingAssignerOptimizer;
+import org.eclipse.rdf4j.query.algebra.helpers.collectors.StatementPatternCollector;
 import org.eclipse.rdf4j.sail.SailException;
 import org.researchspace.federation.sparql.SparqlAlgebraUtils;
 import org.researchspace.sparql.keyword.algebra.KeywordSearchGroupTupleExpr;
@@ -69,7 +69,7 @@ public class VirtuosoKeywordSearchGroupExtractor implements QueryOptimizer {
     public void optimize(TupleExpr original, Dataset dataset, BindingSet bindings) {
         containsKeywordClauses = false;
         TupleExpr cloned = original.clone();
-        new BindingAssigner().optimize(cloned, dataset, bindings);
+        new BindingAssignerOptimizer().optimize(cloned, dataset, bindings);
 
         StatementPatternCollector collector = new StatementPatternCollector();
         cloned.visit(collector);

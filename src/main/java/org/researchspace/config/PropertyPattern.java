@@ -22,6 +22,7 @@ package org.researchspace.config;
 import com.google.common.base.Throwables;
 
 import org.eclipse.rdf4j.query.algebra.Projection;
+import org.eclipse.rdf4j.query.algebra.QueryRoot;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
 import org.researchspace.sparql.renderer.MpSparqlQueryRenderer;
@@ -66,7 +67,11 @@ public final class PropertyPattern {
         query = namespaceRegistry.prependSparqlPrefixes(query);
 
         SPARQLParser parser = new SPARQLParser();
-        Projection projection = (Projection) parser.parseQuery(query, null).getTupleExpr();
+        TupleExpr tupleExpr = parser.parseQuery(query, null).getTupleExpr();
+        if (tupleExpr instanceof QueryRoot) {
+            tupleExpr = ((QueryRoot) tupleExpr).getArg();
+        }
+        Projection projection = (Projection) tupleExpr;
         TupleExpr expression = projection.getArg();
         return new PropertyPattern(expression);
     }

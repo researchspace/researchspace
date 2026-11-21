@@ -45,6 +45,9 @@ public class RepositoryUtils {
         // wrap into NotifyingRepository without reporting deltas
         final Repository wrappedRepository = new NotifyingRepositoryWrapper(defaultRepository, false);
         ((NotifyingRepositoryWrapper) wrappedRepository).addRepositoryListener(new RepositoryListener() {
+            @Override
+            public void init(org.eclipse.rdf4j.repository.event.NotifyingRepository repo) {
+            }
 
             @Override
             public void getConnection(NotifyingRepository repo, NotifyingRepositoryConnection conn) {
@@ -111,10 +114,7 @@ public class RepositoryUtils {
                 });
             }
 
-            @Override
-            public void initialize(NotifyingRepository repo) {
 
-            }
 
             @Override
             public void setDataDir(NotifyingRepository repo, File dataDir) {

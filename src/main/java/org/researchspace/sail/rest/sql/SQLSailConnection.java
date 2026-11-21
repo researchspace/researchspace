@@ -46,7 +46,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
-import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
 import org.eclipse.rdf4j.sail.SailException;
 import org.researchspace.sail.rest.AbstractServiceWrappingSail;
@@ -225,13 +225,13 @@ public class SQLSailConnection extends AbstractServiceWrappingSailConnection<SQL
     }
 
     @Override
-    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
+    protected CloseableIteration<? extends BindingSet> executeAndConvertResultsToBindingSet(
             ServiceParametersHolder parametersHolder) {
 
         ResultSet resultSet = submit(parametersHolder);
 
-        return new CollectionIteration<BindingSet, QueryEvaluationException>(
-                convertResult2BindingSets(resultSet, parametersHolder));
+        return new CloseableIteratorIteration<>(
+                convertResult2BindingSets(resultSet, parametersHolder).iterator());
     }
 
 }

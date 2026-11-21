@@ -67,7 +67,7 @@ import org.eclipse.rdf4j.query.algebra.Label;
 import org.eclipse.rdf4j.query.algebra.Lang;
 import org.eclipse.rdf4j.query.algebra.LangMatches;
 import org.eclipse.rdf4j.query.algebra.LeftJoin;
-import org.eclipse.rdf4j.query.algebra.Like;
+
 import org.eclipse.rdf4j.query.algebra.Load;
 import org.eclipse.rdf4j.query.algebra.LocalName;
 import org.eclipse.rdf4j.query.algebra.MathExpr;
@@ -96,6 +96,7 @@ import org.eclipse.rdf4j.query.algebra.Slice;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Str;
 import org.eclipse.rdf4j.query.algebra.Sum;
+import org.eclipse.rdf4j.query.algebra.TripleRef;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.Union;
 import org.eclipse.rdf4j.query.algebra.UpdateExpr;
@@ -108,7 +109,7 @@ import org.eclipse.rdf4j.query.parser.ParsedBooleanQuery;
 import org.eclipse.rdf4j.query.parser.ParsedDescribeQuery;
 import org.eclipse.rdf4j.query.parser.ParsedGraphQuery;
 import org.eclipse.rdf4j.query.parser.ParsedTupleQuery;
-import org.eclipse.rdf4j.sail.federation.algebra.AbstractNaryTupleOperator;
+import org.researchspace.federation.sparql.algebra.AbstractNaryTupleOperator;
 import org.researchspace.sparql.renderer.SerializableParsedTupleQuery.QueryModifier;
 
 import com.google.common.collect.Lists;
@@ -164,7 +165,11 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
     }
 
     public SerializableParsedConstructQuery transformToSerialize(ParsedGraphQuery query) {
-        query.getTupleExpr().visit(this);
+        TupleExpr tupleExpr = query.getTupleExpr();
+        if (tupleExpr instanceof QueryRoot) {
+            tupleExpr = ((QueryRoot) tupleExpr).getArg();
+        }
+        tupleExpr.visit(this);
 
         for (SerializableParsedTupleQuery tmp : this.queriesByProjection.values()) {
             cleanBindingSetAssignments(tmp);
@@ -178,11 +183,19 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
         if (queryProfile.whereClause instanceof Extension) {
             queryProfile.whereClause = ((Extension) queryProfile.whereClause).getArg();
         }
+        // In graph queries, the Slice and Order nodes sit below the projection,
+        // so they can end up as the root of the collected WHERE clause.
+        if (queryProfile.whereClause instanceof Slice) {
+            queryProfile.limit = (Slice) queryProfile.whereClause;
+            queryProfile.whereClause = ((Slice) queryProfile.whereClause).getArg();
+        }
         if (queryProfile.whereClause instanceof Order) {
             queryProfile.whereClause = ((Order) queryProfile.whereClause).getArg();
         }
         queryProfile.bindings = currentQueryProfile.bindings;
-        queryProfile.limit = currentQueryProfile.limit;
+        if (queryProfile.limit == null) {
+            queryProfile.limit = currentQueryProfile.limit;
+        }
         queryProfile.dataset = query.getDataset();
         queryProfile.orderBy = currentQueryProfile.orderBy;
         // There was no multi projection, it means that there is
@@ -198,6 +211,7 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
 
         queryProfile.projection = this.graphQueryProjection;
         queryProfile.extensionElements = currentQueryProfile.extensionElements;
+        queryProfile.tripleRefs = currentQueryProfile.tripleRefs;
 
         if (query instanceof ParsedDescribeQuery) {
             queryProfile.describe = true;
@@ -223,6 +237,7 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
         }
         queryProfile.bindings = currentQueryProfile.bindings;
         queryProfile.limit = currentQueryProfile.limit;
+        queryProfile.tripleRefs = currentQueryProfile.tripleRefs;
         queryProfile.updateExpr = update;
         return queryProfile;
     }
@@ -236,12 +251,16 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
      *         and the required additional information.
      */
     public SerializableParsedBooleanQuery transformToSerialize(ParsedBooleanQuery query) {
-        if (!(query.getTupleExpr() instanceof Slice)) {
+        TupleExpr tupleExpr = query.getTupleExpr();
+        if (tupleExpr instanceof QueryRoot) {
+            tupleExpr = ((QueryRoot) tupleExpr).getArg();
+        }
+        if (!(tupleExpr instanceof Slice)) {
             throw new IllegalArgumentException("Unexpected boolean query: Slice expected as a root element, was "
-                    + query.getTupleExpr().getSignature());
+                    + tupleExpr.getSignature());
         }
 
-        Slice queryRoot = (Slice) query.getTupleExpr().clone();
+        Slice queryRoot = (Slice) tupleExpr.clone();
 
         TupleExpr whereClause = queryRoot.getArg();
 
@@ -263,6 +282,7 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
         queryProfile.whereClause = currentQueryProfile.whereClause;
         queryProfile.bindings = currentQueryProfile.bindings;
         queryProfile.extensionElements = currentQueryProfile.extensionElements;
+        queryProfile.tripleRefs = currentQueryProfile.tripleRefs;
         queryProfile.dataset = query.getDataset();
         return queryProfile;
 
@@ -607,10 +627,7 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
         super.meet(node);
     }
 
-    @Override
-    public void meet(Like node) throws RuntimeException {
-        super.meet(node);
-    }
+
 
     @Override
     public void meet(Load load) throws RuntimeException {
@@ -657,8 +674,10 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
         this.graphQueryProjection = node;
         currentQueryProfile.modifier = currentModifier;
         currentModifier = null;
-        currentQueryProfile.limit = currentSlice;
-        currentSlice = null;
+        if (currentSlice != null && isSliceOwner(currentSlice, node)) {
+            currentQueryProfile.limit = currentSlice;
+            currentSlice = null;
+        }
         Projection fakeProjection = new Projection();
 
         node.getProjections().stream().forEach(projList -> projList.getElements().stream()
@@ -719,8 +738,10 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
 
         currentQueryProfile.modifier = currentModifier;
         currentModifier = null;
-        currentQueryProfile.limit = currentSlice;
-        currentSlice = null;
+        if (currentSlice != null && isSliceOwner(currentSlice, node)) {
+            currentQueryProfile.limit = currentSlice;
+            currentSlice = null;
+        }
 
         currentQueryProfile.projection = node;
         queriesByProjection.put(node, currentQueryProfile);
@@ -731,6 +752,20 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
             currentQueryProfile = queryProfilesStack.pop();
         }
 
+    }
+
+    /**
+     * Checks whether the pending {@link Slice} belongs to the given projection,
+     * i.e., whether the projection is its immediate child (possibly through
+     * solution modifier nodes). Avoids assigning the LIMIT/OFFSET of an outer
+     * query to an unrelated nested projection.
+     */
+    protected boolean isSliceOwner(Slice slice, QueryModelNode projection) {
+        QueryModelNode parent = projection.getParentNode();
+        while (parent instanceof Distinct || parent instanceof Reduced || parent instanceof Order) {
+            parent = parent.getParentNode();
+        }
+        return parent == slice;
     }
 
     @Override
@@ -790,6 +825,12 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
     @Override
     public void meet(Slice node) throws RuntimeException {
         currentSlice = node;
+        // In graph queries, the Slice node sits below the projection: keep it as
+        // the WHERE clause root so that transformToSerialize(ParsedGraphQuery)
+        // can extract it as the query-level LIMIT/OFFSET.
+        if (currentQueryProfile.projection != null && currentQueryProfile.whereClause == null) {
+            currentQueryProfile.whereClause = node;
+        }
         super.meet(node);
     }
 
@@ -812,6 +853,17 @@ public class ParsedQueryPreprocessor extends AbstractQueryModelVisitor<RuntimeEx
 
     @Override
     public void meet(Sum node) throws RuntimeException {
+        super.meet(node);
+    }
+
+    @Override
+    public void meet(TripleRef node) throws RuntimeException {
+        if (currentQueryProfile.whereClause == null) {
+            currentQueryProfile.whereClause = node;
+        }
+        if (node.getExprVar() != null) {
+            currentQueryProfile.tripleRefs.put(node.getExprVar().getName(), node);
+        }
         super.meet(node);
     }
 

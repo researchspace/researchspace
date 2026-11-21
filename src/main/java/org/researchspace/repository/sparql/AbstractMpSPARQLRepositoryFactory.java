@@ -36,6 +36,10 @@ public abstract class AbstractMpSPARQLRepositoryFactory implements RepositoryFac
 
     protected Repository processSPARQLRepositorySettings(SPARQLRepository repository, MpSPARQLRepositoryConfig config) {
         repository.enableQuadMode(config.isUsingQuads());
+        if (repository instanceof CustomSPARQLRepository) {
+            ((CustomSPARQLRepository) repository).setWritable(config.isWritable());
+            ((CustomSPARQLRepository) repository).setSilentMode(config.isSilentMode());
+        }
         return repository;
     }
 

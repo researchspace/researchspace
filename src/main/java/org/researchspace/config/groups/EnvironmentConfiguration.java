@@ -176,6 +176,47 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
     }
 
     /**************************** SPARQL HTTP CLIENT PARAMETERS ***************/
+
+    /**
+     * Default User-Agent header for all outgoing HTTP requests
+     * (SPARQL endpoints and REST services).
+     *
+     * <p>Services like Wikidata and MediaWiki require a descriptive User-Agent.
+     * The recommended format per Wikimedia policy is:</p>
+     * <pre>ClientName/version (contact-url; contact-email)</pre>
+     * <p>For example:</p>
+     * <pre>MyProject/1.0 (https://example.org/myproject; admin@example.org)</pre>
+     *
+     * <p>Per-repository overrides are available via {@code ephedra:userAgent}
+     * in REST repository configs.</p>
+     */
+    @ConfigurationParameter
+    public String getHttpUserAgent() {
+        return getString("httpUserAgent", "ResearchSpace/1.0 (https://www.researchspace.org/)");
+    }
+
+    /**
+     * Maximum URL length for SPARQL query GET requests.
+     * When the full URL (endpoint + encoded query) exceeds this threshold,
+     * the query is sent as POST with the query in the request body instead.
+     *
+     * <p>Default is {@code 4083} (RDF4J's default, comfortably under Jetty's
+     * 8KB request-header limit): short queries are sent as GET and long ones
+     * as POST. GET is idempotent, so Apache HttpClient transparently retries a
+     * query that hit a keep-alive connection the server closed while idle -
+     * which is why short queries recover from idle connections without a
+     * visible lag.</p>
+     *
+     * <p>Set to {@code 0} to force POST for <em>all</em> queries on servers
+     * with very small request-header limits (avoids HTTP 431 "Request Header
+     * Fields Too Large"); note this disables the transparent GET retry, so
+     * idle-closed connections then surface on the next query.</p>
+     */
+    @ConfigurationParameter
+    public Integer getSparqlMaxUrlLength() {
+        return getInteger("sparqlMaxUrlLength", 4083);
+    }
+
     @ConfigurationParameter
     public Integer getMaxSparqlHttpConnections() {
         return getInteger("maxSparqlHttpConnections", 10);

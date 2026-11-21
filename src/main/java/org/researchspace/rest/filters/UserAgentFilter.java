@@ -31,13 +31,17 @@ import com.google.common.net.HttpHeaders;
  */
 public class UserAgentFilter implements ClientRequestFilter {
 
-    private String userAgent = "ResearchSpace (https://www.researchspace.org/)";
+    private String userAgent = "ResearchSpace/1.0 (https://www.researchspace.org/)";
 
     public UserAgentFilter() {
     }
 
     public UserAgentFilter(String userAgent) {
         this.userAgent = userAgent;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
     }
 
     @Override

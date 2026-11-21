@@ -95,24 +95,29 @@
     For more information on the configuration file and the properties available, 
     refer to the <semantic-link iri="[[resolvePrefix 'Help:RepositoryManager']]" class="text-link-action" target="_blank">Repository manager guide</semantic-link>.</p>
 
+    <div class="alert alert-info">
+      <strong>Note:</strong> Starting with RDF4J 5.0, the configuration vocabulary has changed. 
+      The old vocabulary (<code>http://www.openrdf.org/config/repository#</code>) is still supported 
+      for backward compatibility but is deprecated. New configurations should use the new vocabulary 
+      (<code>tag:rdf4j.org,2023:config/</code>).
+    </div>
+
     <p>The following Turtle code shows the Library Cloud configuration file content.</p>
 
     <mp-code-block mode='text/turtle'>
     <![CDATA[
-@prefix repo: <http://www.openrdf.org/config/repository#> .
-@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
-@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix config: <tag:rdf4j.org,2023:config/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
 @prefix : <http://www.researchspace.org/resource/system/repository#> .
 
-[] a repo:Repository ;
-  repo:repositoryID "librarycloud" ;
+[] a config:Repository ;
+  config:rep.id "librarycloud" ;
   rdfs:label "A wrapper for LibraryCloud using RESTSail repository" ;
-  repo:repositoryImpl [
-    repo:repositoryType "openrdf:SailRepository" ;
-    sr:sailImpl [
-      sail:sailType "researchspace:RESTSail" ;
+  config:rep.impl [
+    config:rep.type "openrdf:SailRepository" ;
+    config:sail.impl [
+      config:sail.type "researchspace:RESTSail" ;
       ephedra:serviceURL "https://api.lib.harvard.edu/v2/items.json" ;
       ephedra:httpMethod "GET" ;
       ephedra:implementsService :LibraryCloud
@@ -250,8 +255,40 @@ spin:constraint [
     refer to <a href="https://github.com/json-path/JsonPath" class="text-link-action" target="_blank">JSON path documentation</a>). 
     In this example, the results are stored in a JSON array reachable with a JSON path of <code>$.items.mods.[*]</code>.</p>
 
-    <p>For all the other parameters of type <code>spin:Column</code>, which are the 
+    <p>For all the other parameters of type <code>spin:Column</code>, which are the
     output parameters, the lookup will start from the new root, which is the one passed with <code>_results</code>.</p>
+
+    <div class="alert alert-warning">
+      <strong>IRIs vs. literals:</strong> a column is materialized as an IRI only when its
+      <code>spl:valueType</code> is exactly <code>rdfs:Resource</code>. Any other value — including the
+      easily-confused <code>rdf:Resource</code> — produces a <em>typed literal</em>, which breaks joining
+      the value into SPARQL repositories and <code>&lt;{{binding.value}}&gt;</code> substitution in templates.
+    </div>
+
+    <br>
+    <h3>Preserving the result order (relevance ranking)</h3>
+    <p>Many REST APIs return their hits as an array ordered by relevance. This order does <strong>not</strong>
+    survive federated joins or <code>GROUP BY</code> aggregation. To make the ranking available to the query,
+    declare a column with <code>ephedra:rowIndex true</code>: instead of reading a value from the response, it
+    binds the <strong>0-based position of the row in the response array</strong> (typed by the column's
+    <code>spl:valueType</code>, by default <code>xsd:integer</code>).</p>
+
+    <mp-code-block mode='text/turtle'>
+    <![CDATA[
+spin:column [
+  a spin:Column ;
+  rdfs:comment "0-based position of the hit in the response (relevance rank)" ;
+  spl:predicate :_ordinal ;
+  spl:valueType xsd:integer ;
+  ephedra:rowIndex true
+] ;
+      ]]>
+    </mp-code-block>
+
+    <p>Expose it through a triple in <code>ephedra:hasSPARQLPattern</code> like any other column, then restore
+    the service ranking in the query with <code>ORDER BY ?ordinal</code> — even after joining the results into
+    other repositories and aggregating with <code>GROUP BY</code>. This is how the Wikidata import keeps the
+    entity search relevance order.</p>
 
     <hr class="divider">
     <h2>Use SPARQL to make requests</h2>
@@ -271,6 +308,68 @@ SELECT ?title ?genre WHERE {
 }
       ]]>
     </mp-code-block>
+
+    <hr class="divider">
+    <h2>Performance Considerations</h2>
+
+    <p>When using REST services within federated queries, there are important performance implications to consider:</p>
+
+    <h3>LIMIT Optimization</h3>
+    <p>REST services are evaluated <strong>lazily</strong> when used in federated queries. This means that when you use 
+    <code>LIMIT</code>, only the necessary number of HTTP calls will be made. For example, with <code>LIMIT 20</code>, 
+    approximately 20 HTTP calls will be made to the REST service, even if the first service returns thousands of results.</p>
+
+    <h3>ORDER BY Limitation</h3>
+    <div class="alert alert-warning">
+      <strong>Warning:</strong> When using <code>ORDER BY</code> on a variable that comes from a REST service result, 
+      <strong>all HTTP calls must be made before sorting can occur</strong>. This can result in very slow query execution 
+      if the first service returns many results.
+    </div>
+
+    <p><strong>Example of slow query:</strong></p>
+    <mp-code-block mode='SPARQL'>
+    <![CDATA[
+# This query will be SLOW because ORDER BY requires all titles
+SELECT ?id ?title WHERE {
+  SERVICE <urn:SearchService> { ?x :q "vase"; :objectIDs ?id. }   # Returns 30,000 IDs
+  SERVICE <urn:ObjectService> { ?y :id ?id; :title ?title. }      # 1 HTTP call per ID
+}
+ORDER BY ?title   # ALL 30,000 HTTP calls must complete before sorting!
+LIMIT 20
+      ]]>
+    </mp-code-block>
+
+    <p><strong>Workarounds:</strong></p>
+    <ul>
+      <li><strong>Bound the search with <code>ephedra:rowLimit</code> (preferred)</strong>: declare an input argument
+      flagged <code>ephedra:rowLimit true</code> on the search service descriptor and set it in the query:
+      <mp-code-block mode='text/turtle'>
+      <![CDATA[
+spin:constraint [
+  a spl:Argument ;
+  rdfs:comment "local bound on the number of response rows; never sent to the API" ;
+  spl:predicate :_limit ;
+  spl:valueType xsd:integer ;
+  ephedra:rowLimit true
+] ;
+        ]]>
+      </mp-code-block>
+      The value (e.g. <code>?subject :limit "50"</code>) caps how many response rows are parsed — a declared
+      "top N hits" bound that is <em>not</em> sent to the remote API — so downstream per-row services and ORDER BY
+      cannot fan out beyond N. With the source bounded, ordering by an <code>ephedra:rowIndex</code> ordinal is safe
+      and costs nothing extra.</li>
+      <li><strong>Remove ORDER BY</strong>: If ordering isn't critical, omit it to benefit from lazy evaluation and
+      fast LIMIT. Lazy REST joins preserve the first service's response order, so results already arrive in the
+      search API's relevance order</li>
+      <li><strong>ORDER BY the service's own ranking</strong>: Declare an <code>ephedra:rowIndex</code> column on the
+      <em>first</em> service (see above) and order by it — <strong>but only together with an
+      <code>ephedra:rowLimit</code> bound when a per-row REST service is joined downstream</strong>: ORDER BY consumes
+      ALL rows before sorting, so an unbounded per-object detail service behind it fires one request per search hit
+      regardless of LIMIT</li>
+      <li><strong>Client-side sorting</strong>: Retrieve unordered results with LIMIT, then sort in your application code</li>
+      <li><strong>ORDER BY on search parameters</strong>: If the first service supports sorting (e.g., via a sort parameter),
+      use that instead of SPARQL ORDER BY</li>
+    </ul>
 
   </div>
 </div>

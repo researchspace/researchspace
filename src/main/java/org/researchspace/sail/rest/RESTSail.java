@@ -28,9 +28,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.sail.SailException;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.researchspace.config.Configuration;
 import org.researchspace.rest.filters.RequestRateLimitFilter;
 import org.researchspace.rest.filters.UserAgentFilter;
 import org.researchspace.secrets.SecretsHelper;
+
+import com.google.inject.Inject;
 
 /**
  * 
@@ -51,8 +54,33 @@ public class RESTSail extends AbstractServiceWrappingSail<RESTSailConfig> {
    */
   private Client client;
 
+  /**
+   * Platform configuration, member-injected by the RepositoryManager when the
+   * sail is created through a repository stack. Optional so the sail also
+   * works standalone (e.g. in unit tests).
+   */
+  @Inject(optional = true)
+  protected Configuration systemConfig;
+
   public RESTSail(RESTSailConfig config) {
     super(config);
+  }
+
+  /**
+   * Select the User-Agent for outgoing REST requests: the per-repository
+   * {@code ephedra:userAgent} override wins; otherwise the platform-wide
+   * {@code httpUserAgent} (environment.prop) applies — it is documented to
+   * cover REST services as well as SPARQL endpoints (Wikimedia/Nominatim
+   * User-Agent policies); the built-in default is the last resort.
+   */
+  static UserAgentFilter createUserAgentFilter(RESTSailConfig config, Configuration systemConfig) {
+    if (config.getUserAgent() != null) {
+      return new UserAgentFilter(config.getUserAgent());
+    }
+    if (systemConfig != null) {
+      return new UserAgentFilter(systemConfig.getEnvironmentConfig().getHttpUserAgent());
+    }
+    return new UserAgentFilter();
   }
 
   @Override
@@ -78,11 +106,7 @@ public class RESTSail extends AbstractServiceWrappingSail<RESTSailConfig> {
     // it is a good practice to always include application user-agent into all
     // requests and somtime it can be even the requirement, e.g nominatim web
     // service from OSM
-    if (config.getUserAgent() != null) {
-      clientBuilder = clientBuilder.register(new UserAgentFilter(config.getUserAgent()));
-    } else {
-      clientBuilder = clientBuilder.register(new UserAgentFilter());
-    }
+    clientBuilder = clientBuilder.register(createUserAgentFilter(config, systemConfig));
 
     // if we have username and password in the config then configure basic auth
     if (config.getUsername() != null && config.getPassword() != null) {

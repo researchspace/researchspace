@@ -1,0 +1,64 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+met:METObjectDescriptionService a ephedra:Service ;    
+    rdfs:label "A wrapper for the MET museum API object description service (test)." ;
+
+    ephedra:hasSPARQLPattern (
+        [
+           sp:subject met:_results ;
+           sp:predicate met:objectid ;
+           sp:object met:_objectid
+        ]  
+        [
+           sp:subject met:_results ;
+           sp:predicate met:title ;
+           sp:object met:_title
+        ]
+        [
+           sp:subject met:_results ;
+           sp:predicate met:objectName ;
+           sp:object met:_objectName
+        ]
+        [
+           sp:subject met:_results ;
+           sp:predicate met:primaryImageSmall ;
+           sp:object met:_primaryImageSmall
+        ]
+    );
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "search by object id" ;
+        spl:predicate met:_objectid ;
+        spl:valueType xsd:string
+    ] ;
+    
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Title" ;
+        spl:predicate met:_title ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.title"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Object Name" ;
+        spl:predicate met:_objectName ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.objectName"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Primary Image Small" ;
+        spl:predicate met:_primaryImageSmall ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.primaryImageSmall"
+    ] .

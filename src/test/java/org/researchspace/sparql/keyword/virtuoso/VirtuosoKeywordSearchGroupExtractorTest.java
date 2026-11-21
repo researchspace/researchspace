@@ -28,6 +28,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.algebra.Projection;
 import org.eclipse.rdf4j.query.algebra.QueryModelNode;
+import org.eclipse.rdf4j.query.algebra.QueryRoot;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.evaluation.QueryOptimizer;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
@@ -96,7 +97,10 @@ public class VirtuosoKeywordSearchGroupExtractorTest {
                 + "  ?label <bif:score> ?thescore . \n" + "}";
 
         VirtuosoKeywordSearchGroupExtractor extractor = new VirtuosoKeywordSearchGroupExtractor();
-        Projection res = (Projection) parseAndOptimize(query, extractor);
+        TupleExpr res = parseAndOptimize(query, extractor);
+        if (res instanceof QueryRoot) {
+            res = ((QueryRoot) res).getArg();
+        }
         Assert.assertTrue(extractor.containsKeywordClauses());
         patternCollector.optimize(res, null, null);
         Assert.assertEquals(1, patternCollector.getKeywordSearchPatterns().size());
@@ -111,6 +115,50 @@ public class VirtuosoKeywordSearchGroupExtractorTest {
     }
 
     @Test
+    public void testSubSelectPatternsStayInTheirScope() {
+        // Patterns inside a sub-SELECT belong to a different scope: the keyword
+        // extractor must not absorb them into the outer keyword group. Doing so
+        // hoists the pattern across the scope boundary, overwrites the group's
+        // subject variable and guts the subquery to an always-empty join.
+        String query = "PREFIX rdfs: <" + RDFS.NAMESPACE + "> \n"
+                + "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "SELECT ?instance ?other WHERE { \n"
+                + "  ?instance rdfs:label ?label . \n"
+                + "  ?label <bif:contains> \"token\" . \n"
+                + "  { SELECT ?other ?label WHERE { ?other skos:altLabel ?label . } LIMIT 10 } \n"
+                + "}";
+
+        VirtuosoKeywordSearchGroupExtractor extractor = new VirtuosoKeywordSearchGroupExtractor();
+        TupleExpr res = parseAndOptimize(query, extractor);
+        if (res instanceof QueryRoot) {
+            res = ((QueryRoot) res).getArg();
+        }
+        Assert.assertTrue(extractor.containsKeywordClauses());
+        patternCollector.optimize(res, null, null);
+        Assert.assertEquals(1, patternCollector.getKeywordSearchPatterns().size());
+        KeywordSearchPattern pattern = patternCollector.getKeywordSearchPatterns().iterator().next();
+        Assert.assertEquals("the keyword group's subject must stay the OUTER pattern's subject",
+                "instance", pattern.getSubjectVar().getName());
+        Assert.assertEquals("only the outer rdfs:label pattern belongs to the keyword group",
+                1, pattern.getPredicateVars().size());
+        Assert.assertEquals(RDFS.LABEL, pattern.getFirstPredicateVar().getValue());
+
+        // ...and the sub-SELECT keeps its own pattern
+        final boolean[] subselectPatternSurvives = { false };
+        res.visit(new AbstractQueryModelVisitor<RuntimeException>() {
+            @Override
+            public void meet(org.eclipse.rdf4j.query.algebra.StatementPattern node) {
+                if (node.getPredicateVar().hasValue()
+                        && node.getPredicateVar().getValue().stringValue().endsWith("altLabel")) {
+                    subselectPatternSurvives[0] = true;
+                }
+            }
+        });
+        Assert.assertTrue("the sub-SELECT pattern must not be hoisted out of its scope",
+                subselectPatternSurvives[0]);
+    }
+
+    @Test
     public void testSingleGroupWithMultipleProperties() {
         String query = "PREFIX rdfs: <" + RDFS.NAMESPACE + "> \n" + "SELECT * WHERE { \n"
                 + "  ?entity rdfs:label|rdfs:comment ?label . \n"
@@ -118,7 +166,10 @@ public class VirtuosoKeywordSearchGroupExtractorTest {
                 + "  ?label <bif:score> ?thescore . \n" + "}";
 
         VirtuosoKeywordSearchGroupExtractor extractor = new VirtuosoKeywordSearchGroupExtractor();
-        Projection res = (Projection) parseAndOptimize(query, extractor);
+        TupleExpr res = parseAndOptimize(query, extractor);
+        if (res instanceof QueryRoot) {
+            res = ((QueryRoot) res).getArg();
+        }
         Assert.assertTrue(extractor.containsKeywordClauses());
         patternCollector.optimize(res, null, null);
         Assert.assertEquals(1, patternCollector.getKeywordSearchPatterns().size());
@@ -140,7 +191,10 @@ public class VirtuosoKeywordSearchGroupExtractorTest {
                 + "  ?label2 <bif:contains> \"token2\" . \n" + "  ?label2 <bif:score> ?thescore2 . \n" + "}";
 
         VirtuosoKeywordSearchGroupExtractor extractor = new VirtuosoKeywordSearchGroupExtractor();
-        Projection res = (Projection) parseAndOptimize(query, extractor);
+        TupleExpr res = parseAndOptimize(query, extractor);
+        if (res instanceof QueryRoot) {
+            res = ((QueryRoot) res).getArg();
+        }
         Assert.assertTrue(extractor.containsKeywordClauses());
         patternCollector.optimize(res, null, null);
         Assert.assertEquals(2, patternCollector.getKeywordSearchPatterns().size());

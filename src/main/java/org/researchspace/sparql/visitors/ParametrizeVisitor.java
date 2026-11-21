@@ -54,11 +54,12 @@ public class ParametrizeVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
         super.meet(node);
 
         for (ProjectionElem elem : node.getElements()) {
-            String sourceName = elem.getSourceName();
+            String sourceName = elem.getName();
             if (sourceName != null && parameters.containsKey(sourceName)) {
                 Value value = parameters.get(sourceName);
-                elem.setSourceName(elem.getTargetName());
-                elem.setSourceExpression(new ExtensionElem(TupleExprs.createConstVar(value), sourceName));
+                    String targetName = elem.getProjectionAlias().orElse(sourceName);
+                    elem.setName(targetName);
+                    elem.setSourceExpression(new ExtensionElem(TupleExprs.createConstVar(value), targetName));
             }
         }
     }
@@ -69,7 +70,8 @@ public class ParametrizeVisitor extends AbstractQueryModelVisitor<RuntimeExcepti
         if (!node.isAnonymous() && !node.hasValue()) {
             Value parameter = parameters.get(node.getName());
             if (parameter != null) {
-                node.setValue(parameter);
+                Var newVar = new Var(node.getName(), parameter, node.isAnonymous(), node.isConstant());
+                node.replaceWith(newVar);
             }
         }
     }

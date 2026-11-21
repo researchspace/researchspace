@@ -67,9 +67,6 @@ public class DefaultMpSPARQLRepositoryFactory extends AbstractMpSPARQLRepository
             } else {
                 result = new CustomSPARQLRepository(httpConfig.getQueryEndpointUrl());
             }
-           
-            result.setWritable(config.isWritable());
-            result.setSilentMode(config.isSilentMode());
         } else {
             throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
         }

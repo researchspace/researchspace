@@ -30,7 +30,7 @@ import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.VariableScopeChange;
 import org.eclipse.rdf4j.query.algebra.evaluation.QueryOptimizer;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
-import org.eclipse.rdf4j.sail.federation.algebra.NaryJoin;
+import org.researchspace.federation.sparql.algebra.NaryJoin;
 
 public class MpTestTupleExprOptimizer implements QueryOptimizer {
 

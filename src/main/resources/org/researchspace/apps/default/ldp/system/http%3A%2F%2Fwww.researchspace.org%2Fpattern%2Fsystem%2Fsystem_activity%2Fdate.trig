@@ -69,9 +69,20 @@
         ?subject crm:P129i_is_subject_of ?entityFormRecord .
         ?entityFormRecord a crmdig:D1_Digital_Object .
         ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordOutput .
-        ?entityFormRecordOutput crm:P4_has_time-span ?entityFormRecordOutputTimespan .
-        ?entityFormRecordOutputTimespan crm:P82_at_some_time_within ?value .
+        OPTIONAL {
+          ?entityFormRecord crmdig:L11i_was_output_of ?creationEvent .
+          ?creationEvent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+          ?creationEvent crm:P4_has_time-span ?creationEventTimespan .
+          ?creationEventTimespan crm:P82_at_some_time_within ?creationDate .
+        }
+        OPTIONAL {
+          ?entityFormRecord crmdig:L11i_was_output_of ?latestEvent .
+          ?latestEvent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_latest_event> .
+          ?latestEvent crm:P4_has_time-span ?latestEventTimespan .
+          ?latestEventTimespan crm:P82_at_some_time_within ?latestDate .
+        }
+        BIND(COALESCE(?latestDate, ?creationDate) AS ?value)
+        FILTER(BOUND(?value))
   }
 }""" .
   

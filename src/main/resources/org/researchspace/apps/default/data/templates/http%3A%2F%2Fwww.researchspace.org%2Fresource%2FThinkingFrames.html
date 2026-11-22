@@ -26,54 +26,45 @@
 
 <div class='page_100vh thinking-frames-page'>
   <rs-dashboard
-    home-page-iri="http://www.researchspace.org/resource/Start"
-
     [[#if (urlParam "view")]]
-      initial-view='{"view": "[[urlParam "view"]]", 
-                    "resource": "[[urlParam "resource"]]", 
-                    "data": {[[#if (urlParam "entityTypeConfig")]]
-                              [[#if (urlParam "mode")]]
-                                [[#if (urlParam "customLabel")]]
-                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
-                                  "mode": "[[urlParam "mode"]]",
-                                  "customLabel": "[[urlParam "customLabel"]]"
-                                [[else]]
-                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
-                                  "mode": "[[urlParam "mode"]]"
-                                [[/if]]
-                              [[else]]
-                                [[#if (urlParam "customLabel")]]
-                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
-                                  "mode": "new",
-                                  "customLabel": "[[urlParam "customLabel"]]"
-                                [[else]]
-                                  "entityTypeConfig": "[[urlParam "entityTypeConfig"]]",
-                                  "mode": "new"  
-                                [[/if]]                             
-                              [[/if]]
-                            
-                            [[else]]
-                              [[#if (urlParam "resource")]]
-                                  [[#if (urlParam "customLabel")]]
-                                    "customLabel": "[[urlParam "customLabel"]]"
-                                  [[/if]]
-                              [[/if]]
-                            [[/if]]
+      initial-view='{
+        "view": "[[urlParam "view"]]",
+        "resource": "[[urlParam "resource"]]",
+        "data": {
+          "resourceConfig": "[[urlParam "resourceConfig"]]",
+          "resourceVisualisationTemplate": "[[urlParam "resourceVisualisationTemplate"]]"
+          [[#if (urlParam "entityTypeConfig")]]
+            , "entityTypeConfig": "[[urlParam "entityTypeConfig"]]"
+            , "mode": "[[#if (urlParam "mode")]][[urlParam "mode"]][[else]]new[[/if]]"
+            [[#if (urlParam "customLabel")]]
+              , "customLabel": "[[urlParam "customLabel"]]"
+            [[/if]]
+          [[else]]
+            [[#if (urlParam "resource")]]
+              [[#if (urlParam "customLabel")]]
+                , "customLabel": "[[urlParam "customLabel"]]"
+              [[/if]]
+            [[/if]]
+          [[/if]]
+        }
+      }'
+    [[else]]
+      [[#if view]]
+        initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
+      [[else]]
+        initial-view='{"view": "dashboard"}'
+      [[/if]]
+    [[/if]]
 
-                            } 
-                    }'
-    [[/if]] 
-    [[#if view]]
-      initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
-    [[/if]] 
+    default-view-id="dashboard"
 
     views='[
 
     {
-    	"id": "homepage",
-      "label": "Homepage",
-      "iconName": "homepage-button",
-      "template": "{{> homepage}}"
+    	"id": "dashboard",
+      "label": "Dashboard",
+      "iconName": "dashboard_customize",
+      "template": "{{> dashboard}}"
     },
 
     {
@@ -102,7 +93,7 @@
 
     {
     	"id": "resource",
-      "label": "Entity record",
+      "label": "Resource view",
       "description": "Drag and drop an entity here to display the entity record",
       "dropAreaDescription": "Drag and drop any entity here to display the entity record",
       "iconName": "insert_drive_file",
@@ -112,14 +103,22 @@
 
     {
     	"id": "resource-editor",
-      "label": "Resource editor",
+      "label": "Edit",
       "description": "Create and author an entity through custom forms",
       "iconName": "edit_note",
       "template": "{{> resourceEditor}}",
       "resourceNotRequired": true,
       "type": "view"
     },
-
+    {
+    	"id": "resource-detailed-visualisation",
+      "label": "Interactive resource view",
+      "description": "Visualise the details of an entity using interaction semantic tools",
+      "template": "{{> resourceVisualisation}}",
+      "iconName": "frame_inspect",
+      "resourceNotRequired": false,
+      "type": "view"
+    },
     {
     	"id": "semantic-narrative-annotation",
       "label": "Annotate Narrative",
@@ -439,7 +438,7 @@
     
     <template id='finder'>[[> rsp:Finder]]</template>
 
-    <template id='homepage'>
+    <template id='dashboard'>
       [[> rsp:Start]] 
     </template>
 
@@ -476,11 +475,24 @@
         </mp-event-target-template-render>
     </template> --]]
 
-    <template id='resourceTemplate'>
-      <div style='flex: 1 1 0px; overflow: auto;'>
-        <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}'>
-        </mp-page-loader>
-    	</div>
+    <template id='resourceTemplate2'>  
+      <mp-event-target-template-render id='{{iri}}-resource-view' template='{{> template}}'>
+        <template id='template'>
+          <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}' viewId='{{dashboardId}}'></mp-page-loader>
+        </template>
+      </mp-event-target-template-render>
+    </template>
+
+    <template id='resourceTemplate'>  
+      <mp-event-target-template-render id='{{iri}}-resource-view' template='{{> template}}'>
+        <template id='template'>
+          <mp-page-loader iri='{{iri}}' context='{{iri}}'
+                          urlqueryparam-frame=true urlqueryparam-uri='{{iri}}'
+                          urlqueryparam-resource-iri='{{iri}}'
+                          urlqueryparam-resource-config='{{data.resourceConfig}}'>
+          </mp-page-loader>
+        </template>
+      </mp-event-target-template-render>
     </template>
 
     <template id='ontologyPageView'>
@@ -502,6 +514,11 @@
 
     <template id='resourceEditor'>
       [[> rsp:ResourceEditor iri=iri]]
+    </template>
+
+    <template id='resourceVisualisation'>
+      <mp-page-loader urlqueryparam-frame=true urlqueryparam-uri="" context="{{iri}}" iri="{{data.resourceVisualisationTemplate}}" urlqueryparam-resource-config="{{data.resourceConfig}}" urlqueryparam-resource-iri="{{iri}}">
+      </mp-page-loader>
     </template>
 
 [[!--   <template id='authority'>

@@ -42,7 +42,14 @@ public class UrlParamHelperSource {
 
     private static final Logger logger = LogManager.getLogger(UrlParamHelperSource.class);
 
-    public String urlParam(String param0, Options options) {
+    /**
+     * Returns the value of the named URL query parameter (several values are
+     * joined with a comma), or the empty string when it is absent. A value
+     * that is exactly "false" (ignoring case) is returned as {@link Boolean#FALSE}
+     * so that <code>[[#if (urlParam "x")]]</code> is false for <code>?x=false</code>
+     * while <code>[[urlParam "x"]]</code> still prints "false".
+     */
+    public Object urlParam(String param0, Options options) {
         TemplateContext context = (TemplateContext) options.context.model();
         UriInfo uriInfo = context.getUriInfo();
         String paramName = checkNotNull(param0, "Parameter name must not null or empty.");
@@ -53,6 +60,9 @@ public class UrlParamHelperSource {
                     // TODO later we may provide additional hashParameter separator
                     String params = StringUtils.join(e.getValue(), ",");
                     logger.trace("Extracted requested url param with name {}: {}", paramName, params);
+                    if ("false".equalsIgnoreCase(params)) {
+                        return Boolean.FALSE;
+                    }
                     if (escape) {
                         return new Handlebars.SafeString(StringEscapeUtils.escapeHtml4(params).toString()).toString();
                     } else {

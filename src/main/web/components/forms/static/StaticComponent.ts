@@ -22,13 +22,18 @@ import { HTMLAttributes } from 'react';
 import { Component } from 'platform/api/components';
 
 import { FieldDefinition } from '../FieldDefinition';
-import { FieldValue } from '../FieldValues';
+import { FieldValue, DataState } from '../FieldValues';
 import { InputKind } from '../inputs/InputCommpons';
 
 export interface StaticFieldProps extends HTMLAttributes<HTMLElement> {
   for?: string;
   definition?: FieldDefinition;
   model?: FieldValue;
+  /**
+   * Data state from the enclosing composite: for a component with `for`, that field's
+   * state; without `for`, Loading until the composite's initial values are in the model.
+   */
+  dataState?: DataState;
 }
 
 export abstract class StaticComponent<P extends StaticFieldProps, S> extends Component<P, S> {

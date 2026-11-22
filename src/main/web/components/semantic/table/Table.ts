@@ -100,6 +100,7 @@ export interface TableConfig {
   data: Data.Either<ReadonlyArray<any>, SparqlClient.SparqlSelectResult>;
   currentPage?: number;
   onPageChange?: (page: number) => void;
+  separatePagination?: boolean;
   showLiteralDatatype?: boolean;
   linkParams?: {};
   showCopyToClipboardButton?: boolean;
@@ -110,6 +111,7 @@ export type TableProps = TableConfig & ClassAttributes<Table>;
 const DEFAULT_ROWS_PER_PAGE = 10;
 
 interface State {
+  readonly paginationContainer?: HTMLDivElement;
   readonly buffer: KeyedBufferPool<Rdf.Iri, string>;
   readonly griddleConfig?: GriddleConfig;
 }
@@ -240,11 +242,20 @@ export class Table extends Component<TableProps, State> {
     return createElement(
       'div',
       {
-        className: 'researchspace-table-widget-holder',
+        className: 'researchspace-table-widget-holder' + (this.props.separatePagination ? ' separate-pagination' : ''),
       },
-      this.renderTableData()
+      this.renderTableData(),
+      this.props.separatePagination
+        ? createElement('div', { className: 'table-pagination', ref: this.setPaginationContainer })
+        : null
     );
   }
+
+  private setPaginationContainer = (paginationContainer: HTMLDivElement | null) => {
+    if (paginationContainer && paginationContainer !== this.state.paginationContainer) {
+      this.setState({ paginationContainer });
+    }
+  };
 
   private renderTableData() {
     const { buffer, griddleConfig } = this.state;
@@ -253,8 +264,30 @@ export class Table extends Component<TableProps, State> {
     } else if (buffer.loading || !griddleConfig) {
       return createElement(Spinner, {});
     } else {
-      return createElement(Griddle, griddleConfig);
+      return createElement(Griddle, this.props.separatePagination
+        ? this.getPortaledConfig(griddleConfig, this.state.paginationContainer)
+        : griddleConfig);
     }
+  }
+
+  private portaledConfig: { source: GriddleConfig; container: HTMLDivElement; config: GriddleConfig } | undefined;
+
+  /**
+   * Griddle re-renders every row when it receives a new config object, so the
+   * config carrying the pagination portal container is rebuilt only when the
+   * underlying config or the container actually change.
+   */
+  private getPortaledConfig(source: GriddleConfig, container: HTMLDivElement | undefined): GriddleConfig {
+    const cached = this.portaledConfig;
+    if (cached && cached.source === source && cached.container === container) {
+      return cached.config;
+    }
+    const config: GriddleConfig = {
+      ...source,
+      customPagerComponentOptions: { ...source.customPagerComponentOptions, container },
+    };
+    this.portaledConfig = { source, container, config };
+    return config;
   }
 
   private getGriddlePropsForSparqlResult(

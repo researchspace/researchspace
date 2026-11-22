@@ -125,7 +125,7 @@ export function getPostActionUrlQueryParams(props: ResourceEditorFormProps) {
 export function performFormPostAction(parameters: {
   postAction: PostAction;
   subject: Rdf.Iri;
-  eventProps: { isNewSubject: boolean; isRemovedSubject?: boolean; sourceId: string };
+  eventProps: { isNewSubject: boolean; isRemovedSubject?: boolean; hasChanges?: boolean; sourceId: string };
   queryParams?: { [paramKey: string]: string };
   defaultTabKey?: any
   tabSource?: any
@@ -178,6 +178,13 @@ export function performFormPostAction(parameters: {
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });
+      if (eventProps.hasChanges) {
+        trigger({
+          eventType: FormEvents.FormResourceModified,
+          source: eventProps.sourceId,
+          data: { iri: subject.value },
+        });
+      }
       if(sendNotification) {
         addNotification({
           level: 'success',

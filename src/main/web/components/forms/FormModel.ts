@@ -233,9 +233,18 @@ function loadInitialOrDefaultValues(
     if (!FieldMapping.isComposite(mapping)) {
       // load at least one empty values for non-composites
       requiredCount = Math.max(requiredCount, 1);
+    } else if (compositeOpensByDefault(mapping) && def.maxOccurs >= 1) {
+      // a composite that asks to be open shows one empty instance when there is nothing to show
+      requiredCount = Math.max(requiredCount, 1);
     }
     return setSizeAndFill(values, requiredCount, FieldValue.empty);
   });
+}
+
+/** `open-by-default` of a `semantic-form-composite-input` (its props are spread onto the mapping element). */
+function compositeOpensByDefault(mapping: InputMapping): boolean {
+  const props = mapping.element.props as { openByDefault?: boolean };
+  return props.openByDefault === true;
 }
 
 function fetchInitialValues(

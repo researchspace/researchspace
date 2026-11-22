@@ -124,8 +124,13 @@ export class RsTabs extends React.Component<Props, State> {
   };
 
   render() {
-    const { id, defaultActiveKey, className } = this.props;
+    const { id, defaultActiveKey, className, mountOnEnter } = this.props;
 
+    // With mountOnEnter, switch panes without the fade transition. With the fade, a
+    // newly activated pane stays hidden (display: none) until the previous pane has
+    // faded out, so lazily mounted content would measure itself at zero size
+    // (e.g. a Knowledge Map laid out at 0 px wide). Without it the pane is visible
+    // in the same render in which its content mounts.
     return (
       <Tabs
         className={className}
@@ -133,6 +138,7 @@ export class RsTabs extends React.Component<Props, State> {
         defaultActiveKey={defaultActiveKey}
         id={id}
         onSelect={this.onTabSelected}
+        animation={!mountOnEnter}
       >
         {this.renderChildrenWithTitles()}
       </Tabs>
